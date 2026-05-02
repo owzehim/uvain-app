@@ -129,6 +129,9 @@ function EventsTab({ events }) {
   }
 
   const renderEvent = (ev) => {
+    const [fullscreenImg, setFullscreenImg] = useState(null)
+
+  const renderEvent = (ev) => {
     const isExpanded = expandedId === ev.id
     const imgs = ev['image_urls'] || []
     const instaUrl = ev['instagram_url']
@@ -155,20 +158,23 @@ function EventsTab({ events }) {
               <div className="relative overflow-hidden">
                 <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}>
                   {imgs.map((url, i) => (
-                    <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ maxHeight: '300px' }} />
+                    <img
+                      key={i}
+                      src={url}
+                      alt={'이미지 ' + (i+1)}
+                      className="w-full flex-shrink-0 object-cover cursor-pointer"
+                      style={{ maxHeight: '300px' }}
+                      onClick={() => setFullscreenImg(url)}
+                    />
                   ))}
                 </div>
                 {imgs.length > 1 && (
                   <div>
                     {currentSlide > 0 && (
-                      <button onClick={() => setSlide(ev.id, currentSlide - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
-                        ‹
-                      </button>
+                      <button onClick={() => setSlide(ev.id, currentSlide - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">‹</button>
                     )}
                     {currentSlide < imgs.length - 1 && (
-                      <button onClick={() => setSlide(ev.id, currentSlide + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
-                        ›
-                      </button>
+                      <button onClick={() => setSlide(ev.id, currentSlide + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">›</button>
                     )}
                     <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
                       {(currentSlide + 1) + '/' + imgs.length}
@@ -198,6 +204,15 @@ function EventsTab({ events }) {
 
   return (
     <div className="px-4 py-6 max-w-lg mx-auto">
+      {fullscreenImg && (
+        <div
+          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+          onClick={() => setFullscreenImg(null)}
+        >
+          <img src={fullscreenImg} className="max-w-full max-h-full object-contain" />
+          <button className="absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center">✕</button>
+        </div>
+      )}
       <h2 className="font-semibold text-gray-900 mb-4">EVENT</h2>
       {events.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
