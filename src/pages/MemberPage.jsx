@@ -187,15 +187,18 @@ function EventsTab({ events }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {events.map(event => (
+          {events.map(event => {
+  const instaUrl = event['instagram_url']
+  const imgUrl = event['image_url']
+  return (
             <div key={event.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              {event.image_url && (
+              {imgUrl && (
                 <div
                   className="cursor-pointer"
                   onClick={() => setExpanded(expanded === event.id ? null : event.id)}
                 >
                   <img
-                    src={event.image_url}
+                    src={imgUrl}
                     alt={event.title}
                     className={`w-full object-cover transition-all duration-300 ${
                       expanded === event.id ? 'h-72' : 'h-40'
@@ -228,9 +231,9 @@ function EventsTab({ events }) {
                       📅 캘린더에 추가
                     </button>
                   )}
-                  {event.instagram_url && (
-                    
-                      href={event.instagram_url || '#'}
+                  {instaUrl && (
+  
+    href={instaUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center"
@@ -241,7 +244,7 @@ function EventsTab({ events }) {
                 </div>
               </div>
             </div>
-          ))}
+        )})}
         </div>
       )}
     </div>
