@@ -71,9 +71,9 @@ export default function MemberPage() {
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex z-50">
         {[
-          { key: 'qr', label: 'MY', icon: '🪪' },
-          { key: 'events', label: 'EVENT', icon: '📅' },
-          { key: 'map', label: 'SPOT', icon: '🗺️' },
+          { key: 'qr', label: 'QR', icon: '🪪' },
+          { key: 'events', label: '이벤트', icon: '📅' },
+          { key: 'map', label: '장소지도', icon: '🗺️' },
         ].map(tab => (
           <button
             key={tab.key}
@@ -156,7 +156,6 @@ function EventsTab({ events }) {
     const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
     const pad = n => String(n).padStart(2, '0')
     const fmt = d => `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`
-
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
@@ -169,7 +168,6 @@ function EventsTab({ events }) {
       'END:VEVENT',
       'END:VCALENDAR'
     ].join('\n')
-
     const blob = new Blob([icsContent], { type: 'text/calendar' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -191,7 +189,6 @@ function EventsTab({ events }) {
         <div className="space-y-3">
           {events.map(event => (
             <div key={event.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              {/* 이미지 */}
               {event.image_url && (
                 <div
                   className="cursor-pointer"
@@ -199,13 +196,13 @@ function EventsTab({ events }) {
                 >
                   <img
                     src={event.image_url}
+                    alt={event.title}
                     className={`w-full object-cover transition-all duration-300 ${
                       expanded === event.id ? 'h-72' : 'h-40'
                     }`}
                   />
                 </div>
               )}
-
               <div className="p-5">
                 <p className="font-semibold text-gray-900">{event.title}</p>
                 {event.event_date && (
@@ -216,10 +213,12 @@ function EventsTab({ events }) {
                     })}
                   </p>
                 )}
-                {event.location && <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>}
-                {event.description && <p className="text-sm text-gray-600 mt-2 leading-relaxed">{event.description}</p>}
-
-                {/* 버튼들 */}
+                {event.location && (
+                  <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
+                )}
+                {event.description && (
+                  <p className="text-sm text-gray-600 mt-2 leading-relaxed">{event.description}</p>
+                )}
                 <div className="flex gap-2 mt-3">
                   {event.event_date && (
                     <button
@@ -231,7 +230,7 @@ function EventsTab({ events }) {
                   )}
                   {event.instagram_url && (
                     
-                      href={event['instagram_url']}
+                      href={String(event.instagram_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center"
@@ -303,16 +302,29 @@ function MapTab({ restaurants }) {
                     </span>
                   </div>
                   <p className="font-semibold text-gray-900 mt-1">{selected.name}</p>
-                  {selected.address && <p className="text-sm text-gray-500 mt-0.5">📍 {selected.address}</p>}
-                  {selected.discount_info && <p className="text-sm text-blue-600 mt-0.5">🎟 {selected.discount_info}</p>}
+                  {selected.address && (
+                    <p className="text-sm text-gray-500 mt-0.5">📍 {selected.address}</p>
+                  )}
+                  {selected.discount_info && (
+                    <p className="text-sm text-blue-600 mt-0.5">🎟 {selected.discount_info}</p>
+                  )}
                   {selected.rating > 0 && (
                     <p className="text-sm text-amber-500 mt-0.5">
                       {'★'.repeat(Math.round(selected.rating))} {selected.rating}
                     </p>
                   )}
-                  {selected.review && <p className="text-sm text-gray-600 mt-1">{selected.review}</p>}
-                  {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">— {selected.reviewer_name}</p>}
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-blue-600 text-white text-xs px-4 py-2 rounded-lg hover:bg-blue-700">
+                  {selected.review && (
+                    <p className="text-sm text-gray-600 mt-1">{selected.review}</p>
+                  )}
+                  {selected.reviewer_name && (
+                    <p className="text-xs text-gray-400 mt-0.5">— {selected.reviewer_name}</p>
+                  )}
+                  
+                    href={`https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-3 bg-blue-600 text-white text-xs px-4 py-2 rounded-lg hover:bg-blue-700"
+                  >
                     Google Maps에서 열기
                   </a>
                 </div>
