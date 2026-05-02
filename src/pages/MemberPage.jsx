@@ -149,33 +149,134 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
 }
 
 function EventsTab({ events }) {
-  const [expanded, setExpanded] = useState(null)
+  const [expandedId, setExpandedId] = useState(null)
+  const [slideIndexes, setSlideIndexes] = useState({})
 
-  const addToCalendar = (ev) => {
-    const start = new Date(ev.event_date)
-    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
-    const pad = n => String(n).padStart(2, '0')
-    const fmt = d => `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`
-    const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'BEGIN:VEVENT',
-      'DTSTART:' + fmt(start),
-      'DTEND:' + fmt(end),
-      'SUMMARY:' + ev.title,
-      'DESCRIPTION:' + (ev.description || ''),
-      'LOCATION:' + (ev.location || ''),
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ].join('\n')
-    const blob = new Blob([icsContent], { type: 'text/calendar' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = ev.title + '.ics'
-    a.click()
-    URL.revokeObjectURL(url)
+  const setSlide = (eventId, idx) => {
+    setSlideIndexes(prev => ({ ...prev, [eventId]: idx }))
   }
+
+  const renderEvent = (ev) => {
+    const isExpanded = expandedId === ev.id
+    const imgs = ev['image_urls'] || []
+    const instaUrl = ev['instagram_url']
+    const currentSlide = slideIndexes[ev.id] || 0
+
+    return (
+      <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <button
+          onClick={() => setExpandedId(isExpanded ? null : ev.id)}
+          className="w-full text-left p-5"
+        >
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-gray-900">{ev.title}</p>
+            <span className="text-gray-400 text-sm ml-2">{isExpanded ? '▲' : '▼'}</span>
+          </div>
+          {ev.event_date && (
+            <p className="text-sm text-blue-600 mt-1">
+              {'📅 ' + new Date(ev.event_date).toLocaleString('ko-KR', {
+                year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              })}
+            </p>
+          )}
+          {ev.location && <p className="text-sm text-gray-500 mt-0.5">{'📍 ' + ev.location}</p>}
+        </button>
+
+        {isExpanded && (
+          <div>
+            {imgs.length > 0 && (
+              <div className="relative overflow-hidden">
+                <div
+                  className="flex transition-transform duration-300"
+                  style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}
+                >
+                  {imgs.map((url, i) => (
+                    <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ maxHeight: '300px' }} />
+                  ))}
+                </div>
+                {imgs.length > 1 && (
+                  <>
+                    {currentSlide > 0 && (
+                      <button
+                        onClick={() => setSlide(ev.id, currentSlide - 1)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm"
+                      >
+                        ‹
+                      </button>
+                    )}
+                    {currentSlide < imgs.length - 1 && (
+                      <button
+                        onClick={() => setSlide(ev.id, currentSlide + 1)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm"
+                      >
+                        ›
+                      </button>
+                    )}
+                    <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                      {currentSlide + 1}/{imgs.length}
+                    </div>
+                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+                      {imgs.map((_, i) => (
+                        <button key={i} onClick={() => setSlide(ev.id, i)} className={'w-1.5 h-1.5 rounded-full ' + (i === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50')} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="px-5 pb-5">
+              {ev.description && <p className="text-sm text-gray-600 mt-3 leading-relaxed">{ev.description}</p>}
+              <div className="flex gap-2 mt-3">
+                {ev.event_date && (
+                  <button
+                    onClick={() => {
+                      const start = new Date(ev.event_date)
+                      const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
+                      const pad = n => String(n).padStart(2, '0')
+                      const fmt = d => d.getUTCFullYear() + '' + pad(d.getUTCMonth()+1) + '' + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + '' + pad(d.getUTCMinutes()) + '00Z'
+                      const ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' + fmt(start) + '\nDTEND:' + fmt(end) + '\nSUMMARY:' + ev.title + '\nLOCATION:' + (ev.location || '') + '\nEND:VEVENT\nEND:VCALENDAR'
+                      const blob = new Blob([ics], { type: 'text/calendar' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = ev.title + '.ics'
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }}
+                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200"
+                  >
+                    📅 캘린더에 추가
+                  </button>
+                )}
+                {instaUrl && (
+                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center">📸 인스타그램</a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="px-4 py-6 max-w-lg mx-auto">
+      <h2 className="font-semibold text-gray-900 mb-4">EVENT</h2>
+      {events.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+          <p className="text-2xl mb-2">📅</p>
+          <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {events.map(ev => renderEvent(ev))}
+        </div>
+      )}
+    </div>
+  )
+}
 
   const renderEvent = (ev) => {
     const instaUrl = ev['instagram_url']
