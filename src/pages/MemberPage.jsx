@@ -182,7 +182,7 @@ function EventsTab({ events }) {
               {ev.description && <p className="text-sm text-gray-600 mt-3 leading-relaxed">{ev.description}</p>}
               {instaUrl && (
                 <div className="mt-3">
-                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg">📸 인스타그램</a>
+                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg">Instagram에서 열기</a>
                 </div>
               )}
             </div>
