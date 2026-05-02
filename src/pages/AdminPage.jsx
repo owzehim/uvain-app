@@ -327,7 +327,9 @@ function EventsTab() {
   const [events, setEvents] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
-  const [form, setForm] = useState({ title: '', description: '', event_date: '', location: '' })
+  const [form, setForm] = useState({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
+const [imageFile, setImageFile] = useState(null)
+const [imagePreview, setImagePreview] = useState(null)
 
   const fetchEvents = async () => {
     const { data } = await supabase.from('events').select('*').order('event_date', { ascending: true })
@@ -337,19 +339,41 @@ function EventsTab() {
   useEffect(() => { fetchEvents() }, [])
 
   const handleSave = async () => {
-    if (!form.title) { alert('제목을 입력해주세요.'); return }
+  if (!form.title) { alert('제목을 입력해주세요.'); return }
 
-    if (editTarget) {
-      await supabase.from('events').update(form).eq('id', editTarget.id)
-    } else {
-      await supabase.from('events').insert(form)
-    }
+  let image_url = editTarget?.image_url || null
 
-    setShowForm(false)
-    setEditTarget(null)
-    setForm({ title: '', description: '', event_date: '', location: '' })
-    fetchEvents()
+  if (imageFile) {
+    const fileExt = imageFile.name.split('.').pop()
+    const fileName = `${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage
+      .from('event-images')
+      .upload(fileName, imageFile)
+
+    if (uploadError) { alert('이미지 업로드 실패: ' + uploadError.message); return }
+
+    const { data: urlData } = supabase.storage
+      .from('event-images')
+      .getPublicUrl(fileName)
+
+    image_url = urlData.publicUrl
   }
+
+  const payload = { ...form, image_url }
+
+  if (editTarget) {
+    await supabase.from('events').update(payload).eq('id', editTarget.id)
+  } else {
+    await supabase.from('events').insert(payload)
+  }
+
+  setShowForm(false)
+  setEditTarget(null)
+  setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
+  setImageFile(null)
+  setImagePreview(null)
+  fetchEvents()
+}
 
   const handleDelete = async (id) => {
     if (!confirm('삭제할까요?')) return
@@ -402,15 +426,51 @@ function EventsTab() {
             onChange={e => setForm({ ...form, location: e.target.value })}
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
           />
-          <div>
-            <label className="text-sm text-gray-500 block mb-1">날짜/시간</label>
-            <input
-              type="datetime-local"
-              value={form.event_date}
-              onChange={e => setForm({ ...form, event_date: e.target.value })}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
+          <div className="flex gap-2">
+  <div className="flex-1">
+    <label className="text-sm text-gray-500 block mb-1">날짜</label>
+    <input
+      type="date"
+      value={form.event_date ? form.event_date.slice(0, 10) : ''}
+      onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })}
+      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+    />
+  </div>
+  <div className="flex-1">
+    <label className="text-sm text-gray-500 block mb-1">시간 (예: 18:30)</label>
+    <input
+      type="text"
+      placeholder="18:30"
+      value={form.event_date ? form.event_date.slice(11, 16) : ''}
+      onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })}
+      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+    />
+  </div>
+</div>
+<div>
+  <label className="text-sm text-gray-500 block mb-1">이벤트 사진</label>
+  <input
+    type="file"
+    accept="image/*"
+    onChange={e => {
+      const file = e.target.files[0]
+      if (file) {
+        setImageFile(file)
+        setImagePreview(URL.createObjectURL(file))
+      }
+    }}
+    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+  />
+  {imagePreview && (
+    <img src={imagePreview} className="mt-2 rounded-lg w-full h-32 object-cover" />
+  )}
+</div>
+<input
+  placeholder="인스타그램 URL (선택)"
+  value={form.instagram_url}
+  onChange={e => setForm({ ...form, instagram_url: e.target.value })}
+  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+/>
           <div className="flex gap-2">
             <button onClick={handleSave} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700">
               {editTarget ? '수정 완료' : '추가'}
