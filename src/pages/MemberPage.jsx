@@ -92,7 +92,6 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
           <p>{'유효기간: ' + (member?.membership_valid_until ?? '없음')}</p>
         </div>
       </div>
-
       {isValid ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
           <p className="text-sm text-gray-500 mb-4">멤버십 QR 코드</p>
@@ -123,13 +122,11 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
 function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
+  const [fullscreenImg, setFullscreenImg] = useState(null)
 
   const setSlide = (eventId, idx) => {
     setSlideIndexes(prev => ({ ...prev, [eventId]: idx }))
   }
-
-  const renderEvent = (ev) => {
-    const [fullscreenImg, setFullscreenImg] = useState(null)
 
   const renderEvent = (ev) => {
     const isExpanded = expandedId === ev.id
@@ -158,14 +155,7 @@ function EventsTab({ events }) {
               <div className="relative overflow-hidden">
                 <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}>
                   {imgs.map((url, i) => (
-                    <img
-                      key={i}
-                      src={url}
-                      alt={'이미지 ' + (i+1)}
-                      className="w-full flex-shrink-0 object-cover cursor-pointer"
-                      style={{ maxHeight: '300px' }}
-                      onClick={() => setFullscreenImg(url)}
-                    />
+                    <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover cursor-pointer" style={{ maxHeight: '300px' }} onClick={() => setFullscreenImg(url)} />
                   ))}
                 </div>
                 {imgs.length > 1 && (
@@ -190,11 +180,11 @@ function EventsTab({ events }) {
             )}
             <div className="px-5 pb-5">
               {ev.description && <p className="text-sm text-gray-600 mt-3 leading-relaxed">{ev.description}</p>}
-              <div className="flex gap-2 mt-3">
-                {instaUrl && (
-                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center">📸 인스타그램</a>
-                )}
-              </div>
+              {instaUrl && (
+                <div className="mt-3">
+                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg">📸 인스타그램</a>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -205,10 +195,7 @@ function EventsTab({ events }) {
   return (
     <div className="px-4 py-6 max-w-lg mx-auto">
       {fullscreenImg && (
-        <div
-          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
-          onClick={() => setFullscreenImg(null)}
-        >
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center" onClick={() => setFullscreenImg(null)}>
           <img src={fullscreenImg} className="max-w-full max-h-full object-contain" />
           <button className="absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center">✕</button>
         </div>
