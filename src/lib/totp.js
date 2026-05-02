@@ -50,7 +50,7 @@ export async function generateTOTP(secret, step = 15, digits = 8) {
   return otp.toString().padStart(digits, '0')
 }
 
-export async function verifyTOTP(token, secret, step = 15, digits = 8, window = 1) {
+export async function verifyTOTP(token, secret, step = 15, digits = 8, window = 2) {
   for (let i = -window; i <= window; i++) {
     const epoch = Math.floor(Date.now() / 1000)
     const counter = Math.floor(epoch / step) + i

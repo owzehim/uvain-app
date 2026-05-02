@@ -58,7 +58,7 @@ export default function AdminPage() {
         {[
           { key: 'members', label: '멤버 관리' },
           { key: 'events', label: '이벤트' },
-          { key: 'restaurants', label: '맛집' },
+          { key: 'restaurants', label: '장소' },
         ].map(tab => (
           <button
             key={tab.key}
@@ -141,7 +141,7 @@ function MembersTab() {
 
     if (memberError) { alert('멤버 추가 실패: ' + memberError.message); return }
 
-    alert('멤버가 추가됐어요!')
+    alert('멤버 추가 완료')
     setShowForm(false)
     setForm({ email: '', password: '', full_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
     fetchMembers()
@@ -456,10 +456,10 @@ function RestaurantsTab() {
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [form, setForm] = useState({
-    name: '', description: '', address: '',
-    latitude: '', longitude: '', discount_info: '',
-    rating: '', review: '', reviewer_name: ''
-  })
+  name: '', description: '', address: '',
+  latitude: '', longitude: '', discount_info: '',
+  rating: '', review: '', reviewer_name: '', category: '맛집'
+})
 
   const fetchRestaurants = async () => {
     const { data } = await supabase.from('restaurants').select('*').order('created_at', { ascending: false })
@@ -472,11 +472,12 @@ function RestaurantsTab() {
     if (!form.name) { alert('맛집 이름을 입력해주세요.'); return }
 
     const payload = {
-      ...form,
-      latitude: form.latitude ? parseFloat(form.latitude) : null,
-      longitude: form.longitude ? parseFloat(form.longitude) : null,
-      rating: form.rating ? parseFloat(form.rating) : 0,
-    }
+  ...form,
+  latitude: form.latitude ? parseFloat(form.latitude) : null,
+  longitude: form.longitude ? parseFloat(form.longitude) : null,
+  rating: form.rating ? parseFloat(form.rating) : 0,
+  category: form.category || '맛집',
+}
 
     if (editTarget) {
       await supabase.from('restaurants').update(payload).eq('id', editTarget.id)
@@ -522,7 +523,15 @@ function RestaurantsTab() {
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
           <h3 className="font-medium text-gray-900">{editTarget ? '맛집 수정' : '새 맛집 추가'}</h3>
-          <input placeholder="맛집 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <input placeholder="장소 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+<select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+  <option value="맛집">🍽️ 맛집</option>
+  <option value="미용실">💇 미용실/이발</option>
+  <option value="헬스장">💪 헬스장</option>
+  <option value="한국마트">🛒 한국 마트</option>
+  <option value="카페">☕ 카페</option>
+  <option value="기타">📍 기타</option>
+</select>
           <input placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div className="flex gap-2">
