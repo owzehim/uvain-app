@@ -9,6 +9,7 @@ export default function MemberPage() {
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [activeTab, setActiveTab] = useState('qr')
+  const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const { token, secondsLeft } = useQRToken(member?.totp_secret)
@@ -28,6 +29,11 @@ export default function MemberPage() {
     }
     fetchData()
   }, [])
+
+  const handleTabChange = (key) => {
+    setActiveTab(key)
+    setTabKey(prev => prev + 1)
+  }
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -58,7 +64,7 @@ export default function MemberPage() {
         ].map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabChange(tab.key)}
             className={'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' + (activeTab === tab.key ? 'text-blue-600' : 'text-gray-400')}
           >
             <span className="text-lg">{tab.icon}</span>
@@ -68,9 +74,11 @@ export default function MemberPage() {
       </div>
 
       <div className="pb-20">
-        {activeTab === 'qr' && <QRTab member={member} isValid={isValid} qrValue={qrValue} secondsLeft={secondsLeft} />}
-        {activeTab === 'events' && <EventsTab events={events} />}
-        {activeTab === 'map' && <MapTab restaurants={restaurants} />}
+        <div key={tabKey} className="animate-fade-slide-up">
+          {activeTab === 'qr' && <QRTab member={member} isValid={isValid} qrValue={qrValue} secondsLeft={secondsLeft} />}
+          {activeTab === 'events' && <EventsTab events={events} />}
+          {activeTab === 'map' && <MapTab restaurants={restaurants} />}
+        </div>
       </div>
     </div>
   )
@@ -128,6 +136,21 @@ function EventsTab({ events }) {
     setSlideIndexes(prev => ({ ...prev, [eventId]: idx }))
   }
 
+  const addToCalendar = (ev) => {
+    const start = new Date(ev.event_date)
+    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
+    const pad = n => String(n).padStart(2, '0')
+    const fmt = d => d.getUTCFullYear() + '' + pad(d.getUTCMonth()+1) + '' + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + '' + pad(d.getUTCMinutes()) + '00Z'
+    const ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' + fmt(start) + '\nDTEND:' + fmt(end) + '\nSUMMARY:' + ev.title + '\nLOCATION:' + (ev.location || '') + '\nDESCRIPTION:' + (ev.description || '') + '\nEND:VEVENT\nEND:VCALENDAR'
+    const blob = new Blob([ics], { type: 'text/calendar' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = ev.title + '.ics'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const renderEvent = (ev) => {
     const isExpanded = expandedId === ev.id
     const imgs = ev['image_urls'] || []
@@ -150,7 +173,7 @@ function EventsTab({ events }) {
         </button>
 
         {isExpanded && (
-          <div>
+          <div className="animate-fade-slide-up">
             {imgs.length > 0 && (
               <div className="relative overflow-hidden">
                 <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}>
@@ -180,11 +203,16 @@ function EventsTab({ events }) {
             )}
             <div className="px-5 pb-5">
               {ev.description && <p className="text-sm text-gray-600 mt-3 leading-relaxed">{ev.description}</p>}
-              {instaUrl && (
-                <div className="mt-3">
-                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg">Instagram에서 열기</a>
-                </div>
-              )}
+              <div className="flex gap-2 mt-3">
+                {ev.event_date && (
+                  <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200">
+                    📅 캘린더에 추가
+                  </button>
+                )}
+                {instaUrl && (
+                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center">📸 Instagram에서 보기</a>
+                )}
+              </div>
             </div>
           </div>
         )}
