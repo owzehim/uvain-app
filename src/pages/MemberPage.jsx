@@ -313,18 +313,9 @@ function MapTab({ restaurants }) {
                     <p className="text-xs text-gray-400 mt-0.5">— {selected.reviewer_name}</p>
                   )}
                   
-                    href={`https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-3 bg-blue-600 text-white text-xs px-4 py-2 rounded-lg hover:bg-blue-700"
-                  >
-                    Google Maps에서 열기
-                  </a>
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-blue-600 text-white text-xs px-4 py-2 rounded-lg hover:bg-blue-700">Google Maps에서 열기</a>
                 </div>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="text-gray-400 hover:text-gray-600 ml-4 text-lg"
-                >
+                <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-4 text-lg">
                   ✕
                 </button>
               </div>
