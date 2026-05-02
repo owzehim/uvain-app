@@ -151,8 +151,8 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
 function EventsTab({ events }) {
   const [expanded, setExpanded] = useState(null)
 
-  const addToCalendar = (event) => {
-    const start = new Date(event.event_date)
+  const addToCalendar = (ev) => {
+    const start = new Date(ev.event_date)
     const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
     const pad = n => String(n).padStart(2, '0')
     const fmt = d => `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`
@@ -160,11 +160,11 @@ function EventsTab({ events }) {
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'BEGIN:VEVENT',
-      `DTSTART:${fmt(start)}`,
-      `DTEND:${fmt(end)}`,
-      `SUMMARY:${event.title}`,
-      `DESCRIPTION:${event.description || ''}`,
-      `LOCATION:${event.location || ''}`,
+      'DTSTART:' + fmt(start),
+      'DTEND:' + fmt(end),
+      'SUMMARY:' + ev.title,
+      'DESCRIPTION:' + (ev.description || ''),
+      'LOCATION:' + (ev.location || ''),
       'END:VEVENT',
       'END:VCALENDAR'
     ].join('\n')
@@ -172,9 +172,62 @@ function EventsTab({ events }) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${event.title}.ics`
+    a.download = ev.title + '.ics'
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const renderEvent = (ev) => {
+    const instaUrl = ev['instagram_url']
+    const imgUrl = ev['image_url']
+    const isExpanded = expanded === ev.id
+
+    return (
+      <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        {imgUrl && (
+          <div className="cursor-pointer" onClick={() => setExpanded(isExpanded ? null : ev.id)}>
+            <img
+              src={imgUrl}
+              alt={ev.title}
+              className={'w-full object-cover transition-all duration-300 ' + (isExpanded ? 'h-72' : 'h-40')}
+            />
+          </div>
+        )}
+        <div className="p-5">
+          <p className="font-semibold text-gray-900">{ev.title}</p>
+          {ev.event_date && (
+            <p className="text-sm text-blue-600 mt-1">
+              {'📅 ' + new Date(ev.event_date).toLocaleString('ko-KR', {
+                year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              })}
+            </p>
+          )}
+          {ev.location && <p className="text-sm text-gray-500 mt-1">{'📍 ' + ev.location}</p>}
+          {ev.description && <p className="text-sm text-gray-600 mt-2 leading-relaxed">{ev.description}</p>}
+          <div className="flex gap-2 mt-3">
+            {ev.event_date && (
+              <button
+                onClick={() => addToCalendar(ev)}
+                className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200"
+              >
+                📅 캘린더에 추가
+              </button>
+            )}
+            {instaUrl && (
+              
+                href={instaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center"
+              >
+                📸 인스타그램
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -187,64 +240,7 @@ function EventsTab({ events }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {events.map(event => {
-  const instaUrl = event['instagram_url']
-  const imgUrl = event['image_url']
-  return (
-            <div key={event.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              {imgUrl && (
-                <div
-                  className="cursor-pointer"
-                  onClick={() => setExpanded(expanded === event.id ? null : event.id)}
-                >
-                  <img
-                    src={imgUrl}
-                    alt={event.title}
-                    className={`w-full object-cover transition-all duration-300 ${
-                      expanded === event.id ? 'h-72' : 'h-40'
-                    }`}
-                  />
-                </div>
-              )}
-              <div className="p-5">
-                <p className="font-semibold text-gray-900">{event.title}</p>
-                {event.event_date && (
-                  <p className="text-sm text-blue-600 mt-1">
-                    📅 {new Date(event.event_date).toLocaleString('ko-KR', {
-                      year: 'numeric', month: 'long', day: 'numeric',
-                      hour: '2-digit', minute: '2-digit'
-                    })}
-                  </p>
-                )}
-                {event.location && (
-                  <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
-                )}
-                {event.description && (
-                  <p className="text-sm text-gray-600 mt-2 leading-relaxed">{event.description}</p>
-                )}
-                <div className="flex gap-2 mt-3">
-                  {event.event_date && (
-                    <button
-                      onClick={() => addToCalendar(event)}
-                      className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200"
-                    >
-                      📅 캘린더에 추가
-                    </button>
-                  )}
-                  {instaUrl && (
-  
-    href={instaUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center"
-                    >
-                      📸 인스타그램
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-        )})}
+          {events.map(ev => renderEvent(ev))}
         </div>
       )}
     </div>
