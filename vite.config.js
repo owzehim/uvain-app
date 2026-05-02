@@ -8,8 +8,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      workbox: {
+  skipWaiting: true,
+  clientsClaim: true,
+},
       manifest: {
         name: 'UvA-IN 멤버십',
         short_name: 'UvA-IN',

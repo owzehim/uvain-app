@@ -71,9 +71,9 @@ export default function MemberPage() {
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex z-50">
         {[
-          { key: 'qr', label: 'QR', icon: '🪪' },
-          { key: 'events', label: '이벤트', icon: '📅' },
-          { key: 'map', label: '장소지도', icon: '🗺️' },
+          { key: 'qr', label: 'MY', icon: '🪪' },
+          { key: 'events', label: 'EVENT', icon: '📅' },
+          { key: 'map', label: 'SPOT', icon: '🗺️' },
         ].map(tab => (
           <button
             key={tab.key}
@@ -256,7 +256,7 @@ function MapTab({ restaurants }) {
     : restaurants.filter(r => r.category === activeCategory)
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 120px)' }}>
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 56px - 64px)' }}>
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto">
         {categories.map(cat => (
           <button
