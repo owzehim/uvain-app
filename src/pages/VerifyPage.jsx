@@ -12,7 +12,7 @@ export default function VerifyPage() {
     const verify = async () => {
       const parts = token?.split('_')
       if (!parts || parts.length < 2) {
-        setResult({ valid: false, reason: '잘못된 QR 코드입니다.' })
+        setResult({ valid: false, reason: 'Invalid QR code.' })
         setLoading(false)
         return
       }
@@ -27,21 +27,21 @@ export default function VerifyPage() {
         .single()
 
       if (!member) {
-        setResult({ valid: false, reason: '등록되지 않은 멤버입니다.' })
+        setResult({ valid: false, reason: 'Member not found.' })
         setLoading(false)
         return
       }
 
-        const isValidToken = await verifyTOTP(otpToken, member.totp_secret)
+      const isValidToken = await verifyTOTP(otpToken, member.totp_secret)
 
       const isActiveMember = member.is_member &&
         member.membership_valid_until &&
         new Date(member.membership_valid_until) >= new Date()
 
       if (!isValidToken) {
-        setResult({ valid: false, reason: '만료된 QR 코드입니다. 다시 스캔해주세요.' })
+        setResult({ valid: false, reason: 'QR code has expired. Please ask the member to refresh.' })
       } else if (!isActiveMember) {
-        setResult({ valid: false, reason: '멤버십이 만료되었습니다.', member })
+        setResult({ valid: false, reason: 'Membership is not active.', member })
       } else {
         setResult({ valid: true, member })
       }
@@ -54,7 +54,7 @@ export default function VerifyPage() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <p className="text-gray-500">확인 중...</p>
+      <p className="text-gray-500">Verifying...</p>
     </div>
   )
 
@@ -63,29 +63,31 @@ export default function VerifyPage() {
       <div className="bg-white rounded-2xl border border-gray-100 p-6 w-full max-w-sm">
 
         <div className="text-center mb-6">
-          <h1 className="font-bold text-gray-900 text-lg">UvA-IN 멤버십 확인</h1>
+          <h1 className="font-bold text-gray-900 text-lg">UvA-IN Membership</h1>
+          <p className="text-xs text-gray-400 mt-1">University of Amsterdam Korean Student Association</p>
         </div>
 
         {result?.valid ? (
           <div className="space-y-4">
             <div className="bg-green-50 rounded-xl p-4 text-center">
-              <p className="text-green-600 font-bold text-xl">✓ 유효한 멤버십</p>
+              <p className="text-green-600 font-bold text-2xl">✓ Valid</p>
+              <p className="text-green-500 text-sm mt-1">Membership is active</p>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between py-2 border-b border-gray-50">
-                <span className="text-gray-500">이름</span>
+                <span className="text-gray-400">Name</span>
                 <span className="font-medium">{result.member.full_name}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-50">
-                <span className="text-gray-500">학번</span>
+                <span className="text-gray-400">Student No.</span>
                 <span className="font-medium">{result.member.student_number}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-50">
-                <span className="text-gray-500">전공</span>
+                <span className="text-gray-400">Major</span>
                 <span className="font-medium">{result.member.major}</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-gray-500">유효기간</span>
+                <span className="text-gray-400">Valid Until</span>
                 <span className="font-medium text-green-600">{result.member.membership_valid_until}</span>
               </div>
             </div>
@@ -93,23 +95,25 @@ export default function VerifyPage() {
         ) : (
           <div className="space-y-4">
             <div className="bg-red-50 rounded-xl p-4 text-center">
-              <p className="text-red-600 font-bold text-xl">✗ 확인 실패</p>
-              <p className="text-red-500 text-sm mt-1">{result?.reason}</p>
+              <p className="text-red-600 font-bold text-2xl">✗ Invalid</p>
+              <p className="text-red-400 text-sm mt-1">{result?.reason}</p>
             </div>
             {result?.member && (
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">이름</span>
+                  <span className="text-gray-400">Name</span>
                   <span className="font-medium">{result.member.full_name}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-500">유효기간</span>
+                  <span className="text-gray-400">Valid Until</span>
                   <span className="font-medium text-red-500">{result.member.membership_valid_until}</span>
                 </div>
               </div>
             )}
           </div>
         )}
+
+        <p className="text-xs text-gray-300 text-center mt-6">UvA-IN © {new Date().getFullYear()}</p>
       </div>
     </div>
   )
