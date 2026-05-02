@@ -231,7 +231,7 @@ function EventsTab({ events }) {
                   )}
                   {event.instagram_url && (
                     
-                      href={event.instagram_url}
+                      href={event['instagram_url']}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center"
