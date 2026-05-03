@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import MemberPage from './pages/MemberPage'
 import AdminPage from './pages/AdminPage'
 import VerifyPage from './pages/VerifyPage'
+import PublicPage from './pages/PublicPage'
 
 function App() {
   const [session, setSession] = useState(undefined)
@@ -30,10 +31,11 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={!session ? <LoginPage /> : <Navigate to="/member" />} />
-        <Route path="/member" element={session ? <MemberPage /> : <Navigate to="/login" />} />
+        <Route path="/member" element={session ? <MemberPage /> : <Navigate to="/public" />} />
         <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
         <Route path="/verify/:token" element={<VerifyPage />} />
-        <Route path="*" element={<Navigate to={session ? "/member" : "/login"} />} />
+        <Route path="/public" element={<PublicPage />} />
+        <Route path="*" element={<Navigate to={session ? "/member" : "/public"} />} />
       </Routes>
     </BrowserRouter>
   )
