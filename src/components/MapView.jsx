@@ -115,7 +115,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '300px' }}>
-      <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: '300px' }} />
+  <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: '300px', zIndex: 1 }} />
       <button
         onClick={locateMe}
         style={{

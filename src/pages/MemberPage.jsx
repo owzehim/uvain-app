@@ -286,7 +286,7 @@ function SpotCard({ selected, onClose }) {
       style={{
         height: cardHeight + 'px',
         transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4,0,0.2,1)',
-        zIndex: 30,
+        zIndex: 1000,
         overflowY: isExpanded ? 'auto' : 'hidden',
       }}
       onTouchStart={handleTouchStart}
@@ -407,7 +407,7 @@ function MapTab({ restaurants }) {
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
 
         {selected && (
-          <div className="absolute bottom-16 left-0 right-0 flex justify-center z-20 pointer-events-none">
+          <div className="absolute bottom-16 left-0 right-0 flex justify-center z-50 pointer-events-none">
             <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2">
               🗺️ Google Maps에서 열기
             </a>
