@@ -279,29 +279,27 @@ function MapTab({ restaurants }) {
             <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
           </div>
           {selected && (
-            <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      {categoryIcons[selected.category] + ' ' + (selected.category || '맛집')}
-                    </span>
-                    {selected.price_range && (
-                      <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
-                    )}
-                  </div>
-                  <p className="font-semibold text-gray-900 mt-1 text-sm">{selected.name}</p>
-                  {selected.address && <p className="text-xs text-gray-500 mt-0.5">{'📍 ' + selected.address}</p>}
-                  {selected.discount_info && <p className="text-xs text-orange-500 mt-0.5">{'🎟 ' + selected.discount_info}</p>}
-                  {selected.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}
-                  {selected.review && <p className="text-xs text-gray-600 mt-1">{selected.review}</p>}
-                  {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
-                  <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 bg-orange-500 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
-                </div>
-                <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-3 text-lg flex-shrink-0">✕</button>
-              </div>
-            </div>
-          )}
+  <div className="bg-white border-t border-gray-100 p-4 flex-shrink-0">
+    <div className="flex items-start justify-between mb-2">
+      <div className="flex items-center gap-2 flex-wrap flex-1">
+        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+          {categoryIcons[selected.category] + ' ' + (selected.category || '맛집')}
+        </span>
+        {selected.price_range && (
+          <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
+        )}
+      </div>
+      <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-3 text-lg flex-shrink-0 leading-none">✕</button>
+    </div>
+    <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
+    {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
+    {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
+    {selected.rating > 0 && <p className="text-xs text-amber-500 mt-1">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}
+    {selected.review && <p className="text-xs text-gray-600 mt-1">{selected.review}</p>}
+    {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
+    <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-orange-500 text-white text-xs px-4 py-2 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
+  </div>
+)}
         </div>
       )}
     </div>
