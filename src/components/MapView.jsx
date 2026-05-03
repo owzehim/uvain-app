@@ -4,9 +4,16 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const markersRef = useRef([])
+  const initializedRef = useRef(false)
+
+  const categoryIcons = {
+    '맛집': '🍽️', '카페': '☕', '한국마트': '🛒',
+    '미용실': '💇', '헬스장': '💪', '기타': '📍'
+  }
 
   useEffect(() => {
-    if (mapInstanceRef.current) return
+    if (initializedRef.current) return
+    initializedRef.current = true
 
     const link = document.createElement('link')
     link.rel = 'stylesheet'
@@ -17,7 +24,13 @@ export default function MapView({ restaurants, selected, onSelect }) {
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
     script.onload = () => {
       const L = window.L
-      const map = L.map(mapRef.current, { zoomControl: false }).setView([52.3676, 4.9041], 13)
+
+      const map = L.map(mapRef.current, {
+        zoomControl: false,
+        scrollWheelZoom: true,
+        dragging: true,
+        tap: true,
+      }).setView([52.3676, 4.9041], 13)
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap © CARTO',
@@ -26,42 +39,43 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
       L.control.zoom({ position: 'bottomright' }).addTo(map)
       mapInstanceRef.current = map
-      addMarkers(L, map)
+      renderMarkers(L, map, restaurants)
     }
     document.head.appendChild(script)
   }, [])
 
-  const addMarkers = (L, map) => {
+  const renderMarkers = (L, map, data) => {
     markersRef.current.forEach(m => m.remove())
     markersRef.current = []
 
-    const validRestaurants = restaurants.filter(r => r.latitude && r.longitude)
-    if (validRestaurants.length === 0) return
+    const valid = data.filter(r => r.latitude && r.longitude)
+    if (valid.length === 0) return
 
-    const createIcon = () => L.divIcon({
-      className: '',
-      html: '<div style="width:32px;height:32px;background:#1d1d1f;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:14px;">🍽️</div>',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
+    valid.forEach(r => {
+      const icon = categoryIcons[r.category] || '📍'
+      const marker = L.divIcon({
+        className: '',
+        html: '<div style="width:34px;height:34px;background:#1d1d1f;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:15px;">' + icon + '</div>',
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+      })
+
+      const m = L.marker([r.latitude, r.longitude], { icon: marker }).addTo(map)
+      m.on('click', () => onSelect(r))
+      markersRef.current.push(m)
     })
 
-    validRestaurants.forEach(restaurant => {
-      const marker = L.marker([restaurant.latitude, restaurant.longitude], { icon: createIcon() }).addTo(map)
-      marker.on('click', () => onSelect(restaurant))
-      markersRef.current.push(marker)
-    })
-
-    if (validRestaurants.length === 1) {
-      map.setView([validRestaurants[0].latitude, validRestaurants[0].longitude], 15)
+    if (valid.length === 1) {
+      map.setView([valid[0].latitude, valid[0].longitude], 15)
     } else {
-      const bounds = L.latLngBounds(validRestaurants.map(r => [r.latitude, r.longitude]))
+      const bounds = L.latLngBounds(valid.map(r => [r.latitude, r.longitude]))
       map.fitBounds(bounds, { padding: [40, 40] })
     }
   }
 
   useEffect(() => {
     if (!mapInstanceRef.current || !window.L) return
-    addMarkers(window.L, mapInstanceRef.current)
+    renderMarkers(window.L, mapInstanceRef.current, restaurants)
   }, [restaurants])
 
   useEffect(() => {
@@ -72,17 +86,15 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const locateMe = () => {
     if (!mapInstanceRef.current || !window.L) return
     const L = window.L
-    mapInstanceRef.current.locate({ setView: true, maxZoom: 16 })
-    mapInstanceRef.current.on('locationfound', (e) => {
+    const map = mapInstanceRef.current
+    map.locate({ setView: true, maxZoom: 16 })
+    map.once('locationfound', (e) => {
       L.circleMarker(e.latlng, {
-        radius: 8,
-        fillColor: '#2563eb',
-        color: 'white',
-        weight: 2,
-        fillOpacity: 1
-      }).addTo(mapInstanceRef.current).bindPopup('현재 위치').openPopup()
+        radius: 8, fillColor: '#f97316',
+        color: 'white', weight: 2, fillOpacity: 1
+      }).addTo(map).bindPopup('현재 위치').openPopup()
     })
-    mapInstanceRef.current.on('locationerror', () => {
+    map.once('locationerror', () => {
       alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
     })
   }
@@ -93,17 +105,11 @@ export default function MapView({ restaurants, selected, onSelect }) {
       <button
         onClick={locateMe}
         style={{
-          position: 'absolute',
-          bottom: '80px',
-          right: '10px',
-          zIndex: 1000,
-          background: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '8px 10px',
+          position: 'absolute', bottom: '80px', right: '10px',
+          zIndex: 1000, background: 'white', border: 'none',
+          borderRadius: '8px', padding: '8px 10px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          cursor: 'pointer',
-          fontSize: '18px'
+          cursor: 'pointer', fontSize: '18px'
         }}
         title="현재 위치"
       >

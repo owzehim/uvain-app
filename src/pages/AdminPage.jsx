@@ -509,7 +509,7 @@ function RestaurantsTab() {
   useEffect(() => { fetchRestaurants() }, [])
 
   const handleSave = async () => {
-    if (!form.name) { alert('맛집 이름을 입력해주세요.'); return }
+    if (!form.name) { alert('장소 이름을 입력해주세요.'); return }
 
     const payload = {
   ...form,
@@ -538,31 +538,33 @@ function RestaurantsTab() {
   }
 
   const openEdit = (r) => {
-    setEditTarget(r)
-    setForm({
-      name: r.name, description: r.description || '',
-      address: r.address || '', latitude: r.latitude || '',
-      longitude: r.longitude || '', discount_info: r.discount_info || '',
-      rating: r.rating || '', review: r.review || '', reviewer_name: r.reviewer_name || ''
-    })
+  setEditTarget(r)
+  setForm({
+    name: r.name, description: r.description || '',
+    address: r.address || '', latitude: r.latitude || '',
+    longitude: r.longitude || '', discount_info: r.discount_info || '',
+    rating: r.rating || '', review: r.review || '',
+    reviewer_name: r.reviewer_name || '', category: r.category || '맛집',
+    price_range: r.price_range || ''
+  })
     setShowForm(true)
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">맛집 관리</h2>
+        <h2 className="font-semibold text-gray-900">장소 관리</h2>
         <button
           onClick={() => { setEditTarget(null); setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '' }); setShowForm(true) }}
           className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700"
         >
-          + 맛집 추가
+          + 장소 추가
         </button>
       </div>
 
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-          <h3 className="font-medium text-gray-900">{editTarget ? '맛집 수정' : '새 맛집 추가'}</h3>
+          <h3 className="font-medium text-gray-900">{editTarget ? '장소 수정' : '새 장소 추가'}</h3>
           <input placeholder="장소 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
 <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
   <option value="맛집">🍽️ 맛집</option>
@@ -597,7 +599,7 @@ function RestaurantsTab() {
       )}
 
       {restaurants.length === 0 ? (
-        <p className="text-gray-500 text-sm">등록된 맛집이 없어요.</p>
+        <p className="text-gray-500 text-sm">등록된 장소가 없어요.</p>
       ) : (
         <div className="space-y-2">
           {restaurants.map(r => (
