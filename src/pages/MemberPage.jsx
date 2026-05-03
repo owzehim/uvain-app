@@ -45,7 +45,7 @@ export default function MemberPage() {
   const isValid = member?.is_member && member?.membership_valid_until && new Date(member.membership_valid_until) >= new Date()
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}>
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
         <h1 className="font-bold text-gray-900">UvA-IN</h1>
         <div className="flex gap-2">
@@ -279,7 +279,7 @@ function MapTab({ restaurants }) {
             <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
           </div>
           {selected && (
-            <div className="bg-white border-t border-gray-100 flex flex-shrink-0 pb-safe" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+            <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">

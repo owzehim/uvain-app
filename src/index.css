@@ -26,3 +26,10 @@ html, body {
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
 }
+html {
+  height: -webkit-fill-available;
+}
+
+body {
+  min-height: -webkit-fill-available;
+}
