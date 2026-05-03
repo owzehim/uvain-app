@@ -138,7 +138,7 @@ function MembershipTab() {
       <div className="px-4 py-8 max-w-sm mx-auto">
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">UvA-IN Membership</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">UvA-IN Membership</h2>
           <p className="text-gray-500 text-sm leading-relaxed">
             UvA-IN 멤버십에 가입하고 다양한 혜택을 누리세요!
           </p>
