@@ -244,11 +244,11 @@ function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  const categories = ['전체', '맛집', '미용실', '헬스장', '한국마트', '카페', '기타']
-  const categoryIcons = {
-    '맛집': '🍽️', '미용실': '💇', '헬스장': '💪',
-    '한국마트': '🛒', '카페': '☕', '기타': '📍', '전체': '🗺️'
-  }
+  const categories = ['전체', '맛집', '미용실', '헬스장', '마트', '카페', '기타']
+const categoryIcons = {
+  '맛집': '🍽️', '미용실': '💇', '헬스장': '💪',
+  '마트': '🛒', '카페': '☕', '기타': '📍', '전체': '🗺️'
+}
 
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
@@ -291,7 +291,10 @@ function MapTab({ restaurants }) {
       </div>
       <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-3 text-lg flex-shrink-0 leading-none">✕</button>
     </div>
-    <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
+    <div className="flex items-center gap-2 mt-1">
+  <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
+  {selected.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+</div>
     {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
     {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
     {selected.rating > 0 && <p className="text-xs text-amber-500 mt-1">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}

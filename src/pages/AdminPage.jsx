@@ -498,7 +498,7 @@ function RestaurantsTab() {
   const [form, setForm] = useState({
   name: '', description: '', address: '',
   latitude: '', longitude: '', discount_info: '',
-  rating: '', review: '', reviewer_name: '', category: '맛집', price_range: ''
+  rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false
 })
 
   const fetchRestaurants = async () => {
@@ -545,7 +545,8 @@ function RestaurantsTab() {
     longitude: r.longitude || '', discount_info: r.discount_info || '',
     rating: r.rating || '', review: r.review || '',
     reviewer_name: r.reviewer_name || '', category: r.category || '맛집',
-    price_range: r.price_range || ''
+    price_range: r.price_range || '',
+is_sponsored: r.is_sponsored || false
   })
     setShowForm(true)
   }
@@ -570,7 +571,7 @@ function RestaurantsTab() {
   <option value="맛집">🍽️ 맛집</option>
   <option value="미용실">💇 미용실/이발</option>
   <option value="헬스장">💪 헬스장</option>
-  <option value="한국마트">🛒 한국 마트</option>
+  <option value="마트">🛒 마트</option>
   <option value="카페">☕ 카페</option>
   <option value="기타">📍 기타</option>
 </select>
@@ -584,6 +585,15 @@ function RestaurantsTab() {
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+            <div className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    id="is_sponsored"
+    checked={form.is_sponsored}
+    onChange={e => setForm({ ...form, is_sponsored: e.target.checked })}
+  />
+  <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
+</div>
   <option value="">가격대 선택</option>
   <option value="€">€ (저렴)</option>
   <option value="€€">€€ (보통)</option>
@@ -606,7 +616,10 @@ function RestaurantsTab() {
             <div key={r.id} className="bg-white rounded-xl border border-gray-100 p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-medium text-gray-900 text-sm">{r.name}</p>
+                  <div className="flex items-center gap-1">
+  <p className="font-medium text-gray-900 text-sm">{r.name}</p>
+  {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+</div>
                   {r.address && <p className="text-xs text-gray-500 mt-0.5">📍 {r.address}</p>}
                   {r.discount_info && <p className="text-xs text-blue-600 mt-0.5">🎟 {r.discount_info}</p>}
                   {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}

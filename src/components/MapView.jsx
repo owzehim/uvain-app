@@ -7,8 +7,20 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const initializedRef = useRef(false)
 
   const categoryIcons = {
-    '맛집': '🍽️', '카페': '☕', '한국마트': '🛒',
-    '미용실': '💇', '헬스장': '💪', '기타': '📍'
+    '맛집': '🍽️', '카페': '☕', '마트': '🛒',
+    '미용실': '💇', '헬스장': '💪', '기타': '📍', '도서관': '📚', '학교': '🎓'
+  }
+
+  const createMarkerHtml = (r) => {
+    const icon = categoryIcons[r.category] || '📍'
+    const isSponsored = r.is_sponsored
+    const size = isSponsored ? 42 : 34
+    const bg = isSponsored ? '#f97316' : '#1d1d1f'
+    const border = isSponsored ? '3px solid white' : '3px solid white'
+    const shadow = isSponsored
+      ? '0 3px 12px rgba(249,115,22,0.5)'
+      : '0 2px 8px rgba(0,0,0,0.25)'
+    return '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' + icon + '</div>'
   }
 
   useEffect(() => {
@@ -24,7 +36,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
     script.onload = () => {
       const L = window.L
-
       const map = L.map(mapRef.current, {
         zoomControl: false,
         scrollWheelZoom: true,
@@ -51,16 +62,19 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const valid = data.filter(r => r.latitude && r.longitude)
     if (valid.length === 0) return
 
-    valid.forEach(r => {
-      const icon = categoryIcons[r.category] || '📍'
-      const marker = L.divIcon({
+    // 스폰서 장소가 위에 보이도록 정렬
+    const sorted = [...valid].sort((a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0))
+
+    sorted.forEach(r => {
+      const size = r.is_sponsored ? 42 : 34
+      const markerIcon = L.divIcon({
         className: '',
-        html: '<div style="width:34px;height:34px;background:#1d1d1f;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:15px;">' + icon + '</div>',
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
+        html: createMarkerHtml(r),
+        iconSize: [size, size],
+        iconAnchor: [size/2, size/2],
       })
 
-      const m = L.marker([r.latitude, r.longitude], { icon: marker }).addTo(map)
+      const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
       m.on('click', () => onSelect(r))
       markersRef.current.push(m)
     })
