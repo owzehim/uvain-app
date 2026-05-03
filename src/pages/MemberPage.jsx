@@ -86,7 +86,7 @@ export default function MemberPage() {
 
 function QRTab({ member, isValid, qrValue, secondsLeft }) {
   return (
-    <div className="h-full overflow-y-auto pb-4">
+    <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-sm mx-auto space-y-4">
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
@@ -222,7 +222,7 @@ function EventsTab({ events }) {
   }
 
   return (
-    <div className="h-full overflow-y-auto pb-4">
+    <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-lg mx-auto">
         <h2 className="font-semibold text-gray-900 mb-4">EVENT</h2>
         {events.length === 0 ? (
@@ -240,15 +240,78 @@ function EventsTab({ events }) {
   )
 }
 
+function SpotCard({ selected, onClose }) {
+  const [slideIndex, setSlideIndex] = useState(0)
+  const imgs = selected['image_urls'] || []
+
+  const categoryIcons = {
+    '맛집': '🍽️', '카페': '☕', '마트': '🛒',
+    '미용실': '💇', '헬스장': '💪', '기타': '📍'
+  }
+
+  return (
+    <div className="bg-white border-t border-gray-100 flex-shrink-0">
+      {imgs.length > 0 && (
+        <div className="relative overflow-hidden">
+          <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+            {imgs.map((url, i) => (
+              <img key={i} src={url} alt={'사진 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ aspectRatio: '16/9' }} />
+            ))}
+          </div>
+          {imgs.length > 1 && (
+            <div>
+              {slideIndex > 0 && (
+                <button onClick={() => setSlideIndex(slideIndex - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
+              )}
+              {slideIndex < imgs.length - 1 && (
+                <button onClick={() => setSlideIndex(slideIndex + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
+              )}
+              <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                {(slideIndex + 1) + '/' + imgs.length}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2 flex-wrap flex-1">
+            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+              {(categoryIcons[selected.category] || '📍') + ' ' + (selected.category || '기타')}
+            </span>
+            {selected.price_range && (
+              <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
+            )}
+            {selected.is_sponsored && (
+              <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">제휴</span>
+            )}
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-3 text-lg flex-shrink-0 leading-none">✕</button>
+        </div>
+        <div className="flex items-center gap-2">
+          <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
+          {selected.rating > 0 && <p className="text-xs text-amber-500">{'★' + selected.rating}</p>}
+        </div>
+        {selected.description && <p className="text-xs text-gray-500 mt-1">{selected.description}</p>}
+        {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
+        {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
+        {selected.review && <p className="text-xs text-gray-600 mt-1">{selected.review}</p>}
+        {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
+        <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-orange-500 text-white text-xs px-4 py-2 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
+      </div>
+    </div>
+  )
+}
+
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
   const categories = ['전체', '맛집', '미용실', '헬스장', '마트', '카페', '기타']
-const categoryIcons = {
-  '맛집': '🍽️', '미용실': '💇', '헬스장': '💪',
-  '마트': '🛒', '카페': '☕', '기타': '📍', '전체': '🗺️'
-}
+  const categoryIcons = {
+    '맛집': '🍽️', '미용실': '💇', '헬스장': '💪',
+    '마트': '🛒', '카페': '☕', '기타': '📍', '전체': '🗺️'
+  }
 
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
@@ -279,30 +342,8 @@ const categoryIcons = {
             <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
           </div>
           {selected && (
-  <div className="bg-white border-t border-gray-100 p-4 flex-shrink-0">
-    <div className="flex items-start justify-between mb-2">
-      <div className="flex items-center gap-2 flex-wrap flex-1">
-        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-          {categoryIcons[selected.category] + ' ' + (selected.category || '맛집')}
-        </span>
-        {selected.price_range && (
-          <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
-        )}
-      </div>
-      <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 ml-3 text-lg flex-shrink-0 leading-none">✕</button>
-    </div>
-    <div className="flex items-center gap-2 mt-1">
-  <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
-  {selected.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
-</div>
-    {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
-    {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
-    {selected.rating > 0 && <p className="text-xs text-amber-500 mt-1">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}
-    {selected.review && <p className="text-xs text-gray-600 mt-1">{selected.review}</p>}
-    {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
-    <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-orange-500 text-white text-xs px-4 py-2 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
-  </div>
-)}
+            <SpotCard selected={selected} onClose={() => setSelected(null)} />
+          )}
         </div>
       )}
     </div>

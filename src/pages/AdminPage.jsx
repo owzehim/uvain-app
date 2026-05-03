@@ -496,10 +496,14 @@ function RestaurantsTab() {
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [form, setForm] = useState({
-  name: '', description: '', address: '',
-  latitude: '', longitude: '', discount_info: '',
-  rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false
-})
+    name: '', description: '', address: '',
+    latitude: '', longitude: '', discount_info: '',
+    rating: '', review: '', reviewer_name: '',
+    category: '맛집', price_range: '', is_sponsored: false
+  })
+  const [imageFiles, setImageFiles] = useState([])
+  const [imagePreviews, setImagePreviews] = useState([])
+  const [uploading, setUploading] = useState(false)
 
   const fetchRestaurants = async () => {
     const { data } = await supabase.from('restaurants').select('*').order('created_at', { ascending: false })
@@ -508,16 +512,47 @@ function RestaurantsTab() {
 
   useEffect(() => { fetchRestaurants() }, [])
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files)
+    setImageFiles(files)
+    setImagePreviews(files.map(f => URL.createObjectURL(f)))
+  }
+
+  const handleDeleteExistingImage = async (url) => {
+    if (!confirm('이 사진을 삭제할까요?')) return
+    const fileName = url.split('/').pop()
+    await supabase.storage.from('place-images').remove([fileName])
+    const newUrls = (editTarget.image_urls || []).filter(u => u !== url)
+    await supabase.from('restaurants').update({ image_urls: newUrls }).eq('id', editTarget.id)
+    setEditTarget({ ...editTarget, image_urls: newUrls })
+  }
+
   const handleSave = async () => {
     if (!form.name) { alert('장소 이름을 입력해주세요.'); return }
+    setUploading(true)
+
+    let image_urls = editTarget?.image_urls || []
+
+    if (imageFiles.length > 0) {
+      const uploaded = []
+      for (const file of imageFiles) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + fileExt
+        const { error: uploadError } = await supabase.storage.from('place-images').upload(fileName, file)
+        if (uploadError) { alert('업로드 실패: ' + uploadError.message); setUploading(false); return }
+        const { data: urlData } = supabase.storage.from('place-images').getPublicUrl(fileName)
+        uploaded.push(urlData.publicUrl)
+      }
+      image_urls = [...image_urls, ...uploaded]
+    }
 
     const payload = {
-  ...form,
-  latitude: form.latitude ? parseFloat(form.latitude) : null,
-  longitude: form.longitude ? parseFloat(form.longitude) : null,
-  rating: form.rating ? parseFloat(form.rating) : 0,
-  category: form.category || '맛집',
-}
+      ...form,
+      image_urls,
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
+      rating: form.rating ? parseFloat(form.rating) : 0,
+    }
 
     if (editTarget) {
       await supabase.from('restaurants').update(payload).eq('id', editTarget.id)
@@ -525,9 +560,12 @@ function RestaurantsTab() {
       await supabase.from('restaurants').insert(payload)
     }
 
+    setUploading(false)
     setShowForm(false)
     setEditTarget(null)
-    setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '' })
+    setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false })
+    setImageFiles([])
+    setImagePreviews([])
     fetchRestaurants()
   }
 
@@ -538,16 +576,25 @@ function RestaurantsTab() {
   }
 
   const openEdit = (r) => {
-  setEditTarget(r)
-  setForm({
-    name: r.name, description: r.description || '',
-    address: r.address || '', latitude: r.latitude || '',
-    longitude: r.longitude || '', discount_info: r.discount_info || '',
-    rating: r.rating || '', review: r.review || '',
-    reviewer_name: r.reviewer_name || '', category: r.category || '맛집',
-    price_range: r.price_range || '',
-is_sponsored: r.is_sponsored || false
-  })
+    setEditTarget(r)
+    setForm({
+      name: r.name, description: r.description || '',
+      address: r.address || '', latitude: r.latitude || '',
+      longitude: r.longitude || '', discount_info: r.discount_info || '',
+      rating: r.rating || '', review: r.review || '',
+      reviewer_name: r.reviewer_name || '', category: r.category || '맛집',
+      price_range: r.price_range || '', is_sponsored: r.is_sponsored || false
+    })
+    setImageFiles([])
+    setImagePreviews([])
+    setShowForm(true)
+  }
+
+  const openAdd = () => {
+    setEditTarget(null)
+    setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false })
+    setImageFiles([])
+    setImagePreviews([])
     setShowForm(true)
   }
 
@@ -555,10 +602,7 @@ is_sponsored: r.is_sponsored || false
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">장소 관리</h2>
-        <button
-          onClick={() => { setEditTarget(null); setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '' }); setShowForm(true) }}
-          className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700"
-        >
+        <button onClick={openAdd} className="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600">
           + 장소 추가
         </button>
       </div>
@@ -567,14 +611,14 @@ is_sponsored: r.is_sponsored || false
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
           <h3 className="font-medium text-gray-900">{editTarget ? '장소 수정' : '새 장소 추가'}</h3>
           <input placeholder="장소 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-<select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
-  <option value="맛집">🍽️ 맛집</option>
-  <option value="미용실">💇 미용실/이발</option>
-  <option value="헬스장">💪 헬스장</option>
-  <option value="마트">🛒 마트</option>
-  <option value="카페">☕ 카페</option>
-  <option value="기타">📍 기타</option>
-</select>
+          <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+            <option value="맛집">🍽️ 맛집</option>
+            <option value="미용실">💇 미용실/이발</option>
+            <option value="헬스장">💪 헬스장</option>
+            <option value="마트">🛒 마트</option>
+            <option value="카페">☕ 카페</option>
+            <option value="기타">📍 기타</option>
+          </select>
           <input placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div className="flex gap-2">
@@ -583,26 +627,57 @@ is_sponsored: r.is_sponsored || false
           </div>
           <input placeholder="할인 정보 (예: 10% 할인)" value={form.discount_info} onChange={e => setForm({ ...form, discount_info: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
-  <option value="">가격대 선택</option>
-  <option value="€">€ (저렴)</option>
-  <option value="€€">€€ (보통)</option>
-  <option value="€€€">€€€ (비쌈)</option>
-  <option value="€€€€">€€€€ (고급)</option>
-</select>
-<div className="flex items-center gap-2">
-  <input
-    type="checkbox"
-    id="is_sponsored"
-    checked={form.is_sponsored}
-    onChange={e => setForm({ ...form, is_sponsored: e.target.checked })}
-  />
-  <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
-</div>
+            <option value="">가격대 선택</option>
+            <option value="€">€ (저렴)</option>
+            <option value="€€">€€ (보통)</option>
+            <option value="€€€">€€€ (비쌈)</option>
+            <option value="€€€€">€€€€ (고급)</option>
+          </select>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="is_sponsored" checked={form.is_sponsored} onChange={e => setForm({ ...form, is_sponsored: e.target.checked })} />
+            <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
+          </div>
+          <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+
+          {/* 이미지 업로드 */}
+          <div>
+            <label className="text-sm text-gray-500 block mb-1">사진 추가 (여러장 가능)</label>
+            <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+            {imagePreviews.length > 0 && (
+              <div className="flex gap-2 mt-2 overflow-x-auto">
+                {imagePreviews.map((src, i) => (
+                  <img key={i} src={src} className="h-20 w-20 object-cover rounded-lg flex-shrink-0" />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 기존 이미지 관리 */}
+          {editTarget && editTarget.image_urls && editTarget.image_urls.length > 0 && (
+            <div>
+              <label className="text-sm text-gray-500 block mb-1">기존 사진 ({editTarget.image_urls.length}장)</label>
+              <div className="flex gap-2 overflow-x-auto">
+                {editTarget.image_urls.map((url, i) => (
+                  <div key={i} className="relative flex-shrink-0">
+                    <img src={url} className="h-20 w-20 object-cover rounded-lg" />
+                    <button
+                      onClick={() => handleDeleteExistingImage(url)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2">
-            <button onClick={handleSave} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700">{editTarget ? '수정 완료' : '추가'}</button>
+            <button onClick={handleSave} disabled={uploading} className="flex-1 bg-orange-500 text-white rounded-lg py-2 text-sm hover:bg-orange-600 disabled:opacity-50">
+              {uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}
+            </button>
             <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
           </div>
         </div>
@@ -617,12 +692,13 @@ is_sponsored: r.is_sponsored || false
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1">
-  <p className="font-medium text-gray-900 text-sm">{r.name}</p>
-  {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
-</div>
+                    <p className="font-medium text-gray-900 text-sm">{r.name}</p>
+                    {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+                  </div>
                   {r.address && <p className="text-xs text-gray-500 mt-0.5">📍 {r.address}</p>}
-                  {r.discount_info && <p className="text-xs text-blue-600 mt-0.5">🎟 {r.discount_info}</p>}
+                  {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info}</p>}
                   {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
+                  {r.image_urls && r.image_urls.length > 0 && <p className="text-xs text-gray-400 mt-0.5">사진 {r.image_urls.length}장</p>}
                 </div>
                 <div className="flex gap-2 ml-2">
                   <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
