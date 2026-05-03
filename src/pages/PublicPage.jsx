@@ -48,7 +48,7 @@ export default function PublicPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={'flex-1 py-4 flex flex-col items-center gap-1 text-xs font-medium transition-colors ' + (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')}
+            className={'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' + (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')}
           >
             <span className="text-lg">{tab.icon}</span>
             {tab.label}

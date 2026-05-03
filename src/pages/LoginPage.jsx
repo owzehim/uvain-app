@@ -31,10 +31,18 @@ const handleLogin = async (e) => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-sm">
 
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">UvA-IN</h1>
-          <p className="text-gray-500 text-sm mt-1">University of Amsterdam 한국인 학생회</p>
-        </div>
+        <div className="flex justify-end mb-2">
+  <button
+    onClick={() => window.location.href = '/public'}
+    className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+  >
+    ✕
+  </button>
+</div>
+<div className="text-center mb-8">
+  <h1 className="text-2xl font-bold text-gray-900">UvA-IN</h1>
+  <p className="text-gray-500 text-sm mt-1">University of Amsterdam 한국인 학생회</p>
+</div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
