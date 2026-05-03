@@ -594,6 +594,15 @@ is_sponsored: r.is_sponsored || false
   />
   <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
 </div>
+            <div className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    id="is_sponsored"
+    checked={form.is_sponsored}
+    onChange={e => setForm({ ...form, is_sponsored: e.target.checked })}
+  />
+  <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
+</div>
   <option value="">가격대 선택</option>
   <option value="€">€ (저렴)</option>
   <option value="€€">€€ (보통)</option>
