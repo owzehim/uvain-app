@@ -73,7 +73,7 @@ export default function MemberPage() {
           <button
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
-            className={'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' + (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')}
+            className={'flex-1 py-4 flex flex-col items-center gap-1 text-xs font-medium transition-colors ' + (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')}
           >
             <span className="text-lg">{tab.icon}</span>
             {tab.label}
@@ -86,7 +86,7 @@ export default function MemberPage() {
 
 function QRTab({ member, isValid, qrValue, secondsLeft }) {
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto pb-4">
       <div className="px-4 py-6 max-w-sm mx-auto space-y-4">
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
@@ -222,7 +222,7 @@ function EventsTab({ events }) {
   }
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto pb-4">
       <div className="px-4 py-6 max-w-lg mx-auto">
         <h2 className="font-semibold text-gray-900 mb-4">EVENT</h2>
         {events.length === 0 ? (
@@ -279,7 +279,7 @@ function MapTab({ restaurants }) {
             <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
           </div>
           {selected && (
-            <div className="bg-white border-t border-gray-100 p-3 flex-shrink-0">
+            <div className="bg-white border-t border-gray-100 flex flex-shrink-0 pb-safe" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
