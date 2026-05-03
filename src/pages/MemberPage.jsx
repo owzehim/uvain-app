@@ -416,9 +416,6 @@ function MapTab({ restaurants }) {
               <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50">
               <span>🗺️</span> Google Maps에서 열기
             </a>
-            >
-              <span>🗺️</span> Google Maps에서 열기
-            </a>
           </div>
         )}
       </div>
