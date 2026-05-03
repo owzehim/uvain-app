@@ -64,7 +64,7 @@ export default function MemberPage() {
         </div>
       </div>
 
-      <div className="bg-white border-t border-gray-100 flex flex-shrink-0">
+      <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
         {[
           { key: 'qr', label: 'MY', icon: '🪪' },
           { key: 'events', label: 'EVENT', icon: '📅' },
