@@ -246,13 +246,11 @@ function SpotCard({ selected, onClose }) {
   const [isDragging, setIsDragging] = useState(false)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
-  const cardRef = useRef(null)
   const imgs = selected['image_urls'] || []
 
   const MIN_HEIGHT = 200
   const MAX_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.92 : 700
-  const SNAP_THRESHOLD = (MIN_HEIGHT + MAX_HEIGHT) / 2
-  const isExpanded = cardHeight >= SNAP_THRESHOLD
+  const isExpanded = cardHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2
 
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
@@ -266,7 +264,7 @@ function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchMove = (e) => {
-    if (!isDragging) return
+    e.stopPropagation()
     const delta = startYRef.current - e.touches[0].clientY
     const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeightRef.current + delta))
     setCardHeight(newHeight)
@@ -274,7 +272,8 @@ function SpotCard({ selected, onClose }) {
 
   const handleTouchEnd = () => {
     setIsDragging(false)
-    if (cardHeight > SNAP_THRESHOLD) {
+    const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
+    if (cardHeight > mid) {
       setCardHeight(MAX_HEIGHT)
     } else {
       setCardHeight(MIN_HEIGHT)
@@ -283,13 +282,12 @@ function SpotCard({ selected, onClose }) {
 
   return (
     <div
-      ref={cardRef}
-      className="bg-white border-t border-gray-200 flex-shrink-0"
+      className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 rounded-t-2xl"
       style={{
         height: cardHeight + 'px',
-        transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4,0,0.2,1)',
+        zIndex: 30,
         overflowY: isExpanded ? 'auto' : 'hidden',
-        position: 'relative',
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -333,7 +331,6 @@ function SpotCard({ selected, onClose }) {
         )}
       </div>
 
-      {/* 리뷰 + 이미지 (확장시만) */}
       {isExpanded && (
         <div>
           {(selected.review || selected.reviewer_name) && (
@@ -344,8 +341,8 @@ function SpotCard({ selected, onClose }) {
           )}
 
           {imgs.length > 0 && (
-            <div className="px-4 pb-6">
-              <p className="text-xs text-gray-400 mb-2">사진 {imgs.length}장</p>
+            <div className="px-4 pb-4">
+              <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>
               <div className="relative overflow-hidden rounded-xl">
                 <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
                   {imgs.map((url, i) => (
@@ -371,7 +368,7 @@ function SpotCard({ selected, onClose }) {
             </div>
           )}
 
-          <div className="flex justify-center pb-6 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
+          <div className="flex justify-center pb-8 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
             <p className="text-xs text-gray-300">▼ 접기</p>
           </div>
         </div>
@@ -393,7 +390,7 @@ function MapTab({ restaurants }) {
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
   return (
-    <div className="h-full flex flex-col relative">
+    <div className="h-full flex flex-col">
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
         {categories.map(cat => (
           <button
@@ -406,23 +403,21 @@ function MapTab({ restaurants }) {
         ))}
       </div>
 
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
 
-        {/* 플로팅 구글맵 버튼 */}
         {selected && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center z-20 pointer-events-none">
-            
-              <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50">
-              <span>🗺️</span> Google Maps에서 열기
+          <div className="absolute bottom-16 left-0 right-0 flex justify-center z-20 pointer-events-none">
+            <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2">
+              🗺️ Google Maps에서 열기
             </a>
           </div>
         )}
-      </div>
 
-      {selected && (
-        <SpotCard selected={selected} onClose={() => setSelected(null)} />
-      )}
+        {selected && (
+          <SpotCard selected={selected} onClose={() => setSelected(null)} />
+        )}
+      </div>
     </div>
   )
 }
