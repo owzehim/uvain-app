@@ -611,7 +611,6 @@ function RestaurantsTab() {
                 </div>
                 <div className="flex gap-2 ml-2">
                   <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
-                  price_range: r.price_range || '',
                   <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
                 </div>
               </div>
