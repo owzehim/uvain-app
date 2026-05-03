@@ -585,30 +585,21 @@ is_sponsored: r.is_sponsored || false
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
-            <div className="flex items-center gap-2">
-  <input
-    type="checkbox"
-    id="is_sponsored"
-    checked={form.is_sponsored}
-    onChange={e => setForm({ ...form, is_sponsored: e.target.checked })}
-  />
-  <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
-</div>
-            <div className="flex items-center gap-2">
-  <input
-    type="checkbox"
-    id="is_sponsored"
-    checked={form.is_sponsored}
-    onChange={e => setForm({ ...form, is_sponsored: e.target.checked })}
-  />
-  <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
-</div>
   <option value="">가격대 선택</option>
   <option value="€">€ (저렴)</option>
   <option value="€€">€€ (보통)</option>
   <option value="€€€">€€€ (비쌈)</option>
   <option value="€€€€">€€€€ (고급)</option>
 </select>
+<div className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    id="is_sponsored"
+    checked={form.is_sponsored}
+    onChange={e => setForm({ ...form, is_sponsored: e.target.checked })}
+  />
+  <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
+</div>
           <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           <div className="flex gap-2">
             <button onClick={handleSave} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700">{editTarget ? '수정 완료' : '추가'}</button>
