@@ -498,7 +498,7 @@ function RestaurantsTab() {
   const [form, setForm] = useState({
   name: '', description: '', address: '',
   latitude: '', longitude: '', discount_info: '',
-  rating: '', review: '', reviewer_name: '', category: '맛집'
+  rating: '', review: '', reviewer_name: '', category: '맛집', price_range: ''
 })
 
   const fetchRestaurants = async () => {
@@ -581,6 +581,13 @@ function RestaurantsTab() {
           <input placeholder="할인 정보 (예: 10% 할인)" value={form.discount_info} onChange={e => setForm({ ...form, discount_info: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+  <option value="">가격대 선택</option>
+  <option value="€">€ (저렴)</option>
+  <option value="€€">€€ (보통)</option>
+  <option value="€€€">€€€ (비쌈)</option>
+  <option value="€€€€">€€€€ (고급)</option>
+</select>
           <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           <div className="flex gap-2">
             <button onClick={handleSave} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700">{editTarget ? '수정 완료' : '추가'}</button>
@@ -604,6 +611,7 @@ function RestaurantsTab() {
                 </div>
                 <div className="flex gap-2 ml-2">
                   <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
+                  price_range: r.price_range || '',
                   <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
                 </div>
               </div>
