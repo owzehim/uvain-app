@@ -251,28 +251,6 @@ function SpotCard({ selected, onClose }) {
 
   return (
     <div className="bg-white border-t border-gray-100 flex-shrink-0">
-      {imgs.length > 0 && (
-        <div className="relative overflow-hidden">
-          <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
-            {imgs.map((url, i) => (
-              <img key={i} src={url} alt={'사진 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ aspectRatio: '16/9' }} />
-            ))}
-          </div>
-          {imgs.length > 1 && (
-            <div>
-              {slideIndex > 0 && (
-                <button onClick={() => setSlideIndex(slideIndex - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
-              )}
-              {slideIndex < imgs.length - 1 && (
-                <button onClick={() => setSlideIndex(slideIndex + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
-              )}
-              <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                {(slideIndex + 1) + '/' + imgs.length}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
       <div className="p-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2 flex-wrap flex-1">
@@ -290,7 +268,9 @@ function SpotCard({ selected, onClose }) {
         </div>
         <div className="flex items-center gap-2">
           <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
-          {selected.rating > 0 && <p className="text-xs text-amber-500">{'★' + selected.rating}</p>}
+          {selected.rating > 0 && (
+            <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>
+          )}
         </div>
         {selected.description && <p className="text-xs text-gray-500 mt-1">{selected.description}</p>}
         {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
@@ -299,6 +279,32 @@ function SpotCard({ selected, onClose }) {
         {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
         <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-orange-500 text-white text-xs px-4 py-2 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
       </div>
+
+      {imgs.length > 0 && (
+        <div className="relative overflow-hidden">
+          <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+            {imgs.map((url, i) => (
+              <div key={i} className="w-full flex-shrink-0">
+                <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
+              </div>
+            ))}
+          </div>
+          {imgs.length > 1 && (
+            <div>
+              {slideIndex > 0 && (
+                <button onClick={() => setSlideIndex(slideIndex - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
+              )}
+              {slideIndex < imgs.length - 1 && (
+                <button onClick={() => setSlideIndex(slideIndex + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
+              )}
+              <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                {(slideIndex + 1) + '/' + imgs.length}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="h-4" />
     </div>
   )
 }

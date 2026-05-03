@@ -337,6 +337,15 @@ function EventsTab() {
     setEvents(data || [])
   }
 
+  const handleDeleteEventImage = async (url) => {
+  if (!confirm('이 사진을 삭제할까요?')) return
+  const fileName = url.split('/').pop()
+  await supabase.storage.from('event-images').remove([fileName])
+  const newUrls = (editTarget['image_urls'] || []).filter(u => u !== url)
+  await supabase.from('events').update({ image_urls: newUrls }).eq('id', editTarget.id)
+  setEditTarget({ ...editTarget, image_urls: newUrls })
+}
+
   useEffect(() => { fetchEvents() }, [])
 
   const handleImageChange = (e) => {
@@ -442,16 +451,24 @@ function EventsTab() {
                 ))}
               </div>
             )}
-            {editTarget && editTarget.image_urls && editTarget.image_urls.length > 0 && (
-              <div className="mt-2">
-                <p className="text-xs text-gray-400 mb-1">기존 이미지 ({editTarget.image_urls.length}장)</p>
-                <div className="flex gap-2 overflow-x-auto">
-                  {editTarget.image_urls.map((url, i) => (
-                    <img key={i} src={url} className="h-20 w-20 object-cover rounded-lg flex-shrink-0" />
-                  ))}
-                </div>
-              </div>
-            )}
+            {editTarget && editTarget['image_urls'] && editTarget['image_urls'].length > 0 && (
+  <div>
+    <p className="text-xs text-gray-400 mb-1">기존 이미지 ({editTarget['image_urls'].length}장)</p>
+    <div className="flex gap-2 overflow-x-auto">
+      {editTarget['image_urls'].map((url, i) => (
+        <div key={i} className="relative flex-shrink-0">
+          <img src={url} className="h-20 w-20 object-cover rounded-lg" />
+          <button
+            onClick={() => handleDeleteEventImage(url)}
+            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
           </div>
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">
