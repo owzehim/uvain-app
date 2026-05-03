@@ -242,6 +242,7 @@ function EventsTab({ events }) {
 
 function SpotCard({ selected, onClose }) {
   const [slideIndex, setSlideIndex] = useState(0)
+  const [expanded, setExpanded] = useState(false)
   const imgs = selected['image_urls'] || []
 
   const categoryIcons = {
@@ -250,8 +251,19 @@ function SpotCard({ selected, onClose }) {
   }
 
   return (
-    <div className="bg-white border-t border-gray-100 flex-shrink-0 overflow-y-auto" style={{ maxHeight: '55vh' }}>
-      <div className="p-4">
+    <div
+      className="bg-white border-t border-gray-100 flex-shrink-0 transition-all duration-300"
+      style={{ maxHeight: expanded ? '70vh' : '200px', overflowY: expanded ? 'auto' : 'hidden' }}
+    >
+      {/* 드래그 핸들 */}
+      <div
+        className="flex justify-center pt-2 pb-1 cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="w-10 h-1 bg-gray-200 rounded-full" />
+      </div>
+
+      <div className="px-4 pb-2">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2 flex-wrap flex-1">
             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
@@ -292,15 +304,27 @@ function SpotCard({ selected, onClose }) {
         )}
 
         <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-orange-500 text-white text-xs px-4 py-2 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
+
+        {/* 더보기 힌트 */}
+        {!expanded && imgs.length > 0 && (
+          <div
+            className="flex items-center justify-center gap-1 mt-3 mb-1 cursor-pointer"
+            onClick={() => setExpanded(true)}
+          >
+            <p className="text-xs text-gray-400">사진 보기</p>
+            <span className="text-gray-400 text-xs">▲</span>
+          </div>
+        )}
       </div>
 
-      {imgs.length > 0 && (
+      {/* 이미지 섹션 */}
+      {imgs.length > 0 && expanded && (
         <div className="px-4 pb-4">
-          <div className="relative overflow-hidden rounded-xl" style={{ maxHeight: '180px' }}>
-            <div className="flex transition-transform duration-300 h-full" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+          <div className="relative overflow-hidden rounded-xl">
+            <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
               {imgs.map((url, i) => (
                 <div key={i} className="w-full flex-shrink-0">
-                  <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }} />
+                  <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
                 </div>
               ))}
             </div>
@@ -317,6 +341,9 @@ function SpotCard({ selected, onClose }) {
                 </div>
               </div>
             )}
+          </div>
+          <div className="flex justify-center mt-3 cursor-pointer" onClick={() => setExpanded(false)}>
+            <p className="text-xs text-gray-400">▼ 접기</p>
           </div>
         </div>
       )}
