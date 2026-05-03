@@ -242,15 +242,17 @@ function EventsTab({ events }) {
 
 function SpotCard({ selected, onClose }) {
   const [slideIndex, setSlideIndex] = useState(0)
-  const [cardHeight, setCardHeight] = useState(220)
+  const [cardHeight, setCardHeight] = useState(200)
   const [isDragging, setIsDragging] = useState(false)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const cardRef = useRef(null)
   const imgs = selected['image_urls'] || []
 
-  const MIN_HEIGHT = 220
-  const MAX_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.85 : 600
+  const MIN_HEIGHT = 200
+  const MAX_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.92 : 700
+  const SNAP_THRESHOLD = (MIN_HEIGHT + MAX_HEIGHT) / 2
+  const isExpanded = cardHeight >= SNAP_THRESHOLD
 
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
@@ -272,38 +274,35 @@ function SpotCard({ selected, onClose }) {
 
   const handleTouchEnd = () => {
     setIsDragging(false)
-    const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
-    if (cardHeight > mid) {
+    if (cardHeight > SNAP_THRESHOLD) {
       setCardHeight(MAX_HEIGHT)
     } else {
       setCardHeight(MIN_HEIGHT)
     }
   }
 
-  const isExpanded = cardHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2
-
   return (
     <div
       ref={cardRef}
-      className="bg-white border-t border-gray-100 flex-shrink-0 overflow-y-auto"
+      className="bg-white border-t border-gray-200 flex-shrink-0"
       style={{
         height: cardHeight + 'px',
-        transition: isDragging ? 'none' : 'height 0.3s ease',
+        transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflowY: isExpanded ? 'auto' : 'hidden',
+        position: 'relative',
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* 드래그 핸들 */}
-      <div
-        className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing sticky top-0 bg-white z-10"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+      {/* 핸들 */}
+      <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white z-10">
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
 
-      <div className="px-4 pb-2">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center gap-2 flex-wrap flex-1">
+      <div className="px-4 pt-1 pb-3">
+        <div className="flex items-start justify-between mb-1">
+          <div className="flex items-center gap-1.5 flex-wrap flex-1">
             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
               {(categoryIcons[selected.category] || '📍') + ' ' + (selected.category || '기타')}
             </span>
@@ -311,14 +310,14 @@ function SpotCard({ selected, onClose }) {
               <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
             )}
             {selected.is_sponsored && (
-              <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">제휴</span>
+              <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>
             )}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-3 text-lg flex-shrink-0 leading-none">✕</button>
+          <button onClick={onClose} className="text-gray-400 ml-2 text-lg leading-none flex-shrink-0">✕</button>
         </div>
 
         <div className="flex items-center gap-2">
-          <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
+          <p className="font-semibold text-gray-900">{selected.name}</p>
           {selected.rating > 0 && (
             <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>
           )}
@@ -326,52 +325,54 @@ function SpotCard({ selected, onClose }) {
 
         {selected.description && <p className="text-xs text-gray-500 mt-1">{selected.description}</p>}
         {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
-        {selected.discount_info && (
-          <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>
-        )}
-        {selected.discount_terms && (
-          <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>
-        )}
-        {(selected.review || selected.reviewer_name) && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
-            {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
-          </div>
-        )}
+        {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
+        {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>}
 
-        <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-orange-500 text-white text-xs px-4 py-2 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
-
-        {!isExpanded && imgs.length > 0 && (
-          <div className="flex items-center justify-center gap-1 mt-3 mb-1 cursor-pointer" onClick={() => setCardHeight(MAX_HEIGHT)}>
-            <p className="text-xs text-gray-400">위로 드래그하면 사진을 볼 수 있어요</p>
-            <span className="text-gray-400 text-xs">▲</span>
-          </div>
+        {!isExpanded && (
+          <p className="text-xs text-gray-300 mt-2">위로 드래그해서 더 보기 ▲</p>
         )}
       </div>
 
-      {imgs.length > 0 && (
-        <div className="px-4 pb-6">
-          <div className="relative overflow-hidden rounded-xl">
-            <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
-              {imgs.map((url, i) => (
-                <div key={i} className="w-full flex-shrink-0">
-                  <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                </div>
-              ))}
+      {/* 리뷰 + 이미지 (확장시만) */}
+      {isExpanded && (
+        <div>
+          {(selected.review || selected.reviewer_name) && (
+            <div className="px-4 pt-3 pb-3 border-t border-gray-100">
+              {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
+              {selected.reviewer_name && <p className="text-xs text-gray-400 mt-1">{'— ' + selected.reviewer_name}</p>}
             </div>
-            {imgs.length > 1 && (
-              <div>
-                {slideIndex > 0 && (
-                  <button onClick={() => setSlideIndex(slideIndex - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">‹</button>
-                )}
-                {slideIndex < imgs.length - 1 && (
-                  <button onClick={() => setSlideIndex(slideIndex + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">›</button>
-                )}
-                <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                  {(slideIndex + 1) + '/' + imgs.length}
+          )}
+
+          {imgs.length > 0 && (
+            <div className="px-4 pb-6">
+              <p className="text-xs text-gray-400 mb-2">사진 {imgs.length}장</p>
+              <div className="relative overflow-hidden rounded-xl">
+                <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+                  {imgs.map((url, i) => (
+                    <div key={i} className="w-full flex-shrink-0">
+                      <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    </div>
+                  ))}
                 </div>
+                {imgs.length > 1 && (
+                  <div>
+                    {slideIndex > 0 && (
+                      <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
+                    )}
+                    {slideIndex < imgs.length - 1 && (
+                      <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
+                    )}
+                    <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                      {(slideIndex + 1) + '/' + imgs.length}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          )}
+
+          <div className="flex justify-center pb-6 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
+            <p className="text-xs text-gray-300">▼ 접기</p>
           </div>
         </div>
       )}
@@ -392,7 +393,7 @@ function MapTab({ restaurants }) {
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
         {categories.map(cat => (
           <button
@@ -405,22 +406,26 @@ function MapTab({ restaurants }) {
         ))}
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-2xl mb-2">{categoryIcons[activeCategory]}</p>
-            <p className="text-gray-500 text-sm">등록된 장소가 없어요</p>
+      <div className="flex-1 relative">
+        <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
+
+        {/* 플로팅 구글맵 버튼 */}
+        {selected && (
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center z-20 pointer-events-none">
+            
+              href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50"
+            >
+              <span>🗺️</span> Google Maps에서 열기
+            </a>
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex-1">
-            <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-          </div>
-          {selected && (
-            <SpotCard selected={selected} onClose={() => setSelected(null)} />
-          )}
-        </div>
+        )}
+      </div>
+
+      {selected && (
+        <SpotCard selected={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   )
