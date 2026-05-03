@@ -516,7 +516,7 @@ function RestaurantsTab() {
     name: '', description: '', address: '',
     latitude: '', longitude: '', discount_info: '',
     rating: '', review: '', reviewer_name: '',
-    category: '맛집', price_range: '', is_sponsored: false
+    category: '맛집', price_range: '', is_sponsored: false, discount_terms: ''
   })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
@@ -600,7 +600,7 @@ function RestaurantsTab() {
       longitude: r.longitude || '', discount_info: r.discount_info || '',
       rating: r.rating || '', review: r.review || '',
       reviewer_name: r.reviewer_name || '', category: r.category || '맛집',
-      price_range: r.price_range || '', is_sponsored: r.is_sponsored || false
+      price_range: r.price_range || '', is_sponsored: r.is_sponsored || false, discount_terms: r.discount_terms || ''
     })
     setImageFiles([])
     setImagePreviews([])
@@ -643,6 +643,7 @@ function RestaurantsTab() {
             <input placeholder="경도 (예: 4.9041)" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           </div>
           <input placeholder="할인 정보 (예: 10% 할인)" value={form.discount_info} onChange={e => setForm({ ...form, discount_info: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <input placeholder="할인 조건 (예: 주말 제외, 1인 1회 한정)" value={form.discount_terms} onChange={e => setForm({ ...form, discount_terms: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
             <option value="">가격대 선택</option>

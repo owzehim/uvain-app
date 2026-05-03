@@ -250,7 +250,7 @@ function SpotCard({ selected, onClose }) {
   }
 
   return (
-    <div className="bg-white border-t border-gray-100 flex-shrink-0">
+    <div className="bg-white border-t border-gray-100 flex-shrink-0 overflow-y-auto" style={{ maxHeight: '55vh' }}>
       <div className="p-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2 flex-wrap flex-1">
@@ -266,45 +266,60 @@ function SpotCard({ selected, onClose }) {
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-3 text-lg flex-shrink-0 leading-none">✕</button>
         </div>
+
         <div className="flex items-center gap-2">
           <p className="font-semibold text-gray-900 text-sm">{selected.name}</p>
           {selected.rating > 0 && (
             <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>
           )}
         </div>
+
         {selected.description && <p className="text-xs text-gray-500 mt-1">{selected.description}</p>}
         {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
-        {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
-        {selected.review && <p className="text-xs text-gray-600 mt-1">{selected.review}</p>}
-        {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
+
+        {selected.discount_info && (
+          <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>
+        )}
+        {selected.discount_terms && (
+          <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>
+        )}
+
+        {(selected.review || selected.reviewer_name) && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
+            {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
+          </div>
+        )}
+
         <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 bg-orange-500 text-white text-xs px-4 py-2 rounded-lg hover:bg-orange-600">Google Maps에서 열기</a>
       </div>
 
       {imgs.length > 0 && (
-        <div className="relative overflow-hidden">
-          <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
-            {imgs.map((url, i) => (
-              <div key={i} className="w-full flex-shrink-0">
-                <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
-              </div>
-            ))}
-          </div>
-          {imgs.length > 1 && (
-            <div>
-              {slideIndex > 0 && (
-                <button onClick={() => setSlideIndex(slideIndex - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
-              )}
-              {slideIndex < imgs.length - 1 && (
-                <button onClick={() => setSlideIndex(slideIndex + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
-              )}
-              <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                {(slideIndex + 1) + '/' + imgs.length}
-              </div>
+        <div className="px-4 pb-4">
+          <div className="relative overflow-hidden rounded-xl" style={{ maxHeight: '180px' }}>
+            <div className="flex transition-transform duration-300 h-full" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+              {imgs.map((url, i) => (
+                <div key={i} className="w-full flex-shrink-0">
+                  <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }} />
+                </div>
+              ))}
             </div>
-          )}
+            {imgs.length > 1 && (
+              <div>
+                {slideIndex > 0 && (
+                  <button onClick={() => setSlideIndex(slideIndex - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">‹</button>
+                )}
+                {slideIndex < imgs.length - 1 && (
+                  <button onClick={() => setSlideIndex(slideIndex + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">›</button>
+                )}
+                <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                  {(slideIndex + 1) + '/' + imgs.length}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
-      <div className="h-4" />
     </div>
   )
 }
