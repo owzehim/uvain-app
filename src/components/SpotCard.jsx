@@ -122,10 +122,10 @@ export function SpotCard({ selected, onClose }) {
       }}>
       <div className="flex" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
         {imgs.map((url, i) => (
-          <div key={i} className="w-full flex-shrink-0">
-            <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: 'auto', display: 'block' }} draggable={false} />
-          </div>
-        ))}
+  <div key={i} className="w-full flex-shrink-0">
+    <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: 'auto', maxHeight: '55vw', objectFit: 'cover', display: 'block' }} draggable={false} />
+  </div>
+))}
       </div>
       {imgs.length > 1 && (
         <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-1.5">
@@ -139,39 +139,52 @@ export function SpotCard({ selected, onClose }) {
     </div>
 
     {/* DESKTOP: grid layout like Google Maps */}
-    <div className="hidden md:block px-4">
-      {imgs.length === 1 && (
-        <div className="rounded-xl overflow-hidden" style={{ height: '260px' }}>
-          <img src={imgs[0]} alt="사진 1" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      )}
-      {imgs.length === 2 && (
-        <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden" style={{ height: '260px' }}>
-          {imgs.map((url, i) => <img key={i} src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />)}
-        </div>
-      )}
-      {imgs.length === 3 && (
-        <div className="grid gap-1 rounded-xl overflow-hidden" style={{ height: '260px', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
-          <img src={imgs[0]} alt="사진 1" style={{ width: '100%', height: '100%', objectFit: 'cover', gridRow: '1 / 3' }} />
-          <img src={imgs[1]} alt="사진 2" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          <img src={imgs[2]} alt="사진 3" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      )}
-      {imgs.length >= 4 && (
-        <div className="grid gap-1 rounded-xl overflow-hidden" style={{ height: '260px', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
-          <img src={imgs[0]} alt="사진 1" style={{ width: '100%', height: '100%', objectFit: 'cover', gridRow: '1 / 3' }} />
-          <img src={imgs[1]} alt="사진 2" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          <div className="relative">
-            <img src={imgs[2]} alt="사진 3" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            {imgs.length > 3 && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <span className="text-white font-semibold text-lg">+{imgs.length - 3}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+<div className="hidden md:block px-4">
+  {imgs.length === 1 && (
+    <div className="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center" style={{ maxHeight: '280px' }}>
+      <img src={imgs[0]} alt="사진 1" style={{ maxWidth: '100%', maxHeight: '280px', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }} />
     </div>
+  )}
+  {imgs.length === 2 && (
+    <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden" style={{ height: '240px' }}>
+      {imgs.map((url, i) => (
+        <div key={i} className="bg-gray-50 flex items-center justify-center overflow-hidden">
+          <img src={url} alt={'사진 ' + (i+1)} style={{ maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
+        </div>
+      ))}
+    </div>
+  )}
+  {imgs.length === 3 && (
+    <div className="grid gap-1 rounded-xl overflow-hidden" style={{ height: '240px', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
+      <div className="bg-gray-50 flex items-center justify-center overflow-hidden" style={{ gridRow: '1 / 3' }}>
+        <img src={imgs[0]} alt="사진 1" style={{ maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
+      </div>
+      {[imgs[1], imgs[2]].map((url, i) => (
+        <div key={i} className="bg-gray-50 flex items-center justify-center overflow-hidden">
+          <img src={url} alt={'사진 ' + (i+2)} style={{ maxWidth: '100%', maxHeight: '120px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
+        </div>
+      ))}
+    </div>
+  )}
+  {imgs.length >= 4 && (
+    <div className="grid gap-1 rounded-xl overflow-hidden" style={{ height: '240px', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
+      <div className="bg-gray-50 flex items-center justify-center overflow-hidden" style={{ gridRow: '1 / 3' }}>
+        <img src={imgs[0]} alt="사진 1" style={{ maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
+      </div>
+      <div className="bg-gray-50 flex items-center justify-center overflow-hidden">
+        <img src={imgs[1]} alt="사진 2" style={{ maxWidth: '100%', maxHeight: '120px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
+      </div>
+      <div className="relative bg-gray-50 flex items-center justify-center overflow-hidden">
+        <img src={imgs[2]} alt="사진 3" style={{ maxWidth: '100%', maxHeight: '120px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
+        {imgs.length > 3 && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <span className="text-white font-semibold text-lg">+{imgs.length - 3}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+</div>
   </div>
 )}
       </div>

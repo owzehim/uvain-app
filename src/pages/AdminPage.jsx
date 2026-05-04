@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import { ImageReorder } from '../components/ImageReorder'
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('members')
@@ -241,6 +242,7 @@ function MembersTab() {
 }
 
 function EventsTab() {
+  const [slideIndex, setSlideIndex] = useState(0)
   const [events, setEvents] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
@@ -342,20 +344,25 @@ function EventsTab() {
           <div>
             <label className="text-sm text-gray-500 block mb-1">이미지 (여러장 선택 가능)</label>
             <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-            {imagePreviews.length > 0 && <div className="flex gap-2 mt-2 overflow-x-auto">{imagePreviews.map((src, i) => <img key={i} src={src} className="h-20 w-20 object-cover rounded-lg flex-shrink-0" />)}</div>}
-            {editTarget && editTarget['image_urls'] && editTarget['image_urls'].length > 0 && (
-              <div>
-                <p className="text-xs text-gray-400 mb-1">기존 이미지 ({editTarget['image_urls'].length}장)</p>
-                <div className="flex gap-2 overflow-x-auto">
-                  {editTarget['image_urls'].map((url, i) => (
-                    <div key={i} className="relative flex-shrink-0">
-                      <img src={url} className="h-20 w-20 object-cover rounded-lg" />
-                      <button onClick={() => handleDeleteEventImage(url)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">✕</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {imagePreviews.length > 0 && (
+  <ImageReorder
+    images={imagePreviews}
+    label="새 사진 미리보기"
+    onReorder={(reordered) => {
+      const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
+      setImagePreviews(reordered)
+      setImageFiles(reorderedFiles)
+    }}
+  />
+)}
+            <ImageReorder
+  images={editTarget?.image_urls || []}
+  onReorder={async (reordered) => {
+    await supabase.from('events').update({ image_urls: reordered }).eq('id', editTarget.id)
+    setEditTarget({ ...editTarget, image_urls: reordered })
+  }}
+  onDelete={handleDeleteEventImage}
+/>
           </div>
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
@@ -561,21 +568,26 @@ function RestaurantsTab() {
           <div>
             <label className="text-sm text-gray-500 block mb-1">사진 추가 (여러장 가능)</label>
             <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-            {imagePreviews.length > 0 && <div className="flex gap-2 mt-2 overflow-x-auto">{imagePreviews.map((src, i) => <img key={i} src={src} className="h-20 w-20 object-cover rounded-lg flex-shrink-0" />)}</div>}
+            {imagePreviews.length > 0 && (
+  <ImageReorder
+    images={imagePreviews}
+    label="새 사진 미리보기"
+    onReorder={(reordered) => {
+      const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
+      setImagePreviews(reordered)
+      setImageFiles(reorderedFiles)
+    }}
+  />
+)}
           </div>
-          {editTarget && editTarget.image_urls && editTarget.image_urls.length > 0 && (
-            <div>
-              <label className="text-sm text-gray-500 block mb-1">기존 사진 ({editTarget.image_urls.length}장)</label>
-              <div className="flex gap-2 overflow-x-auto">
-                {editTarget.image_urls.map((url, i) => (
-                  <div key={i} className="relative flex-shrink-0">
-                    <img src={url} className="h-20 w-20 object-cover rounded-lg" />
-                    <button onClick={() => handleDeleteExistingImage(url)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">✕</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <ImageReorder
+  images={editTarget?.image_urls || []}
+  onReorder={async (reordered) => {
+    await supabase.from('restaurants').update({ image_urls: reordered }).eq('id', editTarget.id)
+    setEditTarget({ ...editTarget, image_urls: reordered })
+  }}
+  onDelete={handleDeleteExistingImage}
+/>
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-orange-500 text-white rounded-lg py-2 text-sm hover:bg-orange-600 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
             <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
