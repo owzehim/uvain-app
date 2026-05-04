@@ -428,7 +428,16 @@ function EventsTab() {
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
           <h3 className="font-medium text-gray-900">{editTarget ? '이벤트 수정' : '새 이벤트'}</h3>
           <input placeholder="이벤트 제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+          <div>
+            <RichToolbar onInsert={(tag) => {
+              const el = document.getElementById('event-desc-input')
+              const s = el.selectionStart, e2 = el.selectionEnd
+              const sel = form.description.slice(s, e2) || '텍스트'
+              const ins = tag === 'color' ? `[color:red]${sel}[/color]` : tag === 'bold' ? `**${sel}**` : `*${sel}*`
+              setForm({ ...form, description: form.description.slice(0, s) + ins + form.description.slice(e2) })
+            }} />
+            <textarea id="event-desc-input" placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+          </div>
           <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div className="flex gap-2">
             <div className="flex-1">
@@ -515,6 +524,16 @@ function EventsTab() {
     </div>
   )
 }
+function RichToolbar({ onInsert }) {
+  return (
+    <div className="flex gap-1 mb-1">
+      <button type="button" onClick={() => onInsert('bold')} className="text-xs px-2 py-1 bg-gray-100 rounded font-bold hover:bg-gray-200">B</button>
+      <button type="button" onClick={() => onInsert('italic')} className="text-xs px-2 py-1 bg-gray-100 rounded italic hover:bg-gray-200">I</button>
+      <button type="button" onClick={() => onInsert('color')} className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">🎨</button>
+    </div>
+  )
+}
+
 /* ───────────────────────────────
    장소 탭
 ─────────────────────────────── */
@@ -526,7 +545,7 @@ function RestaurantsTab() {
     name: '', description: '', address: '',
     latitude: '', longitude: '', discount_info: '',
     rating: '', review: '', reviewer_name: '',
-    category: '맛집', price_range: '', is_sponsored: false, discount_terms: ''
+    category: '맛집', subcategory: '', price_range: '', is_sponsored: false, discount_terms: ''
   })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
@@ -590,7 +609,7 @@ function RestaurantsTab() {
     setUploading(false)
     setShowForm(false)
     setEditTarget(null)
-    setForm({ name: '', map_label: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false })
+    setForm({ name: '', map_label: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', subcategory: '', price_range: '', is_sponsored: false, discount_terms: '' })
     setImageFiles([])
     setImagePreviews([])
     fetchRestaurants()
@@ -610,6 +629,7 @@ function RestaurantsTab() {
       longitude: r.longitude || '', discount_info: r.discount_info || '',
       rating: r.rating || '', review: r.review || '',
       reviewer_name: r.reviewer_name || '', category: r.category || '맛집',
+      subcategory: r.subcategory || '',
       price_range: r.price_range || '', is_sponsored: r.is_sponsored || false, discount_terms: r.discount_terms || ''
     })
     setImageFiles([])
@@ -619,7 +639,7 @@ function RestaurantsTab() {
 
   const openAdd = () => {
     setEditTarget(null)
-    setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false })
+    setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', subcategory: '', price_range: '', is_sponsored: false, discount_terms: '' })
     setImageFiles([])
     setImagePreviews([])
     setShowForm(true)
@@ -639,15 +659,34 @@ function RestaurantsTab() {
           <h3 className="font-medium text-gray-900">{editTarget ? '장소 수정' : '새 장소 추가'}</h3>
           <input placeholder="장소 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="지도 표시 이름 (짧게, 예: 교자상)" value={form.map_label} onChange={e => setForm({ ...form, map_label: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+          <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, subcategory: '' })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
             <option value="맛집">🍽️ 맛집</option>
-            <option value="미용실">💇 미용실/이발</option>
-            <option value="헬스장">💪 헬스장</option>
-            <option value="마트">🛒 마트</option>
             <option value="카페">☕ 카페</option>
+            <option value="마트">🛒 마트</option>
+            <option value="도서관">📚 도서관</option>
+            <option value="학교">🎓 학교</option>
             <option value="기타">📍 기타</option>
           </select>
-          <input placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          {form.category === '기타' && (
+            <input
+              placeholder="기타 세부 유형 (예: 미용실, 헬스장, 약국 등)"
+              value={form.subcategory}
+              onChange={e => setForm({ ...form, subcategory: e.target.value })}
+              className="w-full border border-orange-200 rounded-lg px-3 py-2 text-sm bg-orange-50"
+            />
+          )}
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">설명 <span className="text-gray-300">(서식: **굵게** *기울임* [color:red]색상[/color])</span></label>
+            <RichToolbar onInsert={(tag) => {
+              const el = document.getElementById('desc-input')
+              const s = el.selectionStart, e2 = el.selectionEnd
+              const selected2 = form.description.slice(s, e2) || '텍스트'
+              const inserted = tag === 'color' ? `[color:red]${selected2}[/color]` : tag === 'bold' ? `**${selected2}**` : `*${selected2}*`
+              const newVal = form.description.slice(0, s) + inserted + form.description.slice(e2)
+              setForm({ ...form, description: newVal })
+            }} />
+            <input id="desc-input" placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          </div>
           <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div className="flex gap-2">
             <input placeholder="위도 (예: 52.3676)" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
@@ -668,7 +707,16 @@ function RestaurantsTab() {
             <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
           </div>
           <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+          <div>
+            <RichToolbar onInsert={(tag) => {
+              const el = document.getElementById('review-input')
+              const s = el.selectionStart, e2 = el.selectionEnd
+              const sel = form.review.slice(s, e2) || '텍스트'
+              const ins = tag === 'color' ? `[color:red]${sel}[/color]` : tag === 'bold' ? `**${sel}**` : `*${sel}*`
+              setForm({ ...form, review: form.review.slice(0, s) + ins + form.review.slice(e2) })
+            }} />
+            <textarea id="review-input" placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+          </div>
 
           {/* 이미지 업로드 */}
           <div>

@@ -4,6 +4,23 @@ import { useQRToken } from '../hooks/useQRToken'
 import { QRCodeSVG } from 'qrcode.react'
 import MapView from '../components/MapView'
 
+// Rich text renderer: supports **bold**, *italic*, [color:red]text[/color]
+function RichText({ text, className = '' }) {
+  if (!text) return null
+  const parts = []
+  const regex = /\*\*(.+?)\*\*|\*(.+?)\*|\[color:([^\]]+)\](.+?)\[\/color\]/g
+  let last = 0, m
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > last) parts.push(<span key={last}>{text.slice(last, m.index)}</span>)
+    if (m[1]) parts.push(<strong key={m.index}>{m[1]}</strong>)
+    else if (m[2]) parts.push(<em key={m.index}>{m[2]}</em>)
+    else if (m[3]) parts.push(<span key={m.index} style={{ color: m[3] }}>{m[4]}</span>)
+    last = m.index + m[0].length
+  }
+  if (last < text.length) parts.push(<span key={last}>{text.slice(last)}</span>)
+  return <span className={className}>{parts.length ? parts : text}</span>
+}
+
 export default function MemberPage() {
   const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -13,6 +30,9 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const { token, secondsLeft } = useQRToken(member?.totp_secret)
+  const TAB_ORDER = ['qr', 'events', 'map']
+  const swipeStartX = useRef(null)
+  const swipeStartY = useRef(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +55,24 @@ export default function MemberPage() {
     setTabKey(prev => prev + 1)
   }
 
+  const handleSwipeStart = (e) => {
+    const t = e.touches[0]
+    swipeStartX.current = t.clientX
+    swipeStartY.current = t.clientY
+  }
+
+  const handleSwipeEnd = (e) => {
+    if (swipeStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - swipeStartX.current
+    const dy = Math.abs(e.changedTouches[0].clientY - swipeStartY.current)
+    swipeStartX.current = null
+    // Only horizontal swipe from edge (first/last 30px) with sufficient distance
+    if (Math.abs(dx) < 60 || dy > 80) return
+    const idx = TAB_ORDER.indexOf(activeTab)
+    if (dx < 0 && idx < TAB_ORDER.length - 1) handleTabChange(TAB_ORDER[idx + 1])
+    if (dx > 0 && idx > 0) handleTabChange(TAB_ORDER[idx - 1])
+  }
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-gray-500">로딩 중...</p>
@@ -45,7 +83,10 @@ export default function MemberPage() {
   const isValid = member?.is_member && member?.membership_valid_until && new Date(member.membership_valid_until) >= new Date()
 
   return (
-    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}
+      onTouchStart={handleSwipeStart}
+      onTouchEnd={handleSwipeEnd}
+    >
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
         <h1 className="font-bold text-gray-900">UvA-IN</h1>
         <div className="flex gap-2">
@@ -203,7 +244,7 @@ function EventsTab({ events }) {
               </div>
             )}
             <div className="px-5 pb-5">
-              {ev.description && <p className="text-sm text-gray-600 mt-3 leading-relaxed">{ev.description}</p>}
+              {ev.description && <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />}
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
                   <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200">
@@ -244,16 +285,19 @@ function SpotCard({ selected, onClose }) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
+  const [closing, setClosing] = useState(false)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
+  const cardRef = useRef(null)
 
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
 
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-    '미용실': '💇', '헬스장': '💪', '기타': '📍'
+    '미용실': '💇', '헬스장': '💪', '기타': '📍',
+    '도서관': '📚', '학교': '🎓'
   }
 
   const WIN_H = typeof window !== 'undefined' ? window.innerHeight : 700
@@ -263,14 +307,20 @@ function SpotCard({ selected, onClose }) {
   useEffect(() => {
     setCardHeight(MIN_HEIGHT)
     setSlideIndex(0)
+    setClosing(false)
   }, [selected])
+
+  const triggerClose = () => {
+    setClosing(true)
+    setTimeout(() => onClose(), 320)
+  }
 
   const snapTo = (height) => setCardHeight(height)
 
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
-    startHeightRef.current = cardHeight
+    startHeightRef.current = hasImages ? cardHeight : (cardRef.current?.offsetHeight || MIN_HEIGHT)
     setIsDragging(true)
   }
 
@@ -278,9 +328,11 @@ function SpotCard({ selected, onClose }) {
     if (!isDragging) return
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
-    if (!hasImages && delta > 0) return // 사진 없으면 위로 드래그 막기
-    const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
-    setCardHeight(newHeight)
+    if (!hasImages && delta > 0) return
+    if (hasImages) {
+      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
+      setCardHeight(newHeight)
+    }
   }
 
   const handleTouchEnd = () => {
@@ -291,22 +343,16 @@ function SpotCard({ selected, onClose }) {
     const wasMin = startH <= MIN_HEIGHT * 1.15
 
     if (!hasImages) {
-      // 사진 없으면 아래로만 → 닫기
-      if (delta < -40) onClose()
-      else snapTo(MIN_HEIGHT)
+      if (delta < -40) triggerClose()
       return
     }
 
     if (delta > 40) {
       snapTo(MAX_HEIGHT)
     } else if (delta < -40) {
-      if (wasMax) {
-        snapTo(MIN_HEIGHT)
-      } else if (wasMin) {
-        onClose()
-      } else {
-        snapTo(MIN_HEIGHT)
-      }
+      if (wasMax) snapTo(MIN_HEIGHT)
+      else if (wasMin) triggerClose()
+      else snapTo(MIN_HEIGHT)
     } else {
       const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
       snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
@@ -315,12 +361,25 @@ function SpotCard({ selected, onClose }) {
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
+  // No-image cards use translateY animation for smooth close
+  const noImageStyle = {
+    transform: closing ? 'translateY(110%)' : 'translateY(0)',
+    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
+    height: 'auto',
+  }
+
+  const imageStyle = {
+    height: cardHeight + 'px',
+    transform: closing ? 'translateY(110%)' : 'translateY(0)',
+    transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)',
+  }
+
   return (
     <div
+      ref={cardRef}
       className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
       style={{
-        height: hasImages ? cardHeight + 'px' : 'auto',
-        transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1)',
+        ...(hasImages ? imageStyle : noImageStyle),
         zIndex: 1000,
         boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
         display: 'flex',
@@ -360,13 +419,13 @@ function SpotCard({ selected, onClose }) {
               <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>
             )}
           </div>
-          {selected.description && <p className="text-xs text-gray-500 mt-1">{selected.description}</p>}
+          {selected.description && <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />}
           {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
           {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
           {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>}
           {(selected.review || selected.reviewer_name) && (
             <div className="mt-2 pt-2 border-t border-gray-100">
-              {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
+              {selected.review && <RichText text={selected.review} className="text-xs text-gray-600 block" />}
               {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
             </div>
           )}
@@ -450,10 +509,10 @@ function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  const categories = ['전체', '맛집', '미용실', '헬스장', '마트', '카페', '기타']
+  const categories = ['전체', '맛집', '카페', '마트', '도서관', '학교', '기타']
   const categoryIcons = {
-    '맛집': '🍽️', '미용실': '💇', '헬스장': '💪',
-    '마트': '🛒', '카페': '☕', '기타': '📍', '전체': '🗺️'
+    '맛집': '🍽️', '카페': '☕', '마트': '🛒',
+    '도서관': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️'
   }
 
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
