@@ -254,40 +254,50 @@ function SpotCard({ selected, onClose }) {
     '미용실': '💇', '헬스장': '💪', '기타': '📍'
   }
 
-  // 카드 높이 계산
-  const MIN_HEIGHT = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.38, 280) : 280
+  const MIN_HEIGHT = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.38, 260) : 260
   const MAX_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.92 : 700
-  const PREVIEW_HEIGHT = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.55, 400) : 400
+
+  // 사진 없으면 컨텐츠 높이만큼만
+  const CONTENT_HEIGHT = hasImages ? MIN_HEIGHT : Math.min(window.innerHeight * 0.32, 220)
 
   useEffect(() => {
-    setCardHeight(MIN_HEIGHT)
+    setCardHeight(hasImages ? MIN_HEIGHT : CONTENT_HEIGHT)
     setSlideIndex(0)
   }, [selected])
 
   const snapToHeight = (h) => {
-    if (!hasImages) return setCardHeight(MIN_HEIGHT)
-    if (h < (MIN_HEIGHT + PREVIEW_HEIGHT) / 2) return setCardHeight(MIN_HEIGHT)
-    if (h < (PREVIEW_HEIGHT + MAX_HEIGHT) / 2) return setCardHeight(PREVIEW_HEIGHT)
-    setCardHeight(MAX_HEIGHT)
+    // 사진 없으면 스냅 없음
+    if (!hasImages) {
+      if (h < CONTENT_HEIGHT * 0.7) {
+        onClose()
+      }
+      return
+    }
+    const MID = (MIN_HEIGHT + MAX_HEIGHT) / 2
+    if (h < MIN_HEIGHT * 0.6) {
+      onClose()
+    } else if (h < MID) {
+      setCardHeight(MIN_HEIGHT)
+    } else {
+      setCardHeight(MAX_HEIGHT)
+    }
   }
 
   const handleTouchStart = (e) => {
-    if (!hasImages) return
     startYRef.current = e.touches[0].clientY
     startHeightRef.current = cardHeight
     setIsDragging(true)
   }
 
   const handleTouchMove = (e) => {
-    if (!isDragging || !hasImages) return
+    if (!isDragging) return
     e.stopPropagation()
     const delta = startYRef.current - e.touches[0].clientY
-    const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeightRef.current + delta))
+    const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
     setCardHeight(newHeight)
   }
 
   const handleTouchEnd = () => {
-    if (!hasImages) return
     setIsDragging(false)
     snapToHeight(cardHeight)
   }
@@ -295,14 +305,14 @@ function SpotCard({ selected, onClose }) {
   const handleWheel = (e) => {
     if (!hasImages) return
     e.preventDefault()
-    const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, cardHeight - e.deltaY))
+    const newHeight = Math.min(MAX_HEIGHT, Math.max(0, cardHeight - e.deltaY))
     setCardHeight(newHeight)
     clearTimeout(window._spotWheelTimer)
     window._spotWheelTimer = setTimeout(() => snapToHeight(newHeight), 150)
   }
 
   const isFullscreen = cardHeight >= MAX_HEIGHT * 0.85
-  const showPreview = cardHeight >= PREVIEW_HEIGHT * 0.7 && !isFullscreen
+  const fadeOpacity = hasImages ? Math.min(1, Math.max(0, (cardHeight - MIN_HEIGHT * 0.7) / (MIN_HEIGHT * 0.5))) : 0
 
   return (
     <div
@@ -321,11 +331,7 @@ function SpotCard({ selected, onClose }) {
     >
       {/* 핸들 */}
       <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white z-10">
-        {hasImages ? (
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        ) : (
-          <div className="w-10 h-1 bg-gray-200 rounded-full" />
-        )}
+        <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
 
       {/* 기본 정보 */}
@@ -342,7 +348,6 @@ function SpotCard({ selected, onClose }) {
               <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>
             )}
           </div>
-          <button onClick={onClose} className="text-gray-400 ml-2 text-lg leading-none flex-shrink-0">✕</button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -357,32 +362,34 @@ function SpotCard({ selected, onClose }) {
         {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
         {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>}
 
-        {/* 리뷰 - 항상 보임 */}
         {(selected.review || selected.reviewer_name) && (
           <div className="mt-2 pt-2 border-t border-gray-100">
             {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
             {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
           </div>
         )}
+
+        {hasImages && !isFullscreen && (
+          <p className="text-xs text-gray-300 mt-2">위로 드래그해서 사진 보기 ▲</p>
+        )}
       </div>
 
-      {/* 사진 미리보기 (PREVIEW 단계) */}
+      {/* 사진 미리보기 페이드인 */}
       {hasImages && !isFullscreen && (
-        <div className="px-4" style={{ opacity: Math.min(1, (cardHeight - MIN_HEIGHT * 0.8) / (PREVIEW_HEIGHT - MIN_HEIGHT)) }}>
-          <div className="relative overflow-hidden rounded-xl" style={{ height: '140px' }}>
-            <img src={imgs[0]} alt="미리보기" style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
+        <div className="px-4" style={{ opacity: fadeOpacity }}>
+          <div className="relative overflow-hidden rounded-xl" style={{ height: '130px' }}>
+            <img src={imgs[0]} alt="미리보기" style={{ width: '100%', height: '130px', objectFit: 'cover' }} />
             {imgs.length > 1 && (
               <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
                 {'1/' + imgs.length}
               </div>
             )}
-            {/* 페이드 아웃 효과 */}
-            <div className="absolute bottom-0 left-0 right-0 h-8" style={{ background: 'linear-gradient(transparent, white)' }} />
+            <div className="absolute bottom-0 left-0 right-0 h-10" style={{ background: 'linear-gradient(transparent, white)' }} />
           </div>
         </div>
       )}
 
-      {/* 사진 풀뷰 (FULLSCREEN 단계) */}
+      {/* 풀스크린 사진 */}
       {hasImages && isFullscreen && (
         <div className="px-4 pb-4">
           <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>

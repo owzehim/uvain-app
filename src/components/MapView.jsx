@@ -15,12 +15,13 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const icon = categoryIcons[r.category] || '📍'
   const isSponsored = r.is_sponsored
   const size = isSponsored ? 42 : 34
-  const border = isSponsored ? '2.5px solid #f97316' : '2px solid #e5e7eb'
+  const bg = isSponsored ? '#f97316' : 'white'
+const border = isSponsored ? '3px solid white' : '2px solid #e5e7eb'
   const shadow = isSponsored ? '0 3px 12px rgba(249,115,22,0.4)' : '0 2px 6px rgba(0,0,0,0.15)'
   const name = r.name && r.name.length > 8 ? r.name.slice(0, 8) + '…' : (r.name || '')
 
   return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
-    '<div style="width:' + size + 'px;height:' + size + 'px;background:white;border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' + icon + '</div>' +
+    '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' + icon + '</div>' +
     '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:70px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div>' +
     '</div>'
 }
