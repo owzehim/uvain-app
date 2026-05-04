@@ -261,14 +261,13 @@ function SpotCard({ selected, onClose }) {
   const MAX_HEIGHT = WIN_H * 0.88
 
   useEffect(() => {
-    setCardHeight(hasImages ? MIN_HEIGHT : 'auto')
+    setCardHeight(MIN_HEIGHT)
     setSlideIndex(0)
   }, [selected])
 
   const snapTo = (height) => setCardHeight(height)
 
   const handleTouchStart = (e) => {
-    if (!hasImages) return
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
     startHeightRef.current = cardHeight
@@ -276,20 +275,27 @@ function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchMove = (e) => {
-    if (!hasImages || !isDragging) return
+    if (!isDragging) return
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
+    if (!hasImages && delta > 0) return // 사진 없으면 위로 드래그 막기
     const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
     setCardHeight(newHeight)
   }
 
   const handleTouchEnd = () => {
-    if (!hasImages) return
     setIsDragging(false)
     const delta = startYRef.current - lastYRef.current
     const startH = startHeightRef.current
     const wasMax = startH >= MAX_HEIGHT * 0.85
     const wasMin = startH <= MIN_HEIGHT * 1.15
+
+    if (!hasImages) {
+      // 사진 없으면 아래로만 → 닫기
+      if (delta < -40) onClose()
+      else snapTo(MIN_HEIGHT)
+      return
+    }
 
     if (delta > 40) {
       snapTo(MAX_HEIGHT)
@@ -325,13 +331,10 @@ function SpotCard({ selected, onClose }) {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* 핸들 - 사진 있을 때만 표시 */}
-      {hasImages && (
-        <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
-      )}
-      {!hasImages && <div className="pt-4" />}
+      {/* 핸들 - 항상 표시 */}
+      <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
+        <div className="w-10 h-1 bg-gray-300 rounded-full" />
+      </div>
 
       {/* 스크롤 콘텐츠 영역 */}
       <div
