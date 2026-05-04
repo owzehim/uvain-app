@@ -480,30 +480,38 @@ function EventsTab() {
       )}
 
       {events.length === 0 ? (
-        <p className="text-gray-500 text-sm">이벤트가 없어요.</p>
-      ) : (
-        <div className="space-y-2">
-          {events.map(event => (
-            <div key={event.id} className="bg-white rounded-xl border border-gray-100 p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">{event.title}</p>
-                  {event.location && <p className="text-xs text-gray-500 mt-0.5">📍 {event.location}</p>}
-                  {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
-                  {event.image_urls && event.image_urls.length > 0 && <p className="text-xs text-gray-400 mt-0.5">사진 {event.image_urls.length}장</p>}
-                </div>
-                <div className="flex gap-2 ml-2">
-                  <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline">수정</button>
-                  <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline">삭제</button>
-                </div>
-              </div>
+  <p className="text-gray-500 text-sm">이벤트가 없어요.</p>
+) : (() => {
+  const grouped = {}
+  events.forEach(ev => {
+    const key = ev.event_date
+      ? new Date(ev.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long' })
+      : '날짜 미정'
+    if (!grouped[key]) grouped[key] = []
+    grouped[key].push(ev)
+  })
+  return Object.entries(grouped).map(([month, evs]) => (
+    <div key={month} className="space-y-2">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
+      {evs.map(event => (
+        <div key={event.id} className="bg-white rounded-xl border border-gray-100 p-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="font-medium text-gray-900 text-sm">{event.title}</p>
+              {event.location && <p className="text-xs text-gray-500 mt-0.5">📍 {event.location}</p>}
+              {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
+              {event['image_urls'] && event['image_urls'].length > 0 && <p className="text-xs text-gray-400 mt-0.5">{'사진 ' + event['image_urls'].length + '장'}</p>}
             </div>
-          ))}
+            <div className="flex gap-2 ml-2">
+              <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline">수정</button>
+              <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+            </div>
+          </div>
         </div>
-      )}
+      ))}
     </div>
-  )
-}
+  ))
+})()}
 
 /* ───────────────────────────────
    맛집 탭
@@ -702,31 +710,37 @@ function RestaurantsTab() {
       )}
 
       {restaurants.length === 0 ? (
-        <p className="text-gray-500 text-sm">등록된 장소가 없어요.</p>
-      ) : (
-        <div className="space-y-2">
-          {restaurants.map(r => (
-            <div key={r.id} className="bg-white rounded-xl border border-gray-100 p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-1">
-                    <p className="font-medium text-gray-900 text-sm">{r.name}</p>
-                    {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
-                  </div>
-                  {r.address && <p className="text-xs text-gray-500 mt-0.5">📍 {r.address}</p>}
-                  {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info}</p>}
-                  {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
-                  {r.image_urls && r.image_urls.length > 0 && <p className="text-xs text-gray-400 mt-0.5">사진 {r.image_urls.length}장</p>}
-                </div>
-                <div className="flex gap-2 ml-2">
-                  <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
-                  <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
-                </div>
+  <p className="text-gray-500 text-sm">등록된 장소가 없어요.</p>
+) : (() => {
+  const grouped = {}
+  restaurants.forEach(r => {
+    const key = r.category || '기타'
+    if (!grouped[key]) grouped[key] = []
+    grouped[key].push(r)
+  })
+  return Object.entries(grouped).map(([cat, places]) => (
+    <div key={cat} className="space-y-2">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{cat} ({places.length})</p>
+      {places.map(r => (
+        <div key={r.id} className="bg-white rounded-xl border border-gray-100 p-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-1">
+                <p className="font-medium text-gray-900 text-sm">{r.name}</p>
+                {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
               </div>
+              {r.address && <p className="text-xs text-gray-500 mt-0.5">📍 {r.address}</p>}
+              {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info}</p>}
+              {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
+              {r['image_urls'] && r['image_urls'].length > 0 && <p className="text-xs text-gray-400 mt-0.5">{'사진 ' + r['image_urls'].length + '장'}</p>}
             </div>
-          ))}
+            <div className="flex gap-2 ml-2">
+              <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
+              <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+            </div>
+          </div>
         </div>
-      )}
+      ))}
     </div>
-  )
-}
+  ))
+})()}

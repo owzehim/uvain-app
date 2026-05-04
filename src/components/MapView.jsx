@@ -12,16 +12,18 @@ export default function MapView({ restaurants, selected, onSelect }) {
   }
 
   const createMarkerHtml = (r) => {
-    const icon = categoryIcons[r.category] || '📍'
-    const isSponsored = r.is_sponsored
-    const size = isSponsored ? 42 : 34
-    const bg = isSponsored ? '#f97316' : '#1d1d1f'
-    const border = isSponsored ? '3px solid white' : '3px solid white'
-    const shadow = isSponsored
-      ? '0 3px 12px rgba(249,115,22,0.5)'
-      : '0 2px 8px rgba(0,0,0,0.25)'
-    return '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' + icon + '</div>'
-  }
+  const icon = categoryIcons[r.category] || '📍'
+  const isSponsored = r.is_sponsored
+  const size = isSponsored ? 42 : 34
+  const border = isSponsored ? '2.5px solid #f97316' : '2px solid #e5e7eb'
+  const shadow = isSponsored ? '0 3px 12px rgba(249,115,22,0.4)' : '0 2px 6px rgba(0,0,0,0.15)'
+  const name = r.name && r.name.length > 8 ? r.name.slice(0, 8) + '…' : (r.name || '')
+
+  return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
+    '<div style="width:' + size + 'px;height:' + size + 'px;background:white;border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' + icon + '</div>' +
+    '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:70px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div>' +
+    '</div>'
+}
 
   useEffect(() => {
     if (initializedRef.current) return
@@ -68,11 +70,11 @@ export default function MapView({ restaurants, selected, onSelect }) {
     sorted.forEach(r => {
       const size = r.is_sponsored ? 42 : 34
       const markerIcon = L.divIcon({
-        className: '',
-        html: createMarkerHtml(r),
-        iconSize: [size, size],
-        iconAnchor: [size/2, size/2],
-      })
+  className: '',
+  html: createMarkerHtml(r),
+  iconSize: [size + 20, size + 28],
+  iconAnchor: [(size + 20) / 2, size / 2],
+})
 
       const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
       m.on('click', () => onSelect(r))

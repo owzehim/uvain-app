@@ -242,28 +242,44 @@ function EventsTab({ events }) {
 
 function SpotCard({ selected, onClose }) {
   const [slideIndex, setSlideIndex] = useState(0)
-  const [cardHeight, setCardHeight] = useState(200)
+  const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const imgs = selected['image_urls'] || []
-
-  const MIN_HEIGHT = 200
-  const MAX_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.92 : 700
-  const isExpanded = cardHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2
+  const hasImages = imgs.length > 0
 
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
     '미용실': '💇', '헬스장': '💪', '기타': '📍'
   }
 
+  // 카드 높이 계산
+  const MIN_HEIGHT = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.38, 280) : 280
+  const MAX_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.92 : 700
+  const PREVIEW_HEIGHT = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.55, 400) : 400
+
+  useEffect(() => {
+    setCardHeight(MIN_HEIGHT)
+    setSlideIndex(0)
+  }, [selected])
+
+  const snapToHeight = (h) => {
+    if (!hasImages) return setCardHeight(MIN_HEIGHT)
+    if (h < (MIN_HEIGHT + PREVIEW_HEIGHT) / 2) return setCardHeight(MIN_HEIGHT)
+    if (h < (PREVIEW_HEIGHT + MAX_HEIGHT) / 2) return setCardHeight(PREVIEW_HEIGHT)
+    setCardHeight(MAX_HEIGHT)
+  }
+
   const handleTouchStart = (e) => {
+    if (!hasImages) return
     startYRef.current = e.touches[0].clientY
     startHeightRef.current = cardHeight
     setIsDragging(true)
   }
 
   const handleTouchMove = (e) => {
+    if (!isDragging || !hasImages) return
     e.stopPropagation()
     const delta = startYRef.current - e.touches[0].clientY
     const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeightRef.current + delta))
@@ -271,33 +287,48 @@ function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchEnd = () => {
+    if (!hasImages) return
     setIsDragging(false)
-    const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
-    if (cardHeight > mid) {
-      setCardHeight(MAX_HEIGHT)
-    } else {
-      setCardHeight(MIN_HEIGHT)
-    }
+    snapToHeight(cardHeight)
   }
+
+  const handleWheel = (e) => {
+    if (!hasImages) return
+    e.preventDefault()
+    const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, cardHeight - e.deltaY))
+    setCardHeight(newHeight)
+    clearTimeout(window._spotWheelTimer)
+    window._spotWheelTimer = setTimeout(() => snapToHeight(newHeight), 150)
+  }
+
+  const isFullscreen = cardHeight >= MAX_HEIGHT * 0.85
+  const showPreview = cardHeight >= PREVIEW_HEIGHT * 0.7 && !isFullscreen
 
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 rounded-t-2xl"
+      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
       style={{
         height: cardHeight + 'px',
         transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4,0,0.2,1)',
         zIndex: 1000,
-        overflowY: isExpanded ? 'auto' : 'hidden',
+        overflowY: isFullscreen ? 'auto' : 'hidden',
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.12)',
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onWheel={hasImages ? handleWheel : undefined}
     >
       {/* 핸들 */}
       <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white z-10">
-        <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        {hasImages ? (
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        ) : (
+          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+        )}
       </div>
 
+      {/* 기본 정보 */}
       <div className="px-4 pt-1 pb-3">
         <div className="flex items-start justify-between mb-1">
           <div className="flex items-center gap-1.5 flex-wrap flex-1">
@@ -326,49 +357,58 @@ function SpotCard({ selected, onClose }) {
         {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
         {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>}
 
-        {!isExpanded && (
-          <p className="text-xs text-gray-300 mt-2">위로 드래그해서 더 보기 ▲</p>
+        {/* 리뷰 - 항상 보임 */}
+        {(selected.review || selected.reviewer_name) && (
+          <div className="mt-2 pt-2 border-t border-gray-100">
+            {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
+            {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
+          </div>
         )}
       </div>
 
-      {isExpanded && (
-        <div>
-          {(selected.review || selected.reviewer_name) && (
-            <div className="px-4 pt-3 pb-3 border-t border-gray-100">
-              {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
-              {selected.reviewer_name && <p className="text-xs text-gray-400 mt-1">{'— ' + selected.reviewer_name}</p>}
-            </div>
-          )}
-
-          {imgs.length > 0 && (
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>
-              <div className="relative overflow-hidden rounded-xl">
-                <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
-                  {imgs.map((url, i) => (
-                    <div key={i} className="w-full flex-shrink-0">
-                      <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                    </div>
-                  ))}
-                </div>
-                {imgs.length > 1 && (
-                  <div>
-                    {slideIndex > 0 && (
-                      <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
-                    )}
-                    {slideIndex < imgs.length - 1 && (
-                      <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
-                    )}
-                    <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                      {(slideIndex + 1) + '/' + imgs.length}
-                    </div>
-                  </div>
-                )}
+      {/* 사진 미리보기 (PREVIEW 단계) */}
+      {hasImages && !isFullscreen && (
+        <div className="px-4" style={{ opacity: Math.min(1, (cardHeight - MIN_HEIGHT * 0.8) / (PREVIEW_HEIGHT - MIN_HEIGHT)) }}>
+          <div className="relative overflow-hidden rounded-xl" style={{ height: '140px' }}>
+            <img src={imgs[0]} alt="미리보기" style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
+            {imgs.length > 1 && (
+              <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                {'1/' + imgs.length}
               </div>
-            </div>
-          )}
+            )}
+            {/* 페이드 아웃 효과 */}
+            <div className="absolute bottom-0 left-0 right-0 h-8" style={{ background: 'linear-gradient(transparent, white)' }} />
+          </div>
+        </div>
+      )}
 
-          <div className="flex justify-center pb-8 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
+      {/* 사진 풀뷰 (FULLSCREEN 단계) */}
+      {hasImages && isFullscreen && (
+        <div className="px-4 pb-4">
+          <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>
+          <div className="relative overflow-hidden rounded-xl">
+            <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+              {imgs.map((url, i) => (
+                <div key={i} className="w-full flex-shrink-0">
+                  <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                </div>
+              ))}
+            </div>
+            {imgs.length > 1 && (
+              <div>
+                {slideIndex > 0 && (
+                  <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
+                )}
+                {slideIndex < imgs.length - 1 && (
+                  <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
+                )}
+                <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                  {(slideIndex + 1) + '/' + imgs.length}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-center mt-4 pb-2 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
             <p className="text-xs text-gray-300">▼ 접기</p>
           </div>
         </div>
@@ -407,7 +447,7 @@ function MapTab({ restaurants }) {
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
 
         {selected && (
-          <div className="absolute bottom-16 left-0 right-0 flex justify-center z-50 pointer-events-none">
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none" style={{ zIndex: 999 }}>
             <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2">
               🗺️ Google Maps에서 열기
             </a>
