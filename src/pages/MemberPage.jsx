@@ -398,13 +398,17 @@ function SpotCard({ selected, onClose }) {
                     <button
                       onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }}
                       className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                    >‹</button>
+                    >
+    {'‹'}
+  </button>
                   )}
                   {slideIndex < imgs.length - 1 && (
                     <button
                       onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                    >›</button>
+                    >
+    {'›'}
+  </button>
                   )}
                   <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
                     {(slideIndex + 1) + '/' + imgs.length}
