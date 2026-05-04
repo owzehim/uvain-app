@@ -241,17 +241,16 @@ function EventsTab({ events }) {
 }
 
 function SpotCard({ selected, onClose }) {
-  const [slideIndex, setSlideIndex] = useState(0)
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [slideIndex, setSlideIndex] = useState(0)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
-  // 슬라이더 터치 시작 위치 저장용
-  const sliderTouchStartRef = useRef({ x: 0, y: 0 })
 
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
+
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
     '미용실': '💇', '헬스장': '💪', '기타': '📍'
@@ -266,7 +265,8 @@ function SpotCard({ selected, onClose }) {
     setSlideIndex(0)
   }, [selected])
 
-  // 카드 드래그 핸들러
+  const snapTo = (height) => setCardHeight(height)
+
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
@@ -284,178 +284,127 @@ function SpotCard({ selected, onClose }) {
 
   const handleTouchEnd = () => {
     setIsDragging(false)
-    const totalDelta = startYRef.current - lastYRef.current
-    const draggedUp = totalDelta > 0
+    const delta = startYRef.current - lastYRef.current  // 양수 = 위로, 음수 = 아래로
     const startH = startHeightRef.current
-    const wasFullscreen = startH >= MAX_HEIGHT * 0.85
-    const wasMin = startH <= MIN_HEIGHT * 1.1
+    const wasMax = startH >= MAX_HEIGHT * 0.85
+    const wasMin = startH <= MIN_HEIGHT * 1.15
 
-    if (draggedUp) {
-      setCardHeight(MAX_HEIGHT)
-    } else {
-      if (wasFullscreen) {
-        setCardHeight(MIN_HEIGHT)
-      } else if (wasMin && cardHeight < MIN_HEIGHT * 0.7) {
+    if (delta > 40) {
+      // 위로 스와이프 → MAX
+      snapTo(MAX_HEIGHT)
+    } else if (delta < -40) {
+      // 아래로 스와이프
+      if (wasMax) {
+        // MAX에서 내리면 → MIN
+        snapTo(MIN_HEIGHT)
+      } else if (wasMin) {
+        // MIN에서 내리면 → 닫기
         onClose()
       } else {
-        setCardHeight(MIN_HEIGHT)
+        snapTo(MIN_HEIGHT)
       }
+    } else {
+      // 짧게 터치 → 가장 가까운 스냅 포인트
+      const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
+      snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
     }
   }
 
-  // 슬라이더 전용 터치 핸들러 - 수직이면 카드로 위임, 수평이면 슬라이더 처리
-  const handleSliderTouchStart = (e) => {
-    sliderTouchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-    // 카드 드래그도 동시에 시작
-    startYRef.current = e.touches[0].clientY
-    lastYRef.current = e.touches[0].clientY
-    startHeightRef.current = cardHeight
-  }
-
-  const handleSliderTouchMove = (e) => {
-    const dx = Math.abs(e.touches[0].clientX - sliderTouchStartRef.current.x)
-    const dy = Math.abs(e.touches[0].clientY - sliderTouchStartRef.current.y)
-
-    if (dy > dx) {
-      // 수직 드래그 → 카드 높이 조절로 위임 (슬라이더는 막음)
-      e.stopPropagation()
-      lastYRef.current = e.touches[0].clientY
-      const delta = startYRef.current - e.touches[0].clientY
-      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
-      setCardHeight(newHeight)
-      setIsDragging(true)
-    }
-    // 수평이면 아무것도 안 함 → 슬라이더 기본 동작 허용
-  }
-
-  const handleSliderTouchEnd = () => {
-    if (isDragging) {
-      handleTouchEnd()
-    }
-  }
-
-  const handleWheel = (e) => {
-    if (!hasImages) return
-    e.preventDefault()
-    const newHeight = Math.min(MAX_HEIGHT, Math.max(0, cardHeight - e.deltaY))
-    setCardHeight(newHeight)
-    clearTimeout(window._spotWheelTimer)
-    window._spotWheelTimer = setTimeout(() => {
-      if (e.deltaY > 0) {
-        if (newHeight >= MAX_HEIGHT * 0.85) setCardHeight(MIN_HEIGHT)
-        else if (newHeight < MIN_HEIGHT * 0.6) onClose()
-        else setCardHeight(MIN_HEIGHT)
-      } else {
-        if (newHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2) setCardHeight(MAX_HEIGHT)
-        else setCardHeight(MIN_HEIGHT)
-      }
-    }, 150)
-  }
-
-  const isFullscreen = cardHeight >= MAX_HEIGHT * 0.85
-  const fadeOpacity = hasImages
-    ? Math.min(1, Math.max(0, (cardHeight - MIN_HEIGHT * 0.7) / (MIN_HEIGHT * 0.5)))
-    : 0
-
-  // 이미지 슬라이더 공통 wrapper - 터치 이벤트 분기 처리
-  const SliderWrapper = ({ children }) => (
-    <div
-      onTouchStart={handleSliderTouchStart}
-      onTouchMove={handleSliderTouchMove}
-      onTouchEnd={handleSliderTouchEnd}
-    >
-      {children}
-    </div>
-  )
+  const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
   return (
     <div
       className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
       style={{
         height: cardHeight + 'px',
-        transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4,0,0.2,1)',
+        transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1)',
         zIndex: 1000,
-        overflowY: 'hidden',
-        boxShadow: '0 -4px 20px rgba(0,0,0,0.12)',
+        boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onWheel={hasImages ? handleWheel : undefined}
     >
-      <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white z-10">
+      {/* 핸들 */}
+      <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
-      <div className="px-4 pt-1 pb-3">
-        <div className="flex items-center gap-1.5 flex-wrap mb-1">
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-            {(categoryIcons[selected.category] || '📍') + ' ' + (selected.category || '기타')}
-          </span>
-          {selected.price_range && (
-            <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
-          )}
-          {selected.is_sponsored && (
-            <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <p className="font-semibold text-gray-900">{selected.name}</p>
-          {selected.rating > 0 && (
-            <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>
-          )}
-        </div>
-        {selected.description && <p className="text-xs text-gray-500 mt-1">{selected.description}</p>}
-        {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
-        {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
-        {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>}
-        {(selected.review || selected.reviewer_name) && (
-          <div className="mt-2 pt-2 border-t border-gray-100">
-            {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
-            {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
-          </div>
-        )}
-        {hasImages && !isFullscreen && (
-          <p className="text-xs text-gray-300 mt-2">위로 드래그해서 사진 보기 ▲</p>
-        )}
-      </div>
 
-      {/* 미리보기 이미지 (MIN 상태) */}
-      {hasImages && !isFullscreen && (
-        <SliderWrapper>
-          <div className="px-4" style={{ opacity: fadeOpacity }}>
-            <div className="relative overflow-hidden rounded-xl" style={{ height: '130px' }}>
-              <img src={imgs[0]} alt="미리보기" style={{ width: '100%', height: '130px', objectFit: 'cover' }} />
-              {imgs.length > 1 && (
-                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                  {'1/' + imgs.length}
-                </div>
-              )}
-              <div className="absolute bottom-0 left-0 right-0 h-10" style={{ background: 'linear-gradient(transparent, white)' }} />
+      {/* 스크롤 콘텐츠 영역 */}
+      <div
+        className="flex-1 overflow-y-auto"
+        // 스크롤이 MAX일 때만 허용, MIN일 땐 막아서 드래그가 카드로 전달되게
+        style={{ overflowY: isMax ? 'auto' : 'hidden' }}
+      >
+        {/* 장소 정보 */}
+        <div className="px-4 pt-1 pb-3">
+          <div className="flex items-center gap-1.5 flex-wrap mb-1">
+            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+              {(categoryIcons[selected.category] || '📍') + ' ' + (selected.category || '기타')}
+            </span>
+            {selected.price_range && (
+              <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
+            )}
+            {selected.is_sponsored && (
+              <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-gray-900">{selected.name}</p>
+            {selected.rating > 0 && (
+              <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>
+            )}
+          </div>
+          {selected.description && <p className="text-xs text-gray-500 mt-1">{selected.description}</p>}
+          {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
+          {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
+          {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>}
+          {(selected.review || selected.reviewer_name) && (
+            <div className="mt-2 pt-2 border-t border-gray-100">
+              {selected.review && <p className="text-xs text-gray-600">{selected.review}</p>}
+              {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
             </div>
-          </div>
-        </SliderWrapper>
-      )}
+          )}
+        </div>
 
-      {/* 풀스크린 슬라이더 */}
-      {hasImages && isFullscreen && (
-        <SliderWrapper>
-          <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: (MAX_HEIGHT - 200) + 'px' }}>
-            <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>
+        {/* 사진 슬라이더 - 카드 안에 그냥 존재 */}
+        {hasImages && (
+          <div className="px-4 pb-6">
             <div className="relative overflow-hidden rounded-xl">
-              <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+              <div
+                className="flex"
+                style={{
+                  transform: 'translateX(-' + (slideIndex * 100) + '%)',
+                  transition: 'transform 0.3s ease',
+                }}
+              >
                 {imgs.map((url, i) => (
                   <div key={i} className="w-full flex-shrink-0">
-                    <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    <img
+                      src={url}
+                      alt={'사진 ' + (i + 1)}
+                      style={{ width: '100%', height: 'auto', display: 'block' }}
+                      draggable={false}
+                    />
                   </div>
                 ))}
               </div>
               {imgs.length > 1 && (
                 <>
                   {slideIndex > 0 && (
-                    <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
+                    <button
+                      onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
+                    >‹</button>
                   )}
                   {slideIndex < imgs.length - 1 && (
-                    <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
+                    <button
+                      onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
+                    >›</button>
                   )}
                   <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
                     {(slideIndex + 1) + '/' + imgs.length}
@@ -463,11 +412,20 @@ function SpotCard({ selected, onClose }) {
                 </>
               )}
             </div>
-            <div className="flex justify-center mt-4 pb-2 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
-              <p className="text-xs text-gray-300">▼ 접기</p>
-            </div>
           </div>
-        </SliderWrapper>
+        )}
+      </div>
+
+      {/* 하단 fade - MIN일 때만 표시, 카드 아래쪽에 걸림 */}
+      {!isMax && (
+        <div
+          className="absolute bottom-0 left-0 right-0 pointer-events-none"
+          style={{
+            height: '72px',
+            background: 'linear-gradient(to bottom, transparent, white)',
+            zIndex: 10,
+          }}
+        />
       )}
     </div>
   )
