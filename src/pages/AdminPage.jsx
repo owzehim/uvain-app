@@ -459,7 +459,6 @@ function RestaurantsTab() {
       review: form.review,
       reviewer_name: form.reviewer_name,
       category: form.category,
-      subcategory: form.subcategory,
       price_range: form.price_range,
       is_sponsored: form.is_sponsored,
       image_urls,
@@ -532,7 +531,16 @@ function RestaurantsTab() {
             <label className="text-xs text-gray-400 block mb-1">할인 정보</label>
             <RichEditor key={richEditorKey} value={form.discount_info} onChange={v => setForm(f => ({ ...f, discount_info: v }))} placeholder="할인 정보 (예: 10% 할인)" rows={2} />
           </div>
-          <input placeholder="할인 조건 (예: 주말 제외, 1인 1회 한정)" value={form.discount_terms} onChange={e => setForm({ ...form, discount_terms: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <div>
+  <label className="text-xs text-gray-400 block mb-1">할인 조건</label>
+  <RichEditor
+    key={richEditorKey + 100}
+    value={form.discount_terms}
+    onChange={v => setForm(f => ({ ...f, discount_terms: v }))}
+    placeholder="할인 조건 (예: 주말 제외, 1인 1회 한정)"
+    rows={2}
+  />
+</div>
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
             <option value="">가격대 선택</option>
@@ -594,6 +602,7 @@ function RestaurantsTab() {
                     </div>
                     {r.address && <p className="text-xs text-gray-500 mt-0.5">📍 {r.address}</p>}
                     {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info.replace(/<[^>]+>/g, '')}</p>}
+                    {r.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ {r.discount_terms.replace(/<[^>]+>/g, '')}</p>}
                     {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
                     {r['image_urls'] && r['image_urls'].length > 0 && <p className="text-xs text-gray-400 mt-0.5">{'사진 ' + r['image_urls'].length + '장'}</p>}
                   </div>
