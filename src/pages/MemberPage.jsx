@@ -185,10 +185,10 @@ function EventsTab({ events }) {
                 {imgs.length > 1 && (
                   <div>
                     {currentSlide > 0 && (
-                      <button onClick={() => setSlide(ev.id, currentSlide - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">‹</button>
+                      <button onClick={() => setSlide(ev.id, currentSlide - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'‹'}</button>
                     )}
                     {currentSlide < imgs.length - 1 && (
-                      <button onClick={() => setSlide(ev.id, currentSlide + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">›</button>
+                      <button onClick={() => setSlide(ev.id, currentSlide + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'›'}</button>
                     )}
                     <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
                       {(currentSlide + 1) + '/' + imgs.length}
@@ -284,27 +284,22 @@ function SpotCard({ selected, onClose }) {
 
   const handleTouchEnd = () => {
     setIsDragging(false)
-    const delta = startYRef.current - lastYRef.current  // 양수 = 위로, 음수 = 아래로
+    const delta = startYRef.current - lastYRef.current
     const startH = startHeightRef.current
     const wasMax = startH >= MAX_HEIGHT * 0.85
     const wasMin = startH <= MIN_HEIGHT * 1.15
 
     if (delta > 40) {
-      // 위로 스와이프 → MAX
       snapTo(MAX_HEIGHT)
     } else if (delta < -40) {
-      // 아래로 스와이프
       if (wasMax) {
-        // MAX에서 내리면 → MIN
         snapTo(MIN_HEIGHT)
       } else if (wasMin) {
-        // MIN에서 내리면 → 닫기
         onClose()
       } else {
         snapTo(MIN_HEIGHT)
       }
     } else {
-      // 짧게 터치 → 가장 가까운 스냅 포인트
       const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
       snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
     }
@@ -335,8 +330,7 @@ function SpotCard({ selected, onClose }) {
 
       {/* 스크롤 콘텐츠 영역 */}
       <div
-        className="flex-1 overflow-y-auto"
-        // 스크롤이 MAX일 때만 허용, MIN일 땐 막아서 드래그가 카드로 전달되게
+        className="flex-1"
         style={{ overflowY: isMax ? 'auto' : 'hidden' }}
       >
         {/* 장소 정보 */}
@@ -370,7 +364,7 @@ function SpotCard({ selected, onClose }) {
           )}
         </div>
 
-        {/* 사진 슬라이더 - 카드 안에 그냥 존재 */}
+        {/* 사진 슬라이더 */}
         {hasImages && (
           <div className="px-4 pb-6">
             <div className="relative overflow-hidden rounded-xl">
@@ -398,17 +392,13 @@ function SpotCard({ selected, onClose }) {
                     <button
                       onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }}
                       className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                    >
-    {'‹'}
-  </button>
+                    >{'‹'}</button>
                   )}
                   {slideIndex < imgs.length - 1 && (
                     <button
                       onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                    >
-    {'›'}
-  </button>
+                    >{'›'}</button>
                   )}
                   <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
                     {(slideIndex + 1) + '/' + imgs.length}
@@ -420,29 +410,32 @@ function SpotCard({ selected, onClose }) {
         )}
       </div>
 
-      {/* 하단 fade - MIN일 때만 표시, 카드 아래쪽에 걸림 */}
+      {/* 하단 fade + Google Maps 버튼 - MIN일 때만 표시 */}
       {!isMax && (
-  <div
-    className="absolute bottom-0 left-0 right-0 pointer-events-none"
-    style={{
-      height: '72px',
-      background: 'linear-gradient(to bottom, transparent, white)',
-      zIndex: 10,
-    }}
-  >
-    <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-      
-        href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2"
-        onTouchStart={e => e.stopPropagation()}
-      >
-        🗺️ Google Maps에서 열기
-      </a>
+        <div
+          className="absolute bottom-0 left-0 right-0 pointer-events-none"
+          style={{
+            height: '72px',
+            background: 'linear-gradient(to bottom, transparent, white)',
+            zIndex: 10,
+          }}
+        >
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+            <a
+              href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2"
+              onTouchStart={e => e.stopPropagation()}
+            >
+              🗺️ Google Maps에서 열기
+            </a>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
+  )
+}
 
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
@@ -472,7 +465,6 @@ function MapTab({ restaurants }) {
 
       <div className="flex-1 relative overflow-hidden">
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-
         {selected && (
           <SpotCard selected={selected} onClose={() => setSelected(null)} />
         )}
