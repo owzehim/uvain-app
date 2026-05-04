@@ -311,22 +311,35 @@ const lastYRef = useRef(0)
 
   const handleTouchEnd = () => {
   setIsDragging(false)
-  const elapsed = Date.now() - startTimeRef.current
-  const deltaY = lastYRef.current - startYRef.current
-  const velocity = deltaY / elapsed // px/ms
+  const draggedDown = lastYRef.current > startYRef.current
 
-  // 빠르게 아래로 슬라이드하면 바로 닫기
-  if (velocity > 0.3) {
-    onClose()
+  if (!hasImages) {
+    if (draggedDown && cardHeight < CONTENT_HEIGHT * 0.7) onClose()
+    else setCardHeight(CONTENT_HEIGHT)
     return
   }
-  // 빠르게 위로 슬라이드하면 바로 풀스크린
-  if (velocity < -0.3 && hasImages) {
-    setCardHeight(MAX_HEIGHT)
-    return
+
+  const MID = (MIN_HEIGHT + MAX_HEIGHT) / 2
+
+  if (draggedDown) {
+    // 아래로 드래그
+    if (startHeightRef.current >= MAX_HEIGHT * 0.85) {
+      // 풀스크린에서 내리면 → MIN으로
+      setCardHeight(MIN_HEIGHT)
+    } else if (cardHeight < MIN_HEIGHT * 0.6) {
+      // MIN에서 많이 내리면 → 닫기
+      onClose()
+    } else {
+      setCardHeight(MIN_HEIGHT)
+    }
+  } else {
+    // 위로 드래그
+    if (cardHeight > MID) {
+      setCardHeight(MAX_HEIGHT)
+    } else {
+      setCardHeight(MIN_HEIGHT)
+    }
   }
-  snapToHeight(cardHeight, startHeightRef.current)
-}
 
   const handleWheel = (e) => {
     if (!hasImages) return
