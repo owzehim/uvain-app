@@ -746,3 +746,6 @@ function RestaurantsTab() {
     </div>
   ))
 })()}
+    </div>
+  )
+}
