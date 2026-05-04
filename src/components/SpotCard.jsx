@@ -109,32 +109,59 @@ export function SpotCard({ selected, onClose }) {
         {!hasImages && <div className="pb-16" />}
         {hasImages && (
   <div className="px-4 pb-6">
-    <div className="relative overflow-hidden rounded-xl"
-      onTouchStart={e => { e._swipeStartX = e.touches[0].clientX }}
+    <div
+      className="relative overflow-hidden rounded-xl"
+      onTouchStart={e => {
+        e.currentTarget._swipeStartX = e.touches[0].clientX
+      }}
       onTouchEnd={e => {
-        const dx = e.changedTouches[0].clientX - e._swipeStartX
-        if (dx < -40 && slideIndex < imgs.length - 1) setSlideIndex(i => i + 1)
-        else if (dx > 40 && slideIndex > 0) setSlideIndex(i => i - 1)
+        const start = e.currentTarget._swipeStartX
+        if (start == null) return
+        const dx = e.changedTouches[0].clientX - start
+        e.currentTarget._swipeStartX = null
+        if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) }
+        else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) }
       }}>
       <div className="flex" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
         {imgs.map((url, i) => (
-          <div key={i} className="w-full flex-shrink-0 flex justify-center bg-gray-50">
-            <img src={url} alt={'사진 ' + (i + 1)} style={{ maxWidth: '100%', maxHeight: window.innerWidth >= 768 ? '260px' : '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }} draggable={false} />
+          <div key={i} className="w-full flex-shrink-0 flex justify-center items-center bg-gray-50"
+            style={{ maxHeight: '260px', overflow: 'hidden' }}>
+            <img
+              src={url}
+              alt={'사진 ' + (i + 1)}
+              style={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '100%',
+                maxHeight: '260px',
+                objectFit: 'contain',
+                display: 'block',
+              }}
+              draggable={false}
+            />
           </div>
         ))}
       </div>
       {imgs.length > 1 && (
         <>
           <div className="hidden md:block">
-            {slideIndex > 0 && <button onClick={() => setSlideIndex(slideIndex - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">{'‹'}</button>}
-            {slideIndex < imgs.length - 1 && <button onClick={() => setSlideIndex(slideIndex + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">{'›'}</button>}
+            {slideIndex > 0 && (
+              <button onClick={() => setSlideIndex(slideIndex - 1)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">{'‹'}</button>
+            )}
+            {slideIndex < imgs.length - 1 && (
+              <button onClick={() => setSlideIndex(slideIndex + 1)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">{'›'}</button>
+            )}
           </div>
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
             {imgs.map((_, i) => (
               <div key={i} className={`rounded-full transition-all ${i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
             ))}
           </div>
-          <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">{(slideIndex + 1) + '/' + imgs.length}</div>
+          <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+            {(slideIndex + 1) + '/' + imgs.length}
+          </div>
         </>
       )}
     </div>
