@@ -410,29 +410,27 @@ function SpotCard({ selected, onClose }) {
         )}
       </div>
 
-      {/* 하단 fade + Google Maps 버튼 - MIN일 때만 표시 */}
-      {!isMax && (
-        <div
-          className="absolute bottom-0 left-0 right-0 pointer-events-none"
-          style={{
-            height: '72px',
-            background: 'linear-gradient(to bottom, transparent, white)',
-            zIndex: 10,
-          }}
-        >
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-            <a
-              href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2"
-              onTouchStart={e => e.stopPropagation()}
-            >
-              🗺️ Google Maps에서 열기
-            </a>
-          </div>
+      {/* 하단 fade + Google Maps 버튼 - 항상 표시 */}
+      <div
+        className="absolute bottom-0 left-0 right-0 pointer-events-none"
+        style={{
+          height: '72px',
+          background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)',
+          zIndex: 10,
+        }}
+      >
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+          <a
+            href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2"
+            onTouchStart={e => e.stopPropagation()}
+          >
+            🗺️ Google Maps에서 열기
+          </a>
         </div>
-      )}
+      </div>
     </div>
   )
 }
