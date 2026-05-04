@@ -287,7 +287,16 @@ function SpotCard({ selected, onClose }) {
   return (
     <div ref={cardRef} className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
       style={{ ...(hasImages ? imageStyle : noImageStyle), zIndex: 1000, boxShadow: '0 -4px 24px rgba(0,0,0,0.13)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-      onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+      onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
+onWheel={e => {
+  if (!hasImages) return
+  const delta = e.deltaY
+  if (delta > 0) snapTo(MAX_HEIGHT)
+  else if (delta < 0) {
+    if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
+    else triggerClose()
+  }
+}}>
       <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
