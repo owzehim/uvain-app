@@ -261,13 +261,14 @@ function SpotCard({ selected, onClose }) {
   const MAX_HEIGHT = WIN_H * 0.88
 
   useEffect(() => {
-    setCardHeight(MIN_HEIGHT)
+    setCardHeight(hasImages ? MIN_HEIGHT : 'auto')
     setSlideIndex(0)
   }, [selected])
 
   const snapTo = (height) => setCardHeight(height)
 
   const handleTouchStart = (e) => {
+    if (!hasImages) return
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
     startHeightRef.current = cardHeight
@@ -275,7 +276,7 @@ function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchMove = (e) => {
-    if (!isDragging) return
+    if (!hasImages || !isDragging) return
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
     const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
@@ -283,6 +284,7 @@ function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchEnd = () => {
+    if (!hasImages) return
     setIsDragging(false)
     const delta = startYRef.current - lastYRef.current
     const startH = startHeightRef.current
@@ -311,7 +313,7 @@ function SpotCard({ selected, onClose }) {
     <div
       className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
       style={{
-        height: cardHeight + 'px',
+        height: hasImages ? cardHeight + 'px' : 'auto',
         transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1)',
         zIndex: 1000,
         boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
@@ -323,10 +325,13 @@ function SpotCard({ selected, onClose }) {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* 핸들 */}
-      <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
-        <div className="w-10 h-1 bg-gray-300 rounded-full" />
-      </div>
+      {/* 핸들 - 사진 있을 때만 표시 */}
+      {hasImages && (
+        <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+      )}
+      {!hasImages && <div className="pt-4" />}
 
       {/* 스크롤 콘텐츠 영역 */}
       <div
