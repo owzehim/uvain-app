@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 
@@ -50,19 +50,25 @@ export default function AdminPage() {
   )
 }
 
-/* ── Rich Text Editor ── */
 const COLORS = ['#000000','#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#ffffff']
 
-function RichEditor({ value, onChange, id, placeholder, multiline = false, rows = 3 }) {
+function RichEditor({ value, onChange, placeholder, rows = 3 }) {
   const ref = useRef(null)
   const [showColors, setShowColors] = useState(false)
+  const isInitialized = useRef(false)
 
-  // Sync contenteditable with value prop when value changes externally
   useEffect(() => {
-    if (ref.current && ref.current.innerHTML !== value) {
+    if (ref.current && !isInitialized.current) {
       ref.current.innerHTML = value || ''
+      isInitialized.current = true
     }
-  }, []) // only on mount
+  }, [])
+
+  useEffect(() => {
+    if (ref.current && value === '') {
+      ref.current.innerHTML = ''
+    }
+  }, [value])
 
   const exec = (cmd, val = null) => {
     ref.current.focus()
@@ -75,13 +81,6 @@ function RichEditor({ value, onChange, id, placeholder, multiline = false, rows 
   const applyColor = (color) => {
     exec('foreColor', color)
     setShowColors(false)
-  }
-
-  const style = {
-    minHeight: multiline ? `${rows * 1.5}rem` : '2.25rem',
-    whiteSpace: multiline ? 'pre-wrap' : 'nowrap',
-    overflowY: multiline ? 'auto' : 'hidden',
-    overflowX: multiline ? 'hidden' : 'auto',
   }
 
   return (
@@ -109,27 +108,23 @@ function RichEditor({ value, onChange, id, placeholder, multiline = false, rows 
       </div>
       <div
         ref={ref}
-        id={id}
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
         onBlur={handleInput}
         data-placeholder={placeholder}
         className="px-3 py-2 text-sm outline-none"
-        style={style}
-        dangerouslySetInnerHTML={{ __html: value || '' }}
+        style={{ minHeight: `${rows * 1.5}rem`, whiteSpace: 'pre-wrap', overflowY: 'auto', direction: 'ltr', unicodeBidi: 'plaintext' }}
       />
       <style>{`[contenteditable]:empty:before{content:attr(data-placeholder);color:#9ca3af}`}</style>
     </div>
   )
 }
 
-/* ── Korean sort ── */
 function koreanSort(arr, key) {
   return [...arr].sort((a, b) => (a[key] || '').localeCompare(b[key] || '', ['ko', 'en']))
 }
 
-/* ── Members Tab ── */
 function MembersTab() {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -195,7 +190,7 @@ function MembersTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">멤버 목록 ({members.length}명)</h2>
-        <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">+ 멤버 추가</button>
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">+ 멤버 추가</button>}
       </div>
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
@@ -245,7 +240,6 @@ function MembersTab() {
   )
 }
 
-/* ── Events Tab ── */
 function EventsTab() {
   const [events, setEvents] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -313,11 +307,17 @@ function EventsTab() {
     setImageFiles([]); setImagePreviews([]); setShowForm(true)
   }
 
+  const openAdd = () => {
+    setEditTarget(null)
+    setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
+    setImageFiles([]); setImagePreviews([]); setShowForm(true)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
-        <button onClick={() => { setEditTarget(null); setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' }); setImageFiles([]); setImagePreviews([]); setShowForm(true) }} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">+ 이벤트 추가</button>
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">+ 이벤트 추가</button>}
       </div>
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
@@ -325,7 +325,7 @@ function EventsTab() {
           <input placeholder="이벤트 제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div>
             <label className="text-xs text-gray-400 block mb-1">내용</label>
-            <RichEditor id="event-desc-input" value={form.description} onChange={v => setForm({ ...form, description: v })} placeholder="내용" multiline rows={3} />
+            <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           </div>
           <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div className="flex gap-2">
@@ -396,7 +396,6 @@ function EventsTab() {
   )
 }
 
-/* ── Restaurants Tab ── */
 const SPOT_CATEGORIES = ['맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
 
 function RestaurantsTab() {
@@ -407,6 +406,7 @@ function RestaurantsTab() {
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
   const [uploading, setUploading] = useState(false)
+  const [richEditorKey, setRichEditorKey] = useState(0)
 
   const fetchRestaurants = async () => {
     const { data } = await supabase.from('restaurants').select('*').order('created_at', { ascending: false })
@@ -446,12 +446,41 @@ function RestaurantsTab() {
       }
       image_urls = [...image_urls, ...uploaded]
     }
-    const payload = { ...form, image_urls, latitude: form.latitude ? parseFloat(form.latitude) : null, longitude: form.longitude ? parseFloat(form.longitude) : null, rating: form.rating ? parseFloat(form.rating) : 0 }
-    if (editTarget) { await supabase.from('restaurants').update(payload).eq('id', editTarget.id) }
-    else { await supabase.from('restaurants').insert(payload) }
-    setUploading(false); setShowForm(false); setEditTarget(null)
+    const payload = {
+      name: form.name,
+      map_label: form.map_label,
+      description: form.description,
+      address: form.address,
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
+      discount_info: form.discount_info,
+      discount_terms: form.discount_terms,
+      rating: form.rating ? parseFloat(form.rating) : 0,
+      review: form.review,
+      reviewer_name: form.reviewer_name,
+      category: form.category,
+      subcategory: form.subcategory,
+      price_range: form.price_range,
+      is_sponsored: form.is_sponsored,
+      image_urls,
+    }
+    let saveError = null
+    if (editTarget) {
+      const { error } = await supabase.from('restaurants').update(payload).eq('id', editTarget.id)
+      saveError = error
+    } else {
+      const { error } = await supabase.from('restaurants').insert(payload)
+      saveError = error
+    }
+    if (saveError) { alert('저장 실패: ' + saveError.message); setUploading(false); return }
+    setUploading(false)
+    setShowForm(false)
+    setEditTarget(null)
     setForm({ name: '', map_label: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', subcategory: '', price_range: '', is_sponsored: false, discount_terms: '' })
-    setImageFiles([]); setImagePreviews([]); fetchRestaurants()
+    setImageFiles([])
+    setImagePreviews([])
+    setRichEditorKey(k => k + 1)
+    fetchRestaurants()
   }
 
   const handleDelete = async (id) => {
@@ -463,12 +492,14 @@ function RestaurantsTab() {
   const openEdit = (r) => {
     setEditTarget(r)
     setForm({ name: r.name, map_label: r.map_label || '', description: r.description || '', address: r.address || '', latitude: r.latitude || '', longitude: r.longitude || '', discount_info: r.discount_info || '', rating: r.rating || '', review: r.review || '', reviewer_name: r.reviewer_name || '', category: r.category || '맛집', subcategory: r.subcategory || '', price_range: r.price_range || '', is_sponsored: r.is_sponsored || false, discount_terms: r.discount_terms || '' })
+    setRichEditorKey(k => k + 1)
     setImageFiles([]); setImagePreviews([]); setShowForm(true)
   }
 
   const openAdd = () => {
     setEditTarget(null)
     setForm({ name: '', map_label: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', subcategory: '', price_range: '', is_sponsored: false, discount_terms: '' })
+    setRichEditorKey(k => k + 1)
     setImageFiles([]); setImagePreviews([]); setShowForm(true)
   }
 
@@ -478,7 +509,7 @@ function RestaurantsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">장소 관리</h2>
-        <button onClick={openAdd} className="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600">+ 장소 추가</button>
+        {!showForm && <button onClick={openAdd} className="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600">+ 장소 추가</button>}
       </div>
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
@@ -490,14 +521,17 @@ function RestaurantsTab() {
           </select>
           <div>
             <label className="text-xs text-gray-400 block mb-1">설명</label>
-            <RichEditor id="desc-input" value={form.description} onChange={v => setForm({ ...form, description: v })} placeholder="설명" />
+            <textarea placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           </div>
           <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div className="flex gap-2">
             <input placeholder="위도 (예: 52.3676)" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
             <input placeholder="경도 (예: 4.9041)" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           </div>
-          <input placeholder="할인 정보 (예: 10% 할인)" value={form.discount_info} onChange={e => setForm({ ...form, discount_info: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">할인 정보</label>
+            <RichEditor key={richEditorKey} value={form.discount_info} onChange={v => setForm(f => ({ ...f, discount_info: v }))} placeholder="할인 정보 (예: 10% 할인)" rows={2} />
+          </div>
           <input placeholder="할인 조건 (예: 주말 제외, 1인 1회 한정)" value={form.discount_terms} onChange={e => setForm({ ...form, discount_terms: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
@@ -514,7 +548,7 @@ function RestaurantsTab() {
           <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div>
             <label className="text-xs text-gray-400 block mb-1">리뷰</label>
-            <RichEditor id="review-input" value={form.review} onChange={v => setForm({ ...form, review: v })} placeholder="리뷰" multiline rows={3} />
+            <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           </div>
           <div>
             <label className="text-sm text-gray-500 block mb-1">사진 추가 (여러장 가능)</label>
@@ -536,7 +570,7 @@ function RestaurantsTab() {
           )}
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-orange-500 text-white rounded-lg py-2 text-sm hover:bg-orange-600 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
-            <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
+            <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
           </div>
         </div>
       )}
@@ -559,7 +593,7 @@ function RestaurantsTab() {
                       {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
                     </div>
                     {r.address && <p className="text-xs text-gray-500 mt-0.5">📍 {r.address}</p>}
-                    {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info}</p>}
+                    {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info.replace(/<[^>]+>/g, '')}</p>}
                     {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
                     {r['image_urls'] && r['image_urls'].length > 0 && <p className="text-xs text-gray-400 mt-0.5">{'사진 ' + r['image_urls'].length + '장'}</p>}
                   </div>
