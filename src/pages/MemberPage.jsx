@@ -369,6 +369,9 @@ function SpotCard({ selected, onClose }) {
           )}
         </div>
 
+        {/* 사진 없을 때 버튼과 겹치지 않도록 하단 패딩 */}
+        {!hasImages && <div className="pb-16" />}
+
         {/* 사진 슬라이더 */}
         {hasImages && (
           <div className="px-4 pb-6">
