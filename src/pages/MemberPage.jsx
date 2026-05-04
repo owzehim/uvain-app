@@ -414,6 +414,85 @@ function SpotCard({ selected, onClose }) {
   )
 }
 
+const handleTouchEnd = () => {
+  setIsDragging(false)
+  const totalDelta = startYRef.current - lastYRef.current
+  const draggedUp = totalDelta > 0
+  const startH = startHeightRef.current
+  const wasFullscreen = startH >= MAX_HEIGHT * 0.85
+  const wasMin = startH <= MIN_HEIGHT * 1.1
+
+  if (!hasImages) {
+    if (!draggedUp && cardHeight < CONTENT_HEIGHT * 0.7) onClose()
+    else setCardHeight(CONTENT_HEIGHT)
+    return
+  }
+
+  if (draggedUp) {
+    // 위로 드래그 → 풀스크린
+    setCardHeight(MAX_HEIGHT)
+  } else {
+    // 아래로 드래그
+    if (wasFullscreen) {
+      // 풀스크린에서 내리면 → MIN
+      setCardHeight(MIN_HEIGHT)
+    } else if (wasMin && cardHeight < MIN_HEIGHT * 0.7) {
+      // MIN에서 많이 내리면 → 닫기
+      onClose()
+    } else {
+      setCardHeight(MIN_HEIGHT)
+    }
+  }
+}
+
+  const handleWheel = (e) => {
+    if (!hasImages) return
+    e.preventDefault()
+    const newHeight = Math.min(MAX_HEIGHT, Math.max(0, cardHeight - e.deltaY))
+    setCardHeight(newHeight)
+    clearTimeout(window._spotWheelTimer)
+    window._spotWheelTimer = setTimeout(() => {
+      const draggedDown = e.deltaY < 0
+      if (!draggedDown) {
+        if (newHeight >= MAX_HEIGHT * 0.85) {
+          setCardHeight(MIN_HEIGHT)
+        } else if (newHeight < MIN_HEIGHT * 0.6) {
+          onClose()
+        } else {
+          setCardHeight(MIN_HEIGHT)
+        }
+      } else {
+        if (newHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2) {
+          setCardHeight(MAX_HEIGHT)
+        } else {
+          setCardHeight(MIN_HEIGHT)
+        }
+      }
+    }, 150)
+  }
+
+  const isFullscreen = cardHeight >= MAX_HEIGHT * 0.85
+  const fadeOpacity = hasImages ? Math.min(1, Math.max(0, (cardHeight - MIN_HEIGHT * 0.7) / (MIN_HEIGHT * 0.5))) : 0
+
+  return (
+    <div
+      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+      style={{
+        height: cardHeight + 'px',
+        transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4,0,0.2,1)',
+        zIndex: 1000,
+        overflowY: 'hidden',
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.12)',
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onWheel={hasImages ? handleWheel : undefined}
+    >
+      <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white z-10">
+        <div className="w-10 h-1 bg-gray-300 rounded-full" />
+      </div>
+
       <div className="px-4 pt-1 pb-3">
         <div className="flex items-center gap-1.5 flex-wrap mb-1">
           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
@@ -495,7 +574,8 @@ function SpotCard({ selected, onClose }) {
           </div>
         </div>
       )}
-      </div>
+    </div>
+  )
 
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
@@ -527,7 +607,7 @@ function MapTab({ restaurants }) {
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
 
         {selected && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none" style={{ zIndex: 1001 }}>
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none" style={{ zIndex: 999 }}>
             <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2">
               🗺️ Google Maps에서 열기
             </a>
