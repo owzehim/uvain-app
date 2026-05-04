@@ -4,21 +4,10 @@ import { useQRToken } from '../hooks/useQRToken'
 import { QRCodeSVG } from 'qrcode.react'
 import MapView from '../components/MapView'
 
-// Rich text renderer: supports **bold**, *italic*, [color:red]text[/color]
+// Render HTML rich text (stored as innerHTML from contenteditable)
 function RichText({ text, className = '' }) {
   if (!text) return null
-  const parts = []
-  const regex = /\*\*(.+?)\*\*|\*(.+?)\*|\[color:([^\]]+)\](.+?)\[\/color\]/g
-  let last = 0, m
-  while ((m = regex.exec(text)) !== null) {
-    if (m.index > last) parts.push(<span key={last}>{text.slice(last, m.index)}</span>)
-    if (m[1]) parts.push(<strong key={m.index}>{m[1]}</strong>)
-    else if (m[2]) parts.push(<em key={m.index}>{m[2]}</em>)
-    else if (m[3]) parts.push(<span key={m.index} style={{ color: m[3] }}>{m[4]}</span>)
-    last = m.index + m[0].length
-  }
-  if (last < text.length) parts.push(<span key={last}>{text.slice(last)}</span>)
-  return <span className={className}>{parts.length ? parts : text}</span>
+  return <span className={className} dangerouslySetInnerHTML={{ __html: text }} />
 }
 
 export default function MemberPage() {
@@ -30,9 +19,6 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const { token, secondsLeft } = useQRToken(member?.totp_secret)
-  const TAB_ORDER = ['qr', 'events', 'map']
-  const swipeStartX = useRef(null)
-  const swipeStartY = useRef(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,24 +41,6 @@ export default function MemberPage() {
     setTabKey(prev => prev + 1)
   }
 
-  const handleSwipeStart = (e) => {
-    const t = e.touches[0]
-    swipeStartX.current = t.clientX
-    swipeStartY.current = t.clientY
-  }
-
-  const handleSwipeEnd = (e) => {
-    if (swipeStartX.current === null) return
-    const dx = e.changedTouches[0].clientX - swipeStartX.current
-    const dy = Math.abs(e.changedTouches[0].clientY - swipeStartY.current)
-    swipeStartX.current = null
-    // Only horizontal swipe from edge (first/last 30px) with sufficient distance
-    if (Math.abs(dx) < 60 || dy > 80) return
-    const idx = TAB_ORDER.indexOf(activeTab)
-    if (dx < 0 && idx < TAB_ORDER.length - 1) handleTabChange(TAB_ORDER[idx + 1])
-    if (dx > 0 && idx > 0) handleTabChange(TAB_ORDER[idx - 1])
-  }
-
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-gray-500">로딩 중...</p>
@@ -83,10 +51,7 @@ export default function MemberPage() {
   const isValid = member?.is_member && member?.membership_valid_until && new Date(member.membership_valid_until) >= new Date()
 
   return (
-    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}
-      onTouchStart={handleSwipeStart}
-      onTouchEnd={handleSwipeEnd}
-    >
+    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}>
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
         <h1 className="font-bold text-gray-900">UvA-IN</h1>
         <div className="flex gap-2">
@@ -174,9 +139,7 @@ function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
 
-  const setSlide = (eventId, idx) => {
-    setSlideIndexes(prev => ({ ...prev, [eventId]: idx }))
-  }
+  const setSlide = (eventId, idx) => setSlideIndexes(prev => ({ ...prev, [eventId]: idx }))
 
   const addToCalendar = (ev) => {
     const start = new Date(ev.event_date)
@@ -187,9 +150,7 @@ function EventsTab({ events }) {
     const blob = new Blob([ics], { type: 'text/calendar' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url
-    a.download = ev.title + '.ics'
-    a.click()
+    a.href = url; a.download = ev.title + '.ics'; a.click()
     URL.revokeObjectURL(url)
   }
 
@@ -213,31 +174,20 @@ function EventsTab({ events }) {
           )}
           {ev.location && <p className="text-sm text-gray-500 mt-0.5">{'📍 ' + ev.location}</p>}
         </button>
-
         {isExpanded && (
           <div className="animate-fade-slide-up">
             {imgs.length > 0 && (
               <div className="relative overflow-hidden">
                 <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}>
-                  {imgs.map((url, i) => (
-                    <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ aspectRatio: '1/1' }} />
-                  ))}
+                  {imgs.map((url, i) => <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ aspectRatio: '1/1' }} />)}
                 </div>
                 {imgs.length > 1 && (
                   <div>
-                    {currentSlide > 0 && (
-                      <button onClick={() => setSlide(ev.id, currentSlide - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'‹'}</button>
-                    )}
-                    {currentSlide < imgs.length - 1 && (
-                      <button onClick={() => setSlide(ev.id, currentSlide + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'›'}</button>
-                    )}
-                    <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                      {(currentSlide + 1) + '/' + imgs.length}
-                    </div>
+                    {currentSlide > 0 && <button onClick={() => setSlide(ev.id, currentSlide - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'‹'}</button>}
+                    {currentSlide < imgs.length - 1 && <button onClick={() => setSlide(ev.id, currentSlide + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'›'}</button>}
+                    <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">{(currentSlide + 1) + '/' + imgs.length}</div>
                     <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-                      {imgs.map((_, i) => (
-                        <button key={i} onClick={() => setSlide(ev.id, i)} className={'w-1.5 h-1.5 rounded-full ' + (i === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50')} />
-                      ))}
+                      {imgs.map((_, i) => <button key={i} onClick={() => setSlide(ev.id, i)} className={'w-1.5 h-1.5 rounded-full ' + (i === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50')} />)}
                     </div>
                   </div>
                 )}
@@ -246,14 +196,8 @@ function EventsTab({ events }) {
             <div className="px-5 pb-5">
               {ev.description && <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />}
               <div className="flex gap-2 mt-3">
-                {ev.event_date && (
-                  <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200">
-                    📅 캘린더에 추가
-                  </button>
-                )}
-                {instaUrl && (
-                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center">📸 Instagram에서 보기</a>
-                )}
+                {ev.event_date && <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200">📅 캘린더에 추가</button>}
+                {instaUrl && <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center">📸 Instagram에서 보기</a>}
               </div>
             </div>
           </div>
@@ -272,9 +216,7 @@ function EventsTab({ events }) {
             <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {events.map(ev => renderEvent(ev))}
-          </div>
+          <div className="space-y-3">{events.map(ev => renderEvent(ev))}</div>
         )}
       </div>
     </div>
@@ -296,25 +238,18 @@ function SpotCard({ selected, onClose }) {
 
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-    '미용실': '💇', '헬스장': '💪', '기타': '📍',
-    '도서관': '📚', '학교': '🎓'
+    '운동': '💪', '미용/뷰티': '💇', '기타': '📍',
+    '스터디': '📚', '학교': '🎓', '의료': '🏥',
+    '쇼핑': '🛍️', '여가': '🎮'
   }
 
   const WIN_H = typeof window !== 'undefined' ? window.innerHeight : 700
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MAX_HEIGHT = WIN_H * 0.88
 
-  useEffect(() => {
-    setCardHeight(MIN_HEIGHT)
-    setSlideIndex(0)
-    setClosing(false)
-  }, [selected])
+  useEffect(() => { setCardHeight(MIN_HEIGHT); setSlideIndex(0); setClosing(false) }, [selected])
 
-  const triggerClose = () => {
-    setClosing(true)
-    setTimeout(() => onClose(), 320)
-  }
-
+  const triggerClose = () => { setClosing(true); setTimeout(() => onClose(), 320) }
   const snapTo = (height) => setCardHeight(height)
 
   const handleTouchStart = (e) => {
@@ -329,10 +264,7 @@ function SpotCard({ selected, onClose }) {
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
     if (!hasImages && delta > 0) return
-    if (hasImages) {
-      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
-      setCardHeight(newHeight)
-    }
+    if (hasImages) { const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta)); setCardHeight(newHeight) }
   }
 
   const handleTouchEnd = () => {
@@ -341,83 +273,36 @@ function SpotCard({ selected, onClose }) {
     const startH = startHeightRef.current
     const wasMax = startH >= MAX_HEIGHT * 0.85
     const wasMin = startH <= MIN_HEIGHT * 1.15
-
-    if (!hasImages) {
-      if (delta < -40) triggerClose()
-      return
-    }
-
-    if (delta > 40) {
-      snapTo(MAX_HEIGHT)
-    } else if (delta < -40) {
-      if (wasMax) snapTo(MIN_HEIGHT)
-      else if (wasMin) triggerClose()
-      else snapTo(MIN_HEIGHT)
-    } else {
-      const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
-      snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
-    }
+    if (!hasImages) { if (delta < -40) triggerClose(); return }
+    if (delta > 40) { snapTo(MAX_HEIGHT) }
+    else if (delta < -40) { if (wasMax) snapTo(MIN_HEIGHT); else if (wasMin) triggerClose(); else snapTo(MIN_HEIGHT) }
+    else { const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2; snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT) }
   }
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
-  // No-image cards use translateY animation for smooth close
-  const noImageStyle = {
-    transform: closing ? 'translateY(110%)' : 'translateY(0)',
-    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
-    height: 'auto',
-  }
-
-  const imageStyle = {
-    height: cardHeight + 'px',
-    transform: closing ? 'translateY(110%)' : 'translateY(0)',
-    transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)',
-  }
+  const noImageStyle = { transform: closing ? 'translateY(110%)' : 'translateY(0)', transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)', height: 'auto' }
+  const imageStyle = { height: cardHeight + 'px', transform: closing ? 'translateY(110%)' : 'translateY(0)', transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)' }
 
   return (
-    <div
-      ref={cardRef}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
-      style={{
-        ...(hasImages ? imageStyle : noImageStyle),
-        zIndex: 1000,
-        boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* 핸들 - 항상 표시 */}
+    <div ref={cardRef} className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+      style={{ ...(hasImages ? imageStyle : noImageStyle), zIndex: 1000, boxShadow: '0 -4px 24px rgba(0,0,0,0.13)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+      onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
-
-      {/* 스크롤 콘텐츠 영역 */}
-      <div
-        className="flex-1"
-        style={{ overflowY: isMax ? 'auto' : 'hidden' }}
-      >
-        {/* 장소 정보 */}
+      <div className="flex-1" style={{ overflowY: isMax ? 'auto' : 'hidden' }}>
         <div className="px-4 pt-1 pb-3">
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
               {(categoryIcons[selected.category] || '📍') + ' ' + (selected.category || '기타')}
             </span>
-            {selected.price_range && (
-              <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>
-            )}
-            {selected.is_sponsored && (
-              <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>
-            )}
+            {selected.price_range && <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>}
+            {selected.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
           </div>
           <div className="flex items-center gap-2">
             <p className="font-semibold text-gray-900">{selected.name}</p>
-            {selected.rating > 0 && (
-              <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>
-            )}
+            {selected.rating > 0 && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}
           </div>
           {selected.description && <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />}
           {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
@@ -430,73 +315,34 @@ function SpotCard({ selected, onClose }) {
             </div>
           )}
         </div>
-
-        {/* 사진 없을 때 버튼과 겹치지 않도록 하단 패딩 */}
         {!hasImages && <div className="pb-16" />}
-
-        {/* 사진 슬라이더 */}
         {hasImages && (
           <div className="px-4 pb-6">
             <div className="relative overflow-hidden rounded-xl">
-              <div
-                className="flex"
-                style={{
-                  transform: 'translateX(-' + (slideIndex * 100) + '%)',
-                  transition: 'transform 0.3s ease',
-                }}
-              >
+              <div className="flex" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
                 {imgs.map((url, i) => (
                   <div key={i} className="w-full flex-shrink-0">
-                    <img
-                      src={url}
-                      alt={'사진 ' + (i + 1)}
-                      style={{ width: '100%', height: 'auto', display: 'block' }}
-                      draggable={false}
-                    />
+                    <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: 'auto', display: 'block' }} draggable={false} />
                   </div>
                 ))}
               </div>
               {imgs.length > 1 && (
                 <>
-                  {slideIndex > 0 && (
-                    <button
-                      onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                    >{'‹'}</button>
-                  )}
-                  {slideIndex < imgs.length - 1 && (
-                    <button
-                      onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                    >{'›'}</button>
-                  )}
-                  <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                    {(slideIndex + 1) + '/' + imgs.length}
-                  </div>
+                  {slideIndex > 0 && <button onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">{'‹'}</button>}
+                  {slideIndex < imgs.length - 1 && <button onTouchEnd={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">{'›'}</button>}
+                  <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">{(slideIndex + 1) + '/' + imgs.length}</div>
                 </>
               )}
             </div>
           </div>
         )}
       </div>
-
-      {/* 하단 fade + Google Maps 버튼 - 항상 표시 */}
-      <div
-        className="absolute bottom-0 left-0 right-0 pointer-events-none"
-        style={{
-          height: '72px',
-          background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)',
-          zIndex: 10,
-        }}
-      >
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
         <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-          <a
-            href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
-            target="_blank"
-            rel="noopener noreferrer"
+          <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
+            target="_blank" rel="noopener noreferrer"
             className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2"
-            onTouchStart={e => e.stopPropagation()}
-          >
+            onTouchStart={e => e.stopPropagation()}>
             🗺️ Google Maps에서 열기
           </a>
         </div>
@@ -509,10 +355,12 @@ function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  const categories = ['전체', '맛집', '카페', '마트', '도서관', '학교', '기타']
+  const categories = ['전체', '맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-    '도서관': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️'
+    '스터디': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️',
+    '운동': '💪', '미용/뷰티': '💇', '의료': '🏥',
+    '쇼핑': '🛍️', '여가': '🎮'
   }
 
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
@@ -521,21 +369,15 @@ function MapTab({ restaurants }) {
     <div className="h-full flex flex-col">
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
         {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => { setActiveCategory(cat); setSelected(null) }}
-            className={'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ' + (activeCategory === cat ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
-          >
+          <button key={cat} onClick={() => { setActiveCategory(cat); setSelected(null) }}
+            className={'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ' + (activeCategory === cat ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
             {categoryIcons[cat] + ' ' + cat}
           </button>
         ))}
       </div>
-
       <div className="flex-1 relative overflow-hidden">
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-        {selected && (
-          <SpotCard selected={selected} onClose={() => setSelected(null)} />
-        )}
+        {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
       </div>
     </div>
   )
