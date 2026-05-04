@@ -247,6 +247,8 @@ function SpotCard({ selected, onClose }) {
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
+  // 슬라이더 터치 시작 위치 저장용
+  const sliderTouchStartRef = useRef({ x: 0, y: 0 })
 
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
@@ -264,6 +266,7 @@ function SpotCard({ selected, onClose }) {
     setSlideIndex(0)
   }, [selected])
 
+  // 카드 드래그 핸들러
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
@@ -273,7 +276,6 @@ function SpotCard({ selected, onClose }) {
 
   const handleTouchMove = (e) => {
     if (!isDragging) return
-    e.stopPropagation()
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
     const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
@@ -301,6 +303,37 @@ function SpotCard({ selected, onClose }) {
     }
   }
 
+  // 슬라이더 전용 터치 핸들러 - 수직이면 카드로 위임, 수평이면 슬라이더 처리
+  const handleSliderTouchStart = (e) => {
+    sliderTouchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    // 카드 드래그도 동시에 시작
+    startYRef.current = e.touches[0].clientY
+    lastYRef.current = e.touches[0].clientY
+    startHeightRef.current = cardHeight
+  }
+
+  const handleSliderTouchMove = (e) => {
+    const dx = Math.abs(e.touches[0].clientX - sliderTouchStartRef.current.x)
+    const dy = Math.abs(e.touches[0].clientY - sliderTouchStartRef.current.y)
+
+    if (dy > dx) {
+      // 수직 드래그 → 카드 높이 조절로 위임 (슬라이더는 막음)
+      e.stopPropagation()
+      lastYRef.current = e.touches[0].clientY
+      const delta = startYRef.current - e.touches[0].clientY
+      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
+      setCardHeight(newHeight)
+      setIsDragging(true)
+    }
+    // 수평이면 아무것도 안 함 → 슬라이더 기본 동작 허용
+  }
+
+  const handleSliderTouchEnd = () => {
+    if (isDragging) {
+      handleTouchEnd()
+    }
+  }
+
   const handleWheel = (e) => {
     if (!hasImages) return
     e.preventDefault()
@@ -323,6 +356,17 @@ function SpotCard({ selected, onClose }) {
   const fadeOpacity = hasImages
     ? Math.min(1, Math.max(0, (cardHeight - MIN_HEIGHT * 0.7) / (MIN_HEIGHT * 0.5)))
     : 0
+
+  // 이미지 슬라이더 공통 wrapper - 터치 이벤트 분기 처리
+  const SliderWrapper = ({ children }) => (
+    <div
+      onTouchStart={handleSliderTouchStart}
+      onTouchMove={handleSliderTouchMove}
+      onTouchEnd={handleSliderTouchEnd}
+    >
+      {children}
+    </div>
+  )
 
   return (
     <div
@@ -374,48 +418,56 @@ function SpotCard({ selected, onClose }) {
           <p className="text-xs text-gray-300 mt-2">위로 드래그해서 사진 보기 ▲</p>
         )}
       </div>
+
+      {/* 미리보기 이미지 (MIN 상태) */}
       {hasImages && !isFullscreen && (
-        <div className="px-4" style={{ opacity: fadeOpacity }}>
-          <div className="relative overflow-hidden rounded-xl" style={{ height: '130px' }}>
-            <img src={imgs[0]} alt="미리보기" style={{ width: '100%', height: '130px', objectFit: 'cover' }} />
-            {imgs.length > 1 && (
-              <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                {'1/' + imgs.length}
-              </div>
-            )}
-            <div className="absolute bottom-0 left-0 right-0 h-10" style={{ background: 'linear-gradient(transparent, white)' }} />
-          </div>
-        </div>
-      )}
-      {hasImages && isFullscreen && (
-        <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: (MAX_HEIGHT - 200) + 'px' }}>
-          <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>
-          <div className="relative overflow-hidden rounded-xl">
-            <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
-              {imgs.map((url, i) => (
-                <div key={i} className="w-full flex-shrink-0">
-                  <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <SliderWrapper>
+          <div className="px-4" style={{ opacity: fadeOpacity }}>
+            <div className="relative overflow-hidden rounded-xl" style={{ height: '130px' }}>
+              <img src={imgs[0]} alt="미리보기" style={{ width: '100%', height: '130px', objectFit: 'cover' }} />
+              {imgs.length > 1 && (
+                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                  {'1/' + imgs.length}
                 </div>
-              ))}
+              )}
+              <div className="absolute bottom-0 left-0 right-0 h-10" style={{ background: 'linear-gradient(transparent, white)' }} />
             </div>
-            {imgs.length > 1 && (
-              <>
-                {slideIndex > 0 && (
-                  <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
-                )}
-                {slideIndex < imgs.length - 1 && (
-                  <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
-                )}
-                <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-                  {(slideIndex + 1) + '/' + imgs.length}
-                </div>
-              </>
-            )}
           </div>
-          <div className="flex justify-center mt-4 pb-2 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
-            <p className="text-xs text-gray-300">▼ 접기</p>
+        </SliderWrapper>
+      )}
+
+      {/* 풀스크린 슬라이더 */}
+      {hasImages && isFullscreen && (
+        <SliderWrapper>
+          <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: (MAX_HEIGHT - 200) + 'px' }}>
+            <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>
+            <div className="relative overflow-hidden rounded-xl">
+              <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
+                {imgs.map((url, i) => (
+                  <div key={i} className="w-full flex-shrink-0">
+                    <img src={url} alt={'사진 ' + (i+1)} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                  </div>
+                ))}
+              </div>
+              {imgs.length > 1 && (
+                <>
+                  {slideIndex > 0 && (
+                    <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex - 1) }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">‹</button>
+                  )}
+                  {slideIndex < imgs.length - 1 && (
+                    <button onClick={e => { e.stopPropagation(); setSlideIndex(slideIndex + 1) }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center">›</button>
+                  )}
+                  <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                    {(slideIndex + 1) + '/' + imgs.length}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="flex justify-center mt-4 pb-2 cursor-pointer" onClick={() => setCardHeight(MIN_HEIGHT)}>
+              <p className="text-xs text-gray-300">▼ 접기</p>
+            </div>
           </div>
-        </div>
+        </SliderWrapper>
       )}
     </div>
   )
