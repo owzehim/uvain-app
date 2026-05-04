@@ -265,23 +265,30 @@ function SpotCard({ selected, onClose }) {
     setSlideIndex(0)
   }, [selected])
 
-  const snapToHeight = (h) => {
-    // 사진 없으면 스냅 없음
-    if (!hasImages) {
-      if (h < CONTENT_HEIGHT * 0.7) {
-        onClose()
-      }
-      return
-    }
-    const MID = (MIN_HEIGHT + MAX_HEIGHT) / 2
+  const snapToHeight = (h, startH) => {
+  const draggedDown = h < startH
+  if (!hasImages) {
+    if (draggedDown && h < CONTENT_HEIGHT * 0.7) onClose()
+    else setCardHeight(CONTENT_HEIGHT)
+    return
+  }
+  // 아래로 드래그한 경우
+  if (draggedDown) {
     if (h < MIN_HEIGHT * 0.6) {
       onClose()
-    } else if (h < MID) {
-      setCardHeight(MIN_HEIGHT)
     } else {
-      setCardHeight(MAX_HEIGHT)
+      setCardHeight(MIN_HEIGHT)
     }
+    return
   }
+  // 위로 드래그한 경우
+  const MID = (MIN_HEIGHT + MAX_HEIGHT) / 2
+  if (h > MID) {
+    setCardHeight(MAX_HEIGHT)
+  } else {
+    setCardHeight(MIN_HEIGHT)
+  }
+}
 
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
@@ -298,9 +305,9 @@ function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchEnd = () => {
-    setIsDragging(false)
-    snapToHeight(cardHeight)
-  }
+  setIsDragging(false)
+  snapToHeight(cardHeight, startHeightRef.current)
+}
 
   const handleWheel = (e) => {
     if (!hasImages) return

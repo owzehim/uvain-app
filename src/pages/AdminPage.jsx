@@ -590,7 +590,7 @@ function RestaurantsTab() {
     setUploading(false)
     setShowForm(false)
     setEditTarget(null)
-    setForm({ name: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false })
+    setForm({ name: '', map_label: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', price_range: '', is_sponsored: false })
     setImageFiles([])
     setImagePreviews([])
     fetchRestaurants()
@@ -605,7 +605,7 @@ function RestaurantsTab() {
   const openEdit = (r) => {
     setEditTarget(r)
     setForm({
-      name: r.name, description: r.description || '',
+      name: r.name, map_label: r.map_label || '', description: r.description || '',
       address: r.address || '', latitude: r.latitude || '',
       longitude: r.longitude || '', discount_info: r.discount_info || '',
       rating: r.rating || '', review: r.review || '',
@@ -638,6 +638,7 @@ function RestaurantsTab() {
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
           <h3 className="font-medium text-gray-900">{editTarget ? '장소 수정' : '새 장소 추가'}</h3>
           <input placeholder="장소 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <input placeholder="지도 표시 이름 (짧게, 예: 교자상)" value={form.map_label} onChange={e => setForm({ ...form, map_label: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
             <option value="맛집">🍽️ 맛집</option>
             <option value="미용실">💇 미용실/이발</option>
