@@ -282,36 +282,35 @@ function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchEnd = () => {
-    setIsDragging(false)
-    const draggedDown = lastYRef.current > startYRef.current
-    const startH = startHeightRef.current
-    const isFullscreen = startH >= MAX_HEIGHT * 0.85
+  setIsDragging(false)
+  const totalDelta = startYRef.current - lastYRef.current
+  const draggedUp = totalDelta > 0
+  const startH = startHeightRef.current
+  const wasFullscreen = startH >= MAX_HEIGHT * 0.85
+  const wasMin = startH <= MIN_HEIGHT * 1.1
 
-    if (!hasImages) {
-      if (draggedDown && cardHeight < CONTENT_HEIGHT * 0.7) {
-        onClose()
-      } else {
-        setCardHeight(CONTENT_HEIGHT)
-      }
-      return
-    }
+  if (!hasImages) {
+    if (!draggedUp && cardHeight < CONTENT_HEIGHT * 0.7) onClose()
+    else setCardHeight(CONTENT_HEIGHT)
+    return
+  }
 
-    if (draggedDown) {
-      if (isFullscreen) {
-        setCardHeight(MIN_HEIGHT)
-      } else if (cardHeight < MIN_HEIGHT * 0.6) {
-        onClose()
-      } else {
-        setCardHeight(MIN_HEIGHT)
-      }
+  if (draggedUp) {
+    // 위로 드래그 → 풀스크린
+    setCardHeight(MAX_HEIGHT)
+  } else {
+    // 아래로 드래그
+    if (wasFullscreen) {
+      // 풀스크린에서 내리면 → MIN
+      setCardHeight(MIN_HEIGHT)
+    } else if (wasMin && cardHeight < MIN_HEIGHT * 0.7) {
+      // MIN에서 많이 내리면 → 닫기
+      onClose()
     } else {
-      if (cardHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2) {
-        setCardHeight(MAX_HEIGHT)
-      } else {
-        setCardHeight(MIN_HEIGHT)
-      }
+      setCardHeight(MIN_HEIGHT)
     }
   }
+}
 
   const handleWheel = (e) => {
     if (!hasImages) return
