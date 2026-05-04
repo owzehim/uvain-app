@@ -306,8 +306,8 @@ function SpotCard({ selected, onClose }) {
           </div>
           {selected.description && <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />}
           {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
-          {selected.discount_info && <p className="text-xs text-orange-500 mt-1">{'🎟 ' + selected.discount_info}</p>}
-          {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">{'※ ' + selected.discount_terms}</p>}
+          {selected.discount_info && <p className="text-xs text-orange-500 mt-1">🎟 <RichText text={selected.discount_info} /></p>}
+          {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ <RichText text={selected.discount_terms} /></p>}
           {(selected.review || selected.reviewer_name) && (
             <div className="mt-2 pt-2 border-t border-gray-100">
               {selected.review && <RichText text={selected.review} className="text-xs text-gray-600 block" />}
