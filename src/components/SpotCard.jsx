@@ -124,21 +124,24 @@ export function SpotCard({ selected, onClose }) {
       }}>
       <div className="flex" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
         {imgs.map((url, i) => (
-          <div key={i} className="w-full flex-shrink-0 flex justify-center items-center bg-gray-50"
-            style={{ maxHeight: '260px', overflow: 'hidden' }}>
+          <div key={i} className="w-full flex-shrink-0">
+            {/* Mobile: full width, natural height */}
             <img
               src={url}
               alt={'사진 ' + (i + 1)}
-              style={{
-                width: 'auto',
-                height: 'auto',
-                maxWidth: '100%',
-                maxHeight: '260px',
-                objectFit: 'contain',
-                display: 'block',
-              }}
+              className="block md:hidden"
+              style={{ width: '100%', height: 'auto', display: 'block' }}
               draggable={false}
             />
+            {/* Desktop: contained, max height, centered */}
+            <div className="hidden md:flex justify-center items-center bg-gray-50" style={{ height: '260px' }}>
+              <img
+                src={url}
+                alt={'사진 ' + (i + 1)}
+                style={{ maxWidth: '100%', maxHeight: '260px', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }}
+                draggable={false}
+              />
+            </div>
           </div>
         ))}
       </div>
@@ -158,9 +161,6 @@ export function SpotCard({ selected, onClose }) {
             {imgs.map((_, i) => (
               <div key={i} className={`rounded-full transition-all ${i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
             ))}
-          </div>
-          <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
-            {(slideIndex + 1) + '/' + imgs.length}
           </div>
         </>
       )}
