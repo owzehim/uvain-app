@@ -512,9 +512,11 @@ function EventsTab() {
     </div>
   ))
 })()}
-
+    </div>
+  )
+}
 /* ───────────────────────────────
-   맛집 탭
+   장소 탭
 ─────────────────────────────── */
 function RestaurantsTab() {
   const [restaurants, setRestaurants] = useState([])
