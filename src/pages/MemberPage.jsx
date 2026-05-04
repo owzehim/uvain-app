@@ -340,6 +340,9 @@ const lastYRef = useRef(0)
       setCardHeight(MIN_HEIGHT)
     }
   }
+}
+
+  const handleWheel = (e) => {
 
   const handleWheel = (e) => {
     if (!hasImages) return
