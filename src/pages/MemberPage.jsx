@@ -245,7 +245,9 @@ function SpotCard({ selected, onClose }) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const startYRef = useRef(0)
-  const startHeightRef = useRef(0)
+const startHeightRef = useRef(0)
+const startTimeRef = useRef(0)
+const lastYRef = useRef(0)
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
 
@@ -291,21 +293,38 @@ function SpotCard({ selected, onClose }) {
 }
 
   const handleTouchStart = (e) => {
-    startYRef.current = e.touches[0].clientY
-    startHeightRef.current = cardHeight
-    setIsDragging(true)
-  }
+  startYRef.current = e.touches[0].clientY
+  lastYRef.current = e.touches[0].clientY
+  startHeightRef.current = cardHeight
+  startTimeRef.current = Date.now()
+  setIsDragging(true)
+}
 
   const handleTouchMove = (e) => {
-    if (!isDragging) return
-    e.stopPropagation()
-    const delta = startYRef.current - e.touches[0].clientY
-    const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
-    setCardHeight(newHeight)
-  }
+  if (!isDragging) return
+  e.stopPropagation()
+  lastYRef.current = e.touches[0].clientY
+  const delta = startYRef.current - e.touches[0].clientY
+  const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
+  setCardHeight(newHeight)
+}
 
   const handleTouchEnd = () => {
   setIsDragging(false)
+  const elapsed = Date.now() - startTimeRef.current
+  const deltaY = lastYRef.current - startYRef.current
+  const velocity = deltaY / elapsed // px/ms
+
+  // 빠르게 아래로 슬라이드하면 바로 닫기
+  if (velocity > 0.3) {
+    onClose()
+    return
+  }
+  // 빠르게 위로 슬라이드하면 바로 풀스크린
+  if (velocity < -0.3 && hasImages) {
+    setCardHeight(MAX_HEIGHT)
+    return
+  }
   snapToHeight(cardHeight, startHeightRef.current)
 }
 
