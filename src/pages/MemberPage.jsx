@@ -418,18 +418,27 @@ function SpotCard({ selected, onClose }) {
 
       {/* 하단 fade - MIN일 때만 표시, 카드 아래쪽에 걸림 */}
       {!isMax && (
-        <div
-          className="absolute bottom-0 left-0 right-0 pointer-events-none"
-          style={{
-            height: '72px',
-            background: 'linear-gradient(to bottom, transparent, white)',
-            zIndex: 10,
-          }}
-        />
-      )}
+  <div
+    className="absolute bottom-0 left-0 right-0 pointer-events-none"
+    style={{
+      height: '72px',
+      background: 'linear-gradient(to bottom, transparent, white)',
+      zIndex: 10,
+    }}
+  >
+    <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+      
+        href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2"
+        onTouchStart={e => e.stopPropagation()}
+      >
+        🗺️ Google Maps에서 열기
+      </a>
     </div>
-  )
-}
+  </div>
+)}
 
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
@@ -459,14 +468,6 @@ function MapTab({ restaurants }) {
 
       <div className="flex-1 relative overflow-hidden">
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-
-        {selected && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none" style={{ zIndex: 999 }}>
-            <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-white text-gray-800 text-xs font-medium px-5 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-2">
-              🗺️ Google Maps에서 열기
-            </a>
-          </div>
-        )}
 
         {selected && (
           <SpotCard selected={selected} onClose={() => setSelected(null)} />
