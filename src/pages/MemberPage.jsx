@@ -319,21 +319,22 @@ function SpotCard({ selected, onClose }) {
   }
 
   const isFullscreen = cardHeight >= MAX_HEIGHT * 0.85
+const isAtTop = isFullscreen // 풀스크린일때만 내부 스크롤 허용
   const fadeOpacity = hasImages ? Math.min(1, Math.max(0, (cardHeight - MIN_HEIGHT * 0.7) / (MIN_HEIGHT * 0.5))) : 0
 
   return (
     <div
       className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
       style={{
-        height: cardHeight + 'px',
-        transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4,0,0.2,1)',
-        zIndex: 1000,
-        overflowY: isFullscreen ? 'auto' : 'hidden',
-        boxShadow: '0 -4px 20px rgba(0,0,0,0.12)',
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+  height: cardHeight + 'px',
+  transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.4,0,0.2,1)',
+  zIndex: 1000,
+  overflowY: 'hidden',
+  boxShadow: '0 -4px 20px rgba(0,0,0,0.12)',
+}}
+onTouchStart={handleTouchStart}
+onTouchMove={handleTouchMove}
+onTouchEnd={handleTouchEnd}
       onWheel={hasImages ? handleWheel : undefined}
     >
       {/* 핸들 */}
@@ -398,7 +399,7 @@ function SpotCard({ selected, onClose }) {
 
       {/* 풀스크린 사진 */}
       {hasImages && isFullscreen && (
-        <div className="px-4 pb-4">
+  <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: (MAX_HEIGHT - 200) + 'px' }}>
           <p className="text-xs text-gray-400 mb-2">{'사진 ' + imgs.length + '장'}</p>
           <div className="relative overflow-hidden rounded-xl">
             <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)' }}>
