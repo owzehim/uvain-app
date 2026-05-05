@@ -359,7 +359,7 @@ function MembersTab() {
                     <p className="text-xs text-gray-500">{member.student_number} · {member.major}</p>
                     <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                       {member.is_member ? '활성' : '비활성'}
                     </span>
@@ -773,7 +773,7 @@ function EventsTab() {
               onClick={openAdd}
               className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"
             >
-              <Plus size={16} weight="bold" />+ 이벤트 추가
+              <Plus size={16} weight="bold" />이벤트 추가
             </button>
           )}
         </div>
@@ -1241,7 +1241,7 @@ function RestaurantsTab() {
                         {r.discount_info && <p className="text-xs text-orange-500 mt-0.5 flex items-center gap-1"><Ticket size={12} weight="fill" color="#FF5252" /> {r.discount_info.replace(/<[^>]+>/g, '')}</p>}
                         {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
                       </div>
-                      <div className="flex gap-1 flex-shrink-0">
+                      <div className="flex gap-2 flex-shrink-0">
                         <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
                         <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
                       </div>

@@ -95,30 +95,27 @@ export default function MemberPage() {
       style={{ height: '100dvh' }}
     >
       {/* 헤더 */}
-      <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+<div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
+  <h1 className="font-bold text-gray-900">UvA-IN</h1>
+  <div className="flex gap-2">
+    {isAdmin && (
+      <button
+        onClick={() => {
+          window.location.href = '/admin'
+        }}
+        className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
       >
-        <h1 className="font-bold text-gray-900">UvA-IN</h1>
-        <div className="flex gap-2">
-          {isAdmin && (
-            <button
-              onClick={() => {
-                window.location.href = '/admin'
-              }}
-              className="text-sm text-orange-500 font-medium px-3 py-1 rounded-lg hover:bg-orange-50"
-            >
-              관리자
-            </button>
-          )}
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="text-sm text-gray-500 px-3 py-1 rounded-lg hover:bg-gray-100"
-          >
-            로그아웃
-          </button>
-        </div>
-      </div>
+        관리자
+      </button>
+    )}
+    <button
+      onClick={() => supabase.auth.signOut()}
+      className="text-sm text-gray-500 px-3 py-1 rounded-lg hover:bg-gray-100"
+    >
+      로그아웃
+    </button>
+  </div>
+</div>
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
