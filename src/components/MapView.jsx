@@ -209,32 +209,32 @@ export default function MapView({ restaurants, selected, onSelect }) {
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '300px' }}>
-      <div
-        ref={mapRef}
-        style={{ width: '100%', height: '100%', minHeight: '300px', zIndex: 1 }}
-      />
-      <button
-        onClick={locateMe}
-        style={{
-          position: 'absolute',
-          bottom: '80px',
-          right: '10px',
-          zIndex: 1000,
-          background: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '8px 10px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        title="현재 위치"
-      >
-        <MapPin size={20} weight="fill" color="#f97316" />
-      </button>
-    </div>
-  )
+  <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '300px' }}>
+    <div
+      ref={mapRef}
+      style={{ width: '100%', height: '100%', minHeight: '300px', zIndex: 1 }}
+    />
+    <button
+      onClick={locateMe}
+      style={{
+        position: 'absolute',
+        bottom: '80px',
+        right: '10px',
+        zIndex: 1000,
+        background: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        padding: '8px 10px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      title="현재 위치"
+    >
+      <MapPin size={20} weight="fill" color="#f97316" />
+    </button>
+  </div>
+)
 }

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { ImageReorder } from '../components/ImageReorder'
-import { Plus, Eye, EyeSlash, MapPin } from 'phosphor-react'
+import { Plus, Eye, EyeSlash, MapPin, Ticket } from 'phosphor-react'
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('members')
@@ -389,91 +389,89 @@ function MembersTab() {
         </div>
       )}
 
-      {showForm && (
+      {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-          <h3 className="font-medium text-gray-900">{editTarget ? '멤버 정보 수정' : '새 멤버 추가 - 로그인 정보 설정'}</h3>
+          <h3 className="font-medium text-gray-900">새 멤버 추가 - 로그인 정보 설정</h3>
 
-          {!editTarget && (
-            <div className="bg-blue-50 rounded-lg p-4 space-y-3 border border-blue-200">
-              <p className="font-medium text-blue-900 text-sm">🔐 로그인 정보</p>
+          <div className="bg-blue-50 rounded-lg p-4 space-y-3 border border-blue-200">
+            <p className="font-medium text-blue-900 text-sm">🔐 로그인 정보</p>
 
-              <div>
-                <label className="text-sm text-gray-700 block mb-1">이메일</label>
-                <input
-                  placeholder="member@example.com"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                  type="email"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm text-gray-700">비밀번호</label>
-                  <button
-                    type="button"
-                    onClick={generateRandomPassword}
-                    className="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded"
-                  >
-                    🎲 자동 생성
-                  </button>
-                </div>
-                <div className="relative">
-                  <input
-                    placeholder="최소 8자 이상"
-                    value={form.password}
-                    onChange={e => {
-                      setForm({ ...form, password: e.target.value })
-                      checkPasswordStrength(e.target.value)
-                    }}
-                    type={showPassword ? 'text' : 'password'}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <Eye size={16} /> : <EyeSlash size={16} />}
-                  </button>
-                </div>
-
-                {form.password && (
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className={`h-2 flex-1 rounded-full ${getPasswordStrengthColor()}`}></div>
-                      <span className="text-xs text-gray-600">{getPasswordStrengthText()}</span>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {form.password.length < 8 && '• 최소 8자 이상'}
-                      {form.password.length >= 8 && '• 길이 ✓'}
-                      {form.password.match(/[a-z]/) && form.password.match(/[A-Z]/) ? ' • 대소문자 ✓' : ' • 대소문자 혼합'}
-                      {form.password.match(/[0-9]/) ? ' • 숫자 ✓' : ' • 숫자 포함'}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-700 block mb-1">비밀번호 확인</label>
-                <input
-                  placeholder="비밀번호 재입력"
-                  value={form.confirmPassword}
-                  onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-                  type={showPassword ? 'text' : 'password'}
-                  className={`w-full border rounded-lg px-3 py-2 text-sm ${
-                    form.confirmPassword && form.password !== form.confirmPassword
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-200'
-                  }`}
-                />
-                {form.confirmPassword && form.password !== form.confirmPassword && (
-                  <p className="text-xs text-red-600 mt-1">비밀번호가 일치하지 않습니다</p>
-                )}
-              </div>
+            <div>
+              <label className="text-sm text-gray-700 block mb-1">이메일</label>
+              <input
+                placeholder="member@example.com"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                type="email"
+              />
             </div>
-          )}
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm text-gray-700">비밀번호</label>
+                <button
+                  type="button"
+                  onClick={generateRandomPassword}
+                  className="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded"
+                >
+                  🎲 자동 생성
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  placeholder="최소 8자 이상"
+                  value={form.password}
+                  onChange={e => {
+                    setForm({ ...form, password: e.target.value })
+                    checkPasswordStrength(e.target.value)
+                  }}
+                  type={showPassword ? 'text' : 'password'}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <Eye size={16} /> : <EyeSlash size={16} />}
+                </button>
+              </div>
+
+              {form.password && (
+                <div className="mt-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`h-2 flex-1 rounded-full ${getPasswordStrengthColor()}`}></div>
+                    <span className="text-xs text-gray-600">{getPasswordStrengthText()}</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {form.password.length < 8 && '• 최소 8자 이상'}
+                    {form.password.length >= 8 && '• 길이 ✓'}
+                    {form.password.match(/[a-z]/) && form.password.match(/[A-Z]/) ? ' • 대소문자 ✓' : ' • 대소문자 혼합'}
+                    {form.password.match(/[0-9]/) ? ' • 숫자 ✓' : ' • 숫자 포함'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-700 block mb-1">비밀번호 확인</label>
+              <input
+                placeholder="비밀번호 재입력"
+                value={form.confirmPassword}
+                onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+                type={showPassword ? 'text' : 'password'}
+                className={`w-full border rounded-lg px-3 py-2 text-sm ${
+                  form.confirmPassword && form.password !== form.confirmPassword
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-200'
+                }`}
+              />
+              {form.confirmPassword && form.password !== form.confirmPassword && (
+                <p className="text-xs text-red-600 mt-1">비밀번호가 일치하지 않습니다</p>
+              )}
+            </div>
+          </div>
 
           <div className="space-y-3">
             <p className="font-medium text-gray-900 text-sm">👤 멤버 정보</p>
@@ -532,10 +530,10 @@ function MembersTab() {
 
           <div className="flex gap-2 pt-2">
             <button
-              onClick={editTarget ? handleEdit : handleAdd}
+              onClick={handleAdd}
               className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 font-medium"
             >
-              {editTarget ? '수정 완료' : '멤버 추가'}
+              멤버 추가
             </button>
             <button
               onClick={() => setShowForm(false)}
@@ -554,19 +552,84 @@ function MembersTab() {
       ) : (
         <div className="space-y-2">
           {sorted.map(member => (
-            <div key={member.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900 text-sm">{member.full_name}</p>
-                <p className="text-xs text-gray-500">{member.student_number} · {member.major}</p>
-                <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
+            <div key={member.id} className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">{member.full_name}</p>
+                  <p className="text-xs text-gray-500">{member.student_number} · {member.major}</p>
+                  <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    {member.is_member ? '활성' : '비활성'}
+                  </span>
+                  <button onClick={() => openEdit(member)} className="text-xs text-blue-600 hover:underline">수정</button>
+                  <button onClick={() => handleDelete(member.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {member.is_member ? '활성' : '비활성'}
-                </span>
-                <button onClick={() => openEdit(member)} className="text-xs text-blue-600 hover:underline">수정</button>
-                <button onClick={() => handleDelete(member.id)} className="text-xs text-red-500 hover:underline">삭제</button>
-              </div>
+
+              {showForm && editTarget && editTarget.id === member.id && (
+                <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
+                  <div>
+                    <label className="text-sm text-gray-700 block mb-1">이름 *</label>
+                    <input
+                      value={form.full_name}
+                      onChange={e => setForm({ ...form, full_name: e.target.value })}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-sm text-gray-700 block mb-1">학번 *</label>
+                      <input
+                        value={form.student_number}
+                        onChange={e => setForm({ ...form, student_number: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-700 block mb-1">전공 *</label>
+                      <input
+                        value={form.major}
+                        onChange={e => setForm({ ...form, major: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`is_member_${member.id}`}
+                      checked={form.is_member}
+                      onChange={e => setForm({ ...form, is_member: e.target.checked })}
+                    />
+                    <label htmlFor={`is_member_${member.id}`} className="text-sm text-gray-700">멤버십 활성화</label>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500 block mb-1">유효기간</label>
+                    <input
+                      type="date"
+                      value={form.membership_valid_until}
+                      onChange={e => setForm({ ...form, membership_valid_until: e.target.value })}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={handleEdit}
+                      className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 font-medium"
+                    >
+                      수정 완료
+                    </button>
+                    <button
+                      onClick={() => { setShowForm(false); setEditTarget(null) }}
+                      className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-200"
+                    >
+                      취소
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -698,7 +761,7 @@ function EventsTab() {
         <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
         {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />이벤트 추가</button>}
       </div>
-      {showForm && (
+      {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
           <h3 className="font-medium text-gray-900">{editTarget ? '이벤트 수정' : '새 이벤트'}</h3>
           <input placeholder="이벤트 제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
@@ -747,21 +810,80 @@ function EventsTab() {
           </div>
         </div>
       )}
-      {events.length === 0 ? <p className="text-gray-500 text-sm">이벤트가 없어요.</p> : (() => {
+      {(() => {
         const grouped = {}
         events.forEach(ev => {
-          const key = ev.event_date ? new Date(ev.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long' }) : '날짜 미정'
-          if (!grouped[key]) grouped[key] = []
-          grouped[key].push(ev)
+          const label = ev.event_date
+            ? `${new Date(ev.event_date).getMonth() + 1}월`
+            : '날짜 미정'
+          if (!grouped[label]) grouped[label] = []
+          grouped[label].push(ev)
         })
-        return Object.entries(grouped).map(([month, evs]) => (
-          <div key={month} className="space-y-2">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
-            {evs.map(event => (
-              <EventCard key={event.id} event={event} onEdit={openEdit} onDelete={handleDelete} />
+        return (
+          <div className="space-y-3">
+            {Object.entries(grouped).map(([month, evs]) => (
+              <div key={month} className="space-y-2">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
+                {evs.map(event => (
+                  <div key={event.id} className="flex flex-col gap-3">
+                    {showForm && editTarget && editTarget.id === event.id && (
+                      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+                        <h3 className="font-medium text-gray-900">이벤트 수정</h3>
+                        <input placeholder="이벤트 제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        <div>
+                          <label className="text-xs text-gray-400 block mb-1">내용</label>
+                          <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                        </div>
+                        <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="text-sm text-gray-500 block mb-1">날짜</label>
+                            <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-sm text-gray-500 block mb-1">시간</label>
+                            <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                          </div>
+                        </div>
+                        <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={e => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        <div>
+                          <label className="text-sm text-gray-500 block mb-1">이미지</label>
+                          <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                          {imagePreviews.length > 0 && (
+                            <ImageReorder
+                              images={imagePreviews}
+                              label="새 사진 미리보기"
+                              onReorder={(reordered) => {
+                                const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
+                                setImagePreviews(reordered)
+                                setImageFiles(reorderedFiles)
+                              }}
+                            />
+                          )}
+                          <ImageReorder
+                            images={editTarget?.image_urls || []}
+                            onReorder={async (reordered) => {
+                              await supabase.from('events').update({ image_urls: reordered }).eq('id', editTarget.id)
+                              setEditTarget({ ...editTarget, image_urls: reordered })
+                            }}
+                            onDelete={handleDeleteEventImage}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : '수정 완료'}</button>
+                          <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
+                        </div>
+                      </div>
+                    )}
+                    {!showForm || editTarget?.id !== event.id ? (
+                      <EventCard event={event} onEdit={openEdit} onDelete={handleDelete} />
+                    ) : null}
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
-        ))
+        )
       })()}
     </div>
   )
@@ -866,111 +988,13 @@ function RestaurantsTab() {
         <h2 className="font-semibold text-gray-900">장소 관리</h2>
         {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />장소 추가</button>}
       </div>
-      {showForm && (
+      {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-          <h3 className="font-medium text-gray-900">{editTarget ? '장소 수정' : '새 장소 추가'}</h3>
+          <h3 className="font-medium text-gray-900">새 장소 추가</h3>
           <input placeholder="장소 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <input placeholder="지도 표시 이름 (짧게, 예: 교자상)" value={form.map_label} onChange={e => setForm({ ...form, map_label: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, subcategory: '' })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
             {SPOT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div>
-            <label className="text-xs text-gray-400 block mb-1">설명</label>
-            <textarea placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
-          </div>
-          <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <div className="flex gap-2">
-            <input placeholder="위도 (예: 52.3676)" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-            <input placeholder="경도 (예: 4.9041)" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">할인 정보</label>
-            <RichEditor key={richEditorKey} value={form.discount_info} onChange={v => setForm(f => ({ ...f, discount_info: v }))} placeholder="할인 정보 (예: 10% 할인)" rows={2} />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">할인 조건</label>
-            <RichEditor key={richEditorKey + 100} value={form.discount_terms} onChange={v => setForm(f => ({ ...f, discount_terms: v }))} placeholder="할인 조건 (예: 주말 제외, 1인 1회 한정)" rows={2} />
-          </div>
-          <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
-            <option value="">가격대 선택</option>
-            <option value="€">€ (저렴)</option>
-            <option value="€€">€€ (보통)</option>
-            <option value="€€€">€€€ (비쌈)</option>
-            <option value="€€€€">€€€€ (고급)</option>
-          </select>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="is_sponsored" checked={form.is_sponsored} onChange={e => setForm({ ...form, is_sponsored: e.target.checked })} />
-            <label htmlFor="is_sponsored" className="text-sm text-gray-700"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block mr-1"></span>제휴/스폰서 장소</label>
-          </div>
-          <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">리뷰</label>
-            <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
-          </div>
-          <div>
-            <label className="text-sm text-gray-500 block mb-1">사진 추가 (여러장 가능)</label>
-            <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-            {imagePreviews.length > 0 && (
-              <ImageReorder
-                images={imagePreviews}
-                label="새 사진 미리보기"
-                onReorder={(reordered) => {
-                  const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
-                  setImagePreviews(reordered)
-                  setImageFiles(reorderedFiles)
-                }}
-              />
-            )}
-          </div>
-          <ImageReorder
-            images={editTarget?.image_urls || []}
-            onReorder={async (reordered) => {
-              await supabase.from('restaurants').update({ image_urls: reordered }).eq('id', editTarget.id)
-              setEditTarget({ ...editTarget, image_urls: reordered })
-            }}
-            onDelete={handleDeleteExistingImage}
-          />
-          <div className="flex gap-2">
-            <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
-            <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
-          </div>
-        </div>
-      )}
-      {restaurants.length === 0 ? <p className="text-gray-500 text-sm">등록된 장소가 없어요.</p> : (() => {
-        const grouped = {}
-        sorted.forEach(r => {
-          const key = r.category || '기타'
-          if (!grouped[key]) grouped[key] = []
-          grouped[key].push(r)
-        })
-        return Object.entries(grouped).map(([cat, places]) => (
-          <div key={cat} className="space-y-2">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{cat} ({places.length})</p>
-            {places.map(r => (
-              <div key={r.id} className="bg-white rounded-xl border border-gray-100 p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <p className="font-medium text-gray-900 text-sm">{r.name}</p>
-                      {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
-                    </div>
-                    {r.address && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {r.address}</p>}
-                    {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info.replace(/<[^>]+>/g, '')}</p>}
-                    {r.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ {r.discount_terms.replace(/<[^>]+>/g, '')}</p>}
-                    {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
-                    {r['image_urls'] && r['image_urls'].length > 0 && <p className="text-xs text-gray-400 mt-0.5">{'사진 ' + r['image_urls'].length + '장'}</p>}
-                  </div>
-                  <div className="flex gap-2 ml-2">
-                    <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
-                    <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ))
-      })()}
-    </div>
-  )
-}
+            <label className="text-xs text-gray-400 block mb-1"></label>
