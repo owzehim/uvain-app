@@ -46,7 +46,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <img
-            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='100' fill='%23FF6B35'/%3E%3Ccircle cx='100' cy='100' r='85' fill='%23E74C3C'/%3E%3Ccircle cx='50' cy='100' r='85' fill='%230052CC'/%3E%3Cpath d='M 70 70 L 130 130 M 130 70 L 70 130' stroke='white' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M 100 50 L 150 100 L 100 150 L 50 100 Z' stroke='white' stroke-width='12' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
+            src="/uvain logo.png"
             alt="UvA-IN Logo"
             className="w-24 h-24"
           />
