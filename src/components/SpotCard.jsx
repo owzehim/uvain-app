@@ -11,11 +11,108 @@ const categoryIcons = {
   '의료': '🏥', '쇼핑': '🛍️', '여가': '🎮'
 }
 
+function Lightbox({ imgs, startIndex, onClose }) {
+  const [index, setIndex] = useState(startIndex)
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowRight') setIndex(i => Math.min(i + 1, imgs.length - 1))
+      if (e.key === 'ArrowLeft') setIndex(i => Math.max(i - 1, 0))
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [imgs.length, onClose])
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(0,0,0,0.92)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        style={{
+          position: 'absolute', top: '16px', right: '20px',
+          background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+          borderRadius: '999px', width: '36px', height: '36px',
+          fontSize: '20px', cursor: 'pointer', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 10000
+        }}
+      >×</button>
+
+      {/* Left arrow */}
+      {index > 0 && (
+        <button
+          onClick={e => { e.stopPropagation(); setIndex(i => i - 1) }}
+          style={{
+            position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+            borderRadius: '999px', width: '44px', height: '44px',
+            fontSize: '24px', cursor: 'pointer', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 10000
+          }}
+        >‹</button>
+      )}
+
+      {/* Image */}
+      <img
+        src={imgs[index]}
+        alt={'사진 ' + (index + 1)}
+        onClick={e => e.stopPropagation()}
+        style={{
+          maxWidth: '90vw', maxHeight: '90vh',
+          objectFit: 'contain', borderRadius: '12px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.6)'
+        }}
+      />
+
+      {/* Right arrow */}
+      {index < imgs.length - 1 && (
+        <button
+          onClick={e => { e.stopPropagation(); setIndex(i => i + 1) }}
+          style={{
+            position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+            borderRadius: '999px', width: '44px', height: '44px',
+            fontSize: '24px', cursor: 'pointer', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 10000
+          }}
+        >›</button>
+      )}
+
+      {/* Dot indicators */}
+      {imgs.length > 1 && (
+        <div style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
+          {imgs.map((_, i) => (
+            <div
+              key={i}
+              onClick={e => { e.stopPropagation(); setIndex(i) }}
+              style={{
+                width: i === index ? '8px' : '6px',
+                height: i === index ? '8px' : '6px',
+                borderRadius: '999px',
+                background: i === index ? '#fff' : 'rgba(255,255,255,0.4)',
+                cursor: 'pointer', transition: 'all 0.2s'
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function SpotCard({ selected, onClose }) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
   const [closing, setClosing] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(null)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -85,120 +182,139 @@ export function SpotCard({ selected, onClose }) {
   }
 
   return (
-    <div
-      ref={cardRef}
-      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
-      style={{
-        ...(hasImages ? imageStyle : noImageStyle),
-        zIndex: 1000,
-        boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onWheel={e => {
-        if (!hasImages) return
-        const delta = e.deltaY
-        if (delta > 0) snapTo(MAX_HEIGHT)
-        else if (delta < 0) {
-          if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
-          else triggerClose()
-        }
-      }}
-    >
-      <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
-        <div className="w-10 h-1 bg-gray-300 rounded-full" />
-      </div>
+    <>
+      {/* Desktop lightbox */}
+      {lightboxIndex !== null && (
+        <Lightbox
+          imgs={imgs}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
 
-      {/* overflow always hidden — no scrolling inside the card */}
-      <div className="flex-1" style={{ overflowY: 'hidden' }}>
-        <div className="px-4 pt-1 pb-3">
-          <div className="flex items-center gap-1.5 flex-wrap mb-1">
-            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-              {(categoryIcons[selected.category] || '📍') + ' ' + (selected.category || '기타')}
-            </span>
-            {selected.price_range && <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>}
-            {selected.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+      <div
+        ref={cardRef}
+        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+        style={{
+          ...(hasImages ? imageStyle : noImageStyle),
+          zIndex: 1000,
+          boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onWheel={e => {
+          if (!hasImages) return
+          const delta = e.deltaY
+          if (delta > 0) snapTo(MAX_HEIGHT)
+          else if (delta < 0) {
+            if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
+            else triggerClose()
+          }
+        }}
+      >
+        <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+
+        <div className="flex-1" style={{ overflowY: 'hidden' }}>
+          <div className="px-4 pt-1 pb-3">
+            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                {(categoryIcons[selected.category] || '📍') + ' ' + (selected.category || '기타')}
+              </span>
+              {selected.price_range && <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>}
+              {selected.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-gray-900">{selected.name}</p>
+              {selected.rating > 0 && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}
+            </div>
+            {selected.description && <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />}
+            {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
+            {selected.discount_info && <p className="text-xs text-orange-500 mt-1">🎟 <RichText text={selected.discount_info} /></p>}
+            {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ <RichText text={selected.discount_terms} /></p>}
+            {(selected.review || selected.reviewer_name) && (
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                {selected.review && <RichText text={selected.review} className="text-xs text-gray-600 block" />}
+                {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-gray-900">{selected.name}</p>
-            {selected.rating > 0 && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}
-          </div>
-          {selected.description && <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />}
-          {selected.address && <p className="text-xs text-gray-500 mt-1">{'📍 ' + selected.address}</p>}
-          {selected.discount_info && <p className="text-xs text-orange-500 mt-1">🎟 <RichText text={selected.discount_info} /></p>}
-          {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ <RichText text={selected.discount_terms} /></p>}
-          {(selected.review || selected.reviewer_name) && (
-            <div className="mt-2 pt-2 border-t border-gray-100">
-              {selected.review && <RichText text={selected.review} className="text-xs text-gray-600 block" />}
-              {selected.reviewer_name && <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>}
+
+          {!hasImages && <div className="pb-16" />}
+
+          {hasImages && (
+            <div className="pb-6">
+              {/* MOBILE: 4:5 swipe carousel — unchanged */}
+              <div
+                className="md:hidden px-4 pb-20"
+                onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
+                onTouchEnd={e => {
+                  const start = e.currentTarget._swipeStartX
+                  if (start == null) return
+                  const dx = e.changedTouches[0].clientX - start
+                  e.currentTarget._swipeStartX = null
+                  if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) }
+                  else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) }
+                }}
+              >
+                <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '4/5' }}>
+                  <div className="flex h-full" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
+                    {imgs.map((url, i) => (
+                      <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
+                        <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+                      </div>
+                    ))}
+                  </div>
+                  {imgs.length > 1 && (
+                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                      {imgs.map((_, i) => (
+                        <div key={i} className={`rounded-full transition-all ${i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* DESKTOP: horizontal scroll + click to open lightbox */}
+              <div className="hidden md:flex gap-3 px-4 pb-20 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {imgs.map((url, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setLightboxIndex(i)}
+                    className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center"
+                    style={{ height: '220px', minWidth: '140px', maxWidth: '360px', cursor: 'zoom-in' }}
+                  >
+                    <img
+                      src={url}
+                      alt={'사진 ' + (i + 1)}
+                      style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
-        {!hasImages && <div className="pb-16" />}
-
-        {hasImages && (
-          <div className="pb-6">
-            {/* MOBILE: 4:5 swipe carousel */}
-            <div
-              className="md:hidden px-4 pb-16"
-              onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
-              onTouchEnd={e => {
-                const start = e.currentTarget._swipeStartX
-                if (start == null) return
-                const dx = e.changedTouches[0].clientX - start
-                e.currentTarget._swipeStartX = null
-                if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) }
-                else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) }
-              }}
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+            <a
+              href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2"
+              onTouchStart={e => e.stopPropagation()}
             >
-              <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '4/5' }}>
-                <div className="flex h-full" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
-                  {imgs.map((url, i) => (
-                    <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-                      <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
-                    </div>
-                  ))}
-                </div>
-                {imgs.length > 1 && (
-                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-                    {imgs.map((_, i) => (
-                      <div key={i} className={`rounded-full transition-all ${i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* DESKTOP: horizontal scroll */}
-            <div className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              {imgs.map((url, i) => (
-                <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center" style={{ height: '220px', minWidth: '140px', maxWidth: '360px' }}>
-                  <img src={url} alt={'사진 ' + (i + 1)} style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }} />
-                </div>
-              ))}
-            </div>
+              🗺️ Google Maps에서 열기
+            </a>
           </div>
-        )}
-      </div>
-
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
-        <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-          <a
-            href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2"
-            onTouchStart={e => e.stopPropagation()}
-          >
-            🗺️ Google Maps에서 열기
-          </a>
         </div>
       </div>
-    </div>
+    </>
   )
 }
