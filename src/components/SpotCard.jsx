@@ -6,10 +6,9 @@ export function RichText({ text, className = '' }) {
 }
 
 const categoryIcons = {
-  '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-  '운동': '💪', '미용/뷰티': '💇', '기타': '📍',
-  '스터디': '📚', '학교': '🎓', '의료': '🏥',
-  '쇼핑': '🛍️', '여가': '🎮'
+  '맛집': '🍽️', '카페': '☕', '마트': '🛒', '운동': '💪',
+  '미용/뷰티': '💇', '기타': '📍', '스터디': '📚', '학교': '🎓',
+  '의료': '🏥', '쇼핑': '🛍️', '여가': '🎮'
 }
 
 export function SpotCard({ selected, onClose }) {
@@ -24,7 +23,6 @@ export function SpotCard({ selected, onClose }) {
 
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
-
   const WIN_H = typeof window !== 'undefined' ? window.innerHeight : 700
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MAX_HEIGHT = WIN_H * 0.88
@@ -46,7 +44,10 @@ export function SpotCard({ selected, onClose }) {
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
     if (!hasImages && delta > 0) return
-    if (hasImages) { const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta)); setCardHeight(newHeight) }
+    if (hasImages) {
+      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
+      setCardHeight(newHeight)
+    }
   }
 
   const handleTouchEnd = () => {
@@ -57,19 +58,44 @@ export function SpotCard({ selected, onClose }) {
     const wasMin = startH <= MIN_HEIGHT * 1.15
     if (!hasImages) { if (delta < -40) triggerClose(); return }
     if (delta > 40) { snapTo(MAX_HEIGHT) }
-    else if (delta < -40) { if (wasMax) snapTo(MIN_HEIGHT); else if (wasMin) triggerClose(); else snapTo(MIN_HEIGHT) }
-    else { const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2; snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT) }
+    else if (delta < -40) {
+      if (wasMax) snapTo(MIN_HEIGHT)
+      else if (wasMin) triggerClose()
+      else snapTo(MIN_HEIGHT)
+    } else {
+      const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
+      snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
+    }
   }
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
-  const noImageStyle = { transform: closing ? 'translateY(110%)' : 'translateY(0)', transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)', height: 'auto' }
-  const imageStyle = { height: cardHeight + 'px', transform: closing ? 'translateY(110%)' : 'translateY(0)', transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)' }
+  const noImageStyle = {
+    transform: closing ? 'translateY(110%)' : 'translateY(0)',
+    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
+    height: 'auto'
+  }
+  const imageStyle = {
+    height: cardHeight + 'px',
+    transform: closing ? 'translateY(110%)' : 'translateY(0)',
+    transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)'
+  }
 
   return (
-    <div ref={cardRef} className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
-      style={{ ...(hasImages ? imageStyle : noImageStyle), zIndex: 1000, boxShadow: '0 -4px 24px rgba(0,0,0,0.13)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-      onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
+    <div
+      ref={cardRef}
+      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+      style={{
+        ...(hasImages ? imageStyle : noImageStyle),
+        zIndex: 1000,
+        boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       onWheel={e => {
         if (!hasImages) return
         const delta = e.deltaY
@@ -78,7 +104,8 @@ export function SpotCard({ selected, onClose }) {
           if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
           else triggerClose()
         }
-      }}>
+      }}
+    >
       <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
@@ -108,13 +135,15 @@ export function SpotCard({ selected, onClose }) {
           )}
         </div>
 
-        {!hasImages && <div className="pb-16" />}
+        {/* FIX: was pb-16 (64px), reduced to pb-12 (48px) — just enough for the Maps button */}
+        {!hasImages && <div className="pb-12" />}
 
         {hasImages && (
-          <div className="pb-6">
-
-            {/* MOBILE: 4:5 box, contain so no cropping, soft corners */}
-            <div className="md:hidden px-4 pb-16"
+          // FIX: removed outer pb-6 — the pb-16 inside mobile/desktop containers already handles button clearance
+          <div>
+            {/* MOBILE */}
+            <div
+              className="md:hidden px-4 pb-16"
               onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
               onTouchEnd={e => {
                 const start = e.currentTarget._swipeStartX
@@ -123,17 +152,13 @@ export function SpotCard({ selected, onClose }) {
                 e.currentTarget._swipeStartX = null
                 if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) }
                 else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) }
-              }}>
+              }}
+            >
               <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '4/5' }}>
                 <div className="flex h-full" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
                   {imgs.map((url, i) => (
                     <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-                      <img
-                        src={url}
-                        alt={'사진 ' + (i + 1)}
-                        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                        draggable={false}
-                      />
+                      <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
                     </div>
                   ))}
                 </div>
@@ -147,34 +172,27 @@ export function SpotCard({ selected, onClose }) {
               </div>
             </div>
 
-            {/* DESKTOP: horizontal scroll, each image in its own contain box, soft corners */}
-            <div
-              className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {/* DESKTOP */}
+            <div className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {imgs.map((url, i) => (
-                <div
-                  key={i}
-                  className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center"
-                  style={{ height: '220px', minWidth: '140px', maxWidth: '360px' }}>
-                  <img
-                    src={url}
-                    alt={'사진 ' + (i + 1)}
-                    style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }}
-                  />
+                <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center" style={{ height: '220px', minWidth: '140px', maxWidth: '360px' }}>
+                  <img src={url} alt={'사진 ' + (i + 1)} style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }} />
                 </div>
               ))}
             </div>
-
           </div>
         )}
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
         <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-          <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
-            target="_blank" rel="noopener noreferrer"
+          <a
+            href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
+            target="_blank"
+            rel="noopener noreferrer"
             className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2"
-            onTouchStart={e => e.stopPropagation()}>
+            onTouchStart={e => e.stopPropagation()}
+          >
             🗺️ Google Maps에서 열기
           </a>
         </div>
