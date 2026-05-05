@@ -79,7 +79,7 @@ export default function MemberPage() {
       <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
         {[
           { key: 'qr', label: 'MY', icon: QrCode },
-          { key: 'events', label: 'EVENT', icon: Calendar },
+          { key: 'events', label: 'EVENTS', icon: Calendar },
           { key: 'map', label: 'SPOT', icon: MapPin },
         ].map(tab => {
           const IconComponent = tab.icon
@@ -281,7 +281,7 @@ function EventsTab({ events }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-lg mx-auto">
-        <h2 className="font-semibold text-gray-900 mb-4">EVENT</h2>
+        <h2 className="font-semibold text-gray-900 mb-4">EVENTS</h2>
         {events.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
             <p className="text-2xl mb-2">📅</p>
