@@ -119,10 +119,20 @@ export function SpotCard({ selected, onClose }) {
   const WIN_W = typeof window !== 'undefined' ? window.innerWidth : 1024
   const isDesktop = WIN_W >= 768
 
-  const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.88
+  // Mobile fixed heights:
+  // - with photo: 52% of screen so image fade-in is visible below the info
+  // - without photo: 30% of screen, compact, no empty white space
+  const MOBILE_PHOTO_HEIGHT = Math.round(WIN_H * 0.52)
+  const MOBILE_NO_PHOTO_HEIGHT = Math.round(WIN_H * 0.30)
 
-  useEffect(() => { setCardHeight(MIN_HEIGHT); setSlideIndex(0); setClosing(false) }, [selected])
+  const MIN_HEIGHT = isDesktop ? Math.min(WIN_H * 0.38, 260) : MOBILE_PHOTO_HEIGHT
+  const MAX_HEIGHT = isDesktop ? 460 : Math.round(WIN_H * 0.88)
+
+  useEffect(() => {
+    setCardHeight(MIN_HEIGHT)
+    setSlideIndex(0)
+    setClosing(false)
+  }, [selected])
 
   const triggerClose = () => { setClosing(true); setTimeout(() => onClose(), 320) }
   const snapTo = (height) => setCardHeight(height)
@@ -165,11 +175,13 @@ export function SpotCard({ selected, onClose }) {
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
+  // Mobile no-image: fixed compact height, no drag expansion
   const noImageStyle = {
     transform: closing ? 'translateY(110%)' : 'translateY(0)',
     transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
-    height: 'auto'
+    height: isDesktop ? 'auto' : `${MOBILE_NO_PHOTO_HEIGHT}px`,
   }
+
   const imageStyle = {
     height: cardHeight + 'px',
     transform: closing ? 'translateY(110%)' : 'translateY(0)',
@@ -202,7 +214,7 @@ export function SpotCard({ selected, onClose }) {
         onTouchEnd={handleTouchEnd}
         onWheel={e => {
           if (!hasImages) {
-            if (e.deltaY < 0) triggerClose()  // scroll UP → close
+            if (e.deltaY < 0) triggerClose()
           } else {
             if (e.deltaY > 0) snapTo(MAX_HEIGHT)
             else if (e.deltaY < 0) {
@@ -240,8 +252,6 @@ export function SpotCard({ selected, onClose }) {
               </div>
             )}
           </div>
-
-          {!hasImages && <div className="pb-16" />}
 
           {hasImages && (
             <div className="pb-6">
