@@ -82,6 +82,7 @@ export function SpotCard({ selected, onClose }) {
       <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
+
       <div className="flex-1" style={{ overflowY: isMax ? 'auto' : 'hidden' }}>
         <div className="px-4 pt-1 pb-3">
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
@@ -106,11 +107,13 @@ export function SpotCard({ selected, onClose }) {
             </div>
           )}
         </div>
+
         {!hasImages && <div className="pb-16" />}
+
         {hasImages && (
           <div className="pb-6">
 
-            {/* MOBILE: swipeable single image in rounded box */}
+            {/* MOBILE: 4:5 box, contain so no cropping, soft corners */}
             <div className="md:hidden px-4 pb-16"
               onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
               onTouchEnd={e => {
@@ -121,11 +124,16 @@ export function SpotCard({ selected, onClose }) {
                 if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) }
                 else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) }
               }}>
-              <div className="relative overflow-hidden rounded-2xl">
-                <div className="flex" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
+              <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '4/5' }}>
+                <div className="flex h-full" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
                   {imgs.map((url, i) => (
-                    <div key={i} className="w-full flex-shrink-0">
-                      <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: '56vw', objectFit: 'cover', display: 'block' }} draggable={false} />
+                    <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
+                      <img
+                        src={url}
+                        alt={'사진 ' + (i + 1)}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                        draggable={false}
+                      />
                     </div>
                   ))}
                 </div>
@@ -139,14 +147,20 @@ export function SpotCard({ selected, onClose }) {
               </div>
             </div>
 
-            {/* DESKTOP: horizontal scroll row, each image in its own natural aspect ratio box */}
-            <div className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto"
+            {/* DESKTOP: horizontal scroll, each image in its own contain box, soft corners */}
+            <div
+              className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {imgs.map((url, i) => (
-                <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100"
-                  style={{ height: '220px' }}>
-                  <img src={url} alt={'사진 ' + (i + 1)}
-                    style={{ height: '220px', width: 'auto', maxWidth: '400px', objectFit: 'cover', display: 'block' }} />
+                <div
+                  key={i}
+                  className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center"
+                  style={{ height: '220px', minWidth: '140px', maxWidth: '360px' }}>
+                  <img
+                    src={url}
+                    alt={'사진 ' + (i + 1)}
+                    style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }}
+                  />
                 </div>
               ))}
             </div>
@@ -154,6 +168,7 @@ export function SpotCard({ selected, onClose }) {
           </div>
         )}
       </div>
+
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
         <div className="absolute bottom-3 left-0 right-0 flex justify-center">
           <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
