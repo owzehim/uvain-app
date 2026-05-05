@@ -1,20 +1,51 @@
-// src/components/iconConfig.jsx
+// src/components/iconConfig.js
 // Shared icon configuration with custom SVG components for 스터디 and 운동
 
-import { MapPin, ForkKnife, Coffee, ShoppingCart, GraduationCap, FirstAid, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
+import React from 'react'
+import {
+  MapPin,
+  ForkKnife,
+  Coffee,
+  ShoppingCart,
+  GraduationCap,
+  FirstAid,
+  Sparkle,
+  GameController,
+  ShoppingBag,
+} from 'phosphor-react'
 
-// Custom SVG icon components
-const StudyIcon = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={props.size} height={props.size} fill="currentColor" viewBox="0 0 256 256">
-    <path d="M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm10,47.38-3.35-15.9,46.82-10.06,3.34,15.9Zm70,100.41-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm48,160H56V192h48v16Z"/>
-  </svg>
-)
+// Custom SVG icon components (no JSX, pure React.createElement)
+const StudyIcon = ({ size = 16, color = 'currentColor', ...rest }) =>
+  React.createElement(
+    'svg',
+    {
+      xmlns: 'http://www.w3.org/2000/svg',
+      width: size,
+      height: size,
+      fill: color,
+      viewBox: '0 0 256 256',
+      ...rest,
+    },
+    React.createElement('path', {
+      d: 'M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm10,47.38-3.35-15.9,46.82-10.06,3.34,15.9Zm70,100.41-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm48,160H56V192h48v16Z',
+    })
+  )
 
-const BarbellIcon = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={props.size} height={props.size} fill="currentColor" viewBox="0 0 256 256">
-    <path d="M200,64V192a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V136H104v56a16,16,0,0,1-16,16H72a16,16,0,0,1-16-16V64A16,16,0,0,1,72,48H88a16,16,0,0,1,16,16v56h48V64a16,16,0,0,1,16-16h16A16,16,0,0,1,200,64ZM36,72H32A16,16,0,0,0,16,88v32H8.27A8.18,8.18,0,0,0,0,127.47,8,8,0,0,0,8,136h8v32a16,16,0,0,0,16,16h4a4,4,0,0,0,4-4V76A4,4,0,0,0,36,72Zm220,55.47a8.18,8.18,0,0,0-8.25-7.47H240V88a16,16,0,0,0-16-16h-4a4,4,0,0,0-4,4V180a4,4,0,0,0,4,4h4a16,16,0,0,0,16-16V136h8A8,8,0,0,0,256,127.47Z"/>
-  </svg>
-)
+const BarbellIcon = ({ size = 16, color = 'currentColor', ...rest }) =>
+  React.createElement(
+    'svg',
+    {
+      xmlns: 'http://www.w3.org/2000/svg',
+      width: size,
+      height: size,
+      fill: color,
+      viewBox: '0 0 256 256',
+      ...rest,
+    },
+    React.createElement('path', {
+      d: 'M200,64V192a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V136H104v56a16,16,0,0,1-16,16H72a16,16,0,0,1-16-16V64A16,16,0,0,1,72,48H88a16,16,0,0,1,16,16v56h48V64a16,16,0,0,1,16-16h16A16,16,0,0,1,200,64ZM36,72H32A16,16,0,0,0,16,88v32H8.27A8.18,8.18,0,0,0,0,127.47,8,8,0,0,0,8,136h8v32a16,16,0,0,0,16,16h4a4,4,0,0,0,4-4V76A4,4,0,0,0,36,72Zm220,55.47a8.18,8.18,0,0,0-8.25-7.47H240V88a16,16,0,0,0-16-16h-4a4,4,0,0,0-4,4V180a4,4,0,0,0,4,4h4a16,16,0,0,0,16-16V136h8A8,8,0,0,0,256,127.47Z',
+    })
+  )
 
 export const categoryIcons = {
   '맛집': ForkKnife,
@@ -28,7 +59,7 @@ export const categoryIcons = {
   '미용/뷰티': Sparkle,
   '의료': FirstAid,
   '쇼핑': ShoppingBag,
-  '여가': GameController
+  '여가': GameController,
 }
 
 // CORRECT Phosphor filled SVG paths for map icons
@@ -45,7 +76,7 @@ export const getPhosphorSvg = (category, color = 'white') => {
     '쇼핑': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="' + color + '"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm-88,96A48.05,48.05,0,0,1,80,88a8,8,0,0,1,16,0,32,32,0,0,0,64,0,8,8,0,0,1,16,0A48.05,48.05,0,0,1,128,136Z"/></svg>',
     '여가': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="' + color + '"><path d="M247.44,173.75a.68.68,0,0,0,0-.14L231.05,89.44c0-.06,0-.12,0-.18A60.08,60.08,0,0,0,172,40H83.89a59.88,59.88,0,0,0-59,49.52L8.58,173.61a.68.68,0,0,0,0,.14,36,36,0,0,0,60.9,31.71l.35-.37L109.52,160h37l39.71,45.09c.11.13.23.25.35.37A36.08,36.08,0,0,0,212,216a36,36,0,0,0,35.43-42.25ZM104,112H96v8a8,8,0,0,1-16,0v-8H72a8,8,0,0,1,0-16h8V88a8,8,0,0,1,16,0v8h8a8,8,0,0,1,0,16Zm40-8a8,8,0,0,1,8-8h24a8,8,0,0,1,0,16H152A8,8,0,0,1,144,104Zm84.37,87.47a19.84,19.84,0,0,1-12.9,8.23A20.09,20.09,0,0,1,198,194.31L167.8,160H172a60,60,0,0,0,51-28.38l8.74,45A19.82,19.82,0,0,1,228.37,191.47Z"/></svg>',
     '기타': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="' + color + '"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></svg>',
-    '전체': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="' + color + '"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></svg>'
+    '전체': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="' + color + '"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></svg>',
   }
   return iconMap[category] || iconMap['기타']
 }
