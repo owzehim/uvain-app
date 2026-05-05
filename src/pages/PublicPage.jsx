@@ -4,6 +4,7 @@ import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
+import { MapPin, Lock } from 'phosphor-react'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
@@ -60,21 +61,24 @@ export default function PublicPage() {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
       >
         {[
-          { key: 'map', label: 'SPOT', icon: '🗺️' },
-          { key: 'membership', label: 'Membership', icon: '🔒' },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={
-              'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' +
-              (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
-            }
-          >
-            <span className="text-lg">{tab.icon}</span>
-            {tab.label}
-          </button>
-        ))}
+          { key: 'map', label: 'SPOT', icon: MapPin },
+          { key: 'membership', label: 'Membership', icon: Lock },
+        ].map((tab) => {
+          const IconComponent = tab.icon
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={
+                'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' +
+                (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
+              }
+            >
+              <IconComponent size={20} weight={activeTab === tab.key ? 'fill' : 'regular'} />
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
     </div>
   )
@@ -94,57 +98,57 @@ function PublicMapTab({ restaurants }) {
   return (
     <div className="h-full flex flex-col">
       {/* 카테고리 바 */}
-          <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
-      {MAP_CATEGORIES.map((cat) => {
-        const isActive = activeCategory === cat
-        const iconSvg = getMapIconSvg(cat, isActive ? 'white' : '#f97316')
-        return (
-          <button
-            key={cat}
-            onClick={() => {
-              setActiveCategory(cat)
-              setSelected(null)
-            }}
-            className={
-              'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
-              (isActive
-                ? 'bg-orange-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
-            }
-          >
-            <span
-              style={{
-                width: 16,
-                height: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+      <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
+        {categories.map((cat) => {
+          const isActive = activeCategory === cat
+          const iconSvg = getMapIconSvg(cat, isActive ? 'white' : '#f97316')
+          return (
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat)
+                setSelected(null)
               }}
-              dangerouslySetInnerHTML={{ __html: iconSvg }}
-            />
-            {cat}
-          </button>
-        )
-      })}
-    </div>
+              className={
+                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
+                (isActive
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+              }
+            >
+              <span
+                style={{
+                  width: 16,
+                  height: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                dangerouslySetInnerHTML={{ __html: iconSvg }}
+              />
+              {cat}
+            </button>
+          )
+        })}
+      </div>
 
       {/* 지도 / 빈 상태 */}
       {filtered.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             {(() => {
-  const iconSvg = getMapIconSvg(activeCategory, '#f97316')
-  return (
-    <div
-      style={{
-        width: 32,
-        height: 32,
-        margin: '0 auto 8px',
-      }}
-      dangerouslySetInnerHTML={{ __html: iconSvg }}
-    />
-  )
-})()}
+              const iconSvg = getMapIconSvg(activeCategory, '#f97316')
+              return (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    margin: '0 auto 8px',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: iconSvg }}
+                />
+              )
+            })()}
             <p className="text-gray-500 text-sm">등록된 장소가 없어요</p>
           </div>
         </div>

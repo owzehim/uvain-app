@@ -190,11 +190,17 @@ function EventsTab({ events }) {
             <span className="text-gray-400 text-sm ml-2">{isExpanded ? '▲' : '▼'}</span>
           </div>
           {ev.event_date && (
-            <p className="text-sm text-orange-500 mt-1">
-              {'📅 ' + new Date(ev.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-            </p>
+            <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
+              <Calendar size={14} weight="fill" />
+              <span>{new Date(ev.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
           )}
-          {ev.location && <p className="text-sm text-gray-500 mt-0.5">{'📍 ' + ev.location}</p>}
+          {ev.location && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
+              <MapPin size={14} weight="fill" />
+              <span>{ev.location}</span>
+            </div>
+          )}
         </button>
 
         {isExpanded && (
@@ -299,14 +305,10 @@ function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  const filtered =
-    activeCategory === '전체'
-      ? restaurants
-      : restaurants.filter((r) => r.category === activeCategory)
+  const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
   return (
     <div className="h-full flex flex-col">
-      {/* 카테고리 바 */}
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
@@ -341,16 +343,9 @@ function MapTab({ restaurants }) {
         })}
       </div>
 
-      {/* 지도 */}
       <div className="flex-1 relative overflow-hidden">
-        <MapView
-          restaurants={filtered}
-          selected={selected}
-          onSelect={setSelected}
-        />
-        {selected && (
-          <SpotCard selected={selected} onClose={() => setSelected(null)} />
-        )}
+        <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
+        {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { getMapIconSvg } from '../lib/mapCategories'
+import { MapPin } from 'phosphor-react'
 
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)
@@ -47,9 +48,9 @@ export default function MapView({ restaurants, selected, onSelect }) {
       shadow +
       ';flex-shrink:0;">' +
       '<div style="width:' +
-      (isSponsored ? 20 : 16) +
+      (isSponsored ? 24 : 16) +
       'px;height:' +
-      (isSponsored ? 20 : 16) +
+      (isSponsored ? 24 : 16) +
       'px;display:flex;align-items:center;justify-content:center;">' +
       iconSvg +
       '</div>' +
@@ -226,11 +227,13 @@ export default function MapView({ restaurants, selected, onSelect }) {
           padding: '8px 10px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           cursor: 'pointer',
-          fontSize: '18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
         title="현재 위치"
       >
-        📍
+        <MapPin size={20} weight="fill" color="#f97316" />
       </button>
     </div>
   )
