@@ -135,13 +135,12 @@ export function SpotCard({ selected, onClose }) {
           )}
         </div>
 
-        {/* FIX: was pb-16 (64px), reduced to pb-12 (48px) — just enough for the Maps button */}
-        {!hasImages && <div className="pb-12" />}
+        {/* Mobile-only spacer for the Maps button; desktop doesn't need it (card is auto-height) */}
+        {!hasImages && <div className="pb-16 md:pb-4" />}
 
         {hasImages && (
-          // FIX: removed outer pb-6 — the pb-16 inside mobile/desktop containers already handles button clearance
-          <div>
-            {/* MOBILE */}
+          <div className="pb-6">
+            {/* MOBILE: 4:5 box, contain so no cropping, soft corners */}
             <div
               className="md:hidden px-4 pb-16"
               onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
@@ -172,8 +171,8 @@ export function SpotCard({ selected, onClose }) {
               </div>
             </div>
 
-            {/* DESKTOP */}
-            <div className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {/* DESKTOP: horizontal scroll — pb-4 instead of pb-16, no excess space */}
+            <div className="hidden md:flex gap-3 px-4 pb-4 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {imgs.map((url, i) => (
                 <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center" style={{ height: '220px', minWidth: '140px', maxWidth: '360px' }}>
                   <img src={url} alt={'사진 ' + (i + 1)} style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }} />
