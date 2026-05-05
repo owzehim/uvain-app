@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { GoogleLogo, MapPin, ForkKnife, Coffee, ShoppingCart, Books, GraduationCap, FirstAid, Barbell, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
+import { MapPin, ForkKnife, Coffee, ShoppingCart, Books, GraduationCap, FirstAid, Barbell, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
 
 export function RichText({ text, className = '' }) {
   if (!text) return null
@@ -229,10 +229,10 @@ export function SpotCard({ selected, onClose }) {
 
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
-            <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-1.5" onTouchStart={e => e.stopPropagation()}>
-              <GoogleLogo size={14} weight="fill" />
-              Google Maps에서 열기
-            </a>
+            <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap1.5" onTouchStart={e => e.stopPropagation()}>
+  <MapPin size={14} weight="fill" />
+  Google Maps에서 열기
+</a>
           </div>
         </div>
       </div>
