@@ -6,7 +6,7 @@ import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { broadcastQRExpiry } from '../lib/qrSync'
 import { MAP_CATEGORIES, CATEGORY_ICONS } from '../lib/mapCategories'
-import { QrCode, CalendarDots, MapPinPlus } from 'phosphor-react'
+import { QrCode, Calendar, MapPin } from 'phosphor-react'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -79,8 +79,8 @@ export default function MemberPage() {
       <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
         {[
           { key: 'qr', label: 'MY', icon: QrCode },
-          { key: 'events', label: 'EVENT', icon: CalendarDots },
-          { key: 'map', label: 'SPOT', icon: MapPinPlus },
+          { key: 'events', label: 'EVENT', icon: Calendar },
+          { key: 'map', label: 'SPOT', icon: MapPin },
         ].map(tab => {
           const IconComponent = tab.icon
           return (
@@ -258,7 +258,7 @@ function EventsTab({ events }) {
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
                   <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5">
-                    <CalendarDots size={14} weight="fill" />
+                    <Calendar size={14} weight="fill" />
                     캘린더에 추가
                   </button>
                 )}
