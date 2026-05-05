@@ -8,7 +8,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const markerDataRef = useRef([])
   const initializedRef = useRef(false)
 
-  const createMarkerHtml = (r, isSelected = false) => {
+  const createMarkerElement = (r, isSelected = false) => {
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
     const bg = isSponsored ? '#f97316' : 'white'
@@ -19,50 +19,50 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const iconColor = isSponsored ? 'white' : '#f97316'
     const iconSvg = getMapIconSvg(r.category, iconColor)
 
-    return (
-      '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
-      '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';">' +
-      '<div style="width:' + (isSponsored ? 20 : 16) + 'px;height:' + (isSponsored ? 20 : 16) + 'px;">' + iconSvg + '</div>' +
-      '</div>' +
-      '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:90px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div>' +
-      '</div>'
-    )
+    const div = document.createElement('div')
+    div.style.display = 'flex'
+    div.style.flexDirection = 'column'
+    div.style.alignItems = 'center'
+    div.style.gap = '2px'
+
+    const markerCircle = document.createElement('div')
+    markerCircle.style.width = size + 'px'
+    markerCircle.style.height = size + 'px'
+    markerCircle.style.background = bg
+    markerCircle.style.border = border
+    markerCircle.style.borderRadius = '50%'
+    markerCircle.style.display = 'flex'
+    markerCircle.style.alignItems = 'center'
+    markerCircle.style.justifyContent = 'center'
+    markerCircle.style.boxShadow = shadow
+
+    const iconContainer = document.createElement('div')
+    iconContainer.style.width = (isSponsored ? 20 : 16) + 'px'
+    iconContainer.style.height = (isSponsored ? 20 : 16) + 'px'
+    iconContainer.innerHTML = iconSvg
+
+    markerCircle.appendChild(iconContainer)
+
+    const label = document.createElement('div')
+    label.style.background = 'white'
+    label.style.color = '#374151'
+    label.style.fontSize = '9px'
+    label.style.fontWeight = '600'
+    label.style.padding = '1px 4px'
+    label.style.borderRadius = '4px'
+    label.style.whiteSpace = 'nowrap'
+    label.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
+    label.style.maxWidth = '90px'
+    label.style.overflow = 'hidden'
+    label.style.textOverflow = 'ellipsis'
+    label.textContent = name
+
+    div.appendChild(markerCircle)
+    div.appendChild(label)
+
+    return div
   }
 
-  const renderMarkers = (L, map, data) => {
-    markersRef.current.forEach(m => m.remove())
-    markersRef.current = []
-    markerDataRef.current = []
-
-    const valid = data.filter(r => r.latitude && r.longitude)
-    if (valid.length === 0) return
-
-    const sorted = [...valid].sort((a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0))
-
-    sorted.forEach(r => {
-      const size = r.is_sponsored ? 42 : 34
-      const markerIcon = L.divIcon({
-        className: '',
-        html: createMarkerHtml(r, false),
-        iconSize: [size + 20, size + 28],
-        iconAnchor: [(size + 20) / 2, size / 2],
-      })
-
-      const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
-      m.on('click', () => onSelect(r))
-      markersRef.current.push(m)
-      markerDataRef.current.push({ r, marker: m })
-    })
-
-    if (valid.length === 1) {
-      map.setView([valid[0].latitude, valid[0].longitude], 15)
-    } else {
-      const bounds = L.latLngBounds(valid.map(r => [r.latitude, r.longitude]))
-      map.fitBounds(bounds, { padding: [40, 40] })
-    }
-  }
-
-  // Initialize map
   useEffect(() => {
     if (initializedRef.current) return
     initializedRef.current = true
@@ -76,6 +76,8 @@ export default function MapView({ restaurants, selected, onSelect }) {
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
     script.onload = () => {
       const L = window.L
+      if (!mapRef.current) return
+      
       const map = L.map(mapRef.current, {
         zoomControl: false,
         scrollWheelZoom: true,
@@ -90,38 +92,69 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
       L.control.zoom({ position: 'bottomright' }).addTo(map)
       mapInstanceRef.current = map
-
-      // Render markers after map is initialized
-      if (restaurants && restaurants.length > 0) {
-        renderMarkers(L, map, restaurants)
-      }
     }
     document.head.appendChild(script)
   }, [])
 
-  // Update markers when restaurants change
+  const renderMarkers = (L, map, data) => {
+    if (!L || !map) return
+    
+    markersRef.current.forEach(m => m.remove())
+    markersRef.current = []
+    markerDataRef.current = []
+
+    const valid = data.filter(r => r.latitude && r.longitude)
+    if (valid.length === 0) return
+
+    const sorted = [...valid].sort((a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0))
+
+    sorted.forEach(r => {
+      const size = r.is_sponsored ? 42 : 34
+      const markerElement = createMarkerElement(r, false)
+      
+      const markerIcon = L.divIcon({
+        className: '',
+        html: markerElement,
+        iconSize: [size + 20, size + 28],
+        iconAnchor: [(size + 20) / 2, size / 2],
+      })
+
+      const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
+      m.on('click', () => onSelect(r))
+      markersRef.current.push(m)
+      markerDataRef.current.push({ r, marker: m })
+    })
+
+    if (valid.length === 1) {
+      map.setView([valid[0].latitude, valid[0].longitude], 15)
+    } else if (valid.length > 1) {
+      const bounds = L.latLngBounds(valid.map(r => [r.latitude, r.longitude]))
+      map.fitBounds(bounds, { padding: [40, 40] })
+    }
+  }
+
   useEffect(() => {
     if (!mapInstanceRef.current || !window.L) return
     renderMarkers(window.L, mapInstanceRef.current, restaurants)
   }, [restaurants])
 
-  // Update marker selection
   useEffect(() => {
     if (!mapInstanceRef.current || !window.L) return
     const L = window.L
     markerDataRef.current.forEach(({ r, marker }) => {
       const isSelected = selected && r.id === selected.id
       const size = r.is_sponsored ? 42 : 34
+      const markerElement = createMarkerElement(r, isSelected)
+      
       marker.setIcon(L.divIcon({
         className: '',
-        html: createMarkerHtml(r, isSelected),
+        html: markerElement,
         iconSize: [size + 20, size + 28],
         iconAnchor: [(size + 20) / 2, size / 2],
       }))
     })
   }, [selected])
 
-  // Pan to selected marker
   useEffect(() => {
     if (!mapInstanceRef.current || !selected) return
     mapInstanceRef.current.setView([selected.latitude, selected.longitude], 16, { animate: true })
