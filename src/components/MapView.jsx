@@ -21,50 +21,13 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     return (
       '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
-        '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';">' +
-          '<div style="width:' + (isSponsored ? 20 : 16) + 'px;height:' + (isSponsored ? 20 : 16) + 'px;">' +
-            iconSvg +
-          '</div>' +
-        '</div>' +
-        '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:90px;overflow:hidden;text-overflow:ellipsis;">' +
-          name +
-        '</div>' +
+      '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';">' +
+      '<div style="width:' + (isSponsored ? 20 : 16) + 'px;height:' + (isSponsored ? 20 : 16) + 'px;">' + iconSvg + '</div>' +
+      '</div>' +
+      '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:90px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div>' +
       '</div>'
     )
   }
-
-  useEffect(() => {
-    if (initializedRef.current) return
-    initializedRef.current = true
-
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-    document.head.appendChild(link)
-
-    const script = document.createElement('script')
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-    script.onload = () => {
-      const L = window.L
-      const map = L.map(mapRef.current, {
-        zoomControl: false,
-        scrollWheelZoom: true,
-        dragging: true,
-        tap: true,
-      }).setView([52.3676, 4.9041], 13)
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap © CARTO',
-        maxZoom: 19
-      }).addTo(map)
-
-      L.control.zoom({ position: 'bottomright' }).addTo(map)
-
-      mapInstanceRef.current = map
-      renderMarkers(L, map, restaurants)
-    }
-    document.head.appendChild(script)
-  }, [])
 
   const renderMarkers = (L, map, data) => {
     markersRef.current.forEach(m => m.remove())
@@ -99,11 +62,50 @@ export default function MapView({ restaurants, selected, onSelect }) {
     }
   }
 
+  // Initialize map
+  useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
+
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+    document.head.appendChild(link)
+
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    script.onload = () => {
+      const L = window.L
+      const map = L.map(mapRef.current, {
+        zoomControl: false,
+        scrollWheelZoom: true,
+        dragging: true,
+        tap: true,
+      }).setView([52.3676, 4.9041], 13)
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap © CARTO',
+        maxZoom: 19
+      }).addTo(map)
+
+      L.control.zoom({ position: 'bottomright' }).addTo(map)
+      mapInstanceRef.current = map
+
+      // Render markers after map is initialized
+      if (restaurants && restaurants.length > 0) {
+        renderMarkers(L, map, restaurants)
+      }
+    }
+    document.head.appendChild(script)
+  }, [])
+
+  // Update markers when restaurants change
   useEffect(() => {
     if (!mapInstanceRef.current || !window.L) return
     renderMarkers(window.L, mapInstanceRef.current, restaurants)
   }, [restaurants])
 
+  // Update marker selection
   useEffect(() => {
     if (!mapInstanceRef.current || !window.L) return
     const L = window.L
@@ -119,6 +121,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     })
   }, [selected])
 
+  // Pan to selected marker
   useEffect(() => {
     if (!mapInstanceRef.current || !selected) return
     mapInstanceRef.current.setView([selected.latitude, selected.longitude], 16, { animate: true })
@@ -128,7 +131,9 @@ export default function MapView({ restaurants, selected, onSelect }) {
     if (!mapInstanceRef.current || !window.L) return
     const L = window.L
     const map = mapInstanceRef.current
+
     map.locate({ setView: true, maxZoom: 16 })
+
     map.once('locationfound', (e) => {
       L.circleMarker(e.latlng, {
         radius: 8,
@@ -138,6 +143,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
         fillOpacity: 1
       }).addTo(map).bindPopup('현재 위치').openPopup()
     })
+
     map.once('locationerror', () => {
       alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
     })
