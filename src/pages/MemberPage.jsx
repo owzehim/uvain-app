@@ -13,7 +13,6 @@ export default function MemberPage() {
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [activeTab, setActiveTab] = useState('qr')
-  const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const { token, secondsLeft } = useQRToken(member?.totp_secret)
@@ -44,7 +43,6 @@ export default function MemberPage() {
 
   const handleTabChange = (key) => {
     setActiveTab(key)
-    setTabKey(prev => prev + 1)
   }
 
   if (loading) return (
@@ -69,7 +67,7 @@ export default function MemberPage() {
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <div key={tabKey} className="animate-fade-slide-up h-full">
+        <div className="h-full">
           {activeTab === 'qr' && <QRTab member={member} isValid={isValid} qrValue={qrValue} secondsLeft={secondsLeft} />}
           {activeTab === 'events' && <EventsTab events={events} />}
           {activeTab === 'map' && <MapTab restaurants={restaurants} />}
