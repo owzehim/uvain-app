@@ -7,7 +7,7 @@ export default function VerifyPage() {
   const { token } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [timeLeft, setTimeLeft] = useState(5)
+  const [timeLeft, setTimeLeft] = useState(15)
   const scanTimeRef = useRef(null)
 
   // Parse QR token into OTP and student number
@@ -100,11 +100,11 @@ export default function VerifyPage() {
     const interval = setInterval(() => {
       const scanTime = parseInt(sessionStorage.getItem('qrScanTime') || Date.now())
       const elapsedSeconds = Math.floor((Date.now() - scanTime) / 1000)
-      const remaining = Math.max(0, 5 - elapsedSeconds)
+      const remaining = Math.max(0, 15 - elapsedSeconds)
 
       setTimeLeft(remaining)
 
-      // Redirect to expired page after 5 seconds
+      // Redirect to expired page after 15 seconds
       if (remaining === 0) {
         clearInterval(interval)
         setResult({
@@ -138,7 +138,7 @@ export default function VerifyPage() {
           </p>
         </div>
 
-        {/* Valid Result - Show for 5 seconds then expire */}
+        {/* Valid Result - Show for 15 seconds then expire */}
         {result?.valid ? (
           <div className="space-y-4">
             {/* Status Badge */}
