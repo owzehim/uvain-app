@@ -996,4 +996,3 @@ function RestaurantsTab() {
           <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, subcategory: '' })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
             {SPOT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <div>
