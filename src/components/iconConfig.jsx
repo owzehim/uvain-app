@@ -15,7 +15,8 @@ import {
 } from 'phosphor-react'
 
 // Custom SVG icon components (no JSX, pure React.createElement)
-const StudyIcon = ({ size = 16, color = 'currentColor', ...rest }) =>
+// These ignore the weight prop since they're already filled
+const StudyIcon = ({ size = 16, color = 'currentColor', weight, ...rest }) =>
   React.createElement(
     'svg',
     {
@@ -31,7 +32,7 @@ const StudyIcon = ({ size = 16, color = 'currentColor', ...rest }) =>
     })
   )
 
-const BarbellIcon = ({ size = 16, color = 'currentColor', ...rest }) =>
+const BarbellIcon = ({ size = 16, color = 'currentColor', weight, ...rest }) =>
   React.createElement(
     'svg',
     {
