@@ -1,13 +1,14 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { verifyTOTP } from '../lib/totp'
+import { verifyTOTP, getSecondsLeft } from '../lib/totp'
 
 export default function VerifyPage() {
   const { token } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const pollIntervalRef = useRef(null)
+  const [secondsLeft, setSecondsLeft] = useState(null)
+  const timerIntervalRef = useRef(null)
 
   // Function to verify the QR code
   const verifyQRCode = async (qrToken) => {
@@ -36,10 +37,14 @@ export default function VerifyPage() {
 
     if (!isValidToken) {
       setResult({ valid: false, reason: 'QR code has expired. Please ask the member to refresh.' })
+      setSecondsLeft(null)
     } else if (!isActiveMember) {
       setResult({ valid: false, reason: 'Membership is not active.', member })
+      setSecondsLeft(null)
     } else {
       setResult({ valid: true, member })
+      // Set initial seconds left for this TOTP window
+      setSecondsLeft(getSecondsLeft(15))
     }
   }
 
@@ -53,20 +58,28 @@ export default function VerifyPage() {
     initialVerify()
   }, [token])
 
-  // Poll for QR code changes every 2 seconds
+  // Timer that counts down and re-verifies when TOTP window expires
   useEffect(() => {
-    if (loading || !token) return
+    if (loading || !token || secondsLeft === null) return
 
-    pollIntervalRef.current = setInterval(async () => {
-      await verifyQRCode(token)
-    }, 2000)
+    // Update seconds left every 100ms for smooth countdown
+    timerIntervalRef.current = setInterval(() => {
+      const newSecondsLeft = getSecondsLeft(15)
+      setSecondsLeft(newSecondsLeft)
+
+      // When we cross into a new TOTP window (seconds left resets to ~15)
+      // Re-verify the token to detect if it has expired
+      if (newSecondsLeft > 14) {
+        verifyQRCode(token)
+      }
+    }, 100)
 
     return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current)
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
       }
     }
-  }, [token, loading])
+  }, [token, loading, secondsLeft])
 
   if (loading)
     return (
@@ -88,6 +101,20 @@ export default function VerifyPage() {
             <div className="bg-green-50 rounded-xl p-4 text-center">
               <p className="text-green-600 font-bold text-2xl">✓ Valid</p>
               <p className="text-green-500 text-sm mt-1">Membership is active</p>
+              {secondsLeft !== null && (
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>Valid for</span>
+                    <span>{secondsLeft}s</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div
+                      className="bg-green-500 h-1.5 rounded-full transition-all"
+                      style={{ width: (secondsLeft / 15 * 100) + '%' }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2 text-sm">
