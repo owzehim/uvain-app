@@ -117,6 +117,7 @@ export function SpotCard({ selected, onClose }) {
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
   const cardRef = useRef(null)
+  const innerRef = useRef(null)
 
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
@@ -135,10 +136,51 @@ export function SpotCard({ selected, onClose }) {
     setPreviewIndex(null)
   }, [selected])
 
+  // Attach non-passive wheel listener so we can preventDefault
+  useEffect(() => {
+    const el = cardRef.current
+    if (!el) return
+    const onWheel = (e) => {
+      if (!hasImages) return
+      const inner = innerRef.current
+
+      // If card is fully expanded and user is scrolling DOWN inside content, let it scroll normally
+      const atMax = cardHeight >= MAX_HEIGHT * 0.85
+      if (atMax && e.deltaY > 0 && inner && inner.scrollTop < inner.scrollHeight - inner.clientHeight - 2) {
+        return // let inner div scroll
+      }
+
+      e.preventDefault()
+
+      if (e.deltaY > 0) {
+        // scroll down → expand
+        setCardHeight(h => {
+          const next = Math.min(h + Math.abs(e.deltaY) * 1.5, MAX_HEIGHT)
+          return next
+        })
+      } else {
+        // scroll up → minimize or close
+        setCardHeight(h => {
+          const next = h + e.deltaY * 1.5 // deltaY is negative
+          if (next < MIN_HEIGHT * 0.5) {
+            // close
+            setClosing(true)
+            setTimeout(() => onClose(), 320)
+            return 0
+          }
+          if (next < MIN_HEIGHT) return MIN_HEIGHT
+          return next
+        })
+      }
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [hasImages, cardHeight, MAX_HEIGHT, MIN_HEIGHT, onClose])
+
   const triggerClose = () => { setClosing(true); setTimeout(() => onClose(), 320) }
   const snapTo = (height) => setCardHeight(height)
 
-  // ── Touch (mobile only) ───────────────────────────────────────────────────
+  // ── Touch (mobile) ────────────────────────────────────────────────────────
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
@@ -193,23 +235,14 @@ export function SpotCard({ selected, onClose }) {
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onWheel={e => {
-          if (!hasImages) return
-          const delta = e.deltaY
-          if (delta > 0) snapTo(MAX_HEIGHT)
-          else if (delta < 0) {
-            if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
-            else triggerClose()
-          }
-        }}>
+        onTouchEnd={handleTouchEnd}>
 
-        {/* Drag handle — visual only on desktop, functional on mobile */}
+        {/* Drag handle */}
         <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        <div className="flex-1" style={{ overflowY: isMax ? 'auto' : 'hidden' }}>
+        <div ref={innerRef} className="flex-1" style={{ overflowY: isMax ? 'auto' : 'hidden' }}>
           {/* Info */}
           <div className="px-4 pt-1 pb-3">
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
@@ -269,7 +302,7 @@ export function SpotCard({ selected, onClose }) {
                 </div>
               </div>
 
-              {/* DESKTOP: horizontal scroll, click to open full preview */}
+              {/* DESKTOP: horizontal scroll row, click to open full preview */}
               <div
                 className="hidden md:flex gap-3 px-4 pb-4 overflow-x-auto"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
