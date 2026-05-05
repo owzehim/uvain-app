@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
@@ -9,9 +9,6 @@ export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
   const [restaurants, setRestaurants] = useState([])
   const navigate = useNavigate()
-  const TAB_ORDER = ['map', 'membership']
-  const swipeStartX = useRef(null)
-  const swipeStartY = useRef(null)
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -24,25 +21,8 @@ export default function PublicPage() {
     fetchRestaurants()
   }, [])
 
-  const handleSwipeStart = (e) => {
-    swipeStartX.current = e.touches[0].clientX
-    swipeStartY.current = e.touches[0].clientY
-  }
-  const handleSwipeEnd = (e) => {
-    if (swipeStartX.current === null) return
-    const dx = e.changedTouches[0].clientX - swipeStartX.current
-    const dy = Math.abs(e.changedTouches[0].clientY - swipeStartY.current)
-    swipeStartX.current = null
-    if (Math.abs(dx) < 60 || dy > 80) return
-    const idx = TAB_ORDER.indexOf(activeTab)
-    if (dx < 0 && idx < TAB_ORDER.length - 1) setActiveTab(TAB_ORDER[idx + 1])
-    if (dx > 0 && idx > 0) setActiveTab(TAB_ORDER[idx - 1])
-  }
-
   return (
     <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}
-      onTouchStart={handleSwipeStart}
-      onTouchEnd={handleSwipeEnd}
     >
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
