@@ -31,6 +31,14 @@ export default function MemberPage() {
     fetchData()
   }, [])
 
+useEffect(() => {
+  const handler = (e) => {
+    if (e.touches[0].clientX < 30) e.preventDefault()
+  }
+  document.addEventListener('touchstart', handler, { passive: false })
+  return () => document.removeEventListener('touchstart', handler)
+}, [])
+
   const handleTabChange = (key) => {
     setActiveTab(key)
     setTabKey(prev => prev + 1)

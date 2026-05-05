@@ -21,6 +21,14 @@ export default function PublicPage() {
     fetchRestaurants()
   }, [])
 
+useEffect(() => {
+  const handler = (e) => {
+    if (e.touches[0].clientX < 30) e.preventDefault()
+  }
+  document.addEventListener('touchstart', handler, { passive: false })
+  return () => document.removeEventListener('touchstart', handler)
+}, [])
+
   return (
     <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}
     >
