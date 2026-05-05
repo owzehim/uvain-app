@@ -997,4 +997,3 @@ function RestaurantsTab() {
             {SPOT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div>
-            <label className="text-xs text-gray-400 block mb-1"></label>
