@@ -201,10 +201,8 @@ export function SpotCard({ selected, onClose }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onWheel={e => {
-          // FIX: handle both cases — with and without images
           if (!hasImages) {
-            // no images: scroll down closes the card
-            if (e.deltaY > 0) triggerClose()
+            if (e.deltaY < 0) triggerClose()  // scroll UP → close
           } else {
             if (e.deltaY > 0) snapTo(MAX_HEIGHT)
             else if (e.deltaY < 0) {
