@@ -1,4 +1,4 @@
-// src/components/iconConfig.js
+// src/components/iconConfig.jsx
 // Shared icon configuration with custom SVG components for 스터디 and 운동
 
 import { MapPin, ForkKnife, Coffee, ShoppingCart, GraduationCap, FirstAid, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
