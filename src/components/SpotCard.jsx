@@ -122,8 +122,8 @@ export function SpotCard({ selected, onClose }) {
   // Mobile fixed heights:
   // - with photo: 52% of screen so image fade-in is visible below the info
   // - without photo: 30% of screen, compact, no empty white space
-  const MOBILE_PHOTO_HEIGHT = Math.round(WIN_H * 0.52)
-  const MOBILE_NO_PHOTO_HEIGHT = Math.round(WIN_H * 0.30)
+  const MOBILE_PHOTO_HEIGHT = Math.round(WIN_H * 0.45)
+  const MOBILE_NO_PHOTO_HEIGHT = Math.round(WIN_H * 0.20)
 
   const MIN_HEIGHT = isDesktop ? Math.min(WIN_H * 0.38, 260) : MOBILE_PHOTO_HEIGHT
   const MAX_HEIGHT = isDesktop ? 460 : Math.round(WIN_H * 0.88)
