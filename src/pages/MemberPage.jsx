@@ -172,24 +172,33 @@ function EventsTab({ events }) {
         {isExpanded && (
           <div className="animate-fade-slide-up">
             {imgs.length > 0 && (
-  <div className="relative overflow-hidden"
-    onTouchStart={e => { e.currentTarget._sx = e.touches[0].clientX }}
+  <div className="px-4"
+    onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
     onTouchEnd={e => {
-      const dx = e.changedTouches[0].clientX - e.currentTarget._sx
+      const start = e.currentTarget._swipeStartX
+      if (start == null) return
+      const dx = e.changedTouches[0].clientX - start
+      e.currentTarget._swipeStartX = null
       if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
       else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
     }}>
-    <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}>
-      {imgs.map((url, i) => <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ aspectRatio: '1/1' }} />)}
-    </div>
-    {imgs.length > 1 && (
-      <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-        {imgs.map((_, i) => (
-          <div key={i} onClick={() => setSlide(ev.id, i)}
-            className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
+    <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
+      <div className="flex h-full" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)', transition: 'transform 0.3s ease' }}>
+        {imgs.map((url, i) => (
+          <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
+            <img src={url} alt={'이미지 ' + (i+1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+          </div>
         ))}
       </div>
-    )}
+      {imgs.length > 1 && (
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+          {imgs.map((_, i) => (
+            <div key={i} onClick={() => setSlide(ev.id, i)}
+              className={`rounded-full cursor-pointer transition-all ${i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
+          ))}
+        </div>
+      )}
+    </div>
   </div>
 )}
             <div className="px-5 pb-5">
