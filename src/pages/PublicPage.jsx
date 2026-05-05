@@ -4,7 +4,7 @@ import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
-import { MapPin, Lock, Utensils, Confetti, Users } from 'phosphor-react'
+import { MapPin, Lock } from 'phosphor-react'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
@@ -74,7 +74,10 @@ export default function PublicPage() {
                 (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
               }
             >
-              <IconComponent size={20} weight={activeTab === tab.key ? 'fill' : 'regular'} />
+              <IconComponent
+                size={20}
+                weight={activeTab === tab.key ? 'fill' : 'regular'}
+              />
               {tab.label}
             </button>
           )
@@ -189,7 +192,7 @@ function MembershipTab() {
         <div className="space-y-3 mb-8">
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
-              <Utensils size={24} weight="fill" color="#f97316" />
+              <MapPin size={24} weight="fill" color="#f97316" />
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
@@ -200,9 +203,10 @@ function MembershipTab() {
               </p>
             </div>
           </div>
+
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
-              <Confetti size={24} weight="fill" color="#f97316" />
+              <MapPin size={24} weight="fill" color="#3b82f6" />
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
@@ -213,9 +217,10 @@ function MembershipTab() {
               </p>
             </div>
           </div>
+
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
-              <Users size={24} weight="fill" color="#f97316" />
+              <MapPin size={24} weight="fill" color="#22c55e" />
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
