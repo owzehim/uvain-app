@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapPin } from 'phosphor-react'
+import { MapPin, Ticket } from 'phosphor-react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 
 export function RichText({ text, className = '' }) {
@@ -161,7 +161,12 @@ export function SpotCard({ selected, onClose }) {
                 {selected.address}
               </p>
             )}
-            {selected.discount_info && <p className="text-xs text-orange-500 mt-1">🎟 <RichText text={selected.discount_info} /></p>}
+            {selected.discount_info && (
+              <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
+                <Ticket size={14} weight="fill" color="#FF5252" />
+                <RichText text={selected.discount_info} />
+              </p>
+            )}
             {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ <RichText text={selected.discount_terms} /></p>}
             {(selected.review || selected.reviewer_name) && (
               <div className="mt-2 pt-2 border-t border-gray-100">

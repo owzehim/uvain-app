@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { ImageReorder } from '../components/ImageReorder'
+import { Plus, Eye, EyeSlash, MapPin } from 'phosphor-react'
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('members')
@@ -50,8 +51,6 @@ export default function AdminPage() {
     </div>
   )
 }
-
-// ─── Rich Editor ──────────────────────────────────────────────────────────────
 
 const COLORS = ['#000000','#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#ffffff']
 
@@ -122,8 +121,6 @@ function koreanSort(arr, key) {
   return [...arr].sort((a, b) => (a[key] || '').localeCompare(b[key] || '', ['ko', 'en']))
 }
 
-// ─── Members Tab ──────────────────────────────────────────────────────────────
-
 function MembersTab() {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -153,7 +150,6 @@ function MembersTab() {
     fetchMembers()
   }, [])
 
-  // Password strength checker
   const checkPasswordStrength = (pwd) => {
     let strength = 0
     if (pwd.length >= 8) strength++
@@ -210,7 +206,6 @@ function MembersTab() {
     if (!validateForm()) return
 
     try {
-      // Create auth account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password
@@ -227,7 +222,6 @@ function MembersTab() {
         return
       }
 
-      // Create member record
       const { error: memberError } = await supabase.from('members').insert({
         user_id: userId,
         full_name: form.full_name,
@@ -243,14 +237,12 @@ function MembersTab() {
         return
       }
 
-      // Show success with credentials
       setCreatedCredentials({
         email: form.email,
         password: form.password,
         name: form.full_name
       })
 
-      // Reset form
       setShowForm(false)
       setForm({
         email: '',
@@ -264,10 +256,8 @@ function MembersTab() {
       })
       setPasswordStrength(0)
 
-      // Refresh list
       fetchMembers()
 
-      // Auto-close credentials after 10 seconds
       setTimeout(() => setCreatedCredentials(null), 10000)
     } catch (error) {
       alert('오류 발생: ' + error.message)
@@ -364,10 +354,9 @@ function MembersTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">멤버 목록 ({members.length}명)</h2>
-        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">+ 멤버 추가</button>}
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />멤버 추가</button>}
       </div>
 
-      {/* Credentials Display */}
       {createdCredentials && (
         <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-3">
           <div className="flex items-start justify-between">
@@ -395,17 +384,15 @@ function MembersTab() {
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">💡 이 정보는 10초 후 자동으로 사라집니다. 지금 복사해두세요!</p>
+            <p className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">ℹ️ 이 정보는 10초 후 자동으로 사라집니다. 지금 복사해두세요!</p>
           </div>
         </div>
       )}
 
-      {/* Add/Edit Form */}
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
           <h3 className="font-medium text-gray-900">{editTarget ? '멤버 정보 수정' : '새 멤버 추가 - 로그인 정보 설정'}</h3>
 
-          {/* Login Credentials Section */}
           {!editTarget && (
             <div className="bg-blue-50 rounded-lg p-4 space-y-3 border border-blue-200">
               <p className="font-medium text-blue-900 text-sm">🔐 로그인 정보</p>
@@ -448,7 +435,7 @@ function MembersTab() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
                   >
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                    {showPassword ? <Eye size={16} /> : <EyeSlash size={16} />}
                   </button>
                 </div>
 
@@ -488,7 +475,6 @@ function MembersTab() {
             </div>
           )}
 
-          {/* Member Info Section */}
           <div className="space-y-3">
             <p className="font-medium text-gray-900 text-sm">👤 멤버 정보</p>
 
@@ -544,7 +530,6 @@ function MembersTab() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
             <button
               onClick={editTarget ? handleEdit : handleAdd}
@@ -562,7 +547,6 @@ function MembersTab() {
         </div>
       )}
 
-      {/* Members List */}
       {loading ? (
         <p className="text-gray-500 text-sm">로딩 중...</p>
       ) : members.length === 0 ? (
@@ -591,8 +575,6 @@ function MembersTab() {
   )
 }
 
-// ─── Event Card (swipeable) ───────────────────────────────────────────────────
-
 function EventCard({ event, onEdit, onDelete }) {
   const imgs = event['image_urls'] || []
   const [idx, setIdx] = useState(0)
@@ -602,7 +584,7 @@ function EventCard({ event, onEdit, onDelete }) {
       <div className="flex items-start justify-between mb-2">
         <div>
           <p className="font-medium text-gray-900 text-sm">{event.title}</p>
-          {event.location && <p className="text-xs text-gray-500 mt-0.5">📍 {event.location}</p>}
+          {event.location && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {event.location}</p>}
           {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
         </div>
         <div className="flex gap-2 ml-2 flex-shrink-0">
@@ -636,8 +618,6 @@ function EventCard({ event, onEdit, onDelete }) {
     </div>
   )
 }
-
-// ─── Events Tab ───────────────────────────────────────────────────────────────
 
 function EventsTab() {
   const [events, setEvents] = useState([])
@@ -716,7 +696,7 @@ function EventsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
-        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">+ 이벤트 추가</button>}
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />이벤트 추가</button>}
       </div>
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
@@ -786,7 +766,6 @@ function EventsTab() {
     </div>
   )
 }
-// ─── Restaurants Tab ──────────────────────────────────────────────────────────
 
 const SPOT_CATEGORIES = ['맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
 
@@ -885,7 +864,7 @@ function RestaurantsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">장소 관리</h2>
-        {!showForm && <button onClick={openAdd} className="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600">+ 장소 추가</button>}
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />장소 추가</button>}
       </div>
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
@@ -922,7 +901,7 @@ function RestaurantsTab() {
           </select>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="is_sponsored" checked={form.is_sponsored} onChange={e => setForm({ ...form, is_sponsored: e.target.checked })} />
-            <label htmlFor="is_sponsored" className="text-sm text-gray-700">🟠 제휴/스폰서 장소</label>
+            <label htmlFor="is_sponsored" className="text-sm text-gray-700"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block mr-1"></span>제휴/스폰서 장소</label>
           </div>
           <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <div>
@@ -953,7 +932,7 @@ function RestaurantsTab() {
             onDelete={handleDeleteExistingImage}
           />
           <div className="flex gap-2">
-            <button onClick={handleSave} disabled={uploading} className="flex-1 bg-orange-500 text-white rounded-lg py-2 text-sm hover:bg-orange-600 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
+            <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
             <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
           </div>
         </div>
@@ -976,7 +955,7 @@ function RestaurantsTab() {
                       <p className="font-medium text-gray-900 text-sm">{r.name}</p>
                       {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
                     </div>
-                    {r.address && <p className="text-xs text-gray-500 mt-0.5">📍 {r.address}</p>}
+                    {r.address && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {r.address}</p>}
                     {r.discount_info && <p className="text-xs text-orange-500 mt-0.5">🎟 {r.discount_info.replace(/<[^>]+>/g, '')}</p>}
                     {r.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ {r.discount_terms.replace(/<[^>]+>/g, '')}</p>}
                     {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
