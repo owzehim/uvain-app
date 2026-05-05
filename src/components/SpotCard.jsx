@@ -28,9 +28,7 @@ export function SpotCard({ selected, onClose }) {
   const isDesktop = WIN_W >= 768
 
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  // Desktop: cap at ~420px (info ~130px + image 220px + padding + button clearance)
-  // Mobile: keep original full-screen behaviour
-  const MAX_HEIGHT = isDesktop ? 420 : WIN_H * 0.88
+  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.88
 
   useEffect(() => { setCardHeight(MIN_HEIGHT); setSlideIndex(0); setClosing(false) }, [selected])
 
@@ -115,7 +113,8 @@ export function SpotCard({ selected, onClose }) {
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
 
-      <div className="flex-1" style={{ overflowY: isMax ? 'auto' : 'hidden' }}>
+      {/* overflow always hidden — no scrolling inside the card */}
+      <div className="flex-1" style={{ overflowY: 'hidden' }}>
         <div className="px-4 pt-1 pb-3">
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
@@ -175,7 +174,7 @@ export function SpotCard({ selected, onClose }) {
               </div>
             </div>
 
-            {/* DESKTOP: horizontal scroll — pb-16 kept so Maps button doesn't overlap images */}
+            {/* DESKTOP: horizontal scroll */}
             <div className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {imgs.map((url, i) => (
                 <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center" style={{ height: '220px', minWidth: '140px', maxWidth: '360px' }}>
