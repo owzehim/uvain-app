@@ -24,8 +24,13 @@ export function SpotCard({ selected, onClose }) {
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
   const WIN_H = typeof window !== 'undefined' ? window.innerHeight : 700
+  const WIN_W = typeof window !== 'undefined' ? window.innerWidth : 1024
+  const isDesktop = WIN_W >= 768
+
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  const MAX_HEIGHT = WIN_H * 0.88
+  // Desktop: cap at ~420px (info ~130px + image 220px + padding + button clearance)
+  // Mobile: keep original full-screen behaviour
+  const MAX_HEIGHT = isDesktop ? 420 : WIN_H * 0.88
 
   useEffect(() => { setCardHeight(MIN_HEIGHT); setSlideIndex(0); setClosing(false) }, [selected])
 
@@ -135,12 +140,11 @@ export function SpotCard({ selected, onClose }) {
           )}
         </div>
 
-        {/* Mobile-only spacer for the Maps button; desktop doesn't need it (card is auto-height) */}
-        {!hasImages && <div className="pb-16 md:pb-4" />}
+        {!hasImages && <div className="pb-16" />}
 
         {hasImages && (
           <div className="pb-6">
-            {/* MOBILE: 4:5 box, contain so no cropping, soft corners */}
+            {/* MOBILE: 4:5 swipe carousel */}
             <div
               className="md:hidden px-4 pb-16"
               onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
@@ -171,8 +175,8 @@ export function SpotCard({ selected, onClose }) {
               </div>
             </div>
 
-            {/* DESKTOP: horizontal scroll — pb-4 instead of pb-16, no excess space */}
-            <div className="hidden md:flex gap-3 px-4 pb-4 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {/* DESKTOP: horizontal scroll — pb-16 kept so Maps button doesn't overlap images */}
+            <div className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {imgs.map((url, i) => (
                 <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center" style={{ height: '220px', minWidth: '140px', maxWidth: '360px' }}>
                   <img src={url} alt={'사진 ' + (i + 1)} style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }} />
