@@ -1,11 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
-import { useEffect } from 'react'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS } from '../lib/mapCategories'
-import { CATEGORY_COLORS } from '../lib/mapCategories'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
@@ -23,19 +21,24 @@ export default function PublicPage() {
     fetchRestaurants()
   }, [])
 
-useEffect(() => {
-  const handler = (e) => {
-    if (e.touches[0].clientX < 30) e.preventDefault()
-  }
-  document.addEventListener('touchstart', handler, { passive: false })
-  return () => document.removeEventListener('touchstart', handler)
-}, [])
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.touches[0]?.clientX < 30) e.preventDefault()
+    }
+    document.addEventListener('touchstart', handler, { passive: false })
+    return () => document.removeEventListener('touchstart', handler)
+  }, [])
 
   return (
-    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}
+    <div
+      className="flex flex-col bg-gray-50 overflow-hidden"
+      style={{ height: '100dvh' }}
     >
       {/* 헤더 */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
+      <div
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+      >
         <h1 className="font-bold text-gray-900">UvA-IN</h1>
         <button
           onClick={() => navigate('/login')}
@@ -52,15 +55,21 @@ useEffect(() => {
       </div>
 
       {/* 하단 탭 */}
-      <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
+      <div
+        className="bg-white border-t border-gray-100 flex flex-shrink-0"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+      >
         {[
           { key: 'map', label: 'SPOT', icon: '🗺️' },
           { key: 'membership', label: 'Membership', icon: '🔒' },
-        ].map(tab => (
+        ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' + (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')}
+            className={
+              'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' +
+              (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
+            }
           >
             <span className="text-lg">{tab.icon}</span>
             {tab.label}
@@ -76,42 +85,85 @@ function PublicMapTab({ restaurants }) {
   const [activeCategory, setActiveCategory] = useState('전체')
 
   const categories = MAP_CATEGORIES
-const categoryIcons = CATEGORY_ICONS
 
-  const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
+  const filtered =
+    activeCategory === '전체'
+      ? restaurants
+      : restaurants.filter((r) => r.category === activeCategory)
 
   return (
     <div className="h-full flex flex-col">
+      {/* 카테고리 바 */}
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
-        {categories.map(cat => {
-  const IconComponent = categoryIcons[cat]
-  return (
-    <button
-      key={cat}
-      onClick={() => { setActiveCategory(cat); setSelected(null) }}
-      className={'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' + (activeCategory === cat ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
-    >
-      <IconComponent size={16} weight="fill" />
-      {cat}
-    </button>
-  )
-})}
+        {categories.map((cat) => {
+          const iconSvg = CATEGORY_ICONS[cat]
+          const isActive = activeCategory === cat
+          return (
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat)
+                setSelected(null)
+              }}
+              className={
+                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
+                (isActive
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+              }
+            >
+              {iconSvg && (
+                <span
+                  style={{
+                    width: 16,
+                    height: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: isActive ? 'white' : '#f97316',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: iconSvg }}
+                />
+              )}
+              {cat}
+            </button>
+          )
+        })}
       </div>
 
+      {/* 지도 / 빈 상태 */}
       {filtered.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             {(() => {
-  const IconComponent = categoryIcons[activeCategory]
-  return <IconComponent size={32} weight="fill" className="mx-auto" />
-})()}
+              const iconSvg = CATEGORY_ICONS[activeCategory]
+              return (
+                iconSvg && (
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      margin: '0 auto 8px',
+                      color: '#f97316',
+                    }}
+                    dangerouslySetInnerHTML={{ __html: iconSvg }}
+                  />
+                )
+              )
+            })()}
             <p className="text-gray-500 text-sm">등록된 장소가 없어요</p>
           </div>
         </div>
       ) : (
         <div className="flex-1 relative overflow-hidden">
-          <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-          {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
+          <MapView
+            restaurants={filtered}
+            selected={selected}
+            onSelect={setSelected}
+          />
+          {selected && (
+            <SpotCard selected={selected} onClose={() => setSelected(null)} />
+          )}
         </div>
       )}
     </div>
@@ -126,7 +178,9 @@ function MembershipTab() {
       <div className="px-4 py-8 max-w-sm mx-auto">
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">UvA-IN Membership</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            UvA-IN Membership
+          </h2>
           <p className="text-gray-500 text-sm leading-relaxed">
             UvA-IN 멤버십에 가입하고 다양한 혜택을 누리세요!
           </p>
@@ -136,22 +190,34 @@ function MembershipTab() {
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <span className="text-2xl">🍽️</span>
             <div>
-              <p className="font-semibold text-gray-900 text-sm">제휴 레스토랑 / 카페 할인</p>
-              <p className="text-xs text-gray-500 mt-0.5">암스테르담 내 제휴 장소에서 멤버십 할인 혜택</p>
+              <p className="font-semibold text-gray-900 text-sm">
+                제휴 레스토랑 / 카페 할인
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                암스테르담 내 제휴 장소에서 멤버십 할인 혜택
+              </p>
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <span className="text-2xl">🎉</span>
             <div>
-              <p className="font-semibold text-gray-900 text-sm">학생회 이벤트 우선 참가</p>
-              <p className="text-xs text-gray-500 mt-0.5">이벤트 참가비 무료 및 할인 혜택</p>
+              <p className="font-semibold text-gray-900 text-sm">
+                학생회 이벤트 우선 참가
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                이벤트 참가비 무료 및 할인 혜택
+              </p>
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <span className="text-2xl">🤝</span>
             <div>
-              <p className="font-semibold text-gray-900 text-sm">UvA 한인 네트워크</p>
-              <p className="text-xs text-gray-500 mt-0.5">암스테르담 한인 학생 커뮤니티 참여</p>
+              <p className="font-semibold text-gray-900 text-sm">
+                UvA 한인 네트워크
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                암스테르담 한인 학생 커뮤니티 참여
+              </p>
             </div>
           </div>
         </div>
