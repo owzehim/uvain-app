@@ -113,6 +113,8 @@ export function SpotCard({ selected, onClose }) {
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
   const cardRef = useRef(null)
+  // Use a ref for cardHeight so the wheel handler always reads the latest value
+  const cardHeightRef = useRef(0)
 
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
@@ -120,44 +122,56 @@ export function SpotCard({ selected, onClose }) {
   const WIN_H = typeof window !== 'undefined' ? window.innerHeight : 700
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768
 
-  // ── Heights ────────────────────────────────────────────────────────────────
-  // Desktop: MIN = info only (~220px), MAX = info + photos (~420px)
-  // Mobile:  MIN = 38vh capped at 260px, MAX = 88vh
   const MIN_HEIGHT = isDesktop ? 220 : Math.min(WIN_H * 0.38, 260)
   const MAX_HEIGHT = isDesktop ? 440 : WIN_H * 0.88
 
+  // Keep ref in sync with state
+  const updateHeight = (h) => {
+    cardHeightRef.current = h
+    setCardHeight(h)
+  }
+
   useEffect(() => {
-    setCardHeight(MIN_HEIGHT)
+    updateHeight(MIN_HEIGHT)
     setSlideIndex(0)
     setClosing(false)
     setPreviewIndex(null)
   }, [selected]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const triggerClose = () => { setClosing(true); setTimeout(() => onClose(), 320) }
+  const triggerClose = () => {
+    setClosing(true)
+    setTimeout(() => onClose(), 320)
+  }
 
-  // ── Wheel — works for ALL spots on desktop (with or without images) ────────
+  // ── Wheel — desktop ────────────────────────────────────────────────────────
+  // deltaY > 0 = scroll DOWN  → minimize then close
+  // deltaY < 0 = scroll UP    → expand to show photos
   useEffect(() => {
     if (!isDesktop) return
     const el = cardRef.current
     if (!el) return
 
     const onWheel = (e) => {
-      const delta = e.deltaY
-      if (delta === 0) return
       e.preventDefault()
       e.stopPropagation()
 
-      setCardHeight(h => {
-        // Scroll down while already at MIN → close
-        if (delta > 0 && h <= MIN_HEIGHT * 1.05) {
+      const delta = e.deltaY
+      const current = cardHeightRef.current
+
+      if (delta < 0) {
+        // Scroll UP → expand
+        const next = Math.min(current + Math.abs(delta) * 1.5, MAX_HEIGHT)
+        updateHeight(next)
+      } else {
+        // Scroll DOWN → minimize or close
+        if (current <= MIN_HEIGHT * 1.05) {
+          // Already at minimum → close
           triggerClose()
-          return h
+        } else {
+          const next = Math.max(current - delta * 1.5, MIN_HEIGHT)
+          updateHeight(next)
         }
-        let next = h + (delta > 0 ? delta * 1.5 : delta * 1.5)
-        if (next > MAX_HEIGHT) next = MAX_HEIGHT
-        if (next < MIN_HEIGHT) next = MIN_HEIGHT
-        return next
-      })
+      }
     }
 
     el.addEventListener('wheel', onWheel, { passive: false })
@@ -207,7 +221,7 @@ export function SpotCard({ selected, onClose }) {
     if (!hasImages && delta > 0) return
     if (hasImages) {
       const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
-      setCardHeight(newHeight)
+      updateHeight(newHeight)
     }
   }
 
@@ -218,22 +232,20 @@ export function SpotCard({ selected, onClose }) {
     const wasMax = startH >= MAX_HEIGHT * 0.85
     const wasMin = startH <= MIN_HEIGHT * 1.15
     if (!hasImages) { if (delta < -40) triggerClose(); return }
-    if (delta > 40) { setCardHeight(MAX_HEIGHT) }
+    if (delta > 40) { updateHeight(MAX_HEIGHT) }
     else if (delta < -40) {
-      if (wasMax) setCardHeight(MIN_HEIGHT)
+      if (wasMax) updateHeight(MIN_HEIGHT)
       else if (wasMin) triggerClose()
-      else setCardHeight(MIN_HEIGHT)
+      else updateHeight(MIN_HEIGHT)
     } else {
       const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
-      setCardHeight(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
+      updateHeight(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
     }
   }
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
   // ── Styles ─────────────────────────────────────────────────────────────────
-  // Desktop: fixed-width card anchored bottom-left, height-animated
-  // Mobile:  full-width bottom sheet
   const desktopStyle = {
     position: 'absolute',
     bottom: '16px',
@@ -282,10 +294,9 @@ export function SpotCard({ selected, onClose }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
 
-        {/* Drag handle (mobile) / close button (desktop) */}
+        {/* Header: scroll hint + close button (desktop) | drag handle (mobile) */}
         {isDesktop ? (
           <div className="flex justify-between items-center px-4 pt-3 pb-1 flex-shrink-0">
-            {/* Scroll hint */}
             <span className="text-xs text-gray-400 select-none">
               {isMax ? '↓ 스크롤로 닫기' : hasImages ? '↑ 스크롤로 사진 보기' : '↓ 스크롤로 닫기'}
             </span>
@@ -406,9 +417,7 @@ export function SpotCard({ selected, onClose }) {
                         <div
                           key={i}
                           className={`rounded-full transition-all ${
-                            i === slideIndex
-                              ? 'bg-white w-2 h-2'
-                              : 'bg-white bg-opacity-50 w-1.5 h-1.5'
+                            i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'
                           }`}
                         />
                       ))}
@@ -417,7 +426,7 @@ export function SpotCard({ selected, onClose }) {
                 </div>
               </div>
 
-              {/* DESKTOP: horizontal row, click to open full preview — only visible when expanded */}
+              {/* DESKTOP: horizontal row, click to open full preview */}
               <div
                 className="hidden md:flex gap-3 px-4 pb-4 overflow-x-auto"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
