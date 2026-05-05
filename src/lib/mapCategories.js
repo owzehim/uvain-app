@@ -1,4 +1,4 @@
-import { MapPin, ForkKnife, Coffee, ShoppingCart, Books, GraduationCap, FirstAid, Dumbbell, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
+import { MapPin, ForkKnife, Coffee, ShoppingCart, Books, GraduationCap, FirstAid, Barbell, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
 
 export const MAP_CATEGORIES = ['전체', '맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
 
@@ -9,7 +9,7 @@ export const CATEGORY_ICONS = {
   '스터디': Books,
   '학교': GraduationCap,
   '의료': FirstAid,
-  '운동': Dumbbell,
+  '운동': Barbell,
   '미용/뷰티': Sparkle,
   '여가': GameController,
   '쇼핑': ShoppingBag,
