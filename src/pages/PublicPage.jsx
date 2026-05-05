@@ -4,7 +4,7 @@ import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
-import { MapPin, Lock } from 'phosphor-react'
+import { MapPin, Lock, ForkKnife, Calendar, Users } from 'phosphor-react'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
@@ -175,8 +175,8 @@ function MembershipTab() {
   const navigate = useNavigate()
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="px-4 py-8 max-w-sm mx-auto">
+    <div className="h-full overflow-y-auto flex items-center justify-center">
+      <div className="px-4 py-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Lock size={48} weight="fill" color="#f97316" />
@@ -192,7 +192,7 @@ function MembershipTab() {
         <div className="space-y-3 mb-8">
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
-              <MapPin size={24} weight="fill" color="#f97316" />
+              <ForkKnife size={24} weight="fill" color="#f97316" />
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
@@ -206,7 +206,7 @@ function MembershipTab() {
 
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
-              <MapPin size={24} weight="fill" color="#3b82f6" />
+              <Calendar size={24} weight="fill" color="#3b82f6" />
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
@@ -220,7 +220,7 @@ function MembershipTab() {
 
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
-              <MapPin size={24} weight="fill" color="#22c55e" />
+              <Users size={24} weight="fill" color="#22c55e" />
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
