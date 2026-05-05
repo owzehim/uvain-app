@@ -33,7 +33,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center'
       }}
     >
-      {/* Close button */}
       <button
         onClick={onClose}
         style={{
@@ -45,7 +44,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
         }}
       >×</button>
 
-      {/* Left arrow */}
       {index > 0 && (
         <button
           onClick={e => { e.stopPropagation(); setIndex(i => i - 1) }}
@@ -59,7 +57,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
         >‹</button>
       )}
 
-      {/* Image */}
       <img
         src={imgs[index]}
         alt={'사진 ' + (index + 1)}
@@ -71,7 +68,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
         }}
       />
 
-      {/* Right arrow */}
       {index < imgs.length - 1 && (
         <button
           onClick={e => { e.stopPropagation(); setIndex(i => i + 1) }}
@@ -85,7 +81,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
         >›</button>
       )}
 
-      {/* Dot indicators */}
       {imgs.length > 1 && (
         <div style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
           {imgs.map((_, i) => (
@@ -183,7 +178,6 @@ export function SpotCard({ selected, onClose }) {
 
   return (
     <>
-      {/* Desktop lightbox */}
       {lightboxIndex !== null && (
         <Lightbox
           imgs={imgs}
@@ -207,12 +201,16 @@ export function SpotCard({ selected, onClose }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onWheel={e => {
-          if (!hasImages) return
-          const delta = e.deltaY
-          if (delta > 0) snapTo(MAX_HEIGHT)
-          else if (delta < 0) {
-            if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
-            else triggerClose()
+          // FIX: handle both cases — with and without images
+          if (!hasImages) {
+            // no images: scroll down closes the card
+            if (e.deltaY > 0) triggerClose()
+          } else {
+            if (e.deltaY > 0) snapTo(MAX_HEIGHT)
+            else if (e.deltaY < 0) {
+              if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
+              else triggerClose()
+            }
           }
         }}
       >
@@ -249,7 +247,6 @@ export function SpotCard({ selected, onClose }) {
 
           {hasImages && (
             <div className="pb-6">
-              {/* MOBILE: 4:5 swipe carousel — unchanged */}
               <div
                 className="md:hidden px-4 pb-20"
                 onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
@@ -280,7 +277,6 @@ export function SpotCard({ selected, onClose }) {
                 </div>
               </div>
 
-              {/* DESKTOP: horizontal scroll + click to open lightbox */}
               <div className="hidden md:flex gap-3 px-4 pb-20 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {imgs.map((url, i) => (
                   <div
