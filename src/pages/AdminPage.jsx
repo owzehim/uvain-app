@@ -129,7 +129,19 @@ function MembersTab() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    full_name: '',
+    student_number: '',
+    major: '',
+    is_member: true,
+    membership_valid_until: ''
+  })
+  const [passwordStrength, setPasswordStrength] = useState(0)
+  const [showPassword, setShowPassword] = useState(false)
+  const [createdCredentials, setCreatedCredentials] = useState(null)
 
   const fetchMembers = async () => {
     const { data } = await supabase.from('members').select('*').order('created_at', { ascending: false })
@@ -137,32 +149,149 @@ function MembersTab() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchMembers() }, [])
+  useEffect(() => {
+    fetchMembers()
+  }, [])
+
+  // Password strength checker
+  const checkPasswordStrength = (pwd) => {
+    let strength = 0
+    if (pwd.length >= 8) strength++
+    if (pwd.match(/[a-z]/) && pwd.match(/[A-Z]/)) strength++
+    if (pwd.match(/[0-9]/)) strength++
+    if (pwd.match(/[^a-zA-Z0-9]/)) strength++
+    setPasswordStrength(strength)
+    return strength
+  }
+
+  const generateRandomPassword = () => {
+    const length = 12
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'
+    let password = ''
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length))
+    }
+    setForm(prev => ({
+      ...prev,
+      password,
+      confirmPassword: password
+    }))
+    checkPasswordStrength(password)
+  }
 
   const generateSecret = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-    return Array.from(crypto.getRandomValues(new Uint8Array(20))).map(b => chars[b % 32]).join('')
+    return Array.from(crypto.getRandomValues(new Uint8Array(20)))
+      .map(b => chars[b % 32])
+      .join('')
+  }
+
+  const validateForm = () => {
+    if (!form.email || !form.password || !form.full_name || !form.student_number || !form.major) {
+      alert('모든 필수 항목을 입력해주세요.')
+      return false
+    }
+    if (form.password !== form.confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다.')
+      return false
+    }
+    if (form.password.length < 8) {
+      alert('비밀번호는 최소 8자 이상이어야 합니다.')
+      return false
+    }
+    if (!form.email.includes('@')) {
+      alert('유효한 이메일을 입력해주세요.')
+      return false
+    }
+    return true
   }
 
   const handleAdd = async () => {
-    if (!form.email || !form.password || !form.full_name || !form.student_number || !form.major) { alert('모든 항목을 입력해주세요.'); return }
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email: form.email, password: form.password })
-    if (authError) { alert('계정 생성 실패: ' + authError.message); return }
-    const userId = authData.user?.id
-    if (!userId) { alert('유저 ID를 가져오지 못했습니다.'); return }
-    const { error: memberError } = await supabase.from('members').insert({ user_id: userId, full_name: form.full_name, student_number: form.student_number, major: form.major, is_member: form.is_member, membership_valid_until: form.membership_valid_until || null, totp_secret: generateSecret() })
-    if (memberError) { alert('멤버 추가 실패: ' + memberError.message); return }
-    alert('멤버 추가 완료')
-    setShowForm(false)
-    setForm({ email: '', password: '', full_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
-    fetchMembers()
+    if (!validateForm()) return
+
+    try {
+      // Create auth account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password
+      })
+
+      if (authError) {
+        alert('계정 생성 실패: ' + authError.message)
+        return
+      }
+
+      const userId = authData.user?.id
+      if (!userId) {
+        alert('유저 ID를 가져오지 못했습니다.')
+        return
+      }
+
+      // Create member record
+      const { error: memberError } = await supabase.from('members').insert({
+        user_id: userId,
+        full_name: form.full_name,
+        student_number: form.student_number,
+        major: form.major,
+        is_member: form.is_member,
+        membership_valid_until: form.membership_valid_until || null,
+        totp_secret: generateSecret()
+      })
+
+      if (memberError) {
+        alert('멤버 추가 실패: ' + memberError.message)
+        return
+      }
+
+      // Show success with credentials
+      setCreatedCredentials({
+        email: form.email,
+        password: form.password,
+        name: form.full_name
+      })
+
+      // Reset form
+      setShowForm(false)
+      setForm({
+        email: '',
+        password: '',
+        confirmPassword: '',
+        full_name: '',
+        student_number: '',
+        major: '',
+        is_member: true,
+        membership_valid_until: ''
+      })
+      setPasswordStrength(0)
+
+      // Refresh list
+      fetchMembers()
+
+      // Auto-close credentials after 10 seconds
+      setTimeout(() => setCreatedCredentials(null), 10000)
+    } catch (error) {
+      alert('오류 발생: ' + error.message)
+    }
   }
 
   const handleEdit = async () => {
-    const { error } = await supabase.from('members').update({ full_name: form.full_name, student_number: form.student_number, major: form.major, is_member: form.is_member, membership_valid_until: form.membership_valid_until || null }).eq('id', editTarget.id)
-    if (error) { alert('수정 실패: ' + error.message); return }
+    const { error } = await supabase.from('members').update({
+      full_name: form.full_name,
+      student_number: form.student_number,
+      major: form.major,
+      is_member: form.is_member,
+      membership_valid_until: form.membership_valid_until || null
+    }).eq('id', editTarget.id)
+
+    if (error) {
+      alert('수정 실패: ' + error.message)
+      return
+    }
+
     alert('수정 완료')
-    setEditTarget(null); setShowForm(false); fetchMembers()
+    setEditTarget(null)
+    setShowForm(false)
+    fetchMembers()
   }
 
   const handleDelete = async (id) => {
@@ -173,14 +302,60 @@ function MembersTab() {
 
   const openEdit = (member) => {
     setEditTarget(member)
-    setForm({ full_name: member.full_name, student_number: member.student_number, major: member.major, is_member: member.is_member, membership_valid_until: member.membership_valid_until || '' })
+    setForm({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      full_name: member.full_name,
+      student_number: member.student_number,
+      major: member.major,
+      is_member: member.is_member,
+      membership_valid_until: member.membership_valid_until || ''
+    })
     setShowForm(true)
   }
 
   const openAdd = () => {
     setEditTarget(null)
-    setForm({ email: '', password: '', full_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
+    setForm({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      full_name: '',
+      student_number: '',
+      major: '',
+      is_member: true,
+      membership_valid_until: ''
+    })
+    setPasswordStrength(0)
     setShowForm(true)
+  }
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+    alert('복사되었습니다!')
+  }
+
+  const getPasswordStrengthColor = () => {
+    switch (passwordStrength) {
+      case 0: return 'bg-red-200'
+      case 1: return 'bg-orange-200'
+      case 2: return 'bg-yellow-200'
+      case 3: return 'bg-lime-200'
+      case 4: return 'bg-green-200'
+      default: return 'bg-gray-200'
+    }
+  }
+
+  const getPasswordStrengthText = () => {
+    switch (passwordStrength) {
+      case 0: return '매우 약함'
+      case 1: return '약함'
+      case 2: return '보통'
+      case 3: return '강함'
+      case 4: return '매우 강함'
+      default: return ''
+    }
   }
 
   const sorted = koreanSort(members, 'full_name')
@@ -191,33 +366,208 @@ function MembersTab() {
         <h2 className="font-semibold text-gray-900">멤버 목록 ({members.length}명)</h2>
         {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">+ 멤버 추가</button>}
       </div>
-      {showForm && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-          <h3 className="font-medium text-gray-900">{editTarget ? '멤버 수정' : '새 멤버 추가'}</h3>
-          {!editTarget && (
-            <>
-              <input placeholder="이메일" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-              <input placeholder="비밀번호" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-            </>
-          )}
-          <input placeholder="이름" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <input placeholder="학번" value={form.student_number} onChange={e => setForm({ ...form, student_number: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <input placeholder="전공" value={form.major} onChange={e => setForm({ ...form, major: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="is_member" checked={form.is_member} onChange={e => setForm({ ...form, is_member: e.target.checked })} />
-            <label htmlFor="is_member" className="text-sm text-gray-700">멤버십 활성화</label>
+
+      {/* Credentials Display */}
+      {createdCredentials && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-semibold text-green-900">✓ 계정 생성 완료!</h3>
+              <p className="text-sm text-green-700 mt-1">아래 정보를 멤버에게 전달해주세요.</p>
+            </div>
+            <button onClick={() => setCreatedCredentials(null)} className="text-green-600 hover:text-green-700 text-xl">✕</button>
           </div>
-          <div>
-            <label className="text-sm text-gray-500 block mb-1">유효기간</label>
-            <input type="date" value={form.membership_valid_until} onChange={e => setForm({ ...form, membership_valid_until: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button onClick={editTarget ? handleEdit : handleAdd} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700">{editTarget ? '수정 완료' : '추가'}</button>
-            <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-200">취소</button>
+
+          <div className="bg-white rounded-lg p-4 space-y-3 border border-green-100">
+            <div>
+              <p className="text-xs text-gray-500 mb-1">이메일</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">{createdCredentials.email}</code>
+                <button onClick={() => copyToClipboard(createdCredentials.email)} className="text-blue-600 hover:text-blue-700 text-sm px-3 py-2 bg-blue-50 rounded">복사</button>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-500 mb-1">비밀번호</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">{createdCredentials.password}</code>
+                <button onClick={() => copyToClipboard(createdCredentials.password)} className="text-blue-600 hover:text-blue-700 text-sm px-3 py-2 bg-blue-50 rounded">복사</button>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">💡 이 정보는 10초 후 자동으로 사라집니다. 지금 복사해두세요!</p>
           </div>
         </div>
       )}
-      {loading ? <p className="text-gray-500 text-sm">로딩 중...</p> : members.length === 0 ? <p className="text-gray-500 text-sm">멤버가 없어요.</p> : (
+
+      {/* Add/Edit Form */}
+      {showForm && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+          <h3 className="font-medium text-gray-900">{editTarget ? '멤버 정보 수정' : '새 멤버 추가 - 로그인 정보 설정'}</h3>
+
+          {/* Login Credentials Section */}
+          {!editTarget && (
+            <div className="bg-blue-50 rounded-lg p-4 space-y-3 border border-blue-200">
+              <p className="font-medium text-blue-900 text-sm">🔐 로그인 정보</p>
+
+              <div>
+                <label className="text-sm text-gray-700 block mb-1">이메일</label>
+                <input
+                  placeholder="member@example.com"
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  type="email"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm text-gray-700">비밀번호</label>
+                  <button
+                    type="button"
+                    onClick={generateRandomPassword}
+                    className="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded"
+                  >
+                    🎲 자동 생성
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    placeholder="최소 8자 이상"
+                    value={form.password}
+                    onChange={e => {
+                      setForm({ ...form, password: e.target.value })
+                      checkPasswordStrength(e.target.value)
+                    }}
+                    type={showPassword ? 'text' : 'password'}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                  </button>
+                </div>
+
+                {form.password && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className={`h-2 flex-1 rounded-full ${getPasswordStrengthColor()}`}></div>
+                      <span className="text-xs text-gray-600">{getPasswordStrengthText()}</span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {form.password.length < 8 && '• 최소 8자 이상'}
+                      {form.password.length >= 8 && '• 길이 ✓'}
+                      {form.password.match(/[a-z]/) && form.password.match(/[A-Z]/) ? ' • 대소문자 ✓' : ' • 대소문자 혼합'}
+                      {form.password.match(/[0-9]/) ? ' • 숫자 ✓' : ' • 숫자 포함'}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-700 block mb-1">비밀번호 확인</label>
+                <input
+                  placeholder="비밀번호 재입력"
+                  value={form.confirmPassword}
+                  onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+                  type={showPassword ? 'text' : 'password'}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm ${
+                    form.confirmPassword && form.password !== form.confirmPassword
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-gray-200'
+                  }`}
+                />
+                {form.confirmPassword && form.password !== form.confirmPassword && (
+                  <p className="text-xs text-red-600 mt-1">비밀번호가 일치하지 않습니다</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Member Info Section */}
+          <div className="space-y-3">
+            <p className="font-medium text-gray-900 text-sm">👤 멤버 정보</p>
+
+            <div>
+              <label className="text-sm text-gray-700 block mb-1">이름 *</label>
+              <input
+                placeholder="홍길동"
+                value={form.full_name}
+                onChange={e => setForm({ ...form, full_name: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-sm text-gray-700 block mb-1">학번 *</label>
+                <input
+                  placeholder="2024001"
+                  value={form.student_number}
+                  onChange={e => setForm({ ...form, student_number: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-700 block mb-1">전공 *</label>
+                <input
+                  placeholder="컴퓨터과학"
+                  value={form.major}
+                  onChange={e => setForm({ ...form, major: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="is_member"
+                checked={form.is_member}
+                onChange={e => setForm({ ...form, is_member: e.target.checked })}
+              />
+              <label htmlFor="is_member" className="text-sm text-gray-700">멤버십 활성화</label>
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-500 block mb-1">유효기간</label>
+              <input
+                type="date"
+                value={form.membership_valid_until}
+                onChange={e => setForm({ ...form, membership_valid_until: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2">
+            <button
+              onClick={editTarget ? handleEdit : handleAdd}
+              className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 font-medium"
+            >
+              {editTarget ? '수정 완료' : '멤버 추가'}
+            </button>
+            <button
+              onClick={() => setShowForm(false)}
+              className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-200"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Members List */}
+      {loading ? (
+        <p className="text-gray-500 text-sm">로딩 중...</p>
+      ) : members.length === 0 ? (
+        <p className="text-gray-500 text-sm">멤버가 없어요.</p>
+      ) : (
         <div className="space-y-2">
           {sorted.map(member => (
             <div key={member.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
@@ -227,7 +577,9 @@ function MembersTab() {
                 <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{member.is_member ? '활성' : '비활성'}</span>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {member.is_member ? '활성' : '비활성'}
+                </span>
                 <button onClick={() => openEdit(member)} className="text-xs text-blue-600 hover:underline">수정</button>
                 <button onClick={() => handleDelete(member.id)} className="text-xs text-red-500 hover:underline">삭제</button>
               </div>
@@ -238,6 +590,7 @@ function MembersTab() {
     </div>
   )
 }
+
 // ─── Event Card (swipeable) ───────────────────────────────────────────────────
 
 function EventCard({ event, onEdit, onDelete }) {
