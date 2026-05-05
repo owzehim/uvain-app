@@ -31,7 +31,6 @@ function ImagePreview({ imgs, startIndex, onClose }) {
       className="fixed inset-0 flex items-center justify-center"
       style={{ zIndex: 9999, background: 'rgba(0,0,0,0.88)' }}
       onClick={onClose}>
-      {/* prev */}
       {idx > 0 && (
         <button
           onClick={e => { e.stopPropagation(); setIdx(i => i - 1) }}
@@ -40,14 +39,12 @@ function ImagePreview({ imgs, startIndex, onClose }) {
           ‹
         </button>
       )}
-      {/* image */}
       <img
         src={imgs[idx]}
         alt={'사진 ' + (idx + 1)}
         onClick={e => e.stopPropagation()}
         style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: '16px', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}
       />
-      {/* next */}
       {idx < imgs.length - 1 && (
         <button
           onClick={e => { e.stopPropagation(); setIdx(i => i + 1) }}
@@ -56,7 +53,6 @@ function ImagePreview({ imgs, startIndex, onClose }) {
           ›
         </button>
       )}
-      {/* counter */}
       {imgs.length > 1 && (
         <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-1.5">
           {imgs.map((_, i) => (
@@ -68,7 +64,6 @@ function ImagePreview({ imgs, startIndex, onClose }) {
           ))}
         </div>
       )}
-      {/* close */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 bg-white bg-opacity-20 hover:bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm transition-all"
@@ -95,10 +90,19 @@ export function SpotCard({ selected, onClose }) {
   const hasImages = imgs.length > 0
 
   const WIN_H = typeof window !== 'undefined' ? window.innerHeight : 700
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  const MAX_HEIGHT = WIN_H * 0.88
+  // Desktop: cap to actual content height so no blank space. Mobile: 88% of screen.
+  const MAX_HEIGHT = isDesktop
+    ? (cardRef.current?.scrollHeight || WIN_H * 0.6)
+    : WIN_H * 0.88
 
-  useEffect(() => { setCardHeight(MIN_HEIGHT); setSlideIndex(0); setClosing(false); setPreviewIndex(null) }, [selected])
+  useEffect(() => {
+    setCardHeight(MIN_HEIGHT)
+    setSlideIndex(0)
+    setClosing(false)
+    setPreviewIndex(null)
+  }, [selected])
 
   const triggerClose = () => { setClosing(true); setTimeout(() => onClose(), 320) }
   const snapTo = (height) => setCardHeight(height)
@@ -115,7 +119,10 @@ export function SpotCard({ selected, onClose }) {
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
     if (!hasImages && delta > 0) return
-    if (hasImages) { const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta)); setCardHeight(newHeight) }
+    if (hasImages) {
+      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
+      setCardHeight(newHeight)
+    }
   }
 
   const handleTouchEnd = () => {
@@ -130,29 +137,55 @@ export function SpotCard({ selected, onClose }) {
     else { const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2; snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT) }
   }
 
+  // Desktop: also handle mouse drag
+  const handleMouseDown = (e) => {
+    if (!isDesktop) return
+    startYRef.current = e.clientY
+    lastYRef.current = e.clientY
+    startHeightRef.current = hasImages ? cardHeight : (cardRef.current?.offsetHeight || MIN_HEIGHT)
+    setIsDragging(true)
+    const onMove = (ev) => {
+      lastYRef.current = ev.clientY
+      const delta = startYRef.current - ev.clientY
+      if (!hasImages && delta > 0) return
+      if (hasImages) {
+        const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
+        setCardHeight(newHeight)
+      }
+    }
+    const onUp = () => {
+      setIsDragging(false)
+      const delta = startYRef.current - lastYRef.current
+      const startH = startHeightRef.current
+      const wasMax = startH >= MAX_HEIGHT * 0.85
+      const wasMin = startH <= MIN_HEIGHT * 1.15
+      if (!hasImages) { if (delta < -40) triggerClose(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); return }
+      if (delta > 40) snapTo(MAX_HEIGHT)
+      else if (delta < -40) { if (wasMax) snapTo(MIN_HEIGHT); else if (wasMin) triggerClose(); else snapTo(MIN_HEIGHT) }
+      else { const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2; snapTo(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT) }
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
-  // Mobile: draggable card style
   const noImageStyle = { transform: closing ? 'translateY(110%)' : 'translateY(0)', transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)', height: 'auto' }
   const imageStyle = { height: cardHeight + 'px', transform: closing ? 'translateY(110%)' : 'translateY(0)', transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)' }
 
   return (
     <>
-      {/* Full-screen preview — desktop only */}
       {previewIndex !== null && (
         <ImagePreview imgs={imgs} startIndex={previewIndex} onClose={() => setPreviewIndex(null)} />
       )}
 
-      {/* Card — mobile: draggable bottom sheet / desktop: fixed auto-height */}
       <div
         ref={cardRef}
         className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
         style={{
-          // On desktop override to auto height, no drag
-          ...(typeof window !== 'undefined' && window.innerWidth >= 768
-            ? { height: 'auto', transform: closing ? 'translateY(110%)' : 'translateY(0)', transition: 'transform 0.3s cubic-bezier(0.32,0,0.67,0)' }
-            : (hasImages ? imageStyle : noImageStyle)
-          ),
+          ...(hasImages ? imageStyle : noImageStyle),
           zIndex: 1000,
           boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
           display: 'flex',
@@ -162,6 +195,7 @@ export function SpotCard({ selected, onClose }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
         onWheel={e => {
           if (!hasImages) return
           const delta = e.deltaY
@@ -172,17 +206,12 @@ export function SpotCard({ selected, onClose }) {
           }
         }}>
 
-        {/* Drag handle — mobile only */}
-        <div className="md:hidden flex justify-center pt-2.5 pb-2 flex-shrink-0">
+        {/* Drag handle */}
+        <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0 cursor-grab active:cursor-grabbing">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        {/* Desktop close button */}
-        <div className="hidden md:flex justify-end px-4 pt-3 pb-1 flex-shrink-0">
-          <button onClick={triggerClose} className="text-gray-400 hover:text-gray-600 text-sm px-2 py-1 rounded-lg hover:bg-gray-100">✕</button>
-        </div>
-
-        <div className="flex-1 md:overflow-y-auto" style={{ overflowY: isMax ? 'auto' : 'hidden' }}>
+        <div className="flex-1" style={{ overflowY: isMax ? 'auto' : 'hidden' }}>
           {/* Info */}
           <div className="px-4 pt-1 pb-3">
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
@@ -242,8 +271,11 @@ export function SpotCard({ selected, onClose }) {
                 </div>
               </div>
 
-              {/* DESKTOP: horizontal scroll, click to preview */}
-              <div className="hidden md:flex gap-3 px-4 pb-4 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {/* DESKTOP: horizontal scroll, click to open full preview */}
+              <div
+                className="hidden md:flex gap-3 px-4 pb-4 overflow-x-auto"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                onMouseDown={e => e.stopPropagation()}>
                 {imgs.map((url, i) => (
                   <div
                     key={i}
@@ -264,7 +296,8 @@ export function SpotCard({ selected, onClose }) {
               href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))}
               target="_blank" rel="noopener noreferrer"
               className="block w-full bg-orange-500 text-white text-xs font-medium px-5 py-2.5 rounded-full shadow text-center"
-              onTouchStart={e => e.stopPropagation()}>
+              onTouchStart={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}>
               🗺️ Google Maps에서 열기
             </a>
           </div>
