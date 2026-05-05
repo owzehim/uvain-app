@@ -1,122 +1,145 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { verifyTOTP, getSecondsLeft } from '../lib/totp'
+import { verifyTOTP } from '../lib/totp'
+import { subscribeToQRExpiry } from '../lib/qrSync'
 
 export default function VerifyPage() {
   const { token } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [secondsLeft, setSecondsLeft] = useState(null)
-  const timerIntervalRef = useRef(null)
+  const unsubscribeRef = useRef(null)
 
-  // Function to verify the QR code
-  const verifyQRCode = async (qrToken) => {
+  // Parse QR token into OTP and student number
+  const parseToken = (qrToken) => {
     const parts = qrToken?.split('_')
-    if (!parts || parts.length < 2) {
+    if (!parts || parts.length < 2) return null
+    return {
+      otpToken: parts[0],
+      studentNumber: parts[1]
+    }
+  }
+
+  // Verify the QR code against the database
+  const verifyQRCode = async (qrToken) => {
+    const parsed = parseToken(qrToken)
+    if (!parsed) {
       setResult({ valid: false, reason: 'Invalid QR code.' })
       return
     }
 
-    const otpToken = parts[0]
-    const studentNumber = parts[1]
+    const { otpToken, studentNumber } = parsed
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('*')
-      .eq('student_number', studentNumber)
-      .single()
+    try {
+      // Fetch member data from database
+      const { data: member, error: memberError } = await supabase
+        .from('members')
+        .select('*')
+        .eq('student_number', studentNumber)
+        .single()
 
-    if (!member) {
-      setResult({ valid: false, reason: 'Member not found.' })
-      return
-    }
+      if (memberError || !member) {
+        setResult({ valid: false, reason: 'Member not found.' })
+        return
+      }
 
-    const isValidToken = await verifyTOTP(otpToken, member.totp_secret)
-    const isActiveMember = member.is_member && member.membership_valid_until && new Date(member.membership_valid_until) >= new Date()
+      // Verify TOTP token
+      const isValidToken = await verifyTOTP(otpToken, member.totp_secret)
 
-    if (!isValidToken) {
-      setResult({ valid: false, reason: 'QR code has expired. Please ask the member to refresh.' })
-      setSecondsLeft(null)
-    } else if (!isActiveMember) {
-      setResult({ valid: false, reason: 'Membership is not active.', member })
-      setSecondsLeft(null)
-    } else {
-      setResult({ valid: true, member })
-      // Set initial seconds left for this TOTP window
-      setSecondsLeft(getSecondsLeft(15))
+      // Check if membership is active
+      const isActiveMember =
+        member.is_member &&
+        member.membership_valid_until &&
+        new Date(member.membership_valid_until) >= new Date()
+
+      // Set result based on verification
+      if (!isValidToken) {
+        setResult({
+          valid: false,
+          reason: 'QR code has expired. Please ask the member to refresh.'
+        })
+      } else if (!isActiveMember) {
+        setResult({
+          valid: false,
+          reason: 'Membership is not active.',
+          member
+        })
+      } else {
+        setResult({
+          valid: true,
+          member
+        })
+      }
+    } catch (error) {
+      console.error('Verification error:', error)
+      setResult({
+        valid: false,
+        reason: 'Verification error. Please try again.'
+      })
     }
   }
 
-  // Initial verification
+  // Initial verification when page loads
   useEffect(() => {
     const initialVerify = async () => {
       await verifyQRCode(token)
       setLoading(false)
     }
-
     initialVerify()
   }, [token])
 
-  // Timer that counts down and re-verifies when TOTP window expires
+  // Subscribe to real-time QR expiry broadcasts
   useEffect(() => {
-    if (loading || !token || secondsLeft === null) return
+    if (loading || !token) return
 
-    // Update seconds left every 100ms for smooth countdown
-    timerIntervalRef.current = setInterval(() => {
-      const newSecondsLeft = getSecondsLeft(15)
-      setSecondsLeft(newSecondsLeft)
+    const parsed = parseToken(token)
+    if (!parsed) return
 
-      // When we cross into a new TOTP window (seconds left resets to ~15)
-      // Re-verify the token to detect if it has expired
-      if (newSecondsLeft > 14) {
-        verifyQRCode(token)
+    // When main app broadcasts QR expiry, re-verify immediately
+    unsubscribeRef.current = subscribeToQRExpiry(
+      parsed.studentNumber,
+      async () => {
+        console.log('QR code expired, re-verifying...')
+        await verifyQRCode(token)
       }
-    }, 100)
+    )
 
     return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current)
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current()
       }
     }
-  }, [token, loading, secondsLeft])
+  }, [token, loading])
 
-  if (loading)
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <p className="text-gray-500">Verifying...</p>
       </div>
     )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl border border-gray-100 p-6 w-full max-w-sm">
+        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="font-bold text-gray-900 text-lg">UvA-IN Membership</h1>
-          <p className="text-xs text-gray-400 mt-1">University of Amsterdam Korean Student Association</p>
+          <p className="text-xs text-gray-400 mt-1">
+            University of Amsterdam Korean Student Association
+          </p>
         </div>
 
+        {/* Valid Result */}
         {result?.valid ? (
           <div className="space-y-4">
+            {/* Status Badge */}
             <div className="bg-green-50 rounded-xl p-4 text-center">
               <p className="text-green-600 font-bold text-2xl">✓ Valid</p>
               <p className="text-green-500 text-sm mt-1">Membership is active</p>
-              {secondsLeft !== null && (
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Valid for</span>
-                    <span>{secondsLeft}s</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5">
-                    <div
-                      className="bg-green-500 h-1.5 rounded-full transition-all"
-                      style={{ width: (secondsLeft / 15 * 100) + '%' }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
 
+            {/* Member Details */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between py-2 border-b border-gray-50">
                 <span className="text-gray-400">Name</span>
@@ -132,17 +155,22 @@ export default function VerifyPage() {
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-gray-400">Valid Until</span>
-                <span className="font-medium text-green-600">{result.member.membership_valid_until}</span>
+                <span className="font-medium text-green-600">
+                  {result.member.membership_valid_until}
+                </span>
               </div>
             </div>
           </div>
         ) : (
+          /* Invalid Result */
           <div className="space-y-4">
+            {/* Status Badge */}
             <div className="bg-red-50 rounded-xl p-4 text-center">
               <p className="text-red-600 font-bold text-2xl">✗ Invalid</p>
               <p className="text-red-400 text-sm mt-1">{result?.reason}</p>
             </div>
 
+            {/* Member Details (if available) */}
             {result?.member && (
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between py-2 border-b border-gray-50">
@@ -151,14 +179,19 @@ export default function VerifyPage() {
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-gray-400">Valid Until</span>
-                  <span className="font-medium text-red-500">{result.member.membership_valid_until}</span>
+                  <span className="font-medium text-red-500">
+                    {result.member.membership_valid_until}
+                  </span>
                 </div>
               </div>
             )}
           </div>
         )}
 
-        <p className="text-xs text-gray-300 text-center mt-6">UvA-IN © {new Date().getFullYear()}</p>
+        {/* Footer */}
+        <p className="text-xs text-gray-300 text-center mt-6">
+          UvA-IN © {new Date().getFullYear()}
+        </p>
       </div>
     </div>
   )

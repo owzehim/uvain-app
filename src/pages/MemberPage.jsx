@@ -4,6 +4,7 @@ import { useQRToken } from '../hooks/useQRToken'
 import { QRCodeSVG } from 'qrcode.react'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
+import { broadcastQRExpiry } from '../lib/qrSync'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -94,13 +95,27 @@ useEffect(() => {
 }
 
 function QRTab({ member, isValid, qrValue, secondsLeft }) {
+  // Broadcast QR expiry when token changes
+  useEffect(() => {
+    if (!member?.student_number) return
+    
+    // Broadcast to all listening tabs that QR code has expired
+    broadcastQRExpiry(member.student_number)
+  }, [qrValue, member?.student_number])
+
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-sm mx-auto space-y-4">
+        {/* Member Info Card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-900">{member?.full_name}</h2>
-            <span className={'text-xs font-medium px-2 py-1 rounded-full ' + (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')}>
+            <span
+              className={
+                'text-xs font-medium px-2 py-1 rounded-full ' +
+                (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
+              }
+            >
               {isValid ? '✓ 유효' : '✗ 만료'}
             </span>
           </div>
@@ -110,22 +125,18 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
             <p>{'유효기간: ' + (member?.membership_valid_until ?? '없음')}</p>
           </div>
         </div>
+
+        {/* QR Code Display */}
         {isValid ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
             <p className="text-sm text-gray-500 mb-4">멤버십 QR 코드</p>
             <div className="p-3 bg-white rounded-xl border border-gray-100">
               <QRCodeSVG value={qrValue} size={200} level="M" />
             </div>
-            <div className="w-full mt-4">
-              <div className="flex justify-between text-xs text-gray-400 mb-1">
-                <span>QR 갱신까지</span>
-                <span>{secondsLeft}초</span>
-              </div>
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
-                <div className="bg-orange-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: (secondsLeft / 15 * 100) + '%' }} />
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mt-3 text-center">15초마다 자동 갱신됩니다</p>
+            {/* REMOVED: Timer display - no countdown shown */}
+            <p className="text-xs text-gray-400 mt-3 text-center">
+              15초마다 자동 갱신됩니다
+            </p>
           </div>
         ) : (
           <div className="bg-red-50 rounded-2xl border border-red-100 p-5 text-center">
