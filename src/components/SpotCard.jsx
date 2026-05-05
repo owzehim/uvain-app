@@ -51,7 +51,6 @@ export function SpotCard({ selected, onClose }) {
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
   const cardRef = useRef(null)
-  const iconContainerRef = useRef(null)
 
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
@@ -66,16 +65,6 @@ export function SpotCard({ selected, onClose }) {
     setSlideIndex(0)
     setClosing(false)
   }, [selected])
-
-  // Render SVG icon into container
-  useEffect(() => {
-    if (iconContainerRef.current && CATEGORY_ICONS[selected.category]) {
-      iconContainerRef.current.innerHTML = ''
-      const iconComponent = CATEGORY_ICONS[selected.category]
-      const svgElement = iconComponent({ size: 14, color: '#f97316' })
-      iconContainerRef.current.appendChild(svgElement)
-    }
-  }, [selected.category])
 
   const triggerClose = () => {
     setClosing(true)
@@ -140,6 +129,8 @@ export function SpotCard({ selected, onClose }) {
     transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)'
   }
 
+  const iconSvg = CATEGORY_ICONS[selected.category]
+
   return (
     <>
       {lightboxIndex !== null && (
@@ -153,7 +144,7 @@ export function SpotCard({ selected, onClose }) {
           <div className="px-4 pt-1 pb-3">
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <div ref={iconContainerRef} style={{ width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+                {iconSvg && <div dangerouslySetInnerHTML={{ __html: iconSvg.replace('fill="currentColor"', 'fill="#f97316"') }} style={{ width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />}
                 {selected.category || '기타'}
               </span>
               {selected.price_range && <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>}
