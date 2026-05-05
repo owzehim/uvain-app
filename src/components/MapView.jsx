@@ -4,28 +4,45 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const markersRef = useRef([])
+  const markerDataRef = useRef([]) // keeps { r, marker } pairs for re-styling
   const initializedRef = useRef(false)
 
   const categoryIcons = {
     '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-    '미용실': '💇', '헬스장': '💪', '기타': '📍', '도서관': '📚', '학교': '🎓'
+    '스터디': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️',
+    '운동': '💪', '미용/뷰티': '💇', '의료': '🏥',
+    '쇼핑': '🛍️', '여가': '🎮'
   }
 
-  const createMarkerHtml = (r) => {
-  const icon = categoryIcons[r.category] || '📍'
-  const isSponsored = r.is_sponsored
-  const size = isSponsored ? 42 : 34
-  const bg = isSponsored ? '#f97316' : 'white'
-const border = isSponsored ? '3px solid white' : '2px solid #e5e7eb'
-  const shadow = isSponsored ? '0 3px 12px rgba(249,115,22,0.4)' : '0 2px 6px rgba(0,0,0,0.15)'
-  const displayName = r.map_label || r.name || ''
-const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
-
-  return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
-    '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' + icon + '</div>' +
-    '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:90px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div>' +
-    '</div>'
-}
+  const createMarkerHtml = (r, isSelected = false) => {
+    const icon = categoryIcons[r.category] || '📍'
+    const isSponsored = r.is_sponsored
+    const size = isSponsored ? 42 : 34
+    const bg = isSponsored ? '#f97316' : 'white'
+    // orange outline when selected, sponsored style otherwise
+    const border = isSelected
+      ? '3px solid #f97316'
+      : isSponsored
+        ? '3px solid white'
+        : '2px solid #e5e7eb'
+    const shadow = isSelected
+      ? '0 3px 12px rgba(249,115,22,0.5)'
+      : isSponsored
+        ? '0 3px 12px rgba(249,115,22,0.4)'
+        : '0 2px 6px rgba(0,0,0,0.15)'
+    const displayName = r.map_label || r.name || ''
+    const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
+    return (
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
+        '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' +
+          icon +
+        '</div>' +
+        '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:90px;overflow:hidden;text-overflow:ellipsis;">' +
+          name +
+        '</div>' +
+      '</div>'
+    )
+  }
 
   useEffect(() => {
     if (initializedRef.current) return
@@ -62,25 +79,25 @@ const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displa
   const renderMarkers = (L, map, data) => {
     markersRef.current.forEach(m => m.remove())
     markersRef.current = []
+    markerDataRef.current = []
 
     const valid = data.filter(r => r.latitude && r.longitude)
     if (valid.length === 0) return
 
-    // 스폰서 장소가 위에 보이도록 정렬
     const sorted = [...valid].sort((a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0))
 
     sorted.forEach(r => {
       const size = r.is_sponsored ? 42 : 34
       const markerIcon = L.divIcon({
-  className: '',
-  html: createMarkerHtml(r),
-  iconSize: [size + 20, size + 28],
-  iconAnchor: [(size + 20) / 2, size / 2],
-})
-
+        className: '',
+        html: createMarkerHtml(r, false),
+        iconSize: [size + 20, size + 28],
+        iconAnchor: [(size + 20) / 2, size / 2],
+      })
       const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
       m.on('click', () => onSelect(r))
       markersRef.current.push(m)
+      markerDataRef.current.push({ r, marker: m })
     })
 
     if (valid.length === 1) {
@@ -96,6 +113,22 @@ const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displa
     renderMarkers(window.L, mapInstanceRef.current, restaurants)
   }, [restaurants])
 
+  // Re-style markers when selection changes
+  useEffect(() => {
+    if (!mapInstanceRef.current || !window.L) return
+    const L = window.L
+    markerDataRef.current.forEach(({ r, marker }) => {
+      const isSelected = selected && r.id === selected.id
+      const size = r.is_sponsored ? 42 : 34
+      marker.setIcon(L.divIcon({
+        className: '',
+        html: createMarkerHtml(r, isSelected),
+        iconSize: [size + 20, size + 28],
+        iconAnchor: [(size + 20) / 2, size / 2],
+      }))
+    })
+  }, [selected])
+
   useEffect(() => {
     if (!mapInstanceRef.current || !selected) return
     mapInstanceRef.current.setView([selected.latitude, selected.longitude], 16, { animate: true })
@@ -108,8 +141,7 @@ const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displa
     map.locate({ setView: true, maxZoom: 16 })
     map.once('locationfound', (e) => {
       L.circleMarker(e.latlng, {
-        radius: 8, fillColor: '#f97316',
-        color: 'white', weight: 2, fillOpacity: 1
+        radius: 8, fillColor: '#f97316', color: 'white', weight: 2, fillOpacity: 1
       }).addTo(map).bindPopup('현재 위치').openPopup()
     })
     map.once('locationerror', () => {
@@ -119,14 +151,13 @@ const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displa
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '300px' }}>
-  <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: '300px', zIndex: 1 }} />
+      <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: '300px', zIndex: 1 }} />
       <button
         onClick={locateMe}
         style={{
-          position: 'absolute', bottom: '80px', right: '10px',
-          zIndex: 1000, background: 'white', border: 'none',
-          borderRadius: '8px', padding: '8px 10px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          position: 'absolute', bottom: '80px', right: '10px', zIndex: 1000,
+          background: 'white', border: 'none', borderRadius: '8px',
+          padding: '8px 10px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           cursor: 'pointer', fontSize: '18px'
         }}
         title="현재 위치"
