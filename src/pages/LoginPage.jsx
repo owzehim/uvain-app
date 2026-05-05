@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { X } from 'phosphor-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -32,14 +33,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 bg-gray-50 flex items-center justify-center px-4 overflow-hidden">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-sm">
         <div className="flex justify-end mb-4">
           <button
             onClick={() => window.location.href = '/public'}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            ✕
+            <X size={24} weight="bold" />
           </button>
         </div>
 

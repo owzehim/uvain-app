@@ -4,7 +4,7 @@ import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
-import { MapPin, Lock } from 'phosphor-react'
+import { MapPin, Lock, Utensils, Confetti, Users } from 'phosphor-react'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
@@ -175,7 +175,9 @@ function MembershipTab() {
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-8 max-w-sm mx-auto">
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🔒</div>
+          <div className="flex justify-center mb-4">
+            <Lock size={48} weight="fill" color="#f97316" />
+          </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             UvA-IN Membership
           </h2>
@@ -186,7 +188,9 @@ function MembershipTab() {
 
         <div className="space-y-3 mb-8">
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
-            <span className="text-2xl">🍽️</span>
+            <div className="flex-shrink-0 mt-0.5">
+              <Utensils size={24} weight="fill" color="#f97316" />
+            </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
                 제휴 레스토랑 / 카페 할인
@@ -197,7 +201,9 @@ function MembershipTab() {
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
-            <span className="text-2xl">🎉</span>
+            <div className="flex-shrink-0 mt-0.5">
+              <Confetti size={24} weight="fill" color="#f97316" />
+            </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
                 학생회 이벤트 우선 참가
@@ -208,7 +214,9 @@ function MembershipTab() {
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
-            <span className="text-2xl">🤝</span>
+            <div className="flex-shrink-0 mt-0.5">
+              <Users size={24} weight="fill" color="#f97316" />
+            </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">
                 UvA 한인 네트워크
