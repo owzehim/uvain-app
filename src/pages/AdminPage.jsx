@@ -51,6 +51,8 @@ export default function AdminPage() {
   )
 }
 
+// ─── Rich Editor ──────────────────────────────────────────────────────────────
+
 const COLORS = ['#000000','#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#ffffff']
 
 function RichEditor({ value, onChange, placeholder, rows = 3 }) {
@@ -66,9 +68,7 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
   }, [])
 
   useEffect(() => {
-    if (ref.current && value === '') {
-      ref.current.innerHTML = ''
-    }
+    if (ref.current && value === '') ref.current.innerHTML = ''
   }, [value])
 
   const exec = (cmd, val = null) => {
@@ -78,11 +78,7 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
   }
 
   const handleInput = () => onChange(ref.current.innerHTML)
-
-  const applyColor = (color) => {
-    exec('foreColor', color)
-    setShowColors(false)
-  }
+  const applyColor = (color) => { exec('foreColor', color); setShowColors(false) }
 
   return (
     <div className="border border-gray-200 rounded-lg overflow-visible">
@@ -125,6 +121,8 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
 function koreanSort(arr, key) {
   return [...arr].sort((a, b) => (a[key] || '').localeCompare(b[key] || '', ['ko', 'en']))
 }
+
+// ─── Members Tab ──────────────────────────────────────────────────────────────
 
 function MembersTab() {
   const [members, setMembers] = useState([])
@@ -240,9 +238,55 @@ function MembersTab() {
     </div>
   )
 }
+// ─── Event Card (swipeable) ───────────────────────────────────────────────────
+
+function EventCard({ event, onEdit, onDelete }) {
+  const imgs = event['image_urls'] || []
+  const [idx, setIdx] = useState(0)
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4">
+      <div className="flex items-start justify-between mb-2">
+        <div>
+          <p className="font-medium text-gray-900 text-sm">{event.title}</p>
+          {event.location && <p className="text-xs text-gray-500 mt-0.5">📍 {event.location}</p>}
+          {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
+        </div>
+        <div className="flex gap-2 ml-2 flex-shrink-0">
+          <button onClick={() => onEdit(event)} className="text-xs text-blue-600 hover:underline">수정</button>
+          <button onClick={() => onDelete(event.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+        </div>
+      </div>
+      {imgs.length > 0 && (
+        <div className="relative overflow-hidden rounded-lg"
+          onTouchStart={e => { e.currentTarget._sx = e.touches[0].clientX }}
+          onTouchEnd={e => {
+            const dx = e.changedTouches[0].clientX - e.currentTarget._sx
+            if (dx < -40 && idx < imgs.length - 1) setIdx(i => i + 1)
+            else if (dx > 40 && idx > 0) setIdx(i => i - 1)
+          }}>
+          <div className="flex" style={{ transform: `translateX(-${idx * 100}%)`, transition: 'transform 0.3s ease' }}>
+            {imgs.map((url, i) => (
+              <img key={i} src={url} className="w-full flex-shrink-0 object-cover rounded-lg" style={{ maxHeight: '180px' }} draggable={false} />
+            ))}
+          </div>
+          {imgs.length > 1 && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+              {imgs.map((_, i) => (
+                <div key={i} onClick={() => setIdx(i)}
+                  className={`rounded-full cursor-pointer transition-all ${i === idx ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Events Tab ───────────────────────────────────────────────────────────────
 
 function EventsTab() {
-  const [slideIndex, setSlideIndex] = useState(0)
   const [events, setEvents] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
@@ -345,24 +389,24 @@ function EventsTab() {
             <label className="text-sm text-gray-500 block mb-1">이미지 (여러장 선택 가능)</label>
             <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
             {imagePreviews.length > 0 && (
-  <ImageReorder
-    images={imagePreviews}
-    label="새 사진 미리보기"
-    onReorder={(reordered) => {
-      const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
-      setImagePreviews(reordered)
-      setImageFiles(reorderedFiles)
-    }}
-  />
-)}
+              <ImageReorder
+                images={imagePreviews}
+                label="새 사진 미리보기"
+                onReorder={(reordered) => {
+                  const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
+                  setImagePreviews(reordered)
+                  setImageFiles(reorderedFiles)
+                }}
+              />
+            )}
             <ImageReorder
-  images={editTarget?.image_urls || []}
-  onReorder={async (reordered) => {
-    await supabase.from('events').update({ image_urls: reordered }).eq('id', editTarget.id)
-    setEditTarget({ ...editTarget, image_urls: reordered })
-  }}
-  onDelete={handleDeleteEventImage}
-/>
+              images={editTarget?.image_urls || []}
+              onReorder={async (reordered) => {
+                await supabase.from('events').update({ image_urls: reordered }).eq('id', editTarget.id)
+                setEditTarget({ ...editTarget, image_urls: reordered })
+              }}
+              onDelete={handleDeleteEventImage}
+            />
           </div>
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
@@ -381,20 +425,7 @@ function EventsTab() {
           <div key={month} className="space-y-2">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
             {evs.map(event => (
-              <div key={event.id} className="bg-white rounded-xl border border-gray-100 p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">{event.title}</p>
-                    {event.location && <p className="text-xs text-gray-500 mt-0.5">📍 {event.location}</p>}
-                    {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
-                    {event['image_urls'] && event['image_urls'].length > 0 && <p className="text-xs text-gray-400 mt-0.5">{'사진 ' + event['image_urls'].length + '장'}</p>}
-                  </div>
-                  <div className="flex gap-2 ml-2">
-                    <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline">수정</button>
-                    <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline">삭제</button>
-                  </div>
-                </div>
-              </div>
+              <EventCard key={event.id} event={event} onEdit={openEdit} onDelete={handleDelete} />
             ))}
           </div>
         ))
@@ -402,6 +433,7 @@ function EventsTab() {
     </div>
   )
 }
+// ─── Restaurants Tab ──────────────────────────────────────────────────────────
 
 const SPOT_CATEGORIES = ['맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
 
@@ -454,38 +486,23 @@ function RestaurantsTab() {
       image_urls = [...image_urls, ...uploaded]
     }
     const payload = {
-      name: form.name,
-      map_label: form.map_label,
-      description: form.description,
+      name: form.name, map_label: form.map_label, description: form.description,
       address: form.address,
       latitude: form.latitude ? parseFloat(form.latitude) : null,
       longitude: form.longitude ? parseFloat(form.longitude) : null,
-      discount_info: form.discount_info,
-      discount_terms: form.discount_terms,
+      discount_info: form.discount_info, discount_terms: form.discount_terms,
       rating: form.rating ? parseFloat(form.rating) : 0,
-      review: form.review,
-      reviewer_name: form.reviewer_name,
-      category: form.category,
-      price_range: form.price_range,
-      is_sponsored: form.is_sponsored,
-      image_urls,
+      review: form.review, reviewer_name: form.reviewer_name,
+      category: form.category, price_range: form.price_range,
+      is_sponsored: form.is_sponsored, image_urls,
     }
     let saveError = null
-    if (editTarget) {
-      const { error } = await supabase.from('restaurants').update(payload).eq('id', editTarget.id)
-      saveError = error
-    } else {
-      const { error } = await supabase.from('restaurants').insert(payload)
-      saveError = error
-    }
+    if (editTarget) { const { error } = await supabase.from('restaurants').update(payload).eq('id', editTarget.id); saveError = error }
+    else { const { error } = await supabase.from('restaurants').insert(payload); saveError = error }
     if (saveError) { alert('저장 실패: ' + saveError.message); setUploading(false); return }
-    setUploading(false)
-    setShowForm(false)
-    setEditTarget(null)
+    setUploading(false); setShowForm(false); setEditTarget(null)
     setForm({ name: '', map_label: '', description: '', address: '', latitude: '', longitude: '', discount_info: '', rating: '', review: '', reviewer_name: '', category: '맛집', subcategory: '', price_range: '', is_sponsored: false, discount_terms: '' })
-    setImageFiles([])
-    setImagePreviews([])
-    setRichEditorKey(k => k + 1)
+    setImageFiles([]); setImagePreviews([]); setRichEditorKey(k => k + 1)
     fetchRestaurants()
   }
 
@@ -539,15 +556,9 @@ function RestaurantsTab() {
             <RichEditor key={richEditorKey} value={form.discount_info} onChange={v => setForm(f => ({ ...f, discount_info: v }))} placeholder="할인 정보 (예: 10% 할인)" rows={2} />
           </div>
           <div>
-  <label className="text-xs text-gray-400 block mb-1">할인 조건</label>
-  <RichEditor
-    key={richEditorKey + 100}
-    value={form.discount_terms}
-    onChange={v => setForm(f => ({ ...f, discount_terms: v }))}
-    placeholder="할인 조건 (예: 주말 제외, 1인 1회 한정)"
-    rows={2}
-  />
-</div>
+            <label className="text-xs text-gray-400 block mb-1">할인 조건</label>
+            <RichEditor key={richEditorKey + 100} value={form.discount_terms} onChange={v => setForm(f => ({ ...f, discount_terms: v }))} placeholder="할인 조건 (예: 주말 제외, 1인 1회 한정)" rows={2} />
+          </div>
           <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
             <option value="">가격대 선택</option>
@@ -569,25 +580,25 @@ function RestaurantsTab() {
             <label className="text-sm text-gray-500 block mb-1">사진 추가 (여러장 가능)</label>
             <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
             {imagePreviews.length > 0 && (
-  <ImageReorder
-    images={imagePreviews}
-    label="새 사진 미리보기"
-    onReorder={(reordered) => {
-      const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
-      setImagePreviews(reordered)
-      setImageFiles(reorderedFiles)
-    }}
-  />
-)}
+              <ImageReorder
+                images={imagePreviews}
+                label="새 사진 미리보기"
+                onReorder={(reordered) => {
+                  const reorderedFiles = reordered.map(url => imageFiles[imagePreviews.indexOf(url)])
+                  setImagePreviews(reordered)
+                  setImageFiles(reorderedFiles)
+                }}
+              />
+            )}
           </div>
           <ImageReorder
-  images={editTarget?.image_urls || []}
-  onReorder={async (reordered) => {
-    await supabase.from('restaurants').update({ image_urls: reordered }).eq('id', editTarget.id)
-    setEditTarget({ ...editTarget, image_urls: reordered })
-  }}
-  onDelete={handleDeleteExistingImage}
-/>
+            images={editTarget?.image_urls || []}
+            onReorder={async (reordered) => {
+              await supabase.from('restaurants').update({ image_urls: reordered }).eq('id', editTarget.id)
+              setEditTarget({ ...editTarget, image_urls: reordered })
+            }}
+            onDelete={handleDeleteExistingImage}
+          />
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-orange-500 text-white rounded-lg py-2 text-sm hover:bg-orange-600 disabled:opacity-50">{uploading ? '업로드 중...' : (editTarget ? '수정 완료' : '추가')}</button>
             <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
