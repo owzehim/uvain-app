@@ -756,7 +756,7 @@ function EventsTab() {
               onClick={openAdd}
               className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"
             >
-              <Plus size={16} weight="bold" />+ 이벤트 추가
+              <Plus size={16} weight="bold" />이벤트 추가
             </button>
           )}
         </div>
