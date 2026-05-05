@@ -349,44 +349,50 @@ function MembersTab() {
       {loading ? <p className="text-gray-500 text-sm">로딩 중...</p> : members.length === 0 ? <p className="text-gray-500 text-sm">멤버가 없어요.</p> : (
         <div className="space-y-2">
           {sorted.map(member => (
-            <div key={member.id} className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">{member.full_name}</p>
-                  <p className="text-xs text-gray-500">{member.student_number} · {member.major}</p>
-                  <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    {member.is_member ? '활성' : '비활성'}
-                  </span>
-                  <button onClick={() => openEdit(member)} className="text-xs text-blue-600 hover:underline">수정</button>
-                  <button onClick={() => handleDelete(member.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+            <div key={member.id}>
+              <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">{member.full_name}</p>
+                    <p className="text-xs text-gray-500">{member.student_number} · {member.major}</p>
+                    <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {member.is_member ? '활성' : '비활성'}
+                    </span>
+                    <button onClick={() => openEdit(member)} className="text-xs text-blue-600 hover:underline">수정</button>
+                    <button onClick={() => handleDelete(member.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                  </div>
                 </div>
               </div>
               {showForm && editTarget && editTarget.id === member.id && (
-                <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
-                  <div>
-                    <label className="text-sm text-gray-700 block mb-1">이름 *</label>
-                    <input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 mt-2">
+                  <h3 className="font-medium text-gray-900">멤버 수정</h3>
+                  <div className="space-y-3">
+                    <p className="font-medium text-gray-900 text-sm">👤 멤버 정보</p>
                     <div>
-                      <label className="text-sm text-gray-700 block mb-1">학번 *</label>
-                      <input value={form.student_number} onChange={e => setForm({ ...form, student_number: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <label className="text-sm text-gray-700 block mb-1">이름 *</label>
+                      <input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-sm text-gray-700 block mb-1">학번 *</label>
+                        <input value={form.student_number} onChange={e => setForm({ ...form, student_number: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-700 block mb-1">전공 *</label>
+                        <input value={form.major} onChange={e => setForm({ ...form, major: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id={`is_member_${member.id}`} checked={form.is_member} onChange={e => setForm({ ...form, is_member: e.target.checked })} />
+                      <label htmlFor={`is_member_${member.id}`} className="text-sm text-gray-700">멤버십 활성화</label>
                     </div>
                     <div>
-                      <label className="text-sm text-gray-700 block mb-1">전공 *</label>
-                      <input value={form.major} onChange={e => setForm({ ...form, major: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <label className="text-sm text-gray-500 block mb-1">유효기간</label>
+                      <input type="date" value={form.membership_valid_until} onChange={e => setForm({ ...form, membership_valid_until: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id={`is_member_${member.id}`} checked={form.is_member} onChange={e => setForm({ ...form, is_member: e.target.checked })} />
-                    <label htmlFor={`is_member_${member.id}`} className="text-sm text-gray-700">멤버십 활성화</label>
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-500 block mb-1">유효기간</label>
-                    <input type="date" value={form.membership_valid_until} onChange={e => setForm({ ...form, membership_valid_until: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                   </div>
                   <div className="flex gap-2 pt-1">
                     <button onClick={handleEdit} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 font-medium">수정 완료</button>
@@ -512,23 +518,41 @@ function EventsTab() {
               <div key={month} className="space-y-2">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
                 {evs.map(event => (
-                  <div key={event.id} className="bg-white rounded-xl border border-gray-100 p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">{event.title}</p>
-                        {event.location && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {event.location}</p>}
-                        {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
-                      </div>
-                      <div className="flex gap-2 ml-2">
-                        <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline">수정</button>
-                        <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                  <div key={event.id}>
+                    <div className="bg-white rounded-xl border border-gray-100 p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">{event.title}</p>
+                          {event.location && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {event.location}</p>}
+                          {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
+                        </div>
+                        <div className="flex gap-2 ml-2">
+                          <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline">수정</button>
+                          <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                        </div>
                       </div>
                     </div>
                     {showForm && editTarget && editTarget.id === event.id && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
+                        <h3 className="font-medium text-gray-900">이벤트 수정</h3>
                         <input placeholder="제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                        <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                        <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
                         <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="text-sm text-gray-500 block mb-1">날짜</label>
+                            <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-sm text-gray-500 block mb-1">시간</label>
+                            <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                          </div>
+                        </div>
+                        <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={e => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        <div>
+                          <label className="text-sm text-gray-500 block mb-1">이미지</label>
+                          <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        </div>
                         <div className="flex gap-2">
                           <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : '수정 완료'}</button>
                           <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
@@ -686,28 +710,55 @@ function RestaurantsTab() {
             <div key={cat} className="space-y-2">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{cat} ({places.length})</p>
               {places.map(r => (
-                <div key={r.id} className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <p className="font-medium text-gray-900 text-sm">{r.name}</p>
-                        {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+                <div key={r.id}>
+                  <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <p className="font-medium text-gray-900 text-sm">{r.name}</p>
+                          {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+                        </div>
+                        {r.address && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {r.address}</p>}
+                        {r.discount_info && <p className="text-xs text-orange-500 mt-0.5 flex items-center gap-1"><Ticket size={12} weight="fill" color="#FF5252" /> {r.discount_info}</p>}
+                        {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
                       </div>
-                      {r.address && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {r.address}</p>}
-                      {r.discount_info && <p className="text-xs text-orange-500 mt-0.5 flex items-center gap-1"><Ticket size={12} weight="fill" color="#FF5252" /> {r.discount_info}</p>}
-                      {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
-                    </div>
-                    <div className="flex gap-2 ml-2">
-                      <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
-                      <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                      <div className="flex gap-2 ml-2">
+                        <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
+                        <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                      </div>
                     </div>
                   </div>
                   {showForm && editTarget && editTarget.id === r.id && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                      <input placeholder="이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                    <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
+                      <h3 className="font-medium text-gray-900">장소 수정</h3>
+                      <input placeholder="장소 이름" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <input placeholder="지도 표시 이름" value={form.map_label} onChange={e => setForm({ ...form, map_label: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                       <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
                         {SPOT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
+                      <textarea placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                      <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <div className="flex gap-2">
+                        <input placeholder="위도" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        <input placeholder="경도" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      </div>
+                      <textarea placeholder="할인 정보" value={form.discount_info} onChange={e => setForm({ ...form, discount_info: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                      <textarea placeholder="할인 조건" value={form.discount_terms} onChange={e => setForm({ ...form, discount_terms: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                      <input placeholder="평점 (0~5)" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <select value={form.price_range} onChange={e => setForm({ ...form, price_range: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+                        <option value="">가격대 선택</option>
+                        <option value="€">€ (저렴)</option>
+                        <option value="€€">€€ (보통)</option>
+                        <option value="€€€">€€€ (비쌈)</option>
+                        <option value="€€€€">€€€€ (고급)</option>
+                      </select>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" id={`is_sponsored_${r.id}`} checked={form.is_sponsored} onChange={e => setForm({ ...form, is_sponsored: e.target.checked })} />
+                        <label htmlFor={`is_sponsored_${r.id}`} className="text-sm text-gray-700 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />제휴/스폰서</label>
+                      </div>
+                      <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                      <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                       <div className="flex gap-2">
                         <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : '수정 완료'}</button>
                         <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
