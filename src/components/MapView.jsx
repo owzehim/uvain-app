@@ -45,12 +45,12 @@ export default function MapView({ restaurants, selected, onSelect }) {
       border +
       ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' +
       shadow +
-      ';">' +
+      ';flex-shrink:0;">' +
       '<div style="width:' +
       (isSponsored ? 20 : 16) +
       'px;height:' +
       (isSponsored ? 20 : 16) +
-      'px;">' +
+      'px;display:flex;align-items:center;justify-content:center;">' +
       iconSvg +
       '</div>' +
       '</div>' +
@@ -78,11 +78,14 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     sorted.forEach((r) => {
       const size = r.is_sponsored ? 42 : 34
+      const iconWidth = size + 20
+      const iconHeight = size + 28
+      
       const markerIcon = L.divIcon({
         className: 'custom-marker',
         html: createMarkerHtml(r, false),
-        iconSize: [size + 20, size + 28],
-        iconAnchor: [(size + 20) / 2, size / 2],
+        iconSize: [iconWidth, iconHeight],
+        iconAnchor: [iconWidth / 2, size / 2],
         popupAnchor: [0, -(size / 2)],
       })
 
@@ -154,12 +157,15 @@ export default function MapView({ restaurants, selected, onSelect }) {
     markerDataRef.current.forEach(({ r, marker }) => {
       const isSelected = selected && r.id === selected.id
       const size = r.is_sponsored ? 42 : 34
+      const iconWidth = size + 20
+      const iconHeight = size + 28
+      
       marker.setIcon(
         L.divIcon({
           className: 'custom-marker',
           html: createMarkerHtml(r, isSelected),
-          iconSize: [size + 20, size + 28],
-          iconAnchor: [(size + 20) / 2, size / 2],
+          iconSize: [iconWidth, iconHeight],
+          iconAnchor: [iconWidth / 2, size / 2],
           popupAnchor: [0, -(size / 2)],
         })
       )
