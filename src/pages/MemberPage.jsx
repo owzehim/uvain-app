@@ -171,11 +171,27 @@ export default function MemberPage() {
   )
 }
 
-function QRTab({ member, isValid, qrValue }) {
+function QRTab({ member, isValid, qrValue, secondsLeft }) {
   useEffect(() => {
     if (!member?.student_number) return
     broadcastQRExpiry(member.student_number)
   }, [qrValue, member?.student_number])
+
+  // Format seconds to MM:SS
+  const formatTime = (seconds) => {
+    if (seconds === null || seconds === undefined) return '00:00'
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+  }
+
+  // Determine timer color based on remaining time
+  const getTimerColor = () => {
+    if (secondsLeft === null || secondsLeft === undefined) return 'text-gray-500'
+    if (secondsLeft <= 5) return 'text-red-500 font-semibold'
+    if (secondsLeft <= 10) return 'text-orange-500 font-semibold'
+    return 'text-gray-500'
+  }
 
   return (
     <div className="h-full overflow-y-auto">
@@ -188,9 +204,7 @@ function QRTab({ member, isValid, qrValue }) {
             <span
               className={
                 'text-xs font-medium px-2 py-1 rounded-full ' +
-                (isValid
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-600')
+                (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
               }
             >
               {isValid ? '✓ 유효' : '✗ 만료'}
@@ -206,9 +220,22 @@ function QRTab({ member, isValid, qrValue }) {
         {isValid ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
             <p className="text-sm text-gray-500 mb-4">멤버십 QR 코드</p>
-            <div className="p-3 bg-white rounded-xl border border-orange-500/60">
+            
+            {/* QR Code with thicker border */}
+            <div className="p-3 bg-white rounded-xl border-4 border-orange-500">
               <QRCodeSVG value={qrValue} size={200} level="M" />
             </div>
+
+            {/* Timer display */}
+            <div className="mt-4 flex flex-col items-center gap-1">
+              <p className={`text-lg font-mono ${getTimerColor()}`}>
+                {formatTime(secondsLeft)}
+              </p>
+              <p className="text-xs text-gray-400 text-center">
+                QR 갱신까지 남은 시간
+              </p>
+            </div>
+
             <p className="text-xs text-gray-400 mt-3 text-center">
               15초마다 자동 갱신됩니다
             </p>
