@@ -426,6 +426,7 @@ function EventsTab() {
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
   const [uploading, setUploading] = useState(false)
+  const [richEditorKey, setRichEditorKey] = useState(0)
 
   const fetchEvents = async () => {
     const { data } = await supabase
@@ -502,6 +503,7 @@ function EventsTab() {
     })
     setImageFiles([])
     setImagePreviews([])
+    setRichEditorKey((k) => k + 1)
     fetchEvents()
   }
 
@@ -549,6 +551,7 @@ function EventsTab() {
     })
     setImageFiles([])
     setImagePreviews([])
+    setRichEditorKey((k) => k + 1)
     setShowForm(true)
   }
 
@@ -563,6 +566,7 @@ function EventsTab() {
     })
     setImageFiles([])
     setImagePreviews([])
+    setRichEditorKey((k) => k + 1)
     setShowForm(true)
   }
 
@@ -579,11 +583,18 @@ function EventsTab() {
             )}
             {event.event_date && (
               <p className="text-xs text-gray-400 mt-0.5">
-                {new Date(event.event_date).toLocaleString('ko-KR')}
+                {new Date(event.event_date).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
               </p>
             )}
           </div>
-          <div className="flex gap-1 flex-shrink-0">
+          <div className="flex gap-2 flex-shrink-0">
             {isArchived ? (
               <>
                 <button
@@ -639,20 +650,27 @@ function EventsTab() {
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
           />
-          <textarea
-            placeholder="내용"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            rows={3}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
-          />
-          <input
-            placeholder="장소"
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-          <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-sm text-gray-500 block mb-1">내용</label>
+            <RichEditor
+              key={richEditorKey}
+              value={form.description}
+              onChange={(v) => setForm({ ...form, description: v })}
+              placeholder="내용을 입력하세요"
+              rows={3}
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-500 block mb-1">장소</label>
+            <RichEditor
+              key={richEditorKey + 50}
+              value={form.location}
+              onChange={(v) => setForm({ ...form, location: v })}
+              placeholder="장소를 입력하세요"
+              rows={2}
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="text-sm text-gray-500 block mb-1">날짜</label>
               <input
@@ -667,14 +685,13 @@ function EventsTab() {
                       (form.event_date ? form.event_date.slice(11, 16) : '00:00'),
                   })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
               />
             </div>
             <div>
               <label className="text-sm text-gray-500 block mb-1">시간</label>
               <input
-                type="text"
-                placeholder="18:30"
+                type="time"
                 value={form.event_date ? form.event_date.slice(11, 16) : ''}
                 onChange={(e) =>
                   setForm({
@@ -687,7 +704,7 @@ function EventsTab() {
                       e.target.value,
                   })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -756,7 +773,7 @@ function EventsTab() {
               onClick={openAdd}
               className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"
             >
-              <Plus size={16} weight="bold" />이벤트 추가
+              <Plus size={16} weight="bold" />+ 이벤트 추가
             </button>
           )}
         </div>
@@ -800,20 +817,27 @@ function EventsTab() {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
               />
-              <textarea
-                placeholder="내용"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={3}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
-              />
-              <input
-                placeholder="장소"
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
-              <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-sm text-gray-500 block mb-1">내용</label>
+                <RichEditor
+                  key={richEditorKey}
+                  value={form.description}
+                  onChange={(v) => setForm({ ...form, description: v })}
+                  placeholder="내용을 입력하세요"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-500 block mb-1">장소</label>
+                <RichEditor
+                  key={richEditorKey + 50}
+                  value={form.location}
+                  onChange={(v) => setForm({ ...form, location: v })}
+                  placeholder="장소를 입력하세요"
+                  rows={2}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="text-sm text-gray-500 block mb-1">날짜</label>
                   <input
@@ -830,14 +854,13 @@ function EventsTab() {
                             : '00:00'),
                       })
                     }
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 block mb-1">시간</label>
                   <input
-                    type="text"
-                    placeholder="18:30"
+                    type="time"
                     value={form.event_date ? form.event_date.slice(11, 16) : ''}
                     onChange={(e) =>
                       setForm({
@@ -850,7 +873,7 @@ function EventsTab() {
                           e.target.value,
                       })
                     }
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
                   />
                 </div>
               </div>
@@ -916,7 +939,9 @@ function EventsTab() {
           {/* PAST EVENTS SECTION (for admin) */}
           {events.length > 0 && (
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-3">지난 이벤트</h3>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                지난 이벤트
+              </p>
               {(() => {
                 const now = new Date()
                 const pastEvents = events.filter(

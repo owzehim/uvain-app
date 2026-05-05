@@ -356,6 +356,7 @@ function EventsTab({ events }) {
                   day: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit',
+                  hour12: true,
                 })}
               </span>
             </div>
@@ -510,11 +511,11 @@ function EventsTab({ events }) {
               <div className="mt-6">
                 <button
                   onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
-                  className="w-full bg-gray-100 hover:bg-gray-200 rounded-2xl border border-gray-200 p-4 flex items-center justify-between transition-colors"
+                  className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-gray-600 font-semibold">지난 이벤트</span>
-                    <span className="text-xs bg-gray-300 text-gray-700 px-2 py-1 rounded-full">{pastEvents.length}</span>
+                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">{pastEvents.length}</span>
                   </div>
                   <span className="text-gray-400 text-lg">{pastEventsExpanded ? '▲' : '▼'}</span>
                 </button>
