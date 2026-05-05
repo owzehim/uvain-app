@@ -4,7 +4,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const markersRef = useRef([])
-  const markerDataRef = useRef([]) // keeps { r, marker } pairs for re-styling
+  const markerDataRef = useRef([])
   const initializedRef = useRef(false)
 
   const categoryIcons = {
@@ -19,17 +19,20 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
     const bg = isSponsored ? '#f97316' : 'white'
-    // orange outline when selected, sponsored style otherwise
-    const border = isSelected
-      ? '3px solid #f97316'
-      : isSponsored
-        ? '3px solid white'
+
+    // sponsored always keeps white border; non-sponsored gets orange when selected
+    const border = isSponsored
+      ? '3px solid white'
+      : isSelected
+        ? '3px solid #f97316'
         : '2px solid #e5e7eb'
+
     const shadow = isSelected
       ? '0 3px 12px rgba(249,115,22,0.5)'
       : isSponsored
         ? '0 3px 12px rgba(249,115,22,0.4)'
         : '0 2px 6px rgba(0,0,0,0.15)'
+
     const displayName = r.map_label || r.name || ''
     const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
     return (
@@ -113,7 +116,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
     renderMarkers(window.L, mapInstanceRef.current, restaurants)
   }, [restaurants])
 
-  // Re-style markers when selection changes
   useEffect(() => {
     if (!mapInstanceRef.current || !window.L) return
     const L = window.L
