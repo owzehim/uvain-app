@@ -177,20 +177,18 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
     broadcastQRExpiry(member.student_number)
   }, [qrValue, member?.student_number])
 
-  // Format seconds to MM:SS
-  const formatTime = (seconds) => {
-    if (seconds === null || seconds === undefined) return '00:00'
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
-  }
+  // Calculate progress percentage (0-100)
+  const totalSeconds = 15
+  const progressPercent = ((totalSeconds - (secondsLeft || 0)) / totalSeconds) * 100
+
+  // Format seconds display
+  const displaySeconds = secondsLeft !== null && secondsLeft !== undefined ? secondsLeft : 0
 
   // Determine timer color based on remaining time
-  const getTimerColor = () => {
-    if (secondsLeft === null || secondsLeft === undefined) return 'text-gray-500'
-    if (secondsLeft <= 5) return 'text-red-500 font-semibold'
-    if (secondsLeft <= 10) return 'text-orange-500 font-semibold'
-    return 'text-gray-500'
+  const getBarColor = () => {
+    if (displaySeconds <= 3) return 'bg-red-500'
+    if (displaySeconds <= 7) return 'bg-orange-500'
+    return 'bg-orange-500'
   }
 
   return (
@@ -226,17 +224,26 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
               <QRCodeSVG value={qrValue} size={200} level="M" />
             </div>
 
-            {/* Timer display */}
-            <div className="mt-4 flex flex-col items-center gap-1">
-              <p className={`text-lg font-mono ${getTimerColor()}`}>
-                {formatTime(secondsLeft)}
-              </p>
-              <p className="text-xs text-gray-400 text-center">
-                QR 갱신까지 남은 시간
-              </p>
+            {/* Progress Bar Timer */}
+            <div className="w-full mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-gray-600">QR 갱신까지</p>
+                <p className="text-sm font-semibold text-gray-700">
+                  {displaySeconds}초
+                </p>
+              </div>
+              
+              {/* Progress bar background */}
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                {/* Progress bar fill */}
+                <div
+                  className={`h-full ${getBarColor()} transition-all duration-100`}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
             </div>
 
-            <p className="text-xs text-gray-400 mt-3 text-center">
+            <p className="text-xs text-gray-400 mt-4 text-center">
               15초마다 자동 갱신됩니다
             </p>
           </div>
