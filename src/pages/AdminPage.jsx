@@ -27,7 +27,7 @@ export default function AdminPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/member')} className="text-sm text-gray-500 hover:text-gray-700">← 내 QR</button>
@@ -35,18 +35,20 @@ export default function AdminPage() {
         </div>
         <button onClick={() => supabase.auth.signOut()} className="text-sm text-gray-500 hover:text-gray-700">로그아웃</button>
       </div>
-      <div className="bg-white border-b border-gray-100 px-4 flex gap-1">
+      <div className="bg-white border-b border-gray-100 px-4 flex gap-1 overflow-x-auto">
         {[{ key: 'members', label: '멤버 관리' }, { key: 'events', label: '이벤트' }, { key: 'restaurants', label: '장소' }].map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
             {tab.label}
           </button>
         ))}
       </div>
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        {activeTab === 'members' && <MembersTab />}
-        {activeTab === 'events' && <EventsTab />}
-        {activeTab === 'restaurants' && <RestaurantsTab />}
+      <div className="w-full px-4 py-6">
+        <div className="max-w-3xl mx-auto">
+          {activeTab === 'members' && <MembersTab />}
+          {activeTab === 'events' && <EventsTab />}
+          {activeTab === 'restaurants' && <RestaurantsTab />}
+        </div>
       </div>
     </div>
   )
@@ -247,7 +249,7 @@ function MembersTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">멤버 목록 ({members.length}명)</h2>
-        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />멤버 추가</button>}
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Plus size={16} weight="bold" />멤버 추가</button>}
       </div>
 
       {createdCredentials && (
@@ -264,14 +266,14 @@ function MembersTab() {
               <p className="text-xs text-gray-500 mb-1">이메일</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">{createdCredentials.email}</code>
-                <button onClick={() => copyToClipboard(createdCredentials.email)} className="text-blue-600 hover:text-blue-700 text-sm px-3 py-2 bg-blue-50 rounded">복사</button>
+                <button onClick={() => copyToClipboard(createdCredentials.email)} className="text-blue-600 hover:text-blue-700 text-sm px-3 py-2 bg-blue-50 rounded whitespace-nowrap">복사</button>
               </div>
             </div>
             <div>
               <p className="text-xs text-gray-500 mb-1">비밀번호</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">{createdCredentials.password}</code>
-                <button onClick={() => copyToClipboard(createdCredentials.password)} className="text-blue-600 hover:text-blue-700 text-sm px-3 py-2 bg-blue-50 rounded">복사</button>
+                <button onClick={() => copyToClipboard(createdCredentials.password)} className="text-blue-600 hover:text-blue-700 text-sm px-3 py-2 bg-blue-50 rounded whitespace-nowrap">복사</button>
               </div>
             </div>
             <p className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">ℹ️ 이 정보는 10초 후 자동으로 사라집니다. 지금 복사해두세요!</p>
@@ -291,7 +293,7 @@ function MembersTab() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm text-gray-700">비밀번호</label>
-                <button type="button" onClick={generateRandomPassword} className="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded">🎲 자동 생성</button>
+                <button type="button" onClick={generateRandomPassword} className="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded whitespace-nowrap">🎲 자동 생성</button>
               </div>
               <div className="relative">
                 <input placeholder="최소 8자 이상" value={form.password} onChange={e => { setForm({ ...form, password: e.target.value }); checkPasswordStrength(e.target.value) }} type={showPassword ? 'text' : 'password'} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm pr-10" />
@@ -303,7 +305,7 @@ function MembersTab() {
                 <div className="mt-2">
                   <div className="flex items-center gap-2 mb-1">
                     <div className={`h-2 flex-1 rounded-full ${getPasswordStrengthColor()}`}></div>
-                    <span className="text-xs text-gray-600">{getPasswordStrengthText()}</span>
+                    <span className="text-xs text-gray-600 whitespace-nowrap">{getPasswordStrengthText()}</span>
                   </div>
                 </div>
               )}
@@ -351,18 +353,18 @@ function MembersTab() {
           {sorted.map(member => (
             <div key={member.id}>
               <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 text-sm">{member.full_name}</p>
                     <p className="text-xs text-gray-500">{member.student_number} · {member.major}</p>
                     <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${member.is_member ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                       {member.is_member ? '활성' : '비활성'}
                     </span>
-                    <button onClick={() => openEdit(member)} className="text-xs text-blue-600 hover:underline">수정</button>
-                    <button onClick={() => handleDelete(member.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                    <button onClick={() => openEdit(member)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
+                    <button onClick={() => handleDelete(member.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
                   </div>
                 </div>
               </div>
@@ -476,7 +478,7 @@ function EventsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
-        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />이벤트 추가</button>}
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Plus size={16} weight="bold" />이벤트 추가</button>}
       </div>
       {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
@@ -484,14 +486,14 @@ function EventsTab() {
           <input placeholder="이벤트 제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <div className="flex gap-2">
-            <div className="flex-1">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
               <label className="text-sm text-gray-500 block mb-1">날짜</label>
-              <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
             </div>
-            <div className="flex-1">
+            <div>
               <label className="text-sm text-gray-500 block mb-1">시간</label>
-              <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
             </div>
           </div>
           <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={e => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
@@ -520,15 +522,15 @@ function EventsTab() {
                 {evs.map(event => (
                   <div key={event.id}>
                     <div className="bg-white rounded-xl border border-gray-100 p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 text-sm">{event.title}</p>
                           {event.location && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {event.location}</p>}
                           {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
                         </div>
-                        <div className="flex gap-2 ml-2">
-                          <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline">수정</button>
-                          <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
+                          <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
                         </div>
                       </div>
                     </div>
@@ -538,14 +540,14 @@ function EventsTab() {
                         <input placeholder="제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                         <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
                         <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                        <div className="flex gap-2">
-                          <div className="flex-1">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
                             <label className="text-sm text-gray-500 block mb-1">날짜</label>
-                            <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                            <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
                           </div>
-                          <div className="flex-1">
+                          <div>
                             <label className="text-sm text-gray-500 block mb-1">시간</label>
-                            <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                            <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
                           </div>
                         </div>
                         <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={e => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
@@ -659,7 +661,7 @@ function RestaurantsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">장소 관리</h2>
-        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1"><Plus size={16} weight="bold" />장소 추가</button>}
+        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Plus size={16} weight="bold" />장소 추가</button>}
       </div>
       {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
@@ -671,9 +673,15 @@ function RestaurantsTab() {
           </select>
           <textarea placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <div className="flex gap-2">
-            <input placeholder="위도" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-            <input placeholder="경도" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-sm text-gray-500 block mb-1">위도</label>
+              <input placeholder="위도" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
+            </div>
+            <div>
+              <label className="text-sm text-gray-500 block mb-1">경도</label>
+              <input placeholder="경도" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
+            </div>
           </div>
           <textarea placeholder="할인 정보" value={form.discount_info} onChange={e => setForm({ ...form, discount_info: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           <textarea placeholder="할인 조건" value={form.discount_terms} onChange={e => setForm({ ...form, discount_terms: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
@@ -712,19 +720,19 @@ function RestaurantsTab() {
               {places.map(r => (
                 <div key={r.id}>
                   <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
-                    <div className="flex items-start justify-between">
-                      <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
                           <p className="font-medium text-gray-900 text-sm">{r.name}</p>
-                          {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
+                          {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full whitespace-nowrap">제휴</span>}
                         </div>
                         {r.address && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {r.address}</p>}
                         {r.discount_info && <p className="text-xs text-orange-500 mt-0.5 flex items-center gap-1"><Ticket size={12} weight="fill" color="#FF5252" /> {r.discount_info}</p>}
                         {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
                       </div>
-                      <div className="flex gap-2 ml-2">
-                        <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline">수정</button>
-                        <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline">삭제</button>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
+                        <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
                       </div>
                     </div>
                   </div>
@@ -738,9 +746,15 @@ function RestaurantsTab() {
                       </select>
                       <textarea placeholder="설명" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
                       <input placeholder="주소" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                      <div className="flex gap-2">
-                        <input placeholder="위도" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                        <input placeholder="경도" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-sm text-gray-500 block mb-1">위도</label>
+                          <input placeholder="위도" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-500 block mb-1">경도</label>
+                          <input placeholder="경도" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
+                        </div>
                       </div>
                       <textarea placeholder="할인 정보" value={form.discount_info} onChange={e => setForm({ ...form, discount_info: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
                       <textarea placeholder="할인 조건" value={form.discount_terms} onChange={e => setForm({ ...form, discount_terms: e.target.value })} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
