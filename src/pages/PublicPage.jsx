@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS } from '../lib/mapCategories'
+import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
@@ -94,63 +94,57 @@ function PublicMapTab({ restaurants }) {
   return (
     <div className="h-full flex flex-col">
       {/* 카테고리 바 */}
-      <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
-        {categories.map((cat) => {
-          const iconSvg = CATEGORY_ICONS[cat]
-          const isActive = activeCategory === cat
-          return (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat)
-                setSelected(null)
+          <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
+      {MAP_CATEGORIES.map((cat) => {
+        const isActive = activeCategory === cat
+        const iconSvg = getMapIconSvg(cat, isActive ? 'white' : '#f97316')
+        return (
+          <button
+            key={cat}
+            onClick={() => {
+              setActiveCategory(cat)
+              setSelected(null)
+            }}
+            className={
+              'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
+              (isActive
+                ? 'bg-orange-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+            }
+          >
+            <span
+              style={{
+                width: 16,
+                height: 16,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
-              className={
-                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
-                (isActive
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
-              }
-            >
-              {iconSvg && (
-                <span
-                  style={{
-                    width: 16,
-                    height: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: isActive ? 'white' : '#f97316',
-                  }}
-                  dangerouslySetInnerHTML={{ __html: iconSvg }}
-                />
-              )}
-              {cat}
-            </button>
-          )
-        })}
-      </div>
+              dangerouslySetInnerHTML={{ __html: iconSvg }}
+            />
+            {cat}
+          </button>
+        )
+      })}
+    </div>
 
       {/* 지도 / 빈 상태 */}
       {filtered.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             {(() => {
-              const iconSvg = CATEGORY_ICONS[activeCategory]
-              return (
-                iconSvg && (
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      margin: '0 auto 8px',
-                      color: '#f97316',
-                    }}
-                    dangerouslySetInnerHTML={{ __html: iconSvg }}
-                  />
-                )
-              )
-            })()}
+  const iconSvg = getMapIconSvg(activeCategory, '#f97316')
+  return (
+    <div
+      style={{
+        width: 32,
+        height: 32,
+        margin: '0 auto 8px',
+      }}
+      dangerouslySetInnerHTML={{ __html: iconSvg }}
+    />
+  )
+})()}
             <p className="text-gray-500 text-sm">등록된 장소가 없어요</p>
           </div>
         </div>

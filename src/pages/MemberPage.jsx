@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { broadcastQRExpiry } from '../lib/qrSync'
-import { MAP_CATEGORIES, CATEGORY_ICONS } from '../lib/mapCategories'
+import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin } from 'phosphor-react'
 
 export default function MemberPage() {
@@ -299,15 +299,18 @@ function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  const categories = MAP_CATEGORIES
-  const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
+  const filtered =
+    activeCategory === '전체'
+      ? restaurants
+      : restaurants.filter((r) => r.category === activeCategory)
 
   return (
     <div className="h-full flex flex-col">
+      {/* 카테고리 바 */}
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
-        {categories.map((cat) => {
-          const iconSvg = CATEGORY_ICONS[cat]
+        {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
+          const iconSvg = getMapIconSvg(cat, isActive ? 'white' : '#f97316')
           return (
             <button
               key={cat}
@@ -322,16 +325,15 @@ function MapTab({ restaurants }) {
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
               }
             >
-              <div
-                dangerouslySetInnerHTML={{ __html: iconSvg }}
+              <span
                 style={{
-                  width: '16px',
-                  height: '16px',
+                  width: 16,
+                  height: 16,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  flexShrink: 0,
                 }}
+                dangerouslySetInnerHTML={{ __html: iconSvg }}
               />
               {cat}
             </button>
@@ -339,9 +341,16 @@ function MapTab({ restaurants }) {
         })}
       </div>
 
+      {/* 지도 */}
       <div className="flex-1 relative overflow-hidden">
-        <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-        {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
+        <MapView
+          restaurants={filtered}
+          selected={selected}
+          onSelect={setSelected}
+        />
+        {selected && (
+          <SpotCard selected={selected} onClose={() => setSelected(null)} />
+        )}
       </div>
     </div>
   )
