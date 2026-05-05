@@ -13,6 +13,7 @@ export default function MemberPage() {
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [activeTab, setActiveTab] = useState('qr')
+  const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const { token, secondsLeft } = useQRToken(member?.totp_secret)
@@ -35,7 +36,7 @@ export default function MemberPage() {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.touches[0].clientX < 30) e.preventDefault()
+      if (e.touches[0]?.clientX < 30) e.preventDefault()
     }
     document.addEventListener('touchstart', handler, { passive: false })
     return () => document.removeEventListener('touchstart', handler)
@@ -43,6 +44,7 @@ export default function MemberPage() {
 
   const handleTabChange = (key) => {
     setActiveTab(key)
+    setTabKey(prev => prev + 1)
   }
 
   if (loading) return (
@@ -67,7 +69,7 @@ export default function MemberPage() {
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <div className="h-full">
+        <div key={tabKey} className="animate-fade-slide-up h-full">
           {activeTab === 'qr' && <QRTab member={member} isValid={isValid} qrValue={qrValue} secondsLeft={secondsLeft} />}
           {activeTab === 'events' && <EventsTab events={events} />}
           {activeTab === 'map' && <MapTab restaurants={restaurants} />}
@@ -296,23 +298,51 @@ function EventsTab({ events }) {
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
+
   const categories = MAP_CATEGORIES
-  const categoryIcons = CATEGORY_ICONS
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
   return (
     <div className="h-full flex flex-col">
+      {/* 카테고리 바 */}
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
-        {categories.map(cat => {
-          const IconComponent = categoryIcons[cat]
+        {categories.map((cat) => {
+          const iconSvg = CATEGORY_ICONS[cat]
+          const isActive = activeCategory === cat
           return (
-            <button key={cat} onClick={() => { setActiveCategory(cat); setSelected(null) }} className={'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' + (activeCategory === cat ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
-              <IconComponent size={16} weight="fill" />
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat)
+                setSelected(null)
+              }}
+              className={
+                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
+                (isActive
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+              }
+            >
+              {iconSvg && (
+                <span
+                  style={{
+                    width: 16,
+                    height: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: isActive ? 'white' : '#f97316',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: iconSvg }}
+                />
+              )}
               {cat}
             </button>
           )
         })}
       </div>
+
+      {/* 지도 */}
       <div className="flex-1 relative overflow-hidden">
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
         {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
