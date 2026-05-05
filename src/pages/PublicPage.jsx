@@ -154,7 +154,7 @@ function MembershipTab() {
           onClick={() => navigate('/login')}
           className="w-full bg-orange-500 text-white font-semibold py-3 rounded-2xl hover:bg-orange-600 transition-colors"
         >
-          로그인 / 가입하기
+          로그인
         </button>
       </div>
     </div>
