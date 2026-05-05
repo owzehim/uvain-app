@@ -1,83 +1,53 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { verifyTOTP, getSecondsLeft } from '../lib/totp'
+import { verifyTOTP } from '../lib/totp'
 
 export default function VerifyPage() {
   const { token } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const lastWindowRef = useRef(null)
-  const checkIntervalRef = useRef(null)
 
-  // Function to verify the QR code
-  const verifyQRCode = async (qrToken) => {
-    const parts = qrToken?.split('_')
-    if (!parts || parts.length < 2) {
-      setResult({ valid: false, reason: 'Invalid QR code.' })
-      return
-    }
-
-    const otpToken = parts[0]
-    const studentNumber = parts[1]
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('*')
-      .eq('student_number', studentNumber)
-      .single()
-
-    if (!member) {
-      setResult({ valid: false, reason: 'Member not found.' })
-      return
-    }
-
-    const isValidToken = await verifyTOTP(otpToken, member.totp_secret)
-    const isActiveMember = member.is_member && member.membership_valid_until && new Date(member.membership_valid_until) >= new Date()
-
-    if (!isValidToken) {
-      setResult({ valid: false, reason: 'QR code has expired. Please ask the member to refresh.' })
-    } else if (!isActiveMember) {
-      setResult({ valid: false, reason: 'Membership is not active.', member })
-    } else {
-      setResult({ valid: true, member })
-    }
-  }
-
-  // Initial verification
   useEffect(() => {
-    const initialVerify = async () => {
-      await verifyQRCode(token)
+    const verify = async () => {
+      const parts = token?.split('_')
+      if (!parts || parts.length < 2) {
+        setResult({ valid: false, reason: 'Invalid QR code.' })
+        setLoading(false)
+        return
+      }
+
+      const otpToken = parts[0]
+      const studentNumber = parts[1]
+
+      const { data: member } = await supabase
+        .from('members')
+        .select('*')
+        .eq('student_number', studentNumber)
+        .single()
+
+      if (!member) {
+        setResult({ valid: false, reason: 'Member not found.' })
+        setLoading(false)
+        return
+      }
+
+      const isValidToken = await verifyTOTP(otpToken, member.totp_secret)
+      const isActiveMember = member.is_member && member.membership_valid_until && new Date(member.membership_valid_until) >= new Date()
+
+      if (!isValidToken) {
+        setResult({ valid: false, reason: 'QR code has expired. Please ask the member to refresh.' })
+      } else if (!isActiveMember) {
+        setResult({ valid: false, reason: 'Membership is not active.', member })
+      } else {
+        setResult({ valid: true, member })
+      }
+
       setLoading(false)
-      // Set the initial TOTP window
-      const epoch = Math.floor(Date.now() / 1000)
-      lastWindowRef.current = Math.floor(epoch / 15)
     }
 
-    initialVerify()
+    verify()
   }, [token])
-
-  // Monitor TOTP window changes - re-verify when window expires
-  useEffect(() => {
-    if (loading || !token) return
-
-    checkIntervalRef.current = setInterval(() => {
-      const epoch = Math.floor(Date.now() / 1000)
-      const currentWindow = Math.floor(epoch / 15)
-
-      // If TOTP window has changed, re-verify immediately
-      if (lastWindowRef.current !== null && currentWindow !== lastWindowRef.current) {
-        lastWindowRef.current = currentWindow
-        verifyQRCode(token)
-      }
-    }, 500) // Check every 500ms for window changes
-
-    return () => {
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current)
-      }
-    }
-  }, [token, loading])
 
   if (loading)
     return (

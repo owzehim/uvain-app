@@ -120,13 +120,9 @@ export function SpotCard({ selected, onClose }) {
   const isDesktop = WIN_W >= 768
 
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  const MAX_HEIGHT = isDesktop ? 460 : Math.round(WIN_H * 0.88)
+  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.88
 
-  useEffect(() => {
-    setCardHeight(MIN_HEIGHT)
-    setSlideIndex(0)
-    setClosing(false)
-  }, [selected])
+  useEffect(() => { setCardHeight(MIN_HEIGHT); setSlideIndex(0); setClosing(false) }, [selected])
 
   const triggerClose = () => { setClosing(true); setTimeout(() => onClose(), 320) }
   const snapTo = (height) => setCardHeight(height)
@@ -169,13 +165,11 @@ export function SpotCard({ selected, onClose }) {
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
-  // Mobile no-image: fixed compact height, no drag expansion
-const noImageStyle = {
-  transform: closing ? 'translateY(110%)' : 'translateY(0)',
-  transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
-  height: 'auto'
-}
-
+  const noImageStyle = {
+    transform: closing ? 'translateY(110%)' : 'translateY(0)',
+    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
+    height: 'auto'
+  }
   const imageStyle = {
     height: cardHeight + 'px',
     transform: closing ? 'translateY(110%)' : 'translateY(0)',
@@ -208,7 +202,7 @@ const noImageStyle = {
         onTouchEnd={handleTouchEnd}
         onWheel={e => {
           if (!hasImages) {
-            if (e.deltaY < 0) triggerClose()
+            if (e.deltaY < 0) triggerClose()  // scroll UP → close
           } else {
             if (e.deltaY > 0) snapTo(MAX_HEIGHT)
             else if (e.deltaY < 0) {
@@ -246,6 +240,8 @@ const noImageStyle = {
               </div>
             )}
           </div>
+
+          {!hasImages && <div className="pb-16" />}
 
           {hasImages && (
             <div className="pb-6">
