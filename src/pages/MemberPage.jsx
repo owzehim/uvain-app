@@ -178,18 +178,12 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
   }, [qrValue, member?.student_number])
 
   // Calculate progress percentage (0-100)
+  // Bar starts full at 15 seconds and shrinks to 0
   const totalSeconds = 15
-  const progressPercent = ((totalSeconds - (secondsLeft || 0)) / totalSeconds) * 100
+  const progressPercent = ((secondsLeft || 0) / totalSeconds) * 100
 
   // Format seconds display
   const displaySeconds = secondsLeft !== null && secondsLeft !== undefined ? secondsLeft : 0
-
-  // Determine timer color based on remaining time
-  const getBarColor = () => {
-    if (displaySeconds <= 3) return 'bg-red-500'
-    if (displaySeconds <= 7) return 'bg-orange-500'
-    return 'bg-orange-500'
-  }
 
   return (
     <div className="h-full overflow-y-auto">
@@ -235,9 +229,9 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
               
               {/* Progress bar background */}
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                {/* Progress bar fill */}
+                {/* Progress bar fill - shrinks from right to left */}
                 <div
-                  className={`h-full ${getBarColor()} transition-all duration-100`}
+                  className="h-full bg-orange-500 transition-all duration-100"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
