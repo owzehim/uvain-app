@@ -70,15 +70,15 @@ export function SpotCard({ selected, onClose }) {
     <div ref={cardRef} className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
       style={{ ...(hasImages ? imageStyle : noImageStyle), zIndex: 1000, boxShadow: '0 -4px 24px rgba(0,0,0,0.13)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
       onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
-     onWheel={e => {
-  if (!hasImages) return
-  const delta = e.deltaY
-  if (delta > 0) snapTo(MAX_HEIGHT)
-  else if (delta < 0) {
-    if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
-    else triggerClose()
-  }
-}}>
+      onWheel={e => {
+        if (!hasImages) return
+        const delta = e.deltaY
+        if (delta > 0) snapTo(MAX_HEIGHT)
+        else if (delta < 0) {
+          if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT)
+          else triggerClose()
+        }
+      }}>
       <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
         <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </div>
@@ -108,85 +108,51 @@ export function SpotCard({ selected, onClose }) {
         </div>
         {!hasImages && <div className="pb-16" />}
         {hasImages && (
-  <div className="pb-6">
-    {/* MOBILE: swipeable single image */}
-    <div className="md:hidden relative overflow-hidden"
-      onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
-      onTouchEnd={e => {
-        const start = e.currentTarget._swipeStartX
-        if (start == null) return
-        const dx = e.changedTouches[0].clientX - start
-        e.currentTarget._swipeStartX = null
-        if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) }
-        else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) }
-      }}>
-      <div className="flex" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
-        {imgs.map((url, i) => (
-  <div key={i} className="w-full flex-shrink-0">
-    <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: 'auto', maxHeight: '55vw', objectFit: 'cover', display: 'block' }} draggable={false} />
-  </div>
-))}
-      </div>
-      {imgs.length > 1 && (
-        <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-1.5">
-          {imgs.map((_, i) => (
-            <div key={i} className={`rounded-full transition-all ${i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
-          ))}
-        </div>
-      )}
-      {/* padding so button doesn't cover dots */}
-      <div className="h-10" />
-    </div>
+          <div className="pb-6">
 
-    {/* DESKTOP: grid layout like Google Maps */}
-<div className="hidden md:block px-4">
-  {imgs.length === 1 && (
-    <div className="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center" style={{ maxHeight: '280px' }}>
-      <img src={imgs[0]} alt="사진 1" style={{ maxWidth: '100%', maxHeight: '280px', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }} />
-    </div>
-  )}
-  {imgs.length === 2 && (
-    <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden" style={{ height: '240px' }}>
-      {imgs.map((url, i) => (
-        <div key={i} className="bg-gray-50 flex items-center justify-center overflow-hidden">
-          <img src={url} alt={'사진 ' + (i+1)} style={{ maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
-        </div>
-      ))}
-    </div>
-  )}
-  {imgs.length === 3 && (
-    <div className="grid gap-1 rounded-xl overflow-hidden" style={{ height: '240px', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
-      <div className="bg-gray-50 flex items-center justify-center overflow-hidden" style={{ gridRow: '1 / 3' }}>
-        <img src={imgs[0]} alt="사진 1" style={{ maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
-      </div>
-      {[imgs[1], imgs[2]].map((url, i) => (
-        <div key={i} className="bg-gray-50 flex items-center justify-center overflow-hidden">
-          <img src={url} alt={'사진 ' + (i+2)} style={{ maxWidth: '100%', maxHeight: '120px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
-        </div>
-      ))}
-    </div>
-  )}
-  {imgs.length >= 4 && (
-    <div className="grid gap-1 rounded-xl overflow-hidden" style={{ height: '240px', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
-      <div className="bg-gray-50 flex items-center justify-center overflow-hidden" style={{ gridRow: '1 / 3' }}>
-        <img src={imgs[0]} alt="사진 1" style={{ maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
-      </div>
-      <div className="bg-gray-50 flex items-center justify-center overflow-hidden">
-        <img src={imgs[1]} alt="사진 2" style={{ maxWidth: '100%', maxHeight: '120px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
-      </div>
-      <div className="relative bg-gray-50 flex items-center justify-center overflow-hidden">
-        <img src={imgs[2]} alt="사진 3" style={{ maxWidth: '100%', maxHeight: '120px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
-        {imgs.length > 3 && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <span className="text-white font-semibold text-lg">+{imgs.length - 3}</span>
+            {/* MOBILE: swipeable single image in rounded box */}
+            <div className="md:hidden px-4 pb-16"
+              onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
+              onTouchEnd={e => {
+                const start = e.currentTarget._swipeStartX
+                if (start == null) return
+                const dx = e.changedTouches[0].clientX - start
+                e.currentTarget._swipeStartX = null
+                if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) }
+                else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) }
+              }}>
+              <div className="relative overflow-hidden rounded-2xl">
+                <div className="flex" style={{ transform: 'translateX(-' + (slideIndex * 100) + '%)', transition: 'transform 0.3s ease' }}>
+                  {imgs.map((url, i) => (
+                    <div key={i} className="w-full flex-shrink-0">
+                      <img src={url} alt={'사진 ' + (i + 1)} style={{ width: '100%', height: '56vw', objectFit: 'cover', display: 'block' }} draggable={false} />
+                    </div>
+                  ))}
+                </div>
+                {imgs.length > 1 && (
+                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                    {imgs.map((_, i) => (
+                      <div key={i} className={`rounded-full transition-all ${i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* DESKTOP: horizontal scroll row, each image in its own natural aspect ratio box */}
+            <div className="hidden md:flex gap-3 px-4 pb-16 overflow-x-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {imgs.map((url, i) => (
+                <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100"
+                  style={{ height: '220px' }}>
+                  <img src={url} alt={'사진 ' + (i + 1)}
+                    style={{ height: '220px', width: 'auto', maxWidth: '400px', objectFit: 'cover', display: 'block' }} />
+                </div>
+              ))}
+            </div>
+
           </div>
         )}
-      </div>
-    </div>
-  )}
-</div>
-  </div>
-)}
       </div>
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
         <div className="absolute bottom-3 left-0 right-0 flex justify-center">

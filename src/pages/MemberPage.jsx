@@ -172,22 +172,26 @@ function EventsTab({ events }) {
         {isExpanded && (
           <div className="animate-fade-slide-up">
             {imgs.length > 0 && (
-              <div className="relative overflow-hidden">
-                <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}>
-                  {imgs.map((url, i) => <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ aspectRatio: '1/1' }} />)}
-                </div>
-                {imgs.length > 1 && (
-                  <div>
-                    {currentSlide > 0 && <button onClick={() => setSlide(ev.id, currentSlide - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'‹'}</button>}
-                    {currentSlide < imgs.length - 1 && <button onClick={() => setSlide(ev.id, currentSlide + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">{'›'}</button>}
-                    <div className="absolute bottom-2 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">{(currentSlide + 1) + '/' + imgs.length}</div>
-                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-                      {imgs.map((_, i) => <button key={i} onClick={() => setSlide(ev.id, i)} className={'w-1.5 h-1.5 rounded-full ' + (i === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50')} />)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+  <div className="relative overflow-hidden"
+    onTouchStart={e => { e.currentTarget._sx = e.touches[0].clientX }}
+    onTouchEnd={e => {
+      const dx = e.changedTouches[0].clientX - e.currentTarget._sx
+      if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
+      else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
+    }}>
+    <div className="flex transition-transform duration-300" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)' }}>
+      {imgs.map((url, i) => <img key={i} src={url} alt={'이미지 ' + (i+1)} className="w-full flex-shrink-0 object-cover" style={{ aspectRatio: '1/1' }} />)}
+    </div>
+    {imgs.length > 1 && (
+      <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+        {imgs.map((_, i) => (
+          <div key={i} onClick={() => setSlide(ev.id, i)}
+            className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
+        ))}
+      </div>
+    )}
+  </div>
+)}
             <div className="px-5 pb-5">
               {ev.description && <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />}
               <div className="flex gap-2 mt-3">
