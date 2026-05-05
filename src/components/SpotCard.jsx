@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapPin } from 'phosphor-react'
-import { categoryIcons } from './iconConfig'
+import { CATEGORY_ICONS } from '../lib/mapCategories'
 
 export function RichText({ text, className = '' }) {
   if (!text) return null
@@ -129,7 +129,7 @@ export function SpotCard({ selected, onClose }) {
     transition: isDragging ? 'none' : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)'
   }
 
-  const CategoryIcon = categoryIcons[selected.category] || MapPin
+  const IconComponent = CATEGORY_ICONS[selected.category]
 
   return (
     <>
@@ -144,7 +144,7 @@ export function SpotCard({ selected, onClose }) {
           <div className="px-4 pt-1 pb-3">
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <CategoryIcon size={14} weight="fill" />
+                {IconComponent && IconComponent({ size: 14, color: 'currentColor' })}
                 {selected.category || '기타'}
               </span>
               {selected.price_range && <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>}

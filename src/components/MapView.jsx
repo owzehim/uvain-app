@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { getPhosphorSvg } from './iconConfig'
+import { getMapIconSvg } from '../lib/mapCategories'
 
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)
@@ -17,7 +17,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const displayName = r.map_label || r.name || ''
     const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
     const iconColor = isSponsored ? 'white' : '#f97316'
-    const iconSvg = getPhosphorSvg(r.category, iconColor)
+    const iconSvg = getMapIconSvg(r.category, iconColor)
 
     return (
       '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
