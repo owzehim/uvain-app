@@ -119,30 +119,56 @@ export function SpotCard({ selected, onClose }) {
 
   const WIN_H = typeof window !== 'undefined' ? window.innerHeight : 700
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768
-  const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
 
-  const [maxHeight, setMaxHeight] = useState(WIN_H * 0.88)
-
-  // Measure content height on mount / when selected changes
-  useEffect(() => {
-    if (!cardRef.current) return
-    const contentHeight = cardRef.current.scrollHeight || WIN_H * 0.6
-    setMaxHeight(isDesktop ? contentHeight : WIN_H * 0.88)
-  }, [selected, isDesktop, WIN_H])
+  // ── Heights ────────────────────────────────────────────────────────────────
+  // Desktop: MIN = info only (~220px), MAX = info + photos (~420px)
+  // Mobile:  MIN = 38vh capped at 260px, MAX = 88vh
+  const MIN_HEIGHT = isDesktop ? 220 : Math.min(WIN_H * 0.38, 260)
+  const MAX_HEIGHT = isDesktop ? 440 : WIN_H * 0.88
 
   useEffect(() => {
     setCardHeight(MIN_HEIGHT)
     setSlideIndex(0)
     setClosing(false)
     setPreviewIndex(null)
-  }, [selected, MIN_HEIGHT])
+  }, [selected]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const triggerClose = () => { setClosing(true); setTimeout(() => onClose(), 320) }
 
-  // ── Wheel (desktop + laptop) — expand / minimize / close ───────────────────
+  // ── Wheel — works for ALL spots on desktop (with or without images) ────────
   useEffect(() => {
+    if (!isDesktop) return
     const el = cardRef.current
-    if (!el || !hasImages) return
+    if (!el) return
+
+    const onWheel = (e) => {
+      const delta = e.deltaY
+      if (delta === 0) return
+      e.preventDefault()
+      e.stopPropagation()
+
+      setCardHeight(h => {
+        // Scroll down while already at MIN → close
+        if (delta > 0 && h <= MIN_HEIGHT * 1.05) {
+          triggerClose()
+          return h
+        }
+        let next = h + (delta > 0 ? delta * 1.5 : delta * 1.5)
+        if (next > MAX_HEIGHT) next = MAX_HEIGHT
+        if (next < MIN_HEIGHT) next = MIN_HEIGHT
+        return next
+      })
+    }
+
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [isDesktop, MIN_HEIGHT, MAX_HEIGHT]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Wheel — mobile (only when hasImages) ──────────────────────────────────
+  useEffect(() => {
+    if (isDesktop || !hasImages) return
+    const el = cardRef.current
+    if (!el) return
 
     const onWheel = (e) => {
       const delta = e.deltaY
@@ -151,7 +177,7 @@ export function SpotCard({ selected, onClose }) {
 
       setCardHeight(h => {
         let next = h + (delta > 0 ? Math.abs(delta) * 1.5 : delta * 1.5)
-        if (next > maxHeight) next = maxHeight
+        if (next > MAX_HEIGHT) next = MAX_HEIGHT
         if (next < MIN_HEIGHT * 0.5) {
           setClosing(true)
           setTimeout(() => onClose(), 320)
@@ -164,7 +190,7 @@ export function SpotCard({ selected, onClose }) {
 
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [hasImages, maxHeight, MIN_HEIGHT, onClose])
+  }, [isDesktop, hasImages, MAX_HEIGHT, MIN_HEIGHT, onClose])
 
   // ── Touch (mobile) ────────────────────────────────────────────────────────
   const handleTouchStart = (e) => {
@@ -180,7 +206,7 @@ export function SpotCard({ selected, onClose }) {
     const delta = startYRef.current - e.touches[0].clientY
     if (!hasImages && delta > 0) return
     if (hasImages) {
-      const newHeight = Math.min(maxHeight, Math.max(0, startHeightRef.current + delta))
+      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
       setCardHeight(newHeight)
     }
   }
@@ -189,34 +215,47 @@ export function SpotCard({ selected, onClose }) {
     setIsDragging(false)
     const delta = startYRef.current - lastYRef.current
     const startH = startHeightRef.current
-    const wasMax = startH >= maxHeight * 0.85
+    const wasMax = startH >= MAX_HEIGHT * 0.85
     const wasMin = startH <= MIN_HEIGHT * 1.15
     if (!hasImages) { if (delta < -40) triggerClose(); return }
-    if (delta > 40) { setCardHeight(maxHeight) }
+    if (delta > 40) { setCardHeight(MAX_HEIGHT) }
     else if (delta < -40) {
       if (wasMax) setCardHeight(MIN_HEIGHT)
       else if (wasMin) triggerClose()
       else setCardHeight(MIN_HEIGHT)
     } else {
-      const mid = (MIN_HEIGHT + maxHeight) / 2
-      setCardHeight(startH >= mid ? maxHeight : MIN_HEIGHT)
+      const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2
+      setCardHeight(startH >= mid ? MAX_HEIGHT : MIN_HEIGHT)
     }
   }
 
-  const isMax = cardHeight >= maxHeight * 0.85
+  const isMax = cardHeight >= MAX_HEIGHT * 0.85
 
-  const noImageStyle = {
-    transform: closing ? 'translateY(110%)' : 'translateY(0)',
-    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
-    height: 'auto'
+  // ── Styles ─────────────────────────────────────────────────────────────────
+  // Desktop: fixed-width card anchored bottom-left, height-animated
+  // Mobile:  full-width bottom sheet
+  const desktopStyle = {
+    position: 'absolute',
+    bottom: '16px',
+    left: '16px',
+    width: '340px',
+    height: cardHeight + 'px',
+    borderRadius: '20px',
+    transform: closing ? 'translateY(calc(100% + 24px))' : 'translateY(0)',
+    transition: isDragging
+      ? 'none'
+      : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)',
   }
 
-  const imageStyle = {
-    height: cardHeight + 'px',
+  const mobileStyle = {
+    height: hasImages ? cardHeight + 'px' : 'auto',
     transform: closing ? 'translateY(110%)' : 'translateY(0)',
     transition: isDragging
       ? 'none'
-      : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)'
+      : hasImages
+        ? 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)'
+        : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
+    borderRadius: '16px 16px 0 0',
   }
 
   return (
@@ -227,25 +266,45 @@ export function SpotCard({ selected, onClose }) {
 
       <div
         ref={cardRef}
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+        className={isDesktop ? '' : 'absolute bottom-0 left-0 right-0'}
         style={{
-          ...(hasImages ? imageStyle : noImageStyle),
+          ...(isDesktop ? desktopStyle : mobileStyle),
           zIndex: 1000,
-          boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
+          background: 'white',
+          boxShadow: isDesktop
+            ? '0 8px 32px rgba(0,0,0,0.18)'
+            : '0 -4px 24px rgba(0,0,0,0.13)',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
 
-        {/* Drag handle */}
-        <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
+        {/* Drag handle (mobile) / close button (desktop) */}
+        {isDesktop ? (
+          <div className="flex justify-between items-center px-4 pt-3 pb-1 flex-shrink-0">
+            {/* Scroll hint */}
+            <span className="text-xs text-gray-400 select-none">
+              {isMax ? '↓ 스크롤로 닫기' : hasImages ? '↑ 스크롤로 사진 보기' : '↓ 스크롤로 닫기'}
+            </span>
+            <button
+              onClick={triggerClose}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#9ca3af', fontSize: '18px', lineHeight: 1, padding: '2px 4px'
+              }}>
+              ✕
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+        )}
 
-        {/* Content (no inner scrolling; card itself grows/shrinks) */}
+        {/* Content */}
         <div className="flex-1" style={{ overflow: 'hidden' }}>
           {/* Info */}
           <div className="px-4 pt-1 pb-3">
@@ -302,12 +361,10 @@ export function SpotCard({ selected, onClose }) {
           {/* Images */}
           {hasImages && (
             <div className="pb-4">
-              {/* MOBILE: 4:5 box, contain, swipe + dots */}
+              {/* MOBILE: 4:5 box, swipe + dots */}
               <div
                 className="md:hidden px-4 pb-16"
-                onTouchStart={e => {
-                  e.currentTarget._swipeStartX = e.touches[0].clientX
-                }}
+                onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
                 onTouchEnd={e => {
                   const start = e.currentTarget._swipeStartX
                   if (start == null) return
@@ -360,7 +417,7 @@ export function SpotCard({ selected, onClose }) {
                 </div>
               </div>
 
-              {/* DESKTOP: horizontal row, click to open full preview */}
+              {/* DESKTOP: horizontal row, click to open full preview — only visible when expanded */}
               <div
                 className="hidden md:flex gap-3 px-4 pb-4 overflow-x-auto"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -368,12 +425,12 @@ export function SpotCard({ selected, onClose }) {
                   <div
                     key={i}
                     className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
-                    style={{ height: '180px', minWidth: '120px', maxWidth: '320px' }}
+                    style={{ height: '150px', minWidth: '100px', maxWidth: '260px' }}
                     onClick={() => setPreviewIndex(i)}>
                     <img
                       src={url}
                       alt={'사진 ' + (i + 1)}
-                      style={{ height: '180px', width: 'auto', maxWidth: '320px', objectFit: 'contain', display: 'block' }}
+                      style={{ height: '150px', width: 'auto', maxWidth: '260px', objectFit: 'contain', display: 'block' }}
                     />
                   </div>
                 ))}
@@ -382,7 +439,7 @@ export function SpotCard({ selected, onClose }) {
           )}
         </div>
 
-        {/* Floating Google Maps button with subtle gradient */}
+        {/* Floating Google Maps button */}
         <div
           className="absolute bottom-0 left-0 right-0 pointer-events-none"
           style={{
