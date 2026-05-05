@@ -130,11 +130,56 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
   )
 }
 
+// ─── Shared nav button (same style as SpotCard) ───────────────────────────────
+function NavBtn({ onClick, children, style = {} }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: 'rgba(30,30,30,0.7)',
+        border: 'none',
+        color: '#fff',
+        borderRadius: '999px',
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '18px',
+        lineHeight: 1,
+        cursor: 'pointer',
+        backdropFilter: 'blur(4px)',
+        transition: 'background 0.15s',
+        flexShrink: 0,
+        ...style
+      }}
+      onMouseEnter={e => e.currentTarget.style.background = 'rgba(30,30,30,0.92)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'rgba(30,30,30,0.7)'}>
+      {children}
+    </button>
+  )
+}
+
 function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
 
   const setSlide = (eventId, idx) => setSlideIndexes(prev => ({ ...prev, [eventId]: idx }))
+
+  // Keyboard arrow navigation — scoped to the currently expanded event
+  useEffect(() => {
+    if (!expandedId) return
+    const ev = events.find(e => e.id === expandedId)
+    if (!ev) return
+    const imgs = ev['image_urls'] || []
+    if (imgs.length <= 1) return
+    const handler = (e) => {
+      if (e.key === 'ArrowRight') setSlide(expandedId, Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1))
+      else if (e.key === 'ArrowLeft') setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [expandedId, slideIndexes, events])
 
   const addToCalendar = (ev) => {
     const start = new Date(ev.event_date)
@@ -169,38 +214,81 @@ function EventsTab({ events }) {
           )}
           {ev.location && <p className="text-sm text-gray-500 mt-0.5">{'📍 ' + ev.location}</p>}
         </button>
+
         {isExpanded && (
           <div className="animate-fade-slide-up">
             {imgs.length > 0 && (
-  <div className="px-4"
-    onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
-    onTouchEnd={e => {
-      const start = e.currentTarget._swipeStartX
-      if (start == null) return
-      const dx = e.changedTouches[0].clientX - start
-      e.currentTarget._swipeStartX = null
-      if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
-      else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
-    }}>
-    <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-      <div className="flex h-full" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)', transition: 'transform 0.3s ease' }}>
-        {imgs.map((url, i) => (
-          <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-            <img src={url} alt={'이미지 ' + (i+1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
-          </div>
-        ))}
-      </div>
-      {imgs.length > 1 && (
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-          {imgs.map((_, i) => (
-            <div key={i} onClick={() => setSlide(ev.id, i)}
-              className={`rounded-full cursor-pointer transition-all ${i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
-          ))}
-        </div>
-      )}
-    </div>
-  </div>
-)}
+              <div className="px-4">
+                {/* MOBILE: swipe */}
+                <div
+                  className="md:hidden"
+                  onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
+                  onTouchEnd={e => {
+                    const start = e.currentTarget._swipeStartX
+                    if (start == null) return
+                    const dx = e.changedTouches[0].clientX - start
+                    e.currentTarget._swipeStartX = null
+                    if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
+                    else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
+                  }}>
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
+                    <div className="flex h-full" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)', transition: 'transform 0.3s ease' }}>
+                      {imgs.map((url, i) => (
+                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
+                          <img src={url} alt={'이미지 ' + (i+1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+                        </div>
+                      ))}
+                    </div>
+                    {imgs.length > 1 && (
+                      <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                        {imgs.map((_, i) => (
+                          <div key={i} onClick={() => setSlide(ev.id, i)}
+                            className={`rounded-full cursor-pointer transition-all ${i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* DESKTOP: arrows + dots */}
+                <div className="hidden md:block">
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
+                    <div className="flex h-full" style={{ transform: 'translateX(-' + (currentSlide * 100) + '%)', transition: 'transform 0.3s ease' }}>
+                      {imgs.map((url, i) => (
+                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
+                          <img src={url} alt={'이미지 ' + (i+1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+                        </div>
+                      ))}
+                    </div>
+                    {imgs.length > 1 && (
+                      <>
+                        {currentSlide > 0 && (
+                          <NavBtn
+                            onClick={() => setSlide(ev.id, currentSlide - 1)}
+                            style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+                            ‹
+                          </NavBtn>
+                        )}
+                        {currentSlide < imgs.length - 1 && (
+                          <NavBtn
+                            onClick={() => setSlide(ev.id, currentSlide + 1)}
+                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+                            ›
+                          </NavBtn>
+                        )}
+                        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                          {imgs.map((_, i) => (
+                            <div key={i} onClick={() => setSlide(ev.id, i)}
+                              className={`rounded-full cursor-pointer transition-all ${i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'}`} />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="px-5 pb-5">
               {ev.description && <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />}
               <div className="flex gap-2 mt-3">
