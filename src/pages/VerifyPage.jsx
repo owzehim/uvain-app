@@ -2,22 +2,19 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { verifyTOTP } from '../lib/totp'
-import { subscribeToQRExpiry } from '../lib/qrSync'
 
 export default function VerifyPage() {
   const { token } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const unsubscribeRef = useRef(null)
+  const [timeLeft, setTimeLeft] = useState(5)
+  const scanTimeRef = useRef(null)
 
   // Parse QR token into OTP and student number
   const parseToken = (qrToken) => {
     const parts = qrToken?.split('_')
     if (!parts || parts.length < 2) return null
-    return {
-      otpToken: parts[0],
-      studentNumber: parts[1]
-    }
+    return { otpToken: parts[0], studentNumber: parts[1] }
   }
 
   // Verify the QR code against the database
@@ -29,7 +26,6 @@ export default function VerifyPage() {
     }
 
     const { otpToken, studentNumber } = parsed
-
     try {
       // Fetch member data from database
       const { data: member, error: memberError } = await supabase
@@ -56,25 +52,22 @@ export default function VerifyPage() {
       if (!isValidToken) {
         setResult({
           valid: false,
-          reason: 'QR code has expired. Please ask the member to refresh.'
+          reason: 'QR code has expired. Please ask the member to refresh.',
         })
       } else if (!isActiveMember) {
         setResult({
           valid: false,
           reason: 'Membership is not active.',
-          member
+          member,
         })
       } else {
-        setResult({
-          valid: true,
-          member
-        })
+        setResult({ valid: true, member })
       }
     } catch (error) {
       console.error('Verification error:', error)
       setResult({
         valid: false,
-        reason: 'Verification error. Please try again.'
+        reason: 'Verification error. Please try again.',
       })
     }
   }
@@ -82,34 +75,49 @@ export default function VerifyPage() {
   // Initial verification when page loads
   useEffect(() => {
     const initialVerify = async () => {
+      // Record the scan time in sessionStorage (persists across page refreshes in same tab)
+      if (!scanTimeRef.current) {
+        const existingScanTime = sessionStorage.getItem('qrScanTime')
+        if (existingScanTime) {
+          scanTimeRef.current = parseInt(existingScanTime)
+        } else {
+          scanTimeRef.current = Date.now()
+          sessionStorage.setItem('qrScanTime', scanTimeRef.current.toString())
+        }
+      }
+
       await verifyQRCode(token)
       setLoading(false)
     }
+
     initialVerify()
   }, [token])
 
-  // Subscribe to real-time QR expiry broadcasts
+  // Countdown timer - stable across page refreshes
   useEffect(() => {
-    if (loading || !token) return
+    if (loading || !result?.valid) return
 
-    const parsed = parseToken(token)
-    if (!parsed) return
+    const interval = setInterval(() => {
+      const scanTime = parseInt(sessionStorage.getItem('qrScanTime') || Date.now())
+      const elapsedSeconds = Math.floor((Date.now() - scanTime) / 1000)
+      const remaining = Math.max(0, 5 - elapsedSeconds)
 
-    // When main app broadcasts QR expiry, re-verify immediately
-    unsubscribeRef.current = subscribeToQRExpiry(
-      parsed.studentNumber,
-      async () => {
-        console.log('QR code expired, re-verifying...')
-        await verifyQRCode(token)
+      setTimeLeft(remaining)
+
+      // Redirect to expired page after 5 seconds
+      if (remaining === 0) {
+        clearInterval(interval)
+        setResult({
+          valid: false,
+          reason: 'QR code has expired.',
+          member: result.member,
+        })
+        sessionStorage.removeItem('qrScanTime')
       }
-    )
+    }, 100) // Update every 100ms for smooth countdown
 
-    return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current()
-      }
-    }
-  }, [token, loading])
+    return () => clearInterval(interval)
+  }, [loading, result])
 
   if (loading) {
     return (
@@ -130,7 +138,7 @@ export default function VerifyPage() {
           </p>
         </div>
 
-        {/* Valid Result */}
+        {/* Valid Result - Show for 5 seconds then expire */}
         {result?.valid ? (
           <div className="space-y-4">
             {/* Status Badge */}
@@ -159,6 +167,14 @@ export default function VerifyPage() {
                   {result.member.membership_valid_until}
                 </span>
               </div>
+            </div>
+
+            {/* Countdown Timer */}
+            <div className="bg-blue-50 rounded-xl p-4 text-center mt-4">
+              <p className="text-xs text-gray-500 mb-2">Expiring in:</p>
+              <p className="text-3xl font-bold text-blue-600 font-mono">
+                {timeLeft}s
+              </p>
             </div>
           </div>
         ) : (
