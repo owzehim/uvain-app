@@ -1,24 +1,37 @@
 // src/components/iconConfig.js
-// Shared icon configuration - uses CORRECT Phosphor filled icon paths
+// Shared icon configuration with custom SVG components for 스터디 and 운동
 
-import { MapPin, ForkKnife, Coffee, ShoppingCart, Books, GraduationCap, FirstAid, Barbell, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
+import { MapPin, ForkKnife, Coffee, ShoppingCart, GraduationCap, FirstAid, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
+
+// Custom SVG icon components
+const StudyIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={props.size} height={props.size} fill="currentColor" viewBox="0 0 256 256">
+    <path d="M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm10,47.38-3.35-15.9,46.82-10.06,3.34,15.9Zm70,100.41-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm48,160H56V192h48v16Z"/>
+  </svg>
+)
+
+const BarbellIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={props.size} height={props.size} fill="currentColor" viewBox="0 0 256 256">
+    <path d="M200,64V192a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V136H104v56a16,16,0,0,1-16,16H72a16,16,0,0,1-16-16V64A16,16,0,0,1,72,48H88a16,16,0,0,1,16,16v56h48V64a16,16,0,0,1,16-16h16A16,16,0,0,1,200,64ZM36,72H32A16,16,0,0,0,16,88v32H8.27A8.18,8.18,0,0,0,0,127.47,8,8,0,0,0,8,136h8v32a16,16,0,0,0,16,16h4a4,4,0,0,0,4-4V76A4,4,0,0,0,36,72Zm220,55.47a8.18,8.18,0,0,0-8.25-7.47H240V88a16,16,0,0,0-16-16h-4a4,4,0,0,0-4,4V180a4,4,0,0,0,4,4h4a16,16,0,0,0,16-16V136h8A8,8,0,0,0,256,127.47Z"/>
+  </svg>
+)
 
 export const categoryIcons = {
   '맛집': ForkKnife,
   '카페': Coffee,
   '마트': ShoppingCart,
-  '스터디': Books,
+  '스터디': StudyIcon,
   '학교': GraduationCap,
   '기타': MapPin,
   '전체': MapPin,
-  '운동': Barbell,
+  '운동': BarbellIcon,
   '미용/뷰티': Sparkle,
   '의료': FirstAid,
   '쇼핑': ShoppingBag,
   '여가': GameController
 }
 
-// CORRECT Phosphor filled SVG paths
+// CORRECT Phosphor filled SVG paths for map icons
 export const getPhosphorSvg = (category, color = 'white') => {
   const iconMap = {
     '맛집': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="' + color + '"><path d="M216,40V224a8,8,0,0,1-16,0V176H152a8,8,0,0,1-8-8,268.75,268.75,0,0,1,7.22-56.88c9.78-40.49,28.32-67.63,53.63-78.47A8,8,0,0,1,216,40Zm-96.11-1.31a8,8,0,1,0-15.78,2.63L111.89,88H88V40a8,8,0,0,0-16,0V88H48.11l7.78-46.68a8,8,0,1,0-15.78-2.63l-8,48A8.17,8.17,0,0,0,32,88a48.07,48.07,0,0,0,40,47.32V224a8,8,0,0,0,16,0V135.32A48.07,48.07,0,0,0,128,88a8.17,8.17,0,0,0-.11-1.31Z"/></svg>',
