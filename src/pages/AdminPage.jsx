@@ -412,161 +412,543 @@ function MembersTab() {
 
 function EventsTab() {
   const [events, setEvents] = useState([])
+  const [archivedEvents, setArchivedEvents] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
-  const [form, setForm] = useState({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
+  const [showArchivedList, setShowArchivedList] = useState(false)
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    event_date: '',
+    location: '',
+    instagram_url: '',
+  })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
   const [uploading, setUploading] = useState(false)
 
   const fetchEvents = async () => {
-    const { data } = await supabase.from('events').select('*').order('event_date', { ascending: true })
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('is_archived', false)
+      .order('event_date', { ascending: true })
     setEvents(data || [])
   }
 
-  useEffect(() => { fetchEvents() }, [])
+  const fetchArchivedEvents = async () => {
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('is_archived', true)
+      .order('event_date', { ascending: false })
+    setArchivedEvents(data || [])
+  }
+
+  useEffect(() => {
+    fetchEvents()
+    fetchArchivedEvents()
+  }, [])
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
     setImageFiles(files)
-    setImagePreviews(files.map(f => URL.createObjectURL(f)))
+    setImagePreviews(files.map((f) => URL.createObjectURL(f)))
   }
 
   const handleSave = async () => {
-    if (!form.title) { alert('제목을 입력해주세요.'); return }
+    if (!form.title) {
+      alert('제목을 입력해주세요.')
+      return
+    }
     setUploading(true)
     let image_urls = editTarget?.image_urls || []
     if (imageFiles.length > 0) {
       const uploaded = []
       for (const file of imageFiles) {
         const fileExt = file.name.split('.').pop()
-        const fileName = Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + fileExt
-        const { error: uploadError } = await supabase.storage.from('event-images').upload(fileName, file)
-        if (uploadError) { alert('업로드 실패: ' + uploadError.message); setUploading(false); return }
-        const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(fileName)
+        const fileName =
+          Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + fileExt
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(fileName, file)
+        if (uploadError) {
+          alert('업로드 실패: ' + uploadError.message)
+          setUploading(false)
+          return
+        }
+        const { data: urlData } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(fileName)
         uploaded.push(urlData.publicUrl)
       }
       image_urls = [...image_urls, ...uploaded]
     }
     const payload = { ...form, image_urls }
-    if (editTarget) { await supabase.from('events').update(payload).eq('id', editTarget.id) }
-    else { await supabase.from('events').insert(payload) }
-    setUploading(false); setShowForm(false); setEditTarget(null)
-    setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
-    setImageFiles([]); setImagePreviews([]); fetchEvents()
+    if (editTarget) {
+      await supabase.from('events').update(payload).eq('id', editTarget.id)
+    } else {
+      await supabase.from('events').insert(payload)
+    }
+    setUploading(false)
+    setShowForm(false)
+    setEditTarget(null)
+    setForm({
+      title: '',
+      description: '',
+      event_date: '',
+      location: '',
+      instagram_url: '',
+    })
+    setImageFiles([])
+    setImagePreviews([])
+    fetchEvents()
   }
 
   const handleDelete = async (id) => {
     if (!confirm('삭제할까요?')) return
     await supabase.from('events').delete().eq('id', id)
     fetchEvents()
+    fetchArchivedEvents()
+  }
+
+  const handleArchive = async (id) => {
+    const { error } = await supabase
+      .from('events')
+      .update({ is_archived: true })
+      .eq('id', id)
+    if (error) {
+      alert('보관 실패: ' + error.message)
+      return
+    }
+    fetchEvents()
+    fetchArchivedEvents()
+  }
+
+  const handleRestore = async (id) => {
+    const { error } = await supabase
+      .from('events')
+      .update({ is_archived: false })
+      .eq('id', id)
+    if (error) {
+      alert('복원 실패: ' + error.message)
+      return
+    }
+    fetchEvents()
+    fetchArchivedEvents()
   }
 
   const openEdit = (event) => {
     setEditTarget(event)
-    setForm({ title: event.title, description: event.description || '', event_date: event.event_date ? event.event_date.slice(0, 16) : '', location: event.location || '', instagram_url: event.instagram_url || '' })
-    setImageFiles([]); setImagePreviews([]); setShowForm(true)
+    setForm({
+      title: event.title,
+      description: event.description || '',
+      event_date: event.event_date ? event.event_date.slice(0, 16) : '',
+      location: event.location || '',
+      instagram_url: event.instagram_url || '',
+    })
+    setImageFiles([])
+    setImagePreviews([])
+    setShowForm(true)
   }
 
   const openAdd = () => {
     setEditTarget(null)
-    setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
-    setImageFiles([]); setImagePreviews([]); setShowForm(true)
+    setForm({
+      title: '',
+      description: '',
+      event_date: '',
+      location: '',
+      instagram_url: '',
+    })
+    setImageFiles([])
+    setImagePreviews([])
+    setShowForm(true)
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
-        {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Plus size={16} weight="bold" />이벤트 추가</button>}
+  const renderEventCard = (event, isArchived = false) => (
+    <div key={event.id}>
+      <div className="bg-white rounded-xl border border-gray-100 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-gray-900 text-sm">{event.title}</p>
+            {event.location && (
+              <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                <MapPin size={12} weight="fill" /> {event.location}
+              </p>
+            )}
+            {event.event_date && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                {new Date(event.event_date).toLocaleString('ko-KR')}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-1 flex-shrink-0">
+            {isArchived ? (
+              <>
+                <button
+                  onClick={() => handleRestore(event.id)}
+                  className="text-xs text-green-600 hover:underline whitespace-nowrap"
+                >
+                  복원
+                </button>
+                <button
+                  onClick={() => openEdit(event)}
+                  className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(event.id)}
+                  className="text-xs text-red-500 hover:underline whitespace-nowrap"
+                >
+                  삭제
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleArchive(event.id)}
+                  className="text-xs text-green-600 hover:underline whitespace-nowrap"
+                >
+                  보관
+                </button>
+                <button
+                  onClick={() => openEdit(event)}
+                  className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(event.id)}
+                  className="text-xs text-red-500 hover:underline whitespace-nowrap"
+                >
+                  삭제
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
-      {showForm && !editTarget && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-          <h3 className="font-medium text-gray-900">새 이벤트</h3>
-          <input placeholder="이벤트 제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
-          <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+      {showForm && editTarget && editTarget.id === event.id && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
+          <h3 className="font-medium text-gray-900">이벤트 수정</h3>
+          <input
+            placeholder="제목"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+          <textarea
+            placeholder="내용"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={3}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+          />
+          <input
+            placeholder="장소"
+            value={form.location}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-sm text-gray-500 block mb-1">날짜</label>
-              <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
+              <input
+                type="date"
+                value={form.event_date ? form.event_date.slice(0, 10) : ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    event_date:
+                      e.target.value +
+                      'T' +
+                      (form.event_date ? form.event_date.slice(11, 16) : '00:00'),
+                  })
+                }
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+              />
             </div>
             <div>
               <label className="text-sm text-gray-500 block mb-1">시간</label>
-              <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
+              <input
+                type="text"
+                placeholder="18:30"
+                value={form.event_date ? form.event_date.slice(11, 16) : ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    event_date:
+                      (form.event_date
+                        ? form.event_date.slice(0, 10)
+                        : new Date().toISOString().slice(0, 10)) +
+                      'T' +
+                      e.target.value,
+                  })
+                }
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+              />
             </div>
           </div>
-          <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={e => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          <input
+            placeholder="인스타그램 URL (선택)"
+            value={form.instagram_url}
+            onChange={(e) => setForm({ ...form, instagram_url: e.target.value })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
           <div>
             <label className="text-sm text-gray-500 block mb-1">이미지</label>
-            <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            />
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : '추가'}</button>
-            <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
+            <button
+              onClick={handleSave}
+              disabled={uploading}
+              className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+            >
+              {uploading ? '업로드 중...' : '수정 완료'}
+            </button>
+            <button
+              onClick={() => {
+                setShowForm(false)
+                setEditTarget(null)
+              }}
+              className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm"
+            >
+              취소
+            </button>
           </div>
         </div>
       )}
-      {events.length === 0 ? <p className="text-gray-500 text-sm">이벤트가 없어요.</p> : (
-        <div className="space-y-3">
-          {(() => {
-            const grouped = {}
-            events.forEach(ev => {
-              const label = ev.event_date ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
-              if (!grouped[label]) grouped[label] = []
-              grouped[label].push(ev)
-            })
-            return Object.entries(grouped).map(([month, evs]) => (
-              <div key={month} className="space-y-2">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
-                {evs.map(event => (
-                  <div key={event.id}>
-                    <div className="bg-white rounded-xl border border-gray-100 p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 text-sm">{event.title}</p>
-                          {event.location && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {event.location}</p>}
-                          {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR')}</p>}
-                        </div>
-                        <div className="flex gap-1 flex-shrink-0">
-                          <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
-                          <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
-                        </div>
-                      </div>
-                    </div>
-                    {showForm && editTarget && editTarget.id === event.id && (
-                      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
-                        <h3 className="font-medium text-gray-900">이벤트 수정</h3>
-                        <input placeholder="제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                        <textarea placeholder="내용" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
-                        <input placeholder="장소" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-sm text-gray-500 block mb-1">날짜</label>
-                            <input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
-                          </div>
-                          <div>
-                            <label className="text-sm text-gray-500 block mb-1">시간</label>
-                            <input type="text" placeholder="18:30" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10" />
-                          </div>
-                        </div>
-                        <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={e => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                        <div>
-                          <label className="text-sm text-gray-500 block mb-1">이미지</label>
-                          <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                        <div className="flex gap-2">
-                          <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : '수정 완료'}</button>
-                          <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ))
-          })()}
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
+        <div className="flex gap-2">
+          {showArchivedList && (
+            <button
+              onClick={() => setShowArchivedList(false)}
+              className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-1 whitespace-nowrap"
+            >
+              ← 이벤트 목록
+            </button>
+          )}
+          {!showArchivedList && (
+            <button
+              onClick={() => setShowArchivedList(true)}
+              className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-1 whitespace-nowrap"
+            >
+              보관된 이벤트
+            </button>
+          )}
+          {!showForm && !showArchivedList && (
+            <button
+              onClick={openAdd}
+              className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"
+            >
+              <Plus size={16} weight="bold" />+ 이벤트 추가
+            </button>
+          )}
         </div>
+      </div>
+
+      {showArchivedList ? (
+        // ARCHIVED EVENTS VIEW
+        <div className="space-y-3">
+          {archivedEvents.length === 0 ? (
+            <p className="text-gray-500 text-sm">보관된 이벤트가 없어요.</p>
+          ) : (
+            (() => {
+              const grouped = {}
+              archivedEvents.forEach((ev) => {
+                const label = ev.event_date
+                  ? `${new Date(ev.event_date).getMonth() + 1}월`
+                  : '날짜 미정'
+                if (!grouped[label]) grouped[label] = []
+                grouped[label].push(ev)
+              })
+              return Object.entries(grouped).map(([month, evs]) => (
+                <div key={month} className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                    {month}
+                  </p>
+                  {evs.map((event) => renderEventCard(event, true))}
+                </div>
+              ))
+            })()
+          )}
+        </div>
+      ) : (
+        // REGULAR EVENTS VIEW
+        <>
+          {showForm && !editTarget && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+              <h3 className="font-medium text-gray-900">새 이벤트</h3>
+              <input
+                placeholder="이벤트 제목"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <textarea
+                placeholder="내용"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                rows={3}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+              />
+              <input
+                placeholder="장소"
+                value={form.location}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-sm text-gray-500 block mb-1">날짜</label>
+                  <input
+                    type="date"
+                    value={form.event_date ? form.event_date.slice(0, 10) : ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        event_date:
+                          e.target.value +
+                          'T' +
+                          (form.event_date
+                            ? form.event_date.slice(11, 16)
+                            : '00:00'),
+                      })
+                    }
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500 block mb-1">시간</label>
+                  <input
+                    type="text"
+                    placeholder="18:30"
+                    value={form.event_date ? form.event_date.slice(11, 16) : ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        event_date:
+                          (form.event_date
+                            ? form.event_date.slice(0, 10)
+                            : new Date().toISOString().slice(0, 10)) +
+                          'T' +
+                          e.target.value,
+                      })
+                    }
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-10"
+                  />
+                </div>
+              </div>
+              <input
+                placeholder="인스타그램 URL (선택)"
+                value={form.instagram_url}
+                onChange={(e) => setForm({ ...form, instagram_url: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <div>
+                <label className="text-sm text-gray-500 block mb-1">이미지</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSave}
+                  disabled={uploading}
+                  className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {uploading ? '업로드 중...' : '추가'}
+                </button>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          )}
+
+          {events.length === 0 ? (
+            <p className="text-gray-500 text-sm">이벤트가 없어요.</p>
+          ) : (
+            <div className="space-y-3">
+              {(() => {
+                const grouped = {}
+                events.forEach((ev) => {
+                  const label = ev.event_date
+                    ? `${new Date(ev.event_date).getMonth() + 1}월`
+                    : '날짜 미정'
+                  if (!grouped[label]) grouped[label] = []
+                  grouped[label].push(ev)
+                })
+                return Object.entries(grouped).map(([month, evs]) => (
+                  <div key={month} className="space-y-2">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                      {month}
+                    </p>
+                    {evs.map((event) => renderEventCard(event, false))}
+                  </div>
+                ))
+              })()}
+            </div>
+          )}
+
+          {/* PAST EVENTS SECTION (for admin) */}
+          {events.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-3">지난 이벤트</h3>
+              {(() => {
+                const now = new Date()
+                const pastEvents = events.filter(
+                  (ev) => ev.event_date && new Date(ev.event_date) < now,
+                )
+                if (pastEvents.length === 0) {
+                  return <p className="text-gray-500 text-sm">지난 이벤트가 없어요.</p>
+                }
+                const grouped = {}
+                pastEvents.forEach((ev) => {
+                  const label = ev.event_date
+                    ? `${new Date(ev.event_date).getMonth() + 1}월`
+                    : '날짜 미정'
+                  if (!grouped[label]) grouped[label] = []
+                  grouped[label].push(ev)
+                })
+                return (
+                  <div className="space-y-3">
+                    {Object.entries(grouped).map(([month, evs]) => (
+                      <div key={month} className="space-y-2">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                          {month}
+                        </p>
+                        {evs.map((event) => renderEventCard(event, false))}
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+        </>
       )}
     </div>
   )
