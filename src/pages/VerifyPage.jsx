@@ -7,8 +7,8 @@ export default function VerifyPage() {
   const { token } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [secondsLeft, setSecondsLeft] = useState(null)
-  const timerIntervalRef = useRef(null)
+  const lastWindowRef = useRef(null)
+  const checkIntervalRef = useRef(null)
 
   // Function to verify the QR code
   const verifyQRCode = async (qrToken) => {
@@ -37,14 +37,10 @@ export default function VerifyPage() {
 
     if (!isValidToken) {
       setResult({ valid: false, reason: 'QR code has expired. Please ask the member to refresh.' })
-      setSecondsLeft(null)
     } else if (!isActiveMember) {
       setResult({ valid: false, reason: 'Membership is not active.', member })
-      setSecondsLeft(null)
     } else {
       setResult({ valid: true, member })
-      // Set initial seconds left for this TOTP window
-      setSecondsLeft(getSecondsLeft(15))
     }
   }
 
@@ -53,33 +49,35 @@ export default function VerifyPage() {
     const initialVerify = async () => {
       await verifyQRCode(token)
       setLoading(false)
+      // Set the initial TOTP window
+      const epoch = Math.floor(Date.now() / 1000)
+      lastWindowRef.current = Math.floor(epoch / 15)
     }
 
     initialVerify()
   }, [token])
 
-  // Timer that counts down and re-verifies when TOTP window expires
+  // Monitor TOTP window changes - re-verify when window expires
   useEffect(() => {
-    if (loading || !token || secondsLeft === null) return
+    if (loading || !token) return
 
-    // Update seconds left every 100ms for smooth countdown
-    timerIntervalRef.current = setInterval(() => {
-      const newSecondsLeft = getSecondsLeft(15)
-      setSecondsLeft(newSecondsLeft)
+    checkIntervalRef.current = setInterval(() => {
+      const epoch = Math.floor(Date.now() / 1000)
+      const currentWindow = Math.floor(epoch / 15)
 
-      // When we cross into a new TOTP window (seconds left resets to ~15)
-      // Re-verify the token to detect if it has expired
-      if (newSecondsLeft > 14) {
+      // If TOTP window has changed, re-verify immediately
+      if (lastWindowRef.current !== null && currentWindow !== lastWindowRef.current) {
+        lastWindowRef.current = currentWindow
         verifyQRCode(token)
       }
-    }, 100)
+    }, 500) // Check every 500ms for window changes
 
     return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current)
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current)
       }
     }
-  }, [token, loading, secondsLeft])
+  }, [token, loading])
 
   if (loading)
     return (
@@ -101,20 +99,6 @@ export default function VerifyPage() {
             <div className="bg-green-50 rounded-xl p-4 text-center">
               <p className="text-green-600 font-bold text-2xl">✓ Valid</p>
               <p className="text-green-500 text-sm mt-1">Membership is active</p>
-              {secondsLeft !== null && (
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Valid for</span>
-                    <span>{secondsLeft}s</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5">
-                    <div
-                      className="bg-green-500 h-1.5 rounded-full transition-all"
-                      style={{ width: (secondsLeft / 15 * 100) + '%' }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="space-y-2 text-sm">
