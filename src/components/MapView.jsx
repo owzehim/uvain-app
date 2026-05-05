@@ -8,7 +8,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const markerDataRef = useRef([])
   const initializedRef = useRef(false)
 
-  const createMarkerElement = (r, isSelected = false) => {
+  const createMarkerHtml = (r, isSelected = false) => {
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
     const bg = isSponsored ? '#f97316' : 'white'
@@ -19,48 +19,14 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const iconColor = isSponsored ? 'white' : '#f97316'
     const iconSvg = getMapIconSvg(r.category, iconColor)
 
-    const div = document.createElement('div')
-    div.style.display = 'flex'
-    div.style.flexDirection = 'column'
-    div.style.alignItems = 'center'
-    div.style.gap = '2px'
-
-    const markerCircle = document.createElement('div')
-    markerCircle.style.width = size + 'px'
-    markerCircle.style.height = size + 'px'
-    markerCircle.style.background = bg
-    markerCircle.style.border = border
-    markerCircle.style.borderRadius = '50%'
-    markerCircle.style.display = 'flex'
-    markerCircle.style.alignItems = 'center'
-    markerCircle.style.justifyContent = 'center'
-    markerCircle.style.boxShadow = shadow
-
-    const iconContainer = document.createElement('div')
-    iconContainer.style.width = (isSponsored ? 20 : 16) + 'px'
-    iconContainer.style.height = (isSponsored ? 20 : 16) + 'px'
-    iconContainer.innerHTML = iconSvg
-
-    markerCircle.appendChild(iconContainer)
-
-    const label = document.createElement('div')
-    label.style.background = 'white'
-    label.style.color = '#374151'
-    label.style.fontSize = '9px'
-    label.style.fontWeight = '600'
-    label.style.padding = '1px 4px'
-    label.style.borderRadius = '4px'
-    label.style.whiteSpace = 'nowrap'
-    label.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
-    label.style.maxWidth = '90px'
-    label.style.overflow = 'hidden'
-    label.style.textOverflow = 'ellipsis'
-    label.textContent = name
-
-    div.appendChild(markerCircle)
-    div.appendChild(label)
-
-    return div
+    return (
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
+      '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';">' +
+      '<div style="width:' + (isSponsored ? 20 : 16) + 'px;height:' + (isSponsored ? 20 : 16) + 'px;">' + iconSvg + '</div>' +
+      '</div>' +
+      '<div style="background:white;color:#374151;font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:90px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div>' +
+      '</div>'
+    )
   }
 
   useEffect(() => {
@@ -110,13 +76,12 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     sorted.forEach(r => {
       const size = r.is_sponsored ? 42 : 34
-      const markerElement = createMarkerElement(r, false)
-      
       const markerIcon = L.divIcon({
-        className: '',
-        html: markerElement,
+        className: 'custom-marker',
+        html: createMarkerHtml(r, false),
         iconSize: [size + 20, size + 28],
         iconAnchor: [(size + 20) / 2, size / 2],
+        popupAnchor: [0, -(size / 2)]
       })
 
       const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
@@ -144,13 +109,12 @@ export default function MapView({ restaurants, selected, onSelect }) {
     markerDataRef.current.forEach(({ r, marker }) => {
       const isSelected = selected && r.id === selected.id
       const size = r.is_sponsored ? 42 : 34
-      const markerElement = createMarkerElement(r, isSelected)
-      
       marker.setIcon(L.divIcon({
-        className: '',
-        html: markerElement,
+        className: 'custom-marker',
+        html: createMarkerHtml(r, isSelected),
         iconSize: [size + 20, size + 28],
         iconAnchor: [(size + 20) / 2, size / 2],
+        popupAnchor: [0, -(size / 2)]
       }))
     })
   }, [selected])
