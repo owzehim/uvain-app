@@ -4,6 +4,7 @@ import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { useEffect } from 'react'
 import { SpotCard, RichText } from '../components/SpotCard'
+import { MAP_CATEGORIES, CATEGORY_ICONS } from '../lib/mapCategories'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')
@@ -73,11 +74,8 @@ function PublicMapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  const categories = ['전체', '맛집', '카페', '마트', '도서관', '학교', '기타']
-  const categoryIcons = {
-    '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-    '도서관': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️'
-  }
+  const categories = MAP_CATEGORIES
+const categoryIcons = CATEGORY_ICONS
 
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 

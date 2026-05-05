@@ -5,6 +5,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { broadcastQRExpiry } from '../lib/qrSync'
+import { MAP_CATEGORIES, CATEGORY_ICONS } from '../lib/mapCategories'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -342,13 +343,8 @@ function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  const categories = ['전체', '맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
-  const categoryIcons = {
-    '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-    '스터디': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️',
-    '운동': '💪', '미용/뷰티': '💇', '의료': '🏥',
-    '쇼핑': '🛍️', '여가': '🎮'
-  }
+  const categories = MAP_CATEGORIES
+const categoryIcons = CATEGORY_ICONS
 
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
