@@ -1,23 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapPin, ForkKnife, Coffee, ShoppingCart, Books, GraduationCap, FirstAid, Barbell, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
+import { MapPin } from 'phosphor-react'
+import { categoryIcons } from './iconConfig'
 
 export function RichText({ text, className = '' }) {
   if (!text) return null
   return <span className={className} dangerouslySetInnerHTML={{ __html: text }} />
-}
-
-const categoryIcons = {
-  '맛집': ForkKnife,
-  '카페': Coffee,
-  '마트': ShoppingCart,
-  '운동': Barbell,
-  '미용/뷰티': Sparkle,
-  '기타': MapPin,
-  '스터디': Books,
-  '학교': GraduationCap,
-  '의료': FirstAid,
-  '쇼핑': ShoppingBag,
-  '여가': GameController
 }
 
 function Lightbox({ imgs, startIndex, onClose }) {
@@ -36,17 +23,13 @@ function Lightbox({ imgs, startIndex, onClose }) {
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '20px', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '999px', width: '36px', height: '36px', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>×</button>
-
       {index > 0 && (
         <button onClick={e => { e.stopPropagation(); setIndex(i => i - 1) }} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '999px', width: '44px', height: '44px', fontSize: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>‹</button>
       )}
-
       <img src={imgs[index]} alt={'사진 ' + (index + 1)} onClick={e => e.stopPropagation()} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }} />
-
       {index < imgs.length - 1 && (
         <button onClick={e => { e.stopPropagation(); setIndex(i => i + 1) }} style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '999px', width: '44px', height: '44px', fontSize: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>›</button>
       )}
-
       {imgs.length > 1 && (
         <div style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
           {imgs.map((_, i) => (
@@ -153,12 +136,10 @@ export function SpotCard({ selected, onClose }) {
       {lightboxIndex !== null && (
         <Lightbox imgs={imgs} startIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
       )}
-
       <div ref={cardRef} className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl" style={{ ...(hasImages ? imageStyle : noImageStyle), zIndex: 1000, boxShadow: '0 -4px 24px rgba(0,0,0,0.13)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onWheel={e => { if (!hasImages) { if (e.deltaY < 0) triggerClose() } else { if (e.deltaY > 0) snapTo(MAX_HEIGHT); else if (e.deltaY < 0) { if (cardHeight >= MAX_HEIGHT * 0.85) snapTo(MIN_HEIGHT); else triggerClose() } } }}>
         <div className="flex justify-center pt-2.5 pb-2 flex-shrink-0">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
-
         <div className="flex-1" style={{ overflowY: 'hidden' }}>
           <div className="px-4 pt-1 pb-3">
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
@@ -169,12 +150,10 @@ export function SpotCard({ selected, onClose }) {
               {selected.price_range && <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">{selected.price_range}</span>}
               {selected.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">제휴</span>}
             </div>
-
             <div className="flex items-center gap-2">
               <p className="font-semibold text-gray-900">{selected.name}</p>
               {selected.rating > 0 && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}</p>}
             </div>
-
             {selected.description && <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />}
             {selected.address && (
               <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
@@ -184,7 +163,6 @@ export function SpotCard({ selected, onClose }) {
             )}
             {selected.discount_info && <p className="text-xs text-orange-500 mt-1">🎟 <RichText text={selected.discount_info} /></p>}
             {selected.discount_terms && <p className="text-xs text-gray-400 mt-0.5">※ <RichText text={selected.discount_terms} /></p>}
-
             {(selected.review || selected.reviewer_name) && (
               <div className="mt-2 pt-2 border-t border-gray-100">
                 {selected.review && <RichText text={selected.review} className="text-xs text-gray-600 block" />}
@@ -192,9 +170,7 @@ export function SpotCard({ selected, onClose }) {
               </div>
             )}
           </div>
-
           {!hasImages && <div className="pb-16" />}
-
           {hasImages && (
             <div className="pb-6">
               <div className="md:hidden px-4 pb-20" onTouchStart={e => { e.currentTarget._swipeStartX = e.touches[0].clientX }} onTouchEnd={e => { const start = e.currentTarget._swipeStartX; if (start == null) return; const dx = e.changedTouches[0].clientX - start; e.currentTarget._swipeStartX = null; if (dx < -40 && slideIndex < imgs.length - 1) { e.stopPropagation(); setSlideIndex(i => i + 1) } else if (dx > 40 && slideIndex > 0) { e.stopPropagation(); setSlideIndex(i => i - 1) } }}>
@@ -215,7 +191,6 @@ export function SpotCard({ selected, onClose }) {
                   )}
                 </div>
               </div>
-
               <div className="hidden md:flex gap-3 px-4 pb-20 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {imgs.map((url, i) => (
                   <div key={i} onClick={() => setLightboxIndex(i)} className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center" style={{ height: '220px', minWidth: '140px', maxWidth: '360px', cursor: 'zoom-in' }}>
@@ -226,13 +201,12 @@ export function SpotCard({ selected, onClose }) {
             </div>
           )}
         </div>
-
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ height: '72px', background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)', zIndex: 10 }}>
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
             <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(selected.name + ' ' + (selected.address || ''))} target="_blank" rel="noopener noreferrer" className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap1.5" onTouchStart={e => e.stopPropagation()}>
-  <MapPin size={14} weight="fill" />
-  Google Maps에서 열기
-</a>
+              <MapPin size={14} weight="fill" />
+              Google Maps에서 열기
+            </a>
           </div>
         </div>
       </div>
