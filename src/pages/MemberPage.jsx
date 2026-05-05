@@ -344,19 +344,23 @@ function MapTab({ restaurants }) {
   const [activeCategory, setActiveCategory] = useState('전체')
 
   const categories = MAP_CATEGORIES
-const categoryIcons = CATEGORY_ICONS
+  const categoryIcons = CATEGORY_ICONS
 
   const filtered = activeCategory === '전체' ? restaurants : restaurants.filter(r => r.category === activeCategory)
 
   return (
     <div className="h-full flex flex-col">
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
-        {categories.map(cat => (
-          <button key={cat} onClick={() => { setActiveCategory(cat); setSelected(null) }}
-            className={'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ' + (activeCategory === cat ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
-            {categoryIcons[cat] + ' ' + cat}
-          </button>
-        ))}
+        {categories.map(cat => {
+          const IconComponent = categoryIcons[cat]
+          return (
+            <button key={cat} onClick={() => { setActiveCategory(cat); setSelected(null) }}
+              className={'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' + (activeCategory === cat ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
+              <IconComponent size={16} weight="fill" />
+              {cat}
+            </button>
+          )
+        })}
       </div>
       <div className="flex-1 relative overflow-hidden">
         <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />

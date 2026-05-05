@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { MapPin, ForkKnife, Coffee, ShoppingCart, Books, GraduationCap, FirstAid, Barbell, Sparkle, GameController, ShoppingBag } from 'phosphor-react'
 
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)
@@ -8,25 +9,21 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const initializedRef = useRef(false)
 
   const categoryIcons = {
-    '맛집': '🍽️', '카페': '☕', '마트': '🛒',
-    '스터디': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️',
-    '운동': '💪', '미용/뷰티': '💇', '의료': '🏥',
-    '쇼핑': '🛍️', '여가': '🎮'
+    '맛집': ForkKnife, '카페': Coffee, '마트': ShoppingCart,
+    '스터디': Books, '학교': GraduationCap, '기타': MapPin, '전체': MapPin,
+    '운동': Barbell, '미용/뷰티': Sparkle, '의료': FirstAid,
+    '쇼핑': ShoppingBag, '여가': GameController
   }
 
   const createMarkerHtml = (r, isSelected = false) => {
-    const icon = categoryIcons[r.category] || '📍'
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
     const bg = isSponsored ? '#f97316' : 'white'
-
-    // sponsored always keeps white border; non-sponsored gets orange when selected
     const border = isSponsored
       ? '3px solid white'
       : isSelected
         ? '3px solid #f97316'
         : '2px solid #e5e7eb'
-
     const shadow = isSelected
       ? '0 3px 12px rgba(249,115,22,0.5)'
       : isSponsored
@@ -35,6 +32,16 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     const displayName = r.map_label || r.name || ''
     const name = displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
+    
+    // Use emoji as fallback since Phosphor icons can't render in HTML strings
+    const emojiMap = {
+      '맛집': '🍽️', '카페': '☕', '마트': '🛒',
+      '스터디': '📚', '학교': '🎓', '기타': '📍', '전체': '🗺️',
+      '운동': '💪', '미용/뷰티': '💇', '의료': '🏥',
+      '쇼핑': '🛍️', '여가': '🎮'
+    }
+    const icon = emojiMap[r.category] || '📍'
+
     return (
       '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
         '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border:' + border + ';border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:' + shadow + ';font-size:' + (isSponsored ? 18 : 15) + 'px;">' +

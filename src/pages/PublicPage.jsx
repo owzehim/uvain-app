@@ -101,7 +101,10 @@ const categoryIcons = CATEGORY_ICONS
       {filtered.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-2xl mb-2">{categoryIcons[activeCategory]}</p>
+            {(() => {
+  const IconComponent = categoryIcons[activeCategory]
+  return <IconComponent size={32} weight="fill" className="mx-auto" />
+})()}
             <p className="text-gray-500 text-sm">등록된 장소가 없어요</p>
           </div>
         </div>
