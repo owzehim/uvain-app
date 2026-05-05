@@ -1,5 +1,5 @@
 // src/lib/mapCategories.js
-// All icons are now simple SVG strings - no DOM manipulation
+// Using Phosphor icons as SVG strings for categories
 
 export const MAP_CATEGORIES = [
   '전체',
@@ -16,8 +16,9 @@ export const MAP_CATEGORIES = [
   '기타',
 ]
 
-// SVG icon strings for category buttons and map markers
-const ICON_SVGS = {
+// Phosphor icon SVG strings (weight: "fill", size: 24)
+// Source: https://phosphoricons.com
+const PHOSPHOR_ICONS = {
   '맛집': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M216,40V224a8,8,0,0,1-16,0V176H152a8,8,0,0,1-8-8,268.75,268.75,0,0,1,7.22-56.88c9.78-40.49,28.32-67.63,53.63-78.47A8,8,0,0,1,216,40Zm-96.11-1.31a8,8,0,1,0-15.78,2.63L111.89,88H88V40a8,8,0,0,0-16,0V88H48.11l7.78-46.68a8,8,0,1,0-15.78-2.63l-8,48A8.17,8.17,0,0,0,32,88a48.07,48.07,0,0,0,40,47.32V224a8,8,0,0,0,16,0V135.32A48.07,48.07,0,0,0,128,88a8.17,8.17,0,0,0-.11-1.31Z"/></svg>',
   '카페': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,80H32a8,8,0,0,0-8,8v48a96.3,96.3,0,0,0,32.54,72H32a8,8,0,0,0,0,16H208a8,8,0,0,0,0-16H183.46a96.59,96.59,0,0,0,27-40.09A40,40,0,0,0,248,128v-8A40,40,0,0,0,208,80Zm24,48a24,24,0,0,1-17.2,23,95.78,95.78,0,0,0,1.2-15V97.38A24,24,0,0,1,232,120ZM112,56V24a8,8,0,0,1,16,0V56a8,8,0,0,1-16,0Zm32,0V24a8,8,0,0,1,16,0V56a8,8,0,0,1-16,0ZM80,56V24a8,8,0,0,1,16,0V56a8,8,0,0,1-16,0Z"/></svg>',
   '마트': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M230.14,58.87A8,8,0,0,0,224,56H62.68L56.6,22.57A8,8,0,0,0,48.73,16H24a8,8,0,0,0,0,16h18L67.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,160,204a28,28,0,1,0,28-28H91.17a8,8,0,0,1-7.87-6.57L80.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,230.14,58.87ZM104,204a12,12,0,1,1-12-12A12,12,0,0,1,104,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,200,204Z"/></svg>',
@@ -33,25 +34,12 @@ const ICON_SVGS = {
 }
 
 // Export icon SVG strings for use in JSX
-export const CATEGORY_ICONS = {
-  '맛집': ICON_SVGS['맛집'],
-  '카페': ICON_SVGS['카페'],
-  '마트': ICON_SVGS['마트'],
-  '스터디': ICON_SVGS['스터디'],
-  '학교': ICON_SVGS['학교'],
-  '의료': ICON_SVGS['의료'],
-  '운동': ICON_SVGS['운동'],
-  '미용/뷰티': ICON_SVGS['미용/뷰티'],
-  '여가': ICON_SVGS['여가'],
-  '쇼핑': ICON_SVGS['쇼핑'],
-  '기타': ICON_SVGS['기타'],
-  '전체': ICON_SVGS['전체'],
-}
+export const CATEGORY_ICONS = PHOSPHOR_ICONS
 
 // SVG strings for map markers
 export const getMapIconSvg = (category, color = 'white') => {
-  const svg = ICON_SVGS[category] || ICON_SVGS['기타']
-  return svg.replace('fill="currentColor"', 'fill="' + color + '"')
+  const svg = PHOSPHOR_ICONS[category] || PHOSPHOR_ICONS['기타']
+  return svg.replace('fill="currentColor"', `fill="${color}"`)
 }
 
 export const CATEGORY_COLORS = {
