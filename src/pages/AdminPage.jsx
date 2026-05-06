@@ -507,17 +507,15 @@ function EventsTab() {
     if (!confirm('이 사진을 삭제할까요?')) return
     const fileName = url.split('/').pop()
     await supabase.storage.from('event-images').remove([fileName])
-    // Also remove any pending replacement for this url's index
     const idx = (editTarget?.image_urls || []).indexOf(url)
     setPendingReplacements(prev => prev.filter(p => p.idx !== idx))
     setEditTarget(prev => ({ ...prev, image_urls: (prev.image_urls || []).filter(u => u !== url) }))
   }
 
-  // Called by ImageUploadPanel when user crops an existing image.
-  // Stores locally — does NOT upload to Supabase yet.
+  // Stores crop locally — does NOT upload to Supabase yet.
   const handlePendingReplace = (idx, file, previewUrl) => {
     setPendingReplacements(prev => {
-      const next = prev.filter(p => p.idx !== idx) // replace any previous crop for same idx
+      const next = prev.filter(p => p.idx !== idx)
       return [...next, { idx, file, previewUrl }]
     })
   }
@@ -535,11 +533,16 @@ function EventsTab() {
   const handleSave = async () => {
     if (!form.title) { alert('제목을 입력해주세요.'); return }
     setUploading(true)
-    // Start with existing URLs (originals)
     let image_urls = [...(editTarget?.image_urls || [])]
 
     // Upload pending replacements (crops of existing images)
     for (const { idx, file } of pendingReplacements) {
+      // Delete the original file from storage first to avoid orphaned files
+      const oldFileName = image_urls[idx]?.split('/').pop()
+      if (oldFileName) {
+        await supabase.storage.from('event-images').remove([oldFileName])
+      }
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
       const { error } = await supabase.storage.from('event-images').upload(fileName, file)
@@ -784,6 +787,12 @@ function RestaurantsTab() {
 
     // Upload pending replacements (crops of existing images)
     for (const { idx, file } of pendingReplacements) {
+      // Delete the original file from storage first to avoid orphaned files
+      const oldFileName = image_urls[idx]?.split('/').pop()
+      if (oldFileName) {
+        await supabase.storage.from('place-images').remove([oldFileName])
+      }
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
       const { error } = await supabase.storage.from('place-images').upload(fileName, file)
