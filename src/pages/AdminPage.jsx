@@ -130,25 +130,18 @@ function koreanSort(arr, key) {
 // New previews are shown inline.
 // Two upload buttons at the bottom: 그냥 업로드 / 자르기 업로드
 function ImageUploadPanel({
-  imageFiles, imagePreviews, existingUrls,
-  onAddFile, onAddCropped, onRemoveNew, onRemoveExisting, onReplaceExisting,
-  onReorder
+  imagePreviews,
+  existingUrls,
+  pendingReplacements,   // [{ idx, file, previewUrl }]
+  onAddFile,
+  onAddCropped,
+  onRemoveNew,
+  onRemoveExisting,
+  onPendingReplace,      // (idx, file, previewUrl) => void  — replaces immediately uploading
+  onReorder,
 }) {
   const [cropperSource, setCropperSource] = useState(null)
-
-  // Store the original URLs when the panel first receives them (or when new ones arrive).
-  // This ensures re-cropping always uses the pristine original, not a previously cropped version.
-  const originalUrlsRef = useRef({})
-
-  useEffect(() => {
-    if (!existingUrls) return
-    existingUrls.forEach((url, idx) => {
-      // Only store the first time we see this index — never overwrite with a cropped version
-      if (originalUrlsRef.current[idx] === undefined) {
-        originalUrlsRef.current[idx] = url
-      }
-    })
-  }, [existingUrls])
+  const dragIdx = useRef(null)
 
   const handleFileSelect = (e) => {
     Array.from(e.target.files).forEach(f => onAddFile(f))
@@ -160,23 +153,21 @@ function ImageUploadPanel({
     e.target.value = ''
   }
 
+  // Always open cropper with the original Supabase URL (existingUrls[idx]),
+  // never with a pending preview — so re-cropping always starts from the original.
   const handleTapExisting = (idx) => {
-    // Always open the cropper with the ORIGINAL url for this index
-    const originalUrl = originalUrlsRef.current[idx] ?? existingUrls[idx]
-    setCropperSource({ type: 'url', url: originalUrl, idx })
+    setCropperSource({ type: 'url', url: existingUrls[idx], idx })
   }
 
   const handleCropDone = (croppedFile) => {
     if (cropperSource?.type === 'url') {
-      onReplaceExisting(cropperSource.idx, croppedFile)
+      const previewUrl = URL.createObjectURL(croppedFile)
+      onPendingReplace(cropperSource.idx, croppedFile, previewUrl)
     } else {
       onAddCropped(croppedFile)
     }
     setCropperSource(null)
   }
-
-  // Drag-to-reorder state for existing images
-  const dragIdx = useRef(null)
 
   const handleDragStart = (idx) => { dragIdx.current = idx }
   const handleDrop = (idx) => {
@@ -184,22 +175,21 @@ function ImageUploadPanel({
     const reordered = [...(existingUrls || [])]
     const [moved] = reordered.splice(dragIdx.current, 1)
     reordered.splice(idx, 0, moved)
-    // Also reorder the originalUrls ref to stay in sync
-    const origEntries = Object.entries(originalUrlsRef.current).map(([k, v]) => [parseInt(k), v])
-    const origArr = origEntries.sort((a, b) => a[0] - b[0]).map(e => e[1])
-    const [movedOrig] = origArr.splice(dragIdx.current, 1)
-    origArr.splice(idx, 0, movedOrig)
-    originalUrlsRef.current = Object.fromEntries(origArr.map((v, i) => [i, v]))
     onReorder && onReorder(reordered)
     dragIdx.current = null
   }
 
+  // For display: show pending preview if this index has a pending crop, else the original URL
+  const getDisplayUrl = (idx) => {
+    const pending = pendingReplacements?.find(p => p.idx === idx)
+    return pending ? pending.previewUrl : existingUrls[idx]
+  }
+
   return (
     <div className="space-y-3">
-      {/* Single merged image strip */}
       {(existingUrls?.length > 0 || imagePreviews.length > 0) && (
         <div className="flex gap-2 flex-wrap">
-          {existingUrls?.map((url, idx) => (
+          {existingUrls?.map((_, idx) => (
             <div
               key={`ex-${idx}`}
               className="relative group cursor-grab"
@@ -209,18 +199,17 @@ function ImageUploadPanel({
               onDrop={() => handleDrop(idx)}
             >
               <img
-                src={url}
+                src={getDisplayUrl(idx)}
                 alt=""
                 onClick={() => handleTapExisting(idx)}
                 className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-colors"
               />
-              {/* Hover overlay showing crop hint */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg transition-colors pointer-events-none flex items-center justify-center">
                 <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 drop-shadow">✂️</span>
               </div>
               <button
                 type="button"
-                onClick={() => onRemoveExisting(url)}
+                onClick={() => onRemoveExisting(existingUrls[idx])}
                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 z-10"
               >✕</button>
             </div>
@@ -242,7 +231,6 @@ function ImageUploadPanel({
         <p className="text-xs text-gray-400">💡 기존 사진을 탭하면 자를 수 있어요 · 드래그로 순서 변경</p>
       )}
 
-      {/* Upload buttons */}
       <div className="flex gap-2">
         <label className="flex-1 cursor-pointer">
           <div className="border-2 border-dashed border-gray-300 rounded-lg px-3 py-3 text-center hover:border-gray-400 transition-colors">
@@ -489,6 +477,7 @@ function EventsTab() {
   const [form, setForm] = useState({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
+  const [pendingReplacements, setPendingReplacements] = useState([]) // { idx, file, previewUrl }
   const [uploading, setUploading] = useState(false)
   const [richEditorKey, setRichEditorKey] = useState(0)
 
@@ -518,20 +507,21 @@ function EventsTab() {
     if (!confirm('이 사진을 삭제할까요?')) return
     const fileName = url.split('/').pop()
     await supabase.storage.from('event-images').remove([fileName])
+    // Also remove any pending replacement for this url's index
+    const idx = (editTarget?.image_urls || []).indexOf(url)
+    setPendingReplacements(prev => prev.filter(p => p.idx !== idx))
     setEditTarget(prev => ({ ...prev, image_urls: (prev.image_urls || []).filter(u => u !== url) }))
   }
-  const handleReplaceExisting = async (idx, croppedFile) => {
-    const fileExt = croppedFile.name.split('.').pop()
-    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
-    const { error } = await supabase.storage.from('event-images').upload(fileName, croppedFile)
-    if (error) { alert('업로드 실패: ' + error.message); return }
-    const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(fileName)
-    setEditTarget(prev => {
-      const newUrls = [...(prev.image_urls || [])]
-      newUrls[idx] = urlData.publicUrl
-      return { ...prev, image_urls: newUrls }
+
+  // Called by ImageUploadPanel when user crops an existing image.
+  // Stores locally — does NOT upload to Supabase yet.
+  const handlePendingReplace = (idx, file, previewUrl) => {
+    setPendingReplacements(prev => {
+      const next = prev.filter(p => p.idx !== idx) // replace any previous crop for same idx
+      return [...next, { idx, file, previewUrl }]
     })
   }
+
   const handleReorderImages = (reorderedUrls) => {
     if (editTarget) setEditTarget({ ...editTarget, image_urls: reorderedUrls })
   }
@@ -539,13 +529,26 @@ function EventsTab() {
   const resetForm = () => {
     setShowForm(false); setEditTarget(null)
     setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
-    setImageFiles([]); setImagePreviews([]); setRichEditorKey(k => k + 1)
+    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1)
   }
 
   const handleSave = async () => {
     if (!form.title) { alert('제목을 입력해주세요.'); return }
     setUploading(true)
-    let image_urls = editTarget?.image_urls || []
+    // Start with existing URLs (originals)
+    let image_urls = [...(editTarget?.image_urls || [])]
+
+    // Upload pending replacements (crops of existing images)
+    for (const { idx, file } of pendingReplacements) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
+      const { error } = await supabase.storage.from('event-images').upload(fileName, file)
+      if (error) { alert('업로드 실패: ' + error.message); setUploading(false); return }
+      const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(fileName)
+      image_urls[idx] = urlData.publicUrl
+    }
+
+    // Upload new files
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
@@ -554,6 +557,7 @@ function EventsTab() {
       const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(fileName)
       image_urls = [...image_urls, urlData.publicUrl]
     }
+
     const payload = { ...form, image_urls }
     if (editTarget) {
       await supabase.from('events').update(payload).eq('id', editTarget.id)
@@ -584,12 +588,12 @@ function EventsTab() {
       event_date: event.event_date ? event.event_date.slice(0, 16) : '',
       location: event.location || '', instagram_url: event.instagram_url || ''
     })
-    setImageFiles([]); setImagePreviews([]); setRichEditorKey(k => k + 1); setShowForm(true)
+    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1); setShowForm(true)
   }
   const openAdd = () => {
     setEditTarget(null)
     setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
-    setImageFiles([]); setImagePreviews([]); setRichEditorKey(k => k + 1); setShowForm(true)
+    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1); setShowForm(true)
   }
 
   const groupByMonth = (arr) => {
@@ -616,14 +620,14 @@ function EventsTab() {
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
         <ImageUploadPanel
-          imageFiles={imageFiles}
           imagePreviews={imagePreviews}
           existingUrls={editTarget?.image_urls || []}
+          pendingReplacements={pendingReplacements}
           onAddFile={handleAddFile}
           onAddCropped={handleAddCropped}
           onRemoveNew={handleRemoveNew}
           onRemoveExisting={handleRemoveExisting}
-          onReplaceExisting={handleReplaceExisting}
+          onPendingReplace={handlePendingReplace}
           onReorder={handleReorderImages}
         />
       </div>
@@ -671,7 +675,6 @@ function EventsTab() {
           )}
         </div>
       </div>
-
       {showArchivedList ? (
         <div className="space-y-3">
           {archivedEvents.length === 0
@@ -720,6 +723,7 @@ function RestaurantsTab() {
   })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
+  const [pendingReplacements, setPendingReplacements] = useState([]) // { idx, file, previewUrl }
   const [uploading, setUploading] = useState(false)
   const [richEditorKey, setRichEditorKey] = useState(0)
 
@@ -745,20 +749,19 @@ function RestaurantsTab() {
     if (!confirm('이 사진을 삭제할까요?')) return
     const fileName = url.split('/').pop()
     await supabase.storage.from('place-images').remove([fileName])
+    const idx = (editTarget?.image_urls || []).indexOf(url)
+    setPendingReplacements(prev => prev.filter(p => p.idx !== idx))
     setEditTarget(prev => ({ ...prev, image_urls: (prev.image_urls || []).filter(u => u !== url) }))
   }
-  const handleReplaceExisting = async (idx, croppedFile) => {
-    const fileExt = croppedFile.name.split('.').pop()
-    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
-    const { error } = await supabase.storage.from('place-images').upload(fileName, croppedFile)
-    if (error) { alert('업로드 실패: ' + error.message); return }
-    const { data: urlData } = supabase.storage.from('place-images').getPublicUrl(fileName)
-    setEditTarget(prev => {
-      const newUrls = [...(prev.image_urls || [])]
-      newUrls[idx] = urlData.publicUrl
-      return { ...prev, image_urls: newUrls }
+
+  // Stores crop locally — does NOT upload to Supabase yet.
+  const handlePendingReplace = (idx, file, previewUrl) => {
+    setPendingReplacements(prev => {
+      const next = prev.filter(p => p.idx !== idx)
+      return [...next, { idx, file, previewUrl }]
     })
   }
+
   const handleReorderImages = (reorderedUrls) => {
     if (editTarget) setEditTarget({ ...editTarget, image_urls: reorderedUrls })
   }
@@ -771,13 +774,25 @@ function RestaurantsTab() {
       rating: '', review: '', reviewer_name: '', category: '맛집',
       price_range: '', is_sponsored: false
     })
-    setImageFiles([]); setImagePreviews([]); setRichEditorKey(k => k + 1)
+    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1)
   }
 
   const handleSave = async () => {
     if (!form.name) { alert('장소 이름을 입력해주세요.'); return }
     setUploading(true)
-    let image_urls = editTarget?.image_urls || []
+    let image_urls = [...(editTarget?.image_urls || [])]
+
+    // Upload pending replacements (crops of existing images)
+    for (const { idx, file } of pendingReplacements) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
+      const { error } = await supabase.storage.from('place-images').upload(fileName, file)
+      if (error) { alert('업로드 실패: ' + error.message); setUploading(false); return }
+      const { data: urlData } = supabase.storage.from('place-images').getPublicUrl(fileName)
+      image_urls[idx] = urlData.publicUrl
+    }
+
+    // Upload new files
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
@@ -786,6 +801,7 @@ function RestaurantsTab() {
       const { data: urlData } = supabase.storage.from('place-images').getPublicUrl(fileName)
       image_urls = [...image_urls, urlData.publicUrl]
     }
+
     const payload = {
       name: form.name, map_label: form.map_label, description: form.description,
       address: form.address,
@@ -823,7 +839,7 @@ function RestaurantsTab() {
       category: r.category || '맛집', price_range: r.price_range || '',
       is_sponsored: r.is_sponsored || false
     })
-    setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setShowForm(true)
+    setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setShowForm(true)
   }
 
   const openAdd = () => {
@@ -834,7 +850,7 @@ function RestaurantsTab() {
       rating: '', review: '', reviewer_name: '', category: '맛집',
       price_range: '', is_sponsored: false
     })
-    setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setShowForm(true)
+    setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setShowForm(true)
   }
 
   const RestaurantForm = () => (
@@ -872,14 +888,14 @@ function RestaurantsTab() {
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
         <ImageUploadPanel
-          imageFiles={imageFiles}
           imagePreviews={imagePreviews}
           existingUrls={editTarget?.image_urls || []}
+          pendingReplacements={pendingReplacements}
           onAddFile={handleAddFile}
           onAddCropped={handleAddCropped}
           onRemoveNew={handleRemoveNew}
           onRemoveExisting={handleRemoveExisting}
-          onReplaceExisting={handleReplaceExisting}
+          onPendingReplace={handlePendingReplace}
           onReorder={handleReorderImages}
         />
       </div>
