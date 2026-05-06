@@ -7,7 +7,6 @@ import { SpotCard, RichText } from '../components/SpotCard'
 import { broadcastQRExpiry } from '../lib/qrSync'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin } from 'phosphor-react'
-import '../styles/tabAnimation.css' // Add this import
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)

@@ -33,3 +33,17 @@ html {
 body {
   min-height: -webkit-fill-available;
 }
+
+/* Tab Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
