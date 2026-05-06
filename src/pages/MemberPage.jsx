@@ -110,8 +110,8 @@ export default function MemberPage() {
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
-  <div key={tabKey} className="h-full animate-quick-fade-slide-up">
-    {activeTab === 'qr' && (
+        <div key={tabKey} className="h-full animate-quick-fade-slide-up">
+          {activeTab === 'qr' && (
             <QRTab
               member={member}
               isValid={isValid}
@@ -172,7 +172,7 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="px-4 py-6 max-w-sm mx-auto space-y-4">
+      <div className="px-4 py-6 max-w-md mx-auto space-y-4">
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-900">
@@ -582,7 +582,7 @@ function EventsTab({ events }) {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="px-4 py-6 max-w-lg mx-auto">
+      <div className="px-4 py-6 max-w-md mx-auto">
         <h2 className="font-semibold text-gray-900 mb-4">EVENTS</h2>
         {events.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
