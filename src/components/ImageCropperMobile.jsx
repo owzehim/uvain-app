@@ -1,37 +1,32 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, Check, Plus, Minus } from 'phosphor-react'
 
-export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRatios = ['원본', '1:1', '4:5'] }) {
-  const [selectedRatio, setSelectedRatio] = useState('원본')
+export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRatios = ['1:1', '4:5'] }) {
+  const [selectedRatio, setSelectedRatio] = useState(aspectRatios[0])
+  const [crop, setCrop] = useState({ x: 0, y: 0, width: 80, height: 80 })
   const [zoom, setZoom] = useState(1)
-  const [offset, setOffset] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [lastPinchDist, setLastPinchDist] = useState(null)
-  const [imageLoaded, setImageLoaded] = useState(false)
-
   const canvasRef = useRef(null)
   const imageRef = useRef(null)
   const containerRef = useRef(null)
-  const animRef = useRef(null)
+  const cropRef = useRef(crop)
+  const zoomRef = useRef(zoom)
 
-  const CANVAS_SIZE = 320
+  cropRef.current = crop
+  zoomRef.current = zoom
 
-  const ratioMap = {
-    '원본': null,
-    '1:1': 1,
-    '4:5': 4 / 5,
-  }
+  const ratioMap = { '1:1': 1, '4:5': 5 / 4 }
 
-  // Load image
+  // Load image from file or URL
   useEffect(() => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
       imageRef.current = img
-      setImageLoaded(true)
-      setZoom(1)
-      setOffset({ x: 0, y: 0 })
+      // Initialize crop based on ratio
+      initCrop(selectedRatio, img)
     }
     if (file) {
       const url = URL.createObjectURL(file)
@@ -42,328 +37,303 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
     }
   }, [file, imageUrl])
 
-  // Draw canvas
-  const draw = useCallback(() => {
-    if (!canvasRef.current || !imageRef.current || !imageLoaded) return
+  const initCrop = (ratio, img) => {
+    const ar = ratioMap[ratio]
+    // ar = width/height, so for 4:5 portrait ar = 5/4 means height > width
+    // We want the crop box to have the correct aspect ratio
+    // For 1:1: width = height
+    // For 4:5 portrait: width = 4 parts, height = 5 parts
+    const portraitRatio = ratio === '4:5' ? 4 / 5 : 1 // actual w/h ratio
+    const boxWidth = 75
+    const boxHeight = boxWidth / portraitRatio
+    const clampedHeight = Math.min(boxHeight, 90)
+    const clampedWidth = clampedHeight * portraitRatio
+    setCrop({
+      x: (100 - clampedWidth) / 2,
+      y: (100 - clampedHeight) / 2,
+      width: clampedWidth,
+      height: clampedHeight
+    })
+  }
+
+  useEffect(() => {
+    drawPreview()
+  }, [crop, zoom, selectedRatio])
+
+  const drawPreview = useCallback(() => {
+    if (!canvasRef.current || !imageRef.current) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const img = imageRef.current
-    const ratio = ratioMap[selectedRatio]
-
-    // Canvas dimensions
-    const cw = CANVAS_SIZE
-    const ch = ratio ? Math.round(CANVAS_SIZE / ratio) : CANVAS_SIZE
-    canvas.width = cw
-    canvas.height = ch
+    const cw = canvas.width
+    const ch = canvas.height
 
     ctx.clearRect(0, 0, cw, ch)
 
-    // Draw image centered with zoom and offset
-    const baseScale = Math.max(cw / img.width, ch / img.height)
-    const scale = baseScale * zoom
-    const drawW = img.width * scale
-    const drawH = img.height * scale
+    // Draw zoomed image centered
+    const drawW = cw * zoom
+    const drawH = ch * zoom
+    const offsetX = (cw - drawW) / 2
+    const offsetY = (ch - drawH) / 2
+    ctx.drawImage(img, offsetX, offsetY, drawW, drawH)
 
-    const cx = cw / 2 + offset.x
-    const cy = ch / 2 + offset.y
-
-    ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH)
-
-    // Draw crop overlay — darken outside, clear inside
-    const padX = 0
-    const padY = 0
-    const cropX = padX
-    const cropY = padY
-    const cropW = cw - padX * 2
-    const cropH = ch - padY * 2
-
-    // Darken everything
-    ctx.fillStyle = 'rgba(0,0,0,0.45)'
+    // Dark overlay over entire canvas
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'
     ctx.fillRect(0, 0, cw, ch)
 
-    // Clear the crop area so the image shows through
+    // Clear (reveal) the crop area so image shows through
+    const cropX = (crop.x / 100) * cw
+    const cropY = (crop.y / 100) * ch
+    const cropW = (crop.width / 100) * cw
+    const cropH = (crop.height / 100) * ch
+
     ctx.clearRect(cropX, cropY, cropW, cropH)
 
-    // Redraw image ONLY in crop area (so it's visible)
+    // Re-draw image only inside crop area (so it shows through clearly)
     ctx.save()
     ctx.beginPath()
     ctx.rect(cropX, cropY, cropW, cropH)
     ctx.clip()
-    ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH)
+    ctx.drawImage(img, offsetX, offsetY, drawW, drawH)
     ctx.restore()
 
-    // Draw crop border
-    ctx.strokeStyle = 'white'
+    // Crop border
+    ctx.strokeStyle = '#ffffff'
     ctx.lineWidth = 2
     ctx.strokeRect(cropX, cropY, cropW, cropH)
 
-    // Draw rule-of-thirds grid lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)'
-    ctx.lineWidth = 0.5
-    for (let i = 1; i < 3; i++) {
-      ctx.beginPath()
-      ctx.moveTo(cropX + (cropW / 3) * i, cropY)
-      ctx.lineTo(cropX + (cropW / 3) * i, cropY + cropH)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(cropX, cropY + (cropH / 3) * i)
-      ctx.lineTo(cropX + cropW, cropY + (cropH / 3) * i)
-      ctx.stroke()
-    }
-
     // Corner handles
-    const handleSize = 16
-    ctx.strokeStyle = 'white'
-    ctx.lineWidth = 3
+    const handleSize = 12
+    ctx.fillStyle = '#3b82f6'
     const corners = [
       [cropX, cropY],
-      [cropX + cropW, cropY],
-      [cropX, cropY + cropH],
-      [cropX + cropW, cropY + cropH],
+      [cropX + cropW - handleSize, cropY],
+      [cropX, cropY + cropH - handleSize],
+      [cropX + cropW - handleSize, cropY + cropH - handleSize]
     ]
-    corners.forEach(([hx, hy]) => {
-      const dx = hx === cropX ? 1 : -1
-      const dy = hy === cropY ? 1 : -1
-      ctx.beginPath()
-      ctx.moveTo(hx, hy + dy * handleSize)
-      ctx.lineTo(hx, hy)
-      ctx.lineTo(hx + dx * handleSize, hy)
-      ctx.stroke()
-    })
-  }, [imageLoaded, selectedRatio, zoom, offset])
+    corners.forEach(([hx, hy]) => ctx.fillRect(hx, hy, handleSize, handleSize))
 
-  useEffect(() => {
-    draw()
-  }, [draw])
+    // Grid lines (rule of thirds)
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    ctx.moveTo(cropX + cropW / 3, cropY)
+    ctx.lineTo(cropX + cropW / 3, cropY + cropH)
+    ctx.moveTo(cropX + (cropW * 2) / 3, cropY)
+    ctx.lineTo(cropX + (cropW * 2) / 3, cropY + cropH)
+    ctx.moveTo(cropX, cropY + cropH / 3)
+    ctx.lineTo(cropX + cropW, cropY + cropH / 3)
+    ctx.moveTo(cropX, cropY + (cropH * 2) / 3)
+    ctx.lineTo(cropX + cropW, cropY + (cropH * 2) / 3)
+    ctx.stroke()
+  }, [crop, zoom])
 
-  // Clamp offset so image always covers crop area
-  const clampOffset = useCallback((ox, oy, z) => {
-    if (!imageRef.current || !canvasRef.current) return { x: ox, y: oy }
-    const img = imageRef.current
-    const ratio = ratioMap[selectedRatio]
-    const cw = CANVAS_SIZE
-    const ch = ratio ? Math.round(CANVAS_SIZE / ratio) : CANVAS_SIZE
-    const baseScale = Math.max(cw / img.width, ch / img.height)
-    const scale = baseScale * z
-    const drawW = img.width * scale
-    const drawH = img.height * scale
-    const maxX = Math.max(0, (drawW - cw) / 2)
-    const maxY = Math.max(0, (drawH - ch) / 2)
-    return {
-      x: Math.max(-maxX, Math.min(maxX, ox)),
-      y: Math.max(-maxY, Math.min(maxY, oy)),
+  const getPoint = (e) => {
+    const rect = containerRef.current.getBoundingClientRect()
+    if (e.touches) {
+      return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top }
     }
-  }, [selectedRatio])
-
-  // Pointer helpers
-  const getPointer = (e) => {
-    if (e.touches && e.touches.length > 0) {
-      return { x: e.touches[0].clientX, y: e.touches[0].clientY }
-    }
-    return { x: e.clientX, y: e.clientY }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
   }
 
   const getPinchDist = (e) => {
-    if (e.touches && e.touches.length >= 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX
-      const dy = e.touches[0].clientY - e.touches[1].clientY
-      return Math.sqrt(dx * dx + dy * dy)
-    }
-    return null
+    const dx = e.touches[0].clientX - e.touches[1].clientX
+    const dy = e.touches[0].clientY - e.touches[1].clientY
+    return Math.sqrt(dx * dx + dy * dy)
   }
 
-  const handlePointerDown = (e) => {
-    e.preventDefault()
+  const handleStart = (e) => {
+    if (!containerRef.current) return
     if (e.touches && e.touches.length === 2) {
       setLastPinchDist(getPinchDist(e))
       return
     }
+    e.preventDefault()
     setIsDragging(true)
-    const p = getPointer(e)
-    setDragStart({ x: p.x - offset.x, y: p.y - offset.y })
+    setDragStart(getPoint(e))
   }
 
-  const handlePointerMove = (e) => {
-    e.preventDefault()
+  const handleMove = useCallback((e) => {
     // Pinch zoom
-    if (e.touches && e.touches.length === 2 && lastPinchDist !== null) {
-      const dist = getPinchDist(e)
-      const delta = dist / lastPinchDist
-      setZoom(prev => {
-        const next = Math.max(1, Math.min(4, prev * delta))
-        setOffset(o => clampOffset(o.x, o.y, next))
-        return next
-      })
-      setLastPinchDist(dist)
+    if (e.touches && e.touches.length === 2) {
+      if (lastPinchDist === null) return
+      const newDist = getPinchDist(e)
+      const delta = (newDist - lastPinchDist) / 100
+      setZoom(z => Math.min(3, Math.max(1, z + delta)))
+      setLastPinchDist(newDist)
       return
     }
-    if (!isDragging) return
-    const p = getPointer(e)
-    const newOffset = clampOffset(p.x - dragStart.x, p.y - dragStart.y, zoom)
-    setOffset(newOffset)
-  }
 
-  const handlePointerUp = (e) => {
+    if (!isDragging || !containerRef.current) return
+    e.preventDefault()
+
+    const rect = containerRef.current.getBoundingClientRect()
+    const pt = getPoint(e)
+    const deltaX = ((pt.x - dragStart.x) / rect.width) * 100
+    const deltaY = ((pt.y - dragStart.y) / rect.height) * 100
+
+    setCrop(prev => ({
+      ...prev,
+      x: Math.max(0, Math.min(prev.x + deltaX, 100 - prev.width)),
+      y: Math.max(0, Math.min(prev.y + deltaY, 100 - prev.height))
+    }))
+    setDragStart(pt)
+  }, [isDragging, dragStart, lastPinchDist])
+
+  const handleEnd = () => {
     setIsDragging(false)
     setLastPinchDist(null)
   }
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    canvas.addEventListener('touchmove', handlePointerMove, { passive: false })
-    canvas.addEventListener('touchend', handlePointerUp, { passive: false })
+    document.addEventListener('mousemove', handleMove, { passive: false })
+    document.addEventListener('mouseup', handleEnd)
+    document.addEventListener('touchmove', handleMove, { passive: false })
+    document.addEventListener('touchend', handleEnd)
     return () => {
-      canvas.removeEventListener('touchmove', handlePointerMove)
-      canvas.removeEventListener('touchend', handlePointerUp)
+      document.removeEventListener('mousemove', handleMove)
+      document.removeEventListener('mouseup', handleEnd)
+      document.removeEventListener('touchmove', handleMove)
+      document.removeEventListener('touchend', handleEnd)
     }
-  }, [isDragging, dragStart, zoom, lastPinchDist, offset, selectedRatio])
-
-  const handleZoom = (dir) => {
-    setZoom(prev => {
-      const next = Math.max(1, Math.min(4, prev + dir * 0.25))
-      setOffset(o => clampOffset(o.x, o.y, next))
-      return next
-    })
-  }
+  }, [handleMove])
 
   const handleRatioChange = (ratio) => {
     setSelectedRatio(ratio)
-    setZoom(1)
-    setOffset({ x: 0, y: 0 })
+    if (imageRef.current) initCrop(ratio, imageRef.current)
   }
 
   const handleCrop = () => {
     if (!imageRef.current) return
     const img = imageRef.current
-    const ratio = ratioMap[selectedRatio]
-    const cw = CANVAS_SIZE
-    const ch = ratio ? Math.round(CANVAS_SIZE / ratio) : CANVAS_SIZE
-    const baseScale = Math.max(cw / img.width, ch / img.height)
-    const scale = baseScale * zoom
+    const canvas = canvasRef.current
+    const cw = canvas.width
+    const ch = canvas.height
 
-    // Output at 2x for quality
-    const outW = cw * 2
-    const outH = ch * 2
-    const outputCanvas = document.createElement('canvas')
-    outputCanvas.width = outW
-    outputCanvas.height = outH
-    const ctx = outputCanvas.getContext('2d')
+    const drawW = cw * zoom
+    const drawH = ch * zoom
+    const offsetX = (cw - drawW) / 2
+    const offsetY = (ch - drawH) / 2
 
-    const drawW = img.width * scale * 2
-    const drawH = img.height * scale * 2
-    const cx = outW / 2 + offset.x * 2
-    const cy = outH / 2 + offset.y * 2
+    const cropX = (crop.x / 100) * cw
+    const cropY = (crop.y / 100) * ch
+    const cropW = (crop.width / 100) * cw
+    const cropH = (crop.height / 100) * ch
 
-    ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH)
+    // Map canvas crop coords back to image coords
+    const scaleX = img.width / drawW
+    const scaleY = img.height / drawH
+    const srcX = (cropX - offsetX) * scaleX
+    const srcY = (cropY - offsetY) * scaleY
+    const srcW = cropW * scaleX
+    const srcH = cropH * scaleY
 
-    outputCanvas.toBlob((blob) => {
+    const out = document.createElement('canvas')
+    out.width = Math.max(1, srcW)
+    out.height = Math.max(1, srcH)
+    out.getContext('2d').drawImage(img, srcX, srcY, srcW, srcH, 0, 0, out.width, out.height)
+
+    const mimeType = file ? file.type : 'image/jpeg'
+    const fileName = file ? file.name : 'cropped.jpg'
+    out.toBlob((blob) => {
       if (!blob) return
-      const name = file ? file.name : `cropped_${Date.now()}.jpg`
-      const type = file ? file.type : 'image/jpeg'
-      onCrop(new File([blob], name, { type }))
-    }, file ? file.type : 'image/jpeg', 0.92)
+      onCrop(new File([blob], fileName, { type: mimeType }))
+    }, mimeType)
   }
 
-  const ratio = ratioMap[selectedRatio]
-  const canvasHeight = ratio ? Math.round(CANVAS_SIZE / ratio) : CANVAS_SIZE
+  // Set canvas size after mount
+  useEffect(() => {
+    if (canvasRef.current && containerRef.current) {
+      const w = containerRef.current.offsetWidth || 340
+      canvasRef.current.width = w
+      canvasRef.current.height = w
+    }
+  }, [])
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-3">
-      <div className="bg-white rounded-2xl w-full max-w-sm flex flex-col max-h-[95vh] overflow-hidden">
+      <div className="bg-white rounded-2xl w-full max-w-sm space-y-3 max-h-[95vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 pt-4">
           <h3 className="font-semibold text-gray-900 text-sm">이미지 자르기</h3>
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1">
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Canvas area */}
-        <div className="flex-shrink-0 bg-black flex items-center justify-center" style={{ minHeight: Math.min(canvasHeight, 360) }}>
-          {!imageLoaded ? (
-            <p className="text-white text-sm">이미지 로딩 중...</p>
-          ) : (
-            <canvas
-              ref={canvasRef}
-              className="block touch-none"
-              style={{ width: CANVAS_SIZE, height: canvasHeight, maxWidth: '100%', cursor: isDragging ? 'grabbing' : 'grab' }}
-              onMouseDown={handlePointerDown}
-              onMouseMove={handlePointerMove}
-              onMouseUp={handlePointerUp}
-              onMouseLeave={handlePointerUp}
-              onTouchStart={handlePointerDown}
-            />
-          )}
+        {/* Canvas */}
+        <div
+          ref={containerRef}
+          className="mx-4 bg-black rounded-xl overflow-hidden cursor-move touch-none select-none"
+          onMouseDown={handleStart}
+          onTouchStart={handleStart}
+          style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+        >
+          <canvas ref={canvasRef} className="w-full h-auto block" />
         </div>
 
-        {/* Controls */}
-        <div className="flex-shrink-0 px-4 py-3 space-y-3 overflow-y-auto">
-          {/* Zoom */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 w-8">확대</span>
-            <button
-              onClick={() => handleZoom(-1)}
-              disabled={zoom <= 1}
-              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 disabled:opacity-30"
-            >
-              <Minus size={14} weight="bold" />
-            </button>
-            <div className="flex-1 bg-gray-100 rounded-full h-2 relative">
-              <div
-                className="bg-blue-500 h-2 rounded-full transition-all"
-                style={{ width: `${((zoom - 1) / 3) * 100}%` }}
-              />
-            </div>
-            <button
-              onClick={() => handleZoom(1)}
-              disabled={zoom >= 4}
-              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 disabled:opacity-30"
-            >
-              <Plus size={14} weight="bold" />
-            </button>
-            <span className="text-xs text-gray-400 w-8 text-right">{zoom.toFixed(1)}x</span>
-          </div>
+        {/* Zoom controls */}
+        <div className="px-4 flex items-center gap-3">
+          <span className="text-xs text-gray-500 w-10">확대</span>
+          <button
+            onClick={() => setZoom(z => Math.max(1, +(z - 0.1).toFixed(1)))}
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center flex-shrink-0"
+          >
+            <Minus size={14} />
+          </button>
+          <input
+            type="range"
+            min="1" max="3" step="0.05"
+            value={zoom}
+            onChange={e => setZoom(parseFloat(e.target.value))}
+            className="flex-1 accent-blue-600"
+          />
+          <button
+            onClick={() => setZoom(z => Math.min(3, +(z + 0.1).toFixed(1)))}
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center flex-shrink-0"
+          >
+            <Plus size={14} />
+          </button>
+          <span className="text-xs text-gray-400 w-10 text-right">{zoom.toFixed(1)}x</span>
+        </div>
 
-          {/* Ratio */}
-          <div>
-            <p className="text-xs text-gray-500 mb-2">비율</p>
-            <div className="flex gap-2">
-              {aspectRatios.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => handleRatioChange(r)}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    selectedRatio === r ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
+        {/* Ratio buttons */}
+        <div className="px-4">
+          <p className="text-xs text-gray-500 mb-2">비율 선택</p>
+          <div className="flex gap-2">
+            {aspectRatios.map((ratio) => (
+              <button
+                key={ratio}
+                onClick={() => handleRatioChange(ratio)}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedRatio === ratio ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {ratio === '4:5' ? '4:5 (세로)' : '1:1 (정사각)'}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <p className="text-xs text-gray-400 text-center">
-            드래그로 위치 조정 · 핀치로 확대/축소
-          </p>
+        <p className="px-4 text-xs text-gray-400">
+          💡 밝은 영역이 잘릴 부분입니다. 드래그로 위치를 조정하세요.
+        </p>
 
-          {/* Actions */}
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={onCancel}
-              className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-200"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleCrop}
-              disabled={!imageLoaded}
-              className="flex-1 bg-blue-600 text-white rounded-xl py-2.5 text-sm hover:bg-blue-700 font-medium flex items-center justify-center gap-1.5 disabled:opacity-50"
-            >
-              <Check size={15} weight="bold" />
-              자르기
-            </button>
-          </div>
+        {/* Actions */}
+        <div className="px-4 pb-4 flex gap-2">
+          <button
+            onClick={handleCrop}
+            className="flex-1 bg-blue-600 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
+          >
+            <Check size={16} weight="bold" />
+            자르기
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-200"
+          >
+            취소
+          </button>
         </div>
       </div>
     </div>
