@@ -7,6 +7,7 @@ import { SpotCard, RichText } from '../components/SpotCard'
 import { broadcastQRExpiry } from '../lib/qrSync'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin } from 'phosphor-react'
+import '../styles/tabAnimation.css' // Add this import
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -20,32 +21,25 @@ export default function MemberPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
+      const { data: { user } } = await supabase.auth.getUser()
       const { data: memberData } = await supabase
         .from('members')
         .select('*')
         .eq('user_id', user.id)
         .single()
-
       const { data: adminData } = await supabase
         .from('admin_roles')
         .select('id')
         .eq('user_id', user.id)
         .single()
-
       const { data: eventData } = await supabase
         .from('events')
         .select('*')
         .order('event_date', { ascending: true })
-
       const { data: restaurantData } = await supabase
         .from('restaurants')
         .select('*')
         .order('created_at', { ascending: false })
-
       setMember(memberData)
       setIsAdmin(!!adminData)
       setEvents(eventData || [])
@@ -77,13 +71,8 @@ export default function MemberPage() {
   }
 
   const qrValue = token
-    ? window.location.origin +
-      '/verify/' +
-      token +
-      '_' +
-      member?.student_number
+    ? window.location.origin + '/verify/' + token + '_' + member?.student_number
     : ''
-
   const isValid =
     member?.is_member &&
     member?.membership_valid_until &&
@@ -95,31 +84,34 @@ export default function MemberPage() {
       style={{ height: '100dvh' }}
     >
       {/* 헤더 */}
-<div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
-  <h1 className="font-bold text-gray-900">UvA-IN</h1>
-  <div className="flex gap-2">
-    {isAdmin && (
-      <button
-        onClick={() => {
-          window.location.href = '/admin'
-        }}
-        className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+      <div
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        관리자
-      </button>
-    )}
-    <button
-      onClick={() => supabase.auth.signOut()}
-      className="text-sm text-gray-500 px-3 py-1 rounded-lg hover:bg-gray-100"
-    >
-      로그아웃
-    </button>
-  </div>
-</div>
+        <h1 className="font-bold text-gray-900">UvA-IN</h1>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <button
+              onClick={() => {
+                window.location.href = '/admin'
+              }}
+              className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+            >
+              관리자
+            </button>
+          )}
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="text-sm text-gray-500 px-3 py-1 rounded-lg hover:bg-gray-100"
+          >
+            로그아웃
+          </button>
+        </div>
+      </div>
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
-        <div key={tabKey} className="h-full">
+        <div key={tabKey} className="h-full tab-content">
           {activeTab === 'qr' && (
             <QRTab
               member={member}
@@ -174,13 +166,10 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
     broadcastQRExpiry(member.student_number)
   }, [qrValue, member?.student_number])
 
-  // Calculate progress percentage (0-100)
-  // Bar starts full at 15 seconds and shrinks to 0
   const totalSeconds = 15
   const progressPercent = ((secondsLeft || 0) / totalSeconds) * 100
-
-  // Format seconds display
-  const displaySeconds = secondsLeft !== null && secondsLeft !== undefined ? secondsLeft : 0
+  const displaySeconds =
+    secondsLeft !== null && secondsLeft !== undefined ? secondsLeft : 0
 
   return (
     <div className="h-full overflow-y-auto">
@@ -193,7 +182,9 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
             <span
               className={
                 'text-xs font-medium px-2 py-1 rounded-full ' +
-                (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
+                (isValid
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-100 text-red-600')
               }
             >
               {isValid ? '✓ 유효' : '✗ 만료'}
@@ -205,17 +196,12 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
             <p>{'유효기간: ' + (member?.membership_valid_until ?? '없음')}</p>
           </div>
         </div>
-
         {isValid ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
             <p className="text-sm text-gray-500 mb-4">멤버십 QR 코드</p>
-            
-            {/* QR Code with thicker border */}
             <div className="p-3 bg-white rounded-xl border-4 border-orange-500">
               <QRCodeSVG value={qrValue} size={200} level="M" />
             </div>
-
-            {/* Progress Bar Timer */}
             <div className="w-full mt-6">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm text-gray-600">QR 갱신까지</p>
@@ -223,17 +209,13 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
                   {displaySeconds}초
                 </p>
               </div>
-              
-              {/* Progress bar background */}
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                {/* Progress bar fill - shrinks from right to left */}
                 <div
                   className="h-full bg-orange-500 transition-all duration-100"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
             </div>
-
             <p className="text-xs text-gray-400 mt-4 text-center">
               15초마다 자동 갱신됩니다
             </p>
@@ -243,9 +225,7 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
             <p className="text-red-600 font-medium">
               멤버십이 유효하지 않습니다
             </p>
-            <p className="text-sm text-red-400 mt-1">
-              임원에게 문의하세요
-            </p>
+            <p className="text-sm text-red-400 mt-1">임원에게 문의하세요</p>
           </div>
         )}
       </div>
@@ -291,7 +271,8 @@ function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
-  const setSlide = (eventId, idx) => setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
+  const setSlide = (eventId, idx) =>
+    setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
 
   useEffect(() => {
     if (!expandedId) return
@@ -303,12 +284,12 @@ function EventsTab({ events }) {
       if (e.key === 'ArrowRight') {
         setSlide(
           expandedId,
-          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
+          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1)
         )
       } else if (e.key === 'ArrowLeft') {
         setSlide(
           expandedId,
-          Math.max((slideIndexes[expandedId] || 0) - 1, 0),
+          Math.max((slideIndexes[expandedId] || 0) - 1, 0)
         )
       }
     }
@@ -320,8 +301,29 @@ function EventsTab({ events }) {
     const start = new Date(ev.event_date)
     const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
     const pad = (n) => String(n).padStart(2, '0')
-    const fmt = (d) => d.getUTCFullYear() + '' + pad(d.getUTCMonth() + 1) + '' + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + '' + pad(d.getUTCMinutes()) + '00Z'
-    const ics = 'BEGIN:VCALENDAR\\nVERSION:2.0\\nBEGIN:VEVENT\\nDTSTART:' + fmt(start) + '\\nDTEND:' + fmt(end) + '\\nSUMMARY:' + ev.title + '\\nLOCATION:' + (ev.location || '') + '\\nDESCRIPTION:' + (ev.description || '') + '\\nEND:VEVENT\\nEND:VCALENDAR'
+    const fmt = (d) =>
+      d.getUTCFullYear() +
+      '' +
+      pad(d.getUTCMonth() + 1) +
+      '' +
+      pad(d.getUTCDate()) +
+      'T' +
+      pad(d.getUTCHours()) +
+      '' +
+      pad(d.getUTCMinutes()) +
+      '00Z'
+    const ics =
+      'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' +
+      fmt(start) +
+      '\nDTEND:' +
+      fmt(end) +
+      '\nSUMMARY:' +
+      ev.title +
+      '\nLOCATION:' +
+      (ev.location || '') +
+      '\nDESCRIPTION:' +
+      (ev.description || '') +
+      '\nEND:VEVENT\nEND:VCALENDAR'
     const blob = new Blob([ics], { type: 'text/calendar' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -336,12 +338,21 @@ function EventsTab({ events }) {
     const imgs = ev['image_urls'] || []
     const instaUrl = ev['instagram_url']
     const currentSlide = slideIndexes[ev.id] || 0
+
     return (
-      <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <button onClick={() => setExpandedId(isExpanded ? null : ev.id)} className="w-full text-left p-5">
+      <div
+        key={ev.id}
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      >
+        <button
+          onClick={() => setExpandedId(isExpanded ? null : ev.id)}
+          className="w-full text-left p-5"
+        >
           <div className="flex items-center justify-between">
             <p className="font-semibold text-gray-900">{ev.title}</p>
-            <span className="text-gray-400 text-sm ml-2">{isExpanded ? '▲' : '▼'}</span>
+            <span className="text-gray-400 text-sm ml-2">
+              {isExpanded ? '▲' : '▼'}
+            </span>
           </div>
           {ev.event_date && (
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
@@ -387,18 +398,49 @@ function EventsTab({ events }) {
                     }
                   }}
                 >
-                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-                    <div className="flex h-full" style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}>
+                  <div
+                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    style={{ aspectRatio: '1/1' }}
+                  >
+                    <div
+                      className="flex h-full"
+                      style={{
+                        transform: 'translateX(-' + currentSlide * 100 + '%)',
+                        transition: 'transform 0.3s ease',
+                      }}
+                    >
                       {imgs.map((url, i) => (
-                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-                          <img src={url} alt={'이미지 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt={'이미지 ' + (i + 1)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            draggable={false}
+                          />
                         </div>
                       ))}
                     </div>
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
-                          <div key={i} onClick={() => setSlide(ev.id, i)} className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
+                          <div
+                            key={i}
+                            onClick={() => setSlide(ev.id, i)}
+                            className={
+                              'rounded-full cursor-pointer transition-all ' +
+                              (i === currentSlide
+                                ? 'bg-white w-2 h-2'
+                                : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                            }
+                          />
                         ))}
                       </div>
                     )}
@@ -406,29 +448,80 @@ function EventsTab({ events }) {
                 </div>
                 {/* 데스크톱 슬라이더 */}
                 <div className="hidden md:block">
-                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-                    <div className="flex h-full" style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}>
+                  <div
+                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    style={{ aspectRatio: '1/1' }}
+                  >
+                    <div
+                      className="flex h-full"
+                      style={{
+                        transform: 'translateX(-' + currentSlide * 100 + '%)',
+                        transition: 'transform 0.3s ease',
+                      }}
+                    >
                       {imgs.map((url, i) => (
-                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-                          <img src={url} alt={'이미지 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt={'이미지 ' + (i + 1)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            draggable={false}
+                          />
                         </div>
                       ))}
                     </div>
                     {imgs.length > 1 && (
                       <>
                         {currentSlide > 0 && (
-                          <NavBtn onClick={() => setSlide(ev.id, currentSlide - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+                          <NavBtn
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide - 1)
+                            }
+                            style={{
+                              position: 'absolute',
+                              left: '10px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                            }}
+                          >
                             ‹
                           </NavBtn>
                         )}
                         {currentSlide < imgs.length - 1 && (
-                          <NavBtn onClick={() => setSlide(ev.id, currentSlide + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+                          <NavBtn
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide + 1)
+                            }
+                            style={{
+                              position: 'absolute',
+                              right: '10px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                            }}
+                          >
                             ›
                           </NavBtn>
                         )}
                         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                           {imgs.map((_, i) => (
-                            <div key={i} onClick={() => setSlide(ev.id, i)} className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
+                            <div
+                              key={i}
+                              onClick={() => setSlide(ev.id, i)}
+                              className={
+                                'rounded-full cursor-pointer transition-all ' +
+                                (i === currentSlide
+                                  ? 'bg-white w-2 h-2'
+                                  : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                              }
+                            />
                           ))}
                         </div>
                       </>
@@ -439,21 +532,37 @@ function EventsTab({ events }) {
             )}
             <div className="px-5 pb-5">
               {ev.description && (
-                <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />
+                <RichText
+                  text={ev.description}
+                  className="text-sm text-gray-600 mt-3 leading-relaxed block"
+                />
               )}
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
-                  <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5">
+                  <button
+                    onClick={() => addToCalendar(ev)}
+                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5"
+                  >
                     <Calendar size={14} weight="fill" />
                     캘린더에 추가
                   </button>
                 )}
                 {instaUrl && (
-                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <a
+                    href={instaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
-                    Instagram
+                    Instagram 에서 열기
                   </a>
                 )}
               </div>
@@ -464,10 +573,13 @@ function EventsTab({ events }) {
     )
   }
 
-  // Separate events into upcoming and past
   const now = new Date()
-  const upcomingEvents = events.filter((ev) => ev.event_date && new Date(ev.event_date) >= now)
-  const pastEvents = events.filter((ev) => ev.event_date && new Date(ev.event_date) < now)
+  const upcomingEvents = events.filter(
+    (ev) => ev.event_date && new Date(ev.event_date) >= now
+  )
+  const pastEvents = events.filter(
+    (ev) => ev.event_date && new Date(ev.event_date) < now
+  )
 
   return (
     <div className="h-full overflow-y-auto">
@@ -487,13 +599,18 @@ function EventsTab({ events }) {
                   let currentMonth = null
                   const blocks = []
                   upcomingEvents.forEach((ev) => {
-                    const label = ev.event_date ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
+                    const label = ev.event_date
+                      ? `${new Date(ev.event_date).getMonth() + 1}월`
+                      : '날짜 미정'
                     if (label !== currentMonth) {
                       currentMonth = label
                       blocks.push(
-                        <p key={`month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                        <p
+                          key={`month-${label}`}
+                          className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                        >
                           {label}
-                        </p>,
+                        </p>
                       )
                     }
                     blocks.push(renderEvent(ev))
@@ -502,34 +619,45 @@ function EventsTab({ events }) {
                 })()}
               </div>
             )}
-
             {/* PAST EVENTS SECTION */}
             {pastEvents.length > 0 && (
               <div className="mt-6">
                 <button
-                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+                  onClick={() =>
+                    setPastEventsExpanded(!pastEventsExpanded)
+                  }
                   className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-semibold">지난 이벤트</span>
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">{pastEvents.length}</span>
+                    <span className="text-gray-600 font-semibold">
+                      지난 이벤트
+                    </span>
+                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
+                      {pastEvents.length}
+                    </span>
                   </div>
-                  <span className="text-gray-400 text-lg">{pastEventsExpanded ? '▲' : '▼'}</span>
+                  <span className="text-gray-400 text-lg">
+                    {pastEventsExpanded ? '▲' : '▼'}
+                  </span>
                 </button>
-
                 {pastEventsExpanded && (
                   <div className="space-y-3 mt-3">
                     {(() => {
                       let currentMonth = null
                       const blocks = []
                       pastEvents.forEach((ev) => {
-                        const label = ev.event_date ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
+                        const label = ev.event_date
+                          ? `${new Date(ev.event_date).getMonth() + 1}월`
+                          : '날짜 미정'
                         if (label !== currentMonth) {
                           currentMonth = label
                           blocks.push(
-                            <p key={`past-month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                            <p
+                              key={`past-month-${label}`}
+                              className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                            >
                               {label}
-                            </p>,
+                            </p>
                           )
                         }
                         blocks.push(renderEvent(ev))
@@ -550,7 +678,6 @@ function EventsTab({ events }) {
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
-
   const filtered =
     activeCategory === '전체'
       ? restaurants
@@ -564,7 +691,7 @@ function MapTab({ restaurants }) {
           const isActive = activeCategory === cat
           const iconSvg = getMapIconSvg(
             cat,
-            isActive ? 'white' : '#f97316',
+            isActive ? 'white' : '#f97316'
           )
           return (
             <button
@@ -595,7 +722,6 @@ function MapTab({ restaurants }) {
           )
         })}
       </div>
-
       {/* 지도 */}
       <div className="flex-1 relative overflow-hidden">
         <MapView
@@ -604,7 +730,10 @@ function MapTab({ restaurants }) {
           onSelect={setSelected}
         />
         {selected && (
-          <SpotCard selected={selected} onClose={() => setSelected(null)} />
+          <SpotCard
+            selected={selected}
+            onClose={() => setSelected(null)}
+          />
         )}
       </div>
     </div>
