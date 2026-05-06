@@ -1,5 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, Check, Plus, Minus } from 'phosphor-react'
+import imageCompression from 'browser-image-compression'
+
+// ── Compression helper ────────────────────────────────────────────────────────
+const compressImage = async (file) => {
+  try {
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 1.2,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    })
+    console.log(
+      `Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressed.size / 1024 / 1024).toFixed(2)}MB`
+    )
+    return compressed
+  } catch (err) {
+    console.error('Compression failed, using original:', err)
+    return file
+  }
+}
 
 export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRatios = ['1:1', '4:5'] }) {
   const [selectedRatio, setSelectedRatio] = useState(aspectRatios[0])
@@ -7,40 +26,40 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [lastPinchDist, setLastPinchDist] = useState(null)
-
-  // crop box in canvas pixels
   const [cropBox, setCropBox] = useState(null)
+  const [isCompressing, setIsCompressing] = useState(false) // ← NEW
 
   const canvasRef = useRef(null)
   const imageRef = useRef(null)
   const containerRef = useRef(null)
   const rafRef = useRef(null)
 
-  // pan offset in canvas pixels
   const [pan, setPan] = useState({ x: 0, y: 0 })
 
   const CANVAS_W = 340
   const CANVAS_H = 340
 
-  // ── Load image ──────────────────────────────────────────────────────────────
+  // ── Load image ────────────────────────────────────────────────────────────────
   useEffect(() => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
-
     img.onload = () => {
       imageRef.current = img
       setZoom(1)
       setPan({ x: 0, y: 0 })
       initCropBox(selectedRatio)
     }
-
     if (file) {
       img.src = URL.createObjectURL(file)
     } else if (imageUrl) {
-      // Try with crossOrigin first; if it fails, load without it
       img.onerror = () => {
         const img2 = new Image()
-        img2.onload = () => { imageRef.current = img2; setZoom(1); setPan({ x: 0, y: 0 }); initCropBox(selectedRatio) }
+        img2.onload = () => {
+          imageRef.current = img2
+          setZoom(1)
+          setPan({ x: 0, y: 0 })
+          initCropBox(selectedRatio)
+        }
         img2.src = imageUrl
         imageRef.current = null
       }
@@ -48,25 +67,17 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
     }
   }, [file, imageUrl])
 
-  // ── Init crop box centered, correct aspect ratio ────────────────────────────
+  // ── Init crop box ─────────────────────────────────────────────────────────────
   const initCropBox = useCallback((ratio) => {
-    // ratio string e.g. '1:1' or '4:5'
     const [wPart, hPart] = ratio.split(':').map(Number)
-    const aspectW = wPart
-    const aspectH = hPart
-
-    // Fit crop box to 85% of canvas, respecting aspect ratio
     const maxW = CANVAS_W * 0.85
     const maxH = CANVAS_H * 0.85
-
     let boxW = maxW
-    let boxH = boxW * (aspectH / aspectW)
-
+    let boxH = boxW * (hPart / wPart)
     if (boxH > maxH) {
       boxH = maxH
-      boxW = boxH * (aspectW / aspectH)
+      boxW = boxH * (wPart / hPart)
     }
-
     setCropBox({
       x: (CANVAS_W - boxW) / 2,
       y: (CANVAS_H - boxH) / 2,
@@ -75,7 +86,7 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
     })
   }, [])
 
-  // ── Draw ────────────────────────────────────────────────────────────────────
+  // ── Draw ──────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     rafRef.current = requestAnimationFrame(draw)
@@ -85,14 +96,11 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
     const canvas = canvasRef.current
     const img = imageRef.current
     if (!canvas || !img || !cropBox) return
-
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H)
 
-    // ── Draw image (zoomed + panned, letterboxed) ──
     const imgAspect = img.width / img.height
     const canvasAspect = CANVAS_W / CANVAS_H
-
     let baseW, baseH
     if (imgAspect > canvasAspect) {
       baseW = CANVAS_W
@@ -101,44 +109,30 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
       baseH = CANVAS_H
       baseW = CANVAS_H * imgAspect
     }
-
     const drawW = baseW * zoom
     const drawH = baseH * zoom
-
-    // Center then apply pan
     const drawX = (CANVAS_W - drawW) / 2 + pan.x
     const drawY = (CANVAS_H - drawH) / 2 + pan.y
-
     ctx.drawImage(img, drawX, drawY, drawW, drawH)
 
-    // ── Dark overlay (4 rects around crop box) ──
     const { x, y, w, h } = cropBox
     ctx.fillStyle = 'rgba(0,0,0,0.55)'
-    ctx.fillRect(0, 0, CANVAS_W, y)                          // top
-    ctx.fillRect(0, y + h, CANVAS_W, CANVAS_H - y - h)      // bottom
-    ctx.fillRect(0, y, x, h)                                 // left
-    ctx.fillRect(x + w, y, CANVAS_W - x - w, h)             // right
+    ctx.fillRect(0, 0, CANVAS_W, y)
+    ctx.fillRect(0, y + h, CANVAS_W, CANVAS_H - y - h)
+    ctx.fillRect(0, y, x, h)
+    ctx.fillRect(x + w, y, CANVAS_W - x - w, h)
 
-    // ── Crop border ──
     ctx.strokeStyle = '#ffffff'
     ctx.lineWidth = 2
     ctx.strokeRect(x, y, w, h)
 
-    // ── Rule-of-thirds ──
     ctx.strokeStyle = 'rgba(255,255,255,0.3)'
     ctx.lineWidth = 0.5
     for (let i = 1; i < 3; i++) {
-      ctx.beginPath()
-      ctx.moveTo(x + (w / 3) * i, y)
-      ctx.lineTo(x + (w / 3) * i, y + h)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(x, y + (h / 3) * i)
-      ctx.lineTo(x + w, y + (h / 3) * i)
-      ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(x + (w / 3) * i, y); ctx.lineTo(x + (w / 3) * i, y + h); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(x, y + (h / 3) * i); ctx.lineTo(x + w, y + (h / 3) * i); ctx.stroke()
     }
 
-    // ── Corner handles ──
     const hs = 14
     ctx.fillStyle = '#3b82f6'
     ;[[x, y], [x + w - hs, y], [x, y + h - hs], [x + w - hs, y + h - hs]].forEach(([hx, hy]) => {
@@ -146,7 +140,7 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
     })
   }
 
-  // ── Pointer helpers ─────────────────────────────────────────────────────────
+  // ── Pointer helpers ───────────────────────────────────────────────────────────
   const getCanvasPoint = (e) => {
     const rect = canvasRef.current.getBoundingClientRect()
     const scaleX = CANVAS_W / rect.width
@@ -164,7 +158,7 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
     return Math.sqrt(dx * dx + dy * dy)
   }
 
-  // ── Drag to pan image ───────────────────────────────────────────────────────
+  // ── Drag / pinch ──────────────────────────────────────────────────────────────
   const handlePointerDown = (e) => {
     if (e.touches?.length === 2) { setLastPinchDist(getPinchDist(e)); return }
     e.preventDefault()
@@ -205,21 +199,19 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
     }
   }, [handlePointerMove])
 
-  // ── Ratio change ─────────────────────────────────────────────────────────────
+  // ── Ratio change ──────────────────────────────────────────────────────────────
   const handleRatioChange = (ratio) => {
     setSelectedRatio(ratio)
     initCropBox(ratio)
   }
 
-  // ── Crop ─────────────────────────────────────────────────────────────────────
-  const handleCrop = () => {
+  // ── Crop + Compress ───────────────────────────────────────────────────────────
+  const handleCrop = async () => {
     const img = imageRef.current
     if (!img || !cropBox) return
 
-    // Reconstruct where the image was drawn on the canvas
     const imgAspect = img.width / img.height
     const canvasAspect = CANVAS_W / CANVAS_H
-
     let baseW, baseH
     if (imgAspect > canvasAspect) {
       baseW = CANVAS_W
@@ -228,22 +220,18 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
       baseH = CANVAS_H
       baseW = CANVAS_H * imgAspect
     }
-
     const drawW = baseW * zoom
     const drawH = baseH * zoom
     const drawX = (CANVAS_W - drawW) / 2 + pan.x
     const drawY = (CANVAS_H - drawH) / 2 + pan.y
 
-    // Map crop box canvas coords → image pixel coords
     const scaleX = img.width / drawW
     const scaleY = img.height / drawH
-
     const srcX = (cropBox.x - drawX) * scaleX
     const srcY = (cropBox.y - drawY) * scaleY
     const srcW = cropBox.w * scaleX
     const srcH = cropBox.h * scaleY
 
-    // Clamp to image bounds
     const clampedX = Math.max(0, srcX)
     const clampedY = Math.max(0, srcY)
     const clampedW = Math.min(srcW, img.width - clampedX)
@@ -256,9 +244,18 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
 
     const mimeType = file?.type || 'image/jpeg'
     const fileName = file?.name || 'cropped.jpg'
-    out.toBlob(blob => {
+
+    out.toBlob(async (blob) => {
       if (!blob) return
-      onCrop(new File([blob], fileName, { type: mimeType }))
+
+      setIsCompressing(true) // ← show loading state
+      try {
+        let croppedFile = new File([blob], fileName, { type: mimeType })
+        croppedFile = await compressImage(croppedFile) // ← COMPRESSION
+        onCrop(croppedFile)
+      } finally {
+        setIsCompressing(false)
+      }
     }, mimeType, 0.92)
   }
 
@@ -296,15 +293,21 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
 
         {/* Zoom */}
         <div className="px-4 flex items-center gap-2">
-          <button onClick={() => setZoom(z => Math.max(1, +(z - 0.1).toFixed(2)))}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center flex-shrink-0">
+          <button
+            onClick={() => setZoom(z => Math.max(1, +(z - 0.1).toFixed(2)))}
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center flex-shrink-0"
+          >
             <Minus size={14} />
           </button>
-          <input type="range" min="1" max="4" step="0.05" value={zoom}
+          <input
+            type="range" min="1" max="4" step="0.05" value={zoom}
             onChange={e => setZoom(parseFloat(e.target.value))}
-            className="flex-1 accent-blue-600" />
-          <button onClick={() => setZoom(z => Math.min(4, +(z + 0.1).toFixed(2)))}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center flex-shrink-0">
+            className="flex-1 accent-blue-600"
+          />
+          <button
+            onClick={() => setZoom(z => Math.min(4, +(z + 0.1).toFixed(2)))}
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center flex-shrink-0"
+          >
             <Plus size={14} />
           </button>
           <span className="text-xs text-gray-400 w-8 text-right">{zoom.toFixed(1)}x</span>
@@ -315,10 +318,15 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
           <p className="text-xs text-gray-500 mb-2">비율 선택</p>
           <div className="flex gap-2">
             {aspectRatios.map(ratio => (
-              <button key={ratio} onClick={() => handleRatioChange(ratio)}
+              <button
+                key={ratio}
+                onClick={() => handleRatioChange(ratio)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedRatio === ratio ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}>
+                  selectedRatio === ratio
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
                 {ratio === '4:5' ? '4:5 세로' : '1:1 정사각'}
               </button>
             ))}
@@ -327,15 +335,32 @@ export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRat
 
         {/* Actions */}
         <div className="px-4 pb-4 flex gap-2">
-          <button onClick={handleCrop}
-            className="flex-1 bg-blue-600 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-blue-700 flex items-center justify-center gap-2">
-            <Check size={16} weight="bold" />자르기
+          <button
+            onClick={handleCrop}
+            disabled={isCompressing}
+            className="flex-1 bg-blue-600 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isCompressing ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                압축 중...
+              </>
+            ) : (
+              <><Check size={16} weight="bold" />자르기</>
+            )}
           </button>
-          <button onClick={onCancel}
-            className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-200">
+          <button
+            onClick={onCancel}
+            disabled={isCompressing}
+            className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
             취소
           </button>
         </div>
+
       </div>
     </div>
   )

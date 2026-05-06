@@ -12,6 +12,7 @@
   "dependencies": {
     "@otplib/preset-browser": "^12.0.1",
     "@supabase/supabase-js": "^2.105.1",
+    "browser-image-compression": "^2.0.2",
     "leaflet": "^1.9.4",
     "phosphor-react": "^1.4.1",
     "qrcode.react": "^4.2.0",
