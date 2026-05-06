@@ -20,7 +20,7 @@ const compressImage = async (file) => {
   }
 }
 
-export function ImageCropperMobile({ file, imageUrl, onCrop, onCancel, aspectRatios = ['1:1', '4:5'] }) {
+export function ImageCropper({ file, imageUrl, onCrop, onCancel, aspectRatios = ['1:1', '4:5'] }) {
   const [selectedRatio, setSelectedRatio] = useState(aspectRatios[0])
   const [zoom, setZoom] = useState(1)
   const [isDragging, setIsDragging] = useState(false)
