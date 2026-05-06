@@ -124,12 +124,31 @@ function koreanSort(arr, key) {
 // Single image row: existing images + new previews merged together.
 // Tap any existing image → crop opens. New previews are shown inline.
 // Two upload buttons at the bottom: 그냥 업로드 / 자르기 업로드
+// ─── Image Upload Panel ──────────────────────────────────────────────────────
+// Single image row: existing images + new previews merged together.
+// Tap any existing image → crop opens using the ORIGINAL url (not the cropped one).
+// New previews are shown inline.
+// Two upload buttons at the bottom: 그냥 업로드 / 자르기 업로드
 function ImageUploadPanel({
   imageFiles, imagePreviews, existingUrls,
   onAddFile, onAddCropped, onRemoveNew, onRemoveExisting, onReplaceExisting,
   onReorder
 }) {
   const [cropperSource, setCropperSource] = useState(null)
+
+  // Store the original URLs when the panel first receives them (or when new ones arrive).
+  // This ensures re-cropping always uses the pristine original, not a previously cropped version.
+  const originalUrlsRef = useRef({})
+
+  useEffect(() => {
+    if (!existingUrls) return
+    existingUrls.forEach((url, idx) => {
+      // Only store the first time we see this index — never overwrite with a cropped version
+      if (originalUrlsRef.current[idx] === undefined) {
+        originalUrlsRef.current[idx] = url
+      }
+    })
+  }, [existingUrls])
 
   const handleFileSelect = (e) => {
     Array.from(e.target.files).forEach(f => onAddFile(f))
@@ -139,6 +158,12 @@ function ImageUploadPanel({
   const handleFileSelectForCrop = (e) => {
     if (e.target.files[0]) setCropperSource({ type: 'file', file: e.target.files[0] })
     e.target.value = ''
+  }
+
+  const handleTapExisting = (idx) => {
+    // Always open the cropper with the ORIGINAL url for this index
+    const originalUrl = originalUrlsRef.current[idx] ?? existingUrls[idx]
+    setCropperSource({ type: 'url', url: originalUrl, idx })
   }
 
   const handleCropDone = (croppedFile) => {
@@ -159,6 +184,12 @@ function ImageUploadPanel({
     const reordered = [...(existingUrls || [])]
     const [moved] = reordered.splice(dragIdx.current, 1)
     reordered.splice(idx, 0, moved)
+    // Also reorder the originalUrls ref to stay in sync
+    const origEntries = Object.entries(originalUrlsRef.current).map(([k, v]) => [parseInt(k), v])
+    const origArr = origEntries.sort((a, b) => a[0] - b[0]).map(e => e[1])
+    const [movedOrig] = origArr.splice(dragIdx.current, 1)
+    origArr.splice(idx, 0, movedOrig)
+    originalUrlsRef.current = Object.fromEntries(origArr.map((v, i) => [i, v]))
     onReorder && onReorder(reordered)
     dragIdx.current = null
   }
@@ -180,7 +211,7 @@ function ImageUploadPanel({
               <img
                 src={url}
                 alt=""
-                onClick={() => setCropperSource({ type: 'url', url, idx })}
+                onClick={() => handleTapExisting(idx)}
                 className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-colors"
               />
               {/* Hover overlay showing crop hint */}
