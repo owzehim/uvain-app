@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { ImageReorder } from '../components/ImageReorder'
-import { ImageCropperMobile } from '../components/ImageCropperMobile'
+import { ImageCropper } from '../components/ImageCropper'
 import { Plus, Eye, EyeSlash, MapPin, Ticket } from 'phosphor-react'
 
 export default function AdminPage() {
@@ -200,7 +200,7 @@ function ImageUploadPanel({ imageFiles, imagePreviews, existingUrls, onAddFile, 
       )}
 
       {cropperSource && (
-        <ImageCropperMobile
+        <ImageCropper
           file={cropperSource.type === 'file' ? cropperSource.file : null}
           imageUrl={cropperSource.type === 'url' ? cropperSource.url : null}
           onCrop={handleCropDone}
