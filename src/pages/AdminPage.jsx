@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { ImageReorder } from '../components/ImageReorder'
+import { ImageCropperMobile } from '../components/ImageCropperMobile'
 import { Plus, Eye, EyeSlash, MapPin, Ticket } from 'phosphor-react'
 
 export default function AdminPage() {
@@ -41,21 +42,13 @@ export default function AdminPage() {
         </div>
         <button onClick={() => supabase.auth.signOut()} className="text-sm text-gray-500 hover:text-gray-700">로그아웃</button>
       </div>
-
       <div className="bg-white border-b border-gray-100 px-4 flex gap-1 overflow-x-auto">
         {[{ key: 'members', label: '멤버 관리' }, { key: 'events', label: '이벤트' }, { key: 'restaurants', label: '장소' }].map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === tab.key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
             {tab.label}
           </button>
         ))}
       </div>
-
       <div className="w-full px-4 py-6">
         <div className="max-w-3xl mx-auto">
           {activeTab === 'members' && <MembersTab />}
@@ -92,7 +85,6 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
   }
 
   const handleInput = () => onChange(ref.current.innerHTML)
-
   const applyColor = (color) => {
     exec('foreColor', color)
     setShowColors(false)
@@ -270,7 +262,6 @@ function MembersTab() {
         <h2 className="font-semibold text-gray-900">멤버 목록 ({members.length}명)</h2>
         {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Plus size={16} weight="bold" />멤버 추가</button>}
       </div>
-
       {createdCredentials && (
         <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-3">
           <div className="flex items-start justify-between">
@@ -299,7 +290,6 @@ function MembersTab() {
           </div>
         </div>
       )}
-
       {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
           <h3 className="font-medium text-gray-900">새 멤버 추가 - 로그인 정보 설정</h3>
@@ -366,7 +356,6 @@ function MembersTab() {
           </div>
         </div>
       )}
-
       {loading ? <p className="text-gray-500 text-sm">로딩 중...</p> : members.length === 0 ? <p className="text-gray-500 text-sm">멤버가 없어요.</p> : (
         <div className="space-y-2">
           {sorted.map(member => (
@@ -440,6 +429,7 @@ function EventsTab() {
   const [imagePreviews, setImagePreviews] = useState([])
   const [uploading, setUploading] = useState(false)
   const [richEditorKey, setRichEditorKey] = useState(0)
+  const [cropperFile, setCropperFile] = useState(null)
 
   const fetchEvents = async () => {
     const { data } = await supabase.from('events').select('*').eq('is_archived', false).order('event_date', { ascending: true })
@@ -458,8 +448,20 @@ function EventsTab() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
-    setImageFiles(files)
-    setImagePreviews(files.map((f) => URL.createObjectURL(f)))
+    if (files.length > 0) {
+      setCropperFile(files[0])
+    }
+  }
+
+  const handleCropComplete = (croppedFile) => {
+    setImageFiles(prev => [...prev, croppedFile])
+    setImagePreviews(prev => [...prev, URL.createObjectURL(croppedFile)])
+    setCropperFile(null)
+  }
+
+  const handleRemoveImage = (idx) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== idx))
+    setImagePreviews(prev => prev.filter((_, i) => i !== idx))
   }
 
   const handleReorderImages = (reorderedUrls) => {
@@ -544,13 +546,7 @@ function EventsTab() {
 
   const openEdit = (event) => {
     setEditTarget(event)
-    setForm({
-      title: event.title,
-      description: event.description || '',
-      event_date: event.event_date ? event.event_date.slice(0, 16) : '',
-      location: event.location || '',
-      instagram_url: event.instagram_url || '',
-    })
+    setForm({ title: event.title, description: event.description || '', event_date: event.event_date ? event.event_date.slice(0, 16) : '', location: event.location || '', instagram_url: event.instagram_url || '', })
     setImageFiles([])
     setImagePreviews([])
     setRichEditorKey((k) => k + 1)
@@ -624,28 +620,34 @@ function EventsTab() {
             </div>
           </div>
           <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          
-          {/* IMAGE REORDER COMPONENT FOR EXISTING IMAGES */}
           {editTarget?.image_urls && editTarget.image_urls.length > 0 && (
-            <ImageReorder 
-              images={editTarget.image_urls} 
-              onReorder={handleReorderImages}
-              onDelete={handleDeleteExistingImage}
-              label="기존 사진"
-            />
+            <ImageReorder images={editTarget.image_urls} onReorder={handleReorderImages} onDelete={handleDeleteExistingImage} label="기존 사진" />
           )}
-          
           <div>
             <label className="text-sm text-gray-500 block mb-1">새 이미지 추가</label>
             <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+            {imageFiles.length > 0 && (
+              <div className="mt-2 space-y-2">
+                <p className="text-xs text-gray-600">선택된 이미지: {imageFiles.length}개</p>
+                <div className="flex gap-2 flex-wrap">
+                  {imagePreviews.map((preview, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={preview} alt={`preview-${idx}`} className="w-16 h-16 object-cover rounded" />
+                      <button type="button" onClick={() => handleRemoveImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+          {cropperFile && (
+            <ImageCropperMobile file={cropperFile} onCrop={handleCropComplete} onCancel={() => setCropperFile(null)} aspectRatios={['1:1', '4:5']} />
+          )}
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">
               {uploading ? '업로드 중...' : '수정 완료'}
             </button>
-            <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">
-              취소
-            </button>
+            <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
           </div>
         </div>
       )}
@@ -658,23 +660,16 @@ function EventsTab() {
         <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
         <div className="flex gap-2">
           {showArchivedList && (
-            <button onClick={() => setShowArchivedList(false)} className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-1 whitespace-nowrap">
-              ← 이벤트 목록
-            </button>
+            <button onClick={() => setShowArchivedList(false)} className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-1 whitespace-nowrap">← 이벤트 목록</button>
           )}
           {!showArchivedList && (
-            <button onClick={() => setShowArchivedList(true)} className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-1 whitespace-nowrap">
-              보관된 이벤트
-            </button>
+            <button onClick={() => setShowArchivedList(true)} className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-1 whitespace-nowrap">보관된 이벤트</button>
           )}
           {!showForm && !showArchivedList && (
-            <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap">
-              <Plus size={16} weight="bold" />이벤트 추가
-            </button>
+            <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Plus size={16} weight="bold" />이벤트 추가</button>
           )}
         </div>
       </div>
-
       {showArchivedList ? (
         <div className="space-y-3">
           {archivedEvents.length === 0 ? (
@@ -724,14 +719,28 @@ function EventsTab() {
               <div>
                 <label className="text-sm text-gray-500 block mb-1">이미지</label>
                 <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                {imageFiles.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-xs text-gray-600">선택된 이미지: {imageFiles.length}개</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {imagePreviews.map((preview, idx) => (
+                        <div key={idx} className="relative">
+                          <img src={preview} alt={`preview-${idx}`} className="w-16 h-16 object-cover rounded" />
+                          <button type="button" onClick={() => handleRemoveImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
+              {cropperFile && (
+                <ImageCropperMobile file={cropperFile} onCrop={handleCropComplete} onCancel={() => setCropperFile(null)} aspectRatios={['1:1', '4:5']} />
+              )}
               <div className="flex gap-2">
                 <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">
                   {uploading ? '업로드 중...' : '추가'}
                 </button>
-                <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">
-                  취소
-                </button>
+                <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
               </div>
             </div>
           )}
@@ -755,34 +764,6 @@ function EventsTab() {
               })()}
             </div>
           )}
-          {events.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">지난 이벤트</p>
-              {(() => {
-                const now = new Date()
-                const pastEvents = events.filter((ev) => ev.event_date && new Date(ev.event_date) < now)
-                if (pastEvents.length === 0) {
-                  return <p className="text-gray-500 text-sm">지난 이벤트가 없어요.</p>
-                }
-                const grouped = {}
-                pastEvents.forEach((ev) => {
-                  const label = ev.event_date ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
-                  if (!grouped[label]) grouped[label] = []
-                  grouped[label].push(ev)
-                })
-                return (
-                  <div className="space-y-3">
-                    {Object.entries(grouped).map(([month, evs]) => (
-                      <div key={month} className="space-y-2">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
-                        {evs.map((event) => renderEventCard(event, false))}
-                      </div>
-                    ))}
-                  </div>
-                )
-              })()}
-            </div>
-          )}
         </>
       )}
     </div>
@@ -800,6 +781,7 @@ function RestaurantsTab() {
   const [imagePreviews, setImagePreviews] = useState([])
   const [uploading, setUploading] = useState(false)
   const [richEditorKey, setRichEditorKey] = useState(0)
+  const [cropperFile, setCropperFile] = useState(null)
 
   const fetchRestaurants = async () => {
     const { data } = await supabase.from('restaurants').select('*').order('created_at', { ascending: false })
@@ -812,8 +794,20 @@ function RestaurantsTab() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
-    setImageFiles(files)
-    setImagePreviews(files.map(f => URL.createObjectURL(f)))
+    if (files.length > 0) {
+      setCropperFile(files[0])
+    }
+  }
+
+  const handleCropComplete = (croppedFile) => {
+    setImageFiles(prev => [...prev, croppedFile])
+    setImagePreviews(prev => [...prev, URL.createObjectURL(croppedFile)])
+    setCropperFile(null)
+  }
+
+  const handleRemoveImage = (idx) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== idx))
+    setImagePreviews(prev => prev.filter((_, i) => i !== idx))
   }
 
   const handleReorderImages = (reorderedUrls) => {
@@ -853,23 +847,7 @@ function RestaurantsTab() {
       }
       image_urls = [...image_urls, ...uploaded]
     }
-    const payload = {
-      name: form.name,
-      map_label: form.map_label,
-      description: form.description,
-      address: form.address,
-      latitude: form.latitude ? parseFloat(form.latitude) : null,
-      longitude: form.longitude ? parseFloat(form.longitude) : null,
-      discount_info: form.discount_info,
-      discount_terms: form.discount_terms,
-      rating: form.rating ? parseFloat(form.rating) : 0,
-      review: form.review,
-      reviewer_name: form.reviewer_name,
-      category: form.category,
-      price_range: form.price_range,
-      is_sponsored: form.is_sponsored,
-      image_urls,
-    }
+    const payload = { name: form.name, map_label: form.map_label, description: form.description, address: form.address, latitude: form.latitude ? parseFloat(form.latitude) : null, longitude: form.longitude ? parseFloat(form.longitude) : null, discount_info: form.discount_info, discount_terms: form.discount_terms, rating: form.rating ? parseFloat(form.rating) : 0, review: form.review, reviewer_name: form.reviewer_name, category: form.category, price_range: form.price_range, is_sponsored: form.is_sponsored, image_urls, }
     let saveError = null
     if (editTarget) {
       const { error } = await supabase.from('restaurants').update(payload).eq('id', editTarget.id)
@@ -901,22 +879,7 @@ function RestaurantsTab() {
 
   const openEdit = (r) => {
     setEditTarget(r)
-    setForm({
-      name: r.name,
-      map_label: r.map_label || '',
-      description: r.description || '',
-      address: r.address || '',
-      latitude: r.latitude || '',
-      longitude: r.longitude || '',
-      discount_info: r.discount_info || '',
-      discount_terms: r.discount_terms || '',
-      rating: r.rating || '',
-      review: r.review || '',
-      reviewer_name: r.reviewer_name || '',
-      category: r.category || '맛집',
-      price_range: r.price_range || '',
-      is_sponsored: r.is_sponsored || false,
-    })
+    setForm({ name: r.name, map_label: r.map_label || '', description: r.description || '', address: r.address || '', latitude: r.latitude || '', longitude: r.longitude || '', discount_info: r.discount_info || '', discount_terms: r.discount_terms || '', rating: r.rating || '', review: r.review || '', reviewer_name: r.reviewer_name || '', category: r.category || '맛집', price_range: r.price_range || '', is_sponsored: r.is_sponsored || false, })
     setRichEditorKey(k => k + 1)
     setImageFiles([])
     setImagePreviews([])
@@ -940,7 +903,6 @@ function RestaurantsTab() {
         <h2 className="font-semibold text-gray-900">장소 관리</h2>
         {!showForm && <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Plus size={16} weight="bold" />장소 추가</button>}
       </div>
-
       {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
           <h3 className="font-medium text-gray-900">새 장소 추가</h3>
@@ -984,13 +946,28 @@ function RestaurantsTab() {
           <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
           <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
           <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          {imageFiles.length > 0 && (
+            <div className="mt-2 space-y-2">
+              <p className="text-xs text-gray-600">선택된 이미지: {imageFiles.length}개</p>
+              <div className="flex gap-2 flex-wrap">
+                {imagePreviews.map((preview, idx) => (
+                  <div key={idx} className="relative">
+                    <img src={preview} alt={`preview-${idx}`} className="w-16 h-16 object-cover rounded" />
+                    <button type="button" onClick={() => handleRemoveImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {cropperFile && (
+            <ImageCropperMobile file={cropperFile} onCrop={handleCropComplete} onCancel={() => setCropperFile(null)} aspectRatios={['1:1', '4:5']} />
+          )}
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : '추가'}</button>
             <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
           </div>
         </div>
       )}
-
       {restaurants.length === 0 ? <p className="text-gray-500 text-sm">등록된 장소가 없어요.</p> : (
         (() => {
           const grouped = {}
@@ -1063,21 +1040,29 @@ function RestaurantsTab() {
                       </div>
                       <input placeholder="리뷰어 이름" value={form.reviewer_name} onChange={e => setForm({ ...form, reviewer_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                       <textarea placeholder="리뷰" value={form.review} onChange={e => setForm({ ...form, review: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
-                      
-                      {/* IMAGE REORDER COMPONENT FOR EXISTING IMAGES */}
                       {editTarget?.image_urls && editTarget.image_urls.length > 0 && (
-                        <ImageReorder 
-                          images={editTarget.image_urls} 
-                          onReorder={handleReorderImages}
-                          onDelete={handleDeleteExistingImage}
-                          label="기존 사진"
-                        />
+                        <ImageReorder images={editTarget.image_urls} onReorder={handleReorderImages} onDelete={handleDeleteExistingImage} label="기존 사진" />
                       )}
-                      
                       <div>
                         <label className="text-sm text-gray-500 block mb-1">새 이미지 추가</label>
                         <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                        {imageFiles.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            <p className="text-xs text-gray-600">선택된 이미지: {imageFiles.length}개</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {imagePreviews.map((preview, idx) => (
+                                <div key={idx} className="relative">
+                                  <img src={preview} alt={`preview-${idx}`} className="w-16 h-16 object-cover rounded" />
+                                  <button type="button" onClick={() => handleRemoveImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
+                      {cropperFile && (
+                        <ImageCropperMobile file={cropperFile} onCrop={handleCropComplete} onCancel={() => setCropperFile(null)} aspectRatios={['1:1', '4:5']} />
+                      )}
                       <div className="flex gap-2">
                         <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : '수정 완료'}</button>
                         <button onClick={() => { setShowForm(false); setEditTarget(null) }} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
