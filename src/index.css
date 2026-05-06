@@ -1,8 +1,11 @@
 @import "tailwindcss";
-html, body {
+
+html,
+body {
   overscroll-behavior: none;
   touch-action: pan-x pan-y;
 }
+
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
@@ -15,8 +18,24 @@ html, body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Quick fade slide up animation for tab switching */
+@keyframes quickFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-slide-up {
@@ -26,24 +45,15 @@ html, body {
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
 }
+
+.animate-quick-fade-slide-up {
+  animation: quickFadeSlideUp 0.25s ease-in-out forwards;
+}
+
 html {
   height: -webkit-fill-available;
 }
 
 body {
   min-height: -webkit-fill-available;
-}
-
-/* Tab Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.tab-content {
-  animation: fadeIn 0.3s ease-in-out;
 }
