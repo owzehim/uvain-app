@@ -140,38 +140,44 @@ function ImageUploadPanel({ imageFiles, imagePreviews, existingUrls, onAddFile, 
 
   return (
     <div className="space-y-3">
-      {existingUrls && existingUrls.length > 0 && (
-        <div>
-          <p className="text-xs text-gray-500 mb-2">기존 사진 <span className="text-blue-500">(탭하면 자르기 가능)</span></p>
-          <div className="flex gap-2 flex-wrap">
-            {existingUrls.map((url, idx) => (
-              <div key={idx} className="relative group">
-                <img src={url} alt="" onClick={() => setCropperSource({ type: 'url', url, idx })}
-                  className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-colors" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 rounded-lg transition-colors pointer-events-none flex items-center justify-center">
-                  <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100">자르기</span>
-                </div>
-                <button type="button" onClick={() => onRemoveExisting(url)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 z-10">✕</button>
+
+      {/* Existing + new images in ONE strip — tap existing to crop */}
+      {(existingUrls?.length > 0 || imagePreviews.length > 0) && (
+        <div className="flex gap-2 flex-wrap">
+          {existingUrls?.map((url, idx) => (
+            <div key={`ex-${idx}`} className="relative group">
+              <img
+                src={url}
+                alt=""
+                onClick={() => setCropperSource({ type: 'url', url, idx })}
+                className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-colors"
+              />
+              {/* hover overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg transition-colors pointer-events-none flex items-center justify-center">
+                <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 drop-shadow">✂️</span>
               </div>
-            ))}
-          </div>
+              <button
+                type="button"
+                onClick={() => onRemoveExisting(url)}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 z-10"
+              >✕</button>
+            </div>
+          ))}
+
+          {imagePreviews.map((preview, idx) => (
+            <div key={`new-${idx}`} className="relative">
+              <img src={preview} alt="" className="w-20 h-20 object-cover rounded-lg border-2 border-blue-200" />
+              <button
+                type="button"
+                onClick={() => onRemoveNew(idx)}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+              >✕</button>
+            </div>
+          ))}
         </div>
       )}
-      {imagePreviews.length > 0 && (
-        <div>
-          <p className="text-xs text-gray-500 mb-2">새로 추가된 사진</p>
-          <div className="flex gap-2 flex-wrap">
-            {imagePreviews.map((preview, idx) => (
-              <div key={idx} className="relative">
-                <img src={preview} alt="" className="w-20 h-20 object-cover rounded-lg border-2 border-blue-200" />
-                <button type="button" onClick={() => onRemoveNew(idx)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
+      {/* Upload buttons */}
       <div className="flex gap-2">
         <label className="flex-1 cursor-pointer">
           <div className="border-2 border-dashed border-gray-300 rounded-lg px-3 py-3 text-center hover:border-gray-400 transition-colors">
@@ -188,6 +194,11 @@ function ImageUploadPanel({ imageFiles, imagePreviews, existingUrls, onAddFile, 
           <input type="file" accept="image/*" className="hidden" onChange={handleFileSelectForCrop} />
         </label>
       </div>
+
+      {existingUrls?.length > 0 && (
+        <p className="text-xs text-gray-400">💡 기존 사진을 탭하면 자를 수 있어요</p>
+      )}
+
       {cropperSource && (
         <ImageCropperMobile
           file={cropperSource.type === 'file' ? cropperSource.file : null}
