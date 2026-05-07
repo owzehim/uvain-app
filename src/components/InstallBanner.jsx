@@ -1,11 +1,6 @@
+// src/components/InstallBanner.jsx
 import { useEffect, useState } from "react";
-
-/**
- * 홈 화면 추가 유도 배너
- * - iOS: 수동 안내 (Share → 홈 화면에 추가)
- * - Android/Chrome: beforeinstallprompt 이벤트 활용
- * - localStorage로 닫은 상태 기억 (7일간 재표시 안 함)
- */
+import { X, DeviceMobile, ArrowSquareOut, Plus } from "phosphor-react";
 
 const STORAGE_KEY = "uvain_install_banner_dismissed";
 const DISMISS_DAYS = 7;
@@ -68,14 +63,17 @@ export default function InstallBanner() {
     <div style={styles.overlay}>
       <div style={styles.banner}>
         <button onClick={dismiss} style={styles.closeBtn} aria-label="닫기">
-          ✕
+          <X size={20} color="#999" />
         </button>
 
         <div style={styles.iconWrapper}>
           <img src="/icon-192.png" alt="uvain" style={styles.icon} />
         </div>
 
-        <p style={styles.title}>앱으로 더 편하게 사용하세요 📱</p>
+        <div style={styles.titleRow}>
+          <DeviceMobile size={18} weight="bold" color="#111" />
+          <p style={styles.title}>앱으로 더 편하게 사용하세요</p>
+        </div>
         <p style={styles.subtitle}>
           홈 화면에 추가하면 앱처럼 빠르게 실행할 수 있어요.
         </p>
@@ -84,19 +82,28 @@ export default function InstallBanner() {
           <div style={styles.iosGuide}>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>1</span>
-              하단의 <strong>공유 버튼 ⎙</strong>을 탭하세요
+              하단의{" "}
+              <strong style={styles.stepText}>
+                공유 버튼 <ArrowSquareOut size={14} weight="bold" style={{ verticalAlign: "middle" }} />
+              </strong>
+              을 탭하세요
             </p>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>2</span>
-              <strong>홈 화면에 추가</strong>를 선택하세요
+              <strong style={styles.stepText}>홈 화면에 추가</strong>를 선택하세요
             </p>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>3</span>
-              오른쪽 상단의 <strong>추가</strong>를 탭하세요
+              오른쪽 상단의{" "}
+              <strong style={styles.stepText}>
+                추가 <Plus size={13} weight="bold" style={{ verticalAlign: "middle" }} />
+              </strong>
+              를 탭하세요
             </p>
           </div>
         ) : (
           <button onClick={handleInstall} style={styles.installBtn}>
+            <DeviceMobile size={18} weight="bold" />
             홈 화면에 추가하기
           </button>
         )}
@@ -136,10 +143,10 @@ const styles = {
     right: "16px",
     background: "none",
     border: "none",
-    fontSize: "18px",
-    color: "#999",
     cursor: "pointer",
     padding: "4px",
+    display: "flex",
+    alignItems: "center",
   },
   iconWrapper: {
     marginBottom: "12px",
@@ -150,10 +157,17 @@ const styles = {
     borderRadius: "14px",
     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
   },
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    marginBottom: "6px",
+  },
   title: {
     fontSize: "17px",
     fontWeight: "700",
-    margin: "0 0 6px",
+    margin: 0,
     color: "#111",
   },
   subtitle: {
@@ -190,6 +204,11 @@ const styles = {
     fontWeight: "700",
     flexShrink: 0,
   },
+  stepText: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "3px",
+  },
   installBtn: {
     width: "100%",
     padding: "14px",
@@ -201,6 +220,10 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
     marginBottom: "10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
   },
   laterBtn: {
     background: "none",
