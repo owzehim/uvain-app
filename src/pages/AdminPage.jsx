@@ -230,6 +230,7 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
     </div>
   )
 }
+
 function ImageUploadPanel({
   imagePreviews,
   existingUrls,
@@ -358,6 +359,7 @@ function ImageUploadPanel({
     </div>
   )
 }
+
 function MembersTab() {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -564,6 +566,7 @@ function MembersTab() {
     </div>
   )
 }
+
 function EventForm({
   form, setForm, richEditorKey,
   editTarget, uploading,
@@ -896,6 +899,7 @@ function EventsTab() {
     </div>
   )
 }
+
 const SPOT_CATEGORIES = ['맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
 
 // RestaurantForm is defined OUTSIDE RestaurantsTab so React never remounts it on state change.
