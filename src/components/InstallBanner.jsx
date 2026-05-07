@@ -1,6 +1,6 @@
 // src/components/InstallBanner.jsx
 import { useEffect, useState } from "react";
-import { X, DeviceMobile, ArrowSquareOut, Plus } from "phosphor-react";
+import { X, DeviceMobile, ArrowSquareOut, Plus } from '@phosphor-icons/react'
 
 const STORAGE_KEY = "uvain_install_banner_dismissed";
 const DISMISS_DAYS = 7;
