@@ -9,6 +9,10 @@ function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
+function isIOSChrome() {
+  return /CriOS/i.test(navigator.userAgent);
+}
+
 function isInStandaloneMode() {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
@@ -27,6 +31,7 @@ export default function InstallBanner() {
   const [show, setShow] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const ios = isIOS();
+  const iosChrome = isIOSChrome();
 
   useEffect(() => {
     if (isInStandaloneMode() || wasDismissedRecently()) return;
@@ -82,7 +87,7 @@ export default function InstallBanner() {
             <div style={styles.iosGrid}>
               <span style={styles.stepNum}>1</span>
               <span style={styles.stepContent}>
-                하단의{" "}
+                {iosChrome ? "상단" : "하단"}의{" "}
                 <strong style={styles.stepText}>
                   공유 버튼 <Export size={14} weight="bold" style={{ verticalAlign: "middle" }} />
                 </strong>
