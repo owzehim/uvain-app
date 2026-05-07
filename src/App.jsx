@@ -7,6 +7,7 @@ import MemberPage from './pages/MemberPage'
 import AdminPage from './pages/AdminPage'
 import VerifyPage from './pages/VerifyPage'
 import PublicPage from './pages/PublicPage'
+import InstallBanner from './components/InstallBanner'
 
 function App() {
   const [session, setSession] = useState(undefined)
@@ -29,6 +30,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <InstallBanner />
       <Routes>
         <Route path="/login" element={!session ? <LoginPage /> : <Navigate to="/member" />} />
         <Route path="/member" element={session ? <MemberPage /> : <Navigate to="/public" />} />

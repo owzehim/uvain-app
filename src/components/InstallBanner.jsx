@@ -1,0 +1,225 @@
+import { useEffect, useState } from "react";
+
+/**
+ * 홈 화면 추가 유도 배너
+ * - iOS: 수동 안내 (Share → 홈 화면에 추가)
+ * - Android/Chrome: beforeinstallprompt 이벤트 활용
+ * - localStorage로 닫은 상태 기억 (7일간 재표시 안 함)
+ */
+
+const STORAGE_KEY = "uvain_install_banner_dismissed";
+const DISMISS_DAYS = 7;
+
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function isInStandaloneMode() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
+
+function wasDismissedRecently() {
+  const ts = localStorage.getItem(STORAGE_KEY);
+  if (!ts) return false;
+  const diff = Date.now() - parseInt(ts, 10);
+  return diff < DISMISS_DAYS * 24 * 60 * 60 * 1000;
+}
+
+export default function InstallBanner() {
+  const [show, setShow] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const ios = isIOS();
+
+  useEffect(() => {
+    // 이미 설치됐거나 최근에 닫은 경우 표시 안 함
+    if (isInStandaloneMode() || wasDismissedRecently()) return;
+
+    if (!ios) {
+      const handler = (e) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+        setShow(true);
+      };
+      window.addEventListener("beforeinstallprompt", handler);
+      return () => window.removeEventListener("beforeinstallprompt", handler);
+    } else {
+      setShow(true);
+    }
+  }, [ios]);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        dismiss();
+      }
+    }
+  };
+
+  const dismiss = () => {
+    localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    setShow(false);
+  };
+
+  if (!show) return null;
+
+  return (
+    <div style={styles.overlay}>
+      <div style={styles.banner}>
+        {/* 닫기 버튼 */}
+        <button onClick={dismiss} style={styles.closeBtn} aria-label="닫기">
+          ✕
+        </button>
+
+        {/* 아이콘 */}
+        <div style={styles.iconWrapper}>
+          <img src="/icons/icon-192x192.png" alt="uvain" style={styles.icon} />
+        </div>
+
+        {/* 텍스트 */}
+        <p style={styles.title}>앱으로 더 편하게 사용하세요 📱</p>
+        <p style={styles.subtitle}>
+          홈 화면에 추가하면 앱처럼 빠르게 실행할 수 있어요.
+        </p>
+
+        {/* iOS 안내 */}
+        {ios ? (
+          <div style={styles.iosGuide}>
+            <p style={styles.iosStep}>
+              <span style={styles.stepNum}>1</span>
+              하단의{" "}
+              <strong>
+                공유 버튼{" "}
+                <span style={{ fontSize: "1.1em" }}>⎙</span>
+              </strong>
+              을 탭하세요
+            </p>
+            <p style={styles.iosStep}>
+              <span style={styles.stepNum}>2</span>
+              <strong>홈 화면에 추가</strong>를 선택하세요
+            </p>
+            <p style={styles.iosStep}>
+              <span style={styles.stepNum}>3</span>
+              오른쪽 상단의 <strong>추가</strong>를 탭하세요
+            </p>
+          </div>
+        ) : (
+          <button onClick={handleInstall} style={styles.installBtn}>
+            홈 화면에 추가하기
+          </button>
+        )}
+
+        <button onClick={dismiss} style={styles.laterBtn}>
+          나중에 할게요
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    zIndex: 9999,
+    padding: "0 0 env(safe-area-inset-bottom)",
+  },
+  banner: {
+    backgroundColor: "#fff",
+    borderRadius: "20px 20px 0 0",
+    padding: "24px 20px 32px",
+    width: "100%",
+    maxWidth: "480px",
+    textAlign: "center",
+    position: "relative",
+    boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
+  },
+  closeBtn: {
+    position: "absolute",
+    top: "14px",
+    right: "16px",
+    background: "none",
+    border: "none",
+    fontSize: "18px",
+    color: "#999",
+    cursor: "pointer",
+    padding: "4px",
+  },
+  iconWrapper: {
+    marginBottom: "12px",
+  },
+  icon: {
+    width: "64px",
+    height: "64px",
+    borderRadius: "14px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+  },
+  title: {
+    fontSize: "17px",
+    fontWeight: "700",
+    margin: "0 0 6px",
+    color: "#111",
+  },
+  subtitle: {
+    fontSize: "14px",
+    color: "#555",
+    margin: "0 0 20px",
+    lineHeight: "1.5",
+  },
+  iosGuide: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: "12px",
+    padding: "14px 16px",
+    marginBottom: "16px",
+    textAlign: "left",
+  },
+  iosStep: {
+    fontSize: "14px",
+    color: "#333",
+    margin: "6px 0",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  stepNum: {
+    backgroundColor: "#000",
+    color: "#fff",
+    borderRadius: "50%",
+    width: "22px",
+    height: "22px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "12px",
+    fontWeight: "700",
+    flexShrink: 0,
+  },
+  installBtn: {
+    width: "100%",
+    padding: "14px",
+    backgroundColor: "#111",
+    color: "#fff",
+    border: "none",
+    borderRadius: "12px",
+    fontSize: "15px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginBottom: "10px",
+  },
+  laterBtn: {
+    background: "none",
+    border: "none",
+    color: "#999",
+    fontSize: "14px",
+    cursor: "pointer",
+    padding: "4px",
+  },
+};
