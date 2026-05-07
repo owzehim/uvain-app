@@ -1,6 +1,6 @@
 // src/components/InstallBanner.jsx
 import { useEffect, useState } from "react";
-import { X, DeviceMobile, ArrowSquareOut, Plus } from '@phosphor-icons/react'
+import { X, DeviceMobile, Export, PlusSquare } from '@phosphor-icons/react'
 
 const STORAGE_KEY = "uvain_install_banner_dismissed";
 const DISMISS_DAYS = 7;
@@ -71,7 +71,6 @@ export default function InstallBanner() {
         </div>
 
         <div style={styles.titleRow}>
-          <DeviceMobile size={18} weight="bold" color="#111" />
           <p style={styles.title}>앱으로 더 편하게 사용하세요</p>
         </div>
         <p style={styles.subtitle}>
@@ -84,7 +83,7 @@ export default function InstallBanner() {
               <span style={styles.stepNum}>1</span>
               하단의{" "}
               <strong style={styles.stepText}>
-                공유 버튼 <ArrowSquareOut size={14} weight="bold" style={{ verticalAlign: "middle" }} />
+                공유 버튼 <Export size={14} weight="regular" style={{ verticalAlign: "middle" }} />
               </strong>
               을 탭하세요
             </p>
@@ -96,7 +95,7 @@ export default function InstallBanner() {
               <span style={styles.stepNum}>3</span>
               오른쪽 상단의{" "}
               <strong style={styles.stepText}>
-                추가 <Plus size={13} weight="bold" style={{ verticalAlign: "middle" }} />
+                추가 <PlusSquare size={13} weight="regular" style={{ verticalAlign: "middle" }} />
               </strong>
               를 탭하세요
             </p>
@@ -161,7 +160,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "6px",
     marginBottom: "6px",
   },
   title: {
