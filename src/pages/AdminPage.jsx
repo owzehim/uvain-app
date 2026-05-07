@@ -4,6 +4,120 @@ import { useNavigate } from 'react-router-dom'
 import { ImageCropper } from '../components/ImageCropper'
 import { Plus, Eye, EyeSlash, MapPin, Ticket } from 'phosphor-react'
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Convert a Supabase/ISO datetime string to a local "YYYY-MM-DD" date string.
+ * Avoids the UTC-offset bug where .slice(0,10) on a UTC string gives the wrong date.
+ */
+function toLocalDateString(isoString) {
+  if (!isoString) return ''
+  const d = new Date(isoString)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+/**
+ * Convert a Supabase/ISO datetime string to a local "HH:MM" time string.
+ * Avoids the UTC-offset bug.
+ */
+function toLocalTimeString(isoString) {
+  if (!isoString) return ''
+  const d = new Date(isoString)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const min = String(d.getMinutes()).padStart(2, '0')
+  return `${hh}:${min}`
+}
+
+/**
+ * Combine a local date string "YYYY-MM-DD" and time string "HH:MM"
+ * into a local ISO-like string "YYYY-MM-DDTHH:MM" suitable for storing.
+ */
+function combineDateTime(dateStr, timeStr) {
+  if (!dateStr) return ''
+  return `${dateStr}T${timeStr || '00:00'}`
+}
+
+/**
+ * Validate and normalise a typed time string.
+ * Accepts "HH:MM", "H:MM", "HHMM" → returns "HH:MM" or '' if invalid.
+ */
+function normaliseTime(raw) {
+  const s = raw.trim().replace(/[^0-9:]/g, '')
+  // "HHMM" → "HH:MM"
+  const noColon = s.replace(':', '')
+  if (noColon.length === 4) {
+    const h = parseInt(noColon.slice(0, 2), 10)
+    const m = parseInt(noColon.slice(2, 4), 10)
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59)
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  }
+  // "H:MM" or "HH:MM"
+  const parts = s.split(':')
+  if (parts.length === 2) {
+    const h = parseInt(parts[0], 10)
+    const m = parseInt(parts[1], 10)
+    if (!isNaN(h) && !isNaN(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59)
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  }
+  return ''
+}
+
+function koreanSort(arr, key) {
+  return [...arr].sort((a, b) => (a[key] || '').localeCompare(b[key] || '', ['ko', 'en']))
+}
+
+// ─── Time Input ───────────────────────────────────────────────────────────────
+/**
+ * A plain text input for time that works identically on desktop and mobile.
+ * - Desktop: type freely, e.g. "14:30" or "1430"
+ * - Mobile: numeric keyboard, no native scroll picker → no accidental close bug
+ * Normalises on blur. Shows red border if the typed value is not valid HH:MM.
+ */
+function TimeInput({ value, onChange, className = '' }) {
+  const [draft, setDraft] = useState(value || '')
+  const [error, setError] = useState(false)
+
+  // Keep draft in sync when parent resets the value
+  useEffect(() => { setDraft(value || '') }, [value])
+
+  const handleChange = (e) => {
+    setDraft(e.target.value)
+    setError(false)
+  }
+
+  const handleBlur = () => {
+    if (draft === '') { onChange(''); setError(false); return }
+    const normalised = normaliseTime(draft)
+    if (normalised) {
+      setDraft(normalised)
+      setError(false)
+      onChange(normalised)
+    } else {
+      setError(true)
+      // Don't update parent with invalid value
+    }
+  }
+
+  return (
+    <div>
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="HH:MM"
+        value={draft}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        className={`${className} ${error ? 'border-red-400 bg-red-50' : ''}`}
+      />
+      {error && <p className="text-xs text-red-500 mt-1">올바른 시간 형식을 입력하세요 (예: 14:30)</p>}
+    </div>
+  )
+}
+
+// ─── AdminPage ────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('members')
   const [loading, setLoading] = useState(true)
@@ -56,7 +170,7 @@ export default function AdminPage() {
   )
 }
 
-// ─── Rich Text Editor ────────────────────────────────────────────────────────
+// ─── Rich Text Editor ─────────────────────────────────────────────────────────
 const COLORS = ['#000000','#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#ffffff']
 
 function RichEditor({ value, onChange, placeholder, rows = 3 }) {
@@ -116,28 +230,15 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
     </div>
   )
 }
-
-function koreanSort(arr, key) {
-  return [...arr].sort((a, b) => (a[key] || '').localeCompare(b[key] || '', ['ko', 'en']))
-}
-// ─── Image Upload Panel ──────────────────────────────────────────────────────
-// Single image row: existing images + new previews merged together.
-// Tap any existing image → crop opens. New previews are shown inline.
-// Two upload buttons at the bottom: 그냥 업로드 / 자르기 업로드
-// ─── Image Upload Panel ──────────────────────────────────────────────────────
-// Single image row: existing images + new previews merged together.
-// Tap any existing image → crop opens using the ORIGINAL url (not the cropped one).
-// New previews are shown inline.
-// Two upload buttons at the bottom: 그냥 업로드 / 자르기 업로드
 function ImageUploadPanel({
   imagePreviews,
   existingUrls,
-  pendingReplacements,   // [{ idx, file, previewUrl }]
+  pendingReplacements,
   onAddFile,
   onAddCropped,
   onRemoveNew,
   onRemoveExisting,
-  onPendingReplace,      // (idx, file, previewUrl) => void  — replaces immediately uploading
+  onPendingReplace,
   onReorder,
 }) {
   const [cropperSource, setCropperSource] = useState(null)
@@ -153,8 +254,6 @@ function ImageUploadPanel({
     e.target.value = ''
   }
 
-  // Always open cropper with the original Supabase URL (existingUrls[idx]),
-  // never with a pending preview — so re-cropping always starts from the original.
   const handleTapExisting = (idx) => {
     setCropperSource({ type: 'url', url: existingUrls[idx], idx })
   }
@@ -179,7 +278,6 @@ function ImageUploadPanel({
     dragIdx.current = null
   }
 
-  // For display: show pending preview if this index has a pending crop, else the original URL
   const getDisplayUrl = (idx) => {
     const pending = pendingReplacements?.find(p => p.idx === idx)
     return pending ? pending.previewUrl : existingUrls[idx]
@@ -260,7 +358,6 @@ function ImageUploadPanel({
     </div>
   )
 }
-// ─── Members Tab ─────────────────────────────────────────────────────────────
 function MembersTab() {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -467,17 +564,22 @@ function MembersTab() {
     </div>
   )
 }
-// ─── Events Tab ──────────────────────────────────────────────────────────────
 function EventsTab() {
   const [events, setEvents] = useState([])
   const [archivedEvents, setArchivedEvents] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [showArchivedList, setShowArchivedList] = useState(false)
-  const [form, setForm] = useState({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
+
+  // Keep date and time as separate fields so neither clobbers the other on change
+  const [form, setForm] = useState({
+    title: '', description: '', eventDate: '', eventTime: '',
+    location: '', instagram_url: ''
+  })
+
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
-  const [pendingReplacements, setPendingReplacements] = useState([]) // { idx, file, previewUrl }
+  const [pendingReplacements, setPendingReplacements] = useState([])
   const [uploading, setUploading] = useState(false)
   const [richEditorKey, setRichEditorKey] = useState(0)
 
@@ -511,38 +613,34 @@ function EventsTab() {
     setPendingReplacements(prev => prev.filter(p => p.idx !== idx))
     setEditTarget(prev => ({ ...prev, image_urls: (prev.image_urls || []).filter(u => u !== url) }))
   }
-
-  // Stores crop locally — does NOT upload to Supabase yet.
   const handlePendingReplace = (idx, file, previewUrl) => {
     setPendingReplacements(prev => {
       const next = prev.filter(p => p.idx !== idx)
       return [...next, { idx, file, previewUrl }]
     })
   }
-
   const handleReorderImages = (reorderedUrls) => {
     if (editTarget) setEditTarget({ ...editTarget, image_urls: reorderedUrls })
   }
 
   const resetForm = () => {
     setShowForm(false); setEditTarget(null)
-    setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
+    setForm({ title: '', description: '', eventDate: '', eventTime: '', location: '', instagram_url: '' })
     setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1)
   }
 
   const handleSave = async () => {
     if (!form.title) { alert('제목을 입력해주세요.'); return }
     setUploading(true)
+
+    // Combine local date + time back into a single string for storage
+    const event_date = combineDateTime(form.eventDate, form.eventTime)
+
     let image_urls = [...(editTarget?.image_urls || [])]
 
-    // Upload pending replacements (crops of existing images)
     for (const { idx, file } of pendingReplacements) {
-      // Delete the original file from storage first to avoid orphaned files
       const oldFileName = image_urls[idx]?.split('/').pop()
-      if (oldFileName) {
-        await supabase.storage.from('event-images').remove([oldFileName])
-      }
-
+      if (oldFileName) await supabase.storage.from('event-images').remove([oldFileName])
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
       const { error } = await supabase.storage.from('event-images').upload(fileName, file)
@@ -551,7 +649,6 @@ function EventsTab() {
       image_urls[idx] = urlData.publicUrl
     }
 
-    // Upload new files
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
@@ -561,7 +658,12 @@ function EventsTab() {
       image_urls = [...image_urls, urlData.publicUrl]
     }
 
-    const payload = { ...form, image_urls }
+    const payload = {
+      title: form.title, description: form.description,
+      event_date: event_date || null,
+      location: form.location, instagram_url: form.instagram_url,
+      image_urls
+    }
     if (editTarget) {
       await supabase.from('events').update(payload).eq('id', editTarget.id)
     } else {
@@ -587,16 +689,23 @@ function EventsTab() {
   const openEdit = (event) => {
     setEditTarget(event)
     setForm({
-      title: event.title, description: event.description || '',
-      event_date: event.event_date ? event.event_date.slice(0, 16) : '',
-      location: event.location || '', instagram_url: event.instagram_url || ''
+      title: event.title,
+      description: event.description || '',
+      // ✅ FIX: use local date/time helpers instead of raw .slice() on UTC string
+      eventDate: toLocalDateString(event.event_date),
+      eventTime: toLocalTimeString(event.event_date),
+      location: event.location || '',
+      instagram_url: event.instagram_url || ''
     })
-    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1); setShowForm(true)
+    setImageFiles([]); setImagePreviews([]); setPendingReplacements([])
+    setRichEditorKey(k => k + 1); setShowForm(true)
   }
+
   const openAdd = () => {
     setEditTarget(null)
-    setForm({ title: '', description: '', event_date: '', location: '', instagram_url: '' })
-    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1); setShowForm(true)
+    setForm({ title: '', description: '', eventDate: '', eventTime: '', location: '', instagram_url: '' })
+    setImageFiles([]); setImagePreviews([]); setPendingReplacements([])
+    setRichEditorKey(k => k + 1); setShowForm(true)
   }
 
   const groupByMonth = (arr) => {
@@ -612,14 +721,48 @@ function EventsTab() {
   const EventForm = () => (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
       <h3 className="font-medium text-gray-900">{editTarget ? '이벤트 수정' : '새 이벤트'}</h3>
-      <input placeholder="이벤트 제목" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-      <div><label className="text-sm text-gray-500 block mb-1">내용</label><RichEditor key={richEditorKey} value={form.description} onChange={v => setForm({ ...form, description: v })} placeholder="내용을 입력하세요" rows={3} /></div>
-      <div><label className="text-sm text-gray-500 block mb-1">장소</label><RichEditor key={richEditorKey + 50} value={form.location} onChange={v => setForm({ ...form, location: v })} placeholder="장소를 입력하세요" rows={2} /></div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div><label className="text-sm text-gray-500 block mb-1">날짜</label><input type="date" value={form.event_date ? form.event_date.slice(0, 10) : ''} onChange={e => setForm({ ...form, event_date: e.target.value + 'T' + (form.event_date ? form.event_date.slice(11, 16) : '00:00') })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
-        <div><label className="text-sm text-gray-500 block mb-1">시간</label><input type="time" value={form.event_date ? form.event_date.slice(11, 16) : ''} onChange={e => setForm({ ...form, event_date: (form.event_date ? form.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10)) + 'T' + e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+      <input
+        placeholder="이벤트 제목"
+        value={form.title}
+        onChange={e => setForm({ ...form, title: e.target.value })}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+      />
+      <div>
+        <label className="text-sm text-gray-500 block mb-1">내용</label>
+        <RichEditor key={richEditorKey} value={form.description} onChange={v => setForm({ ...form, description: v })} placeholder="내용을 입력하세요" rows={3} />
       </div>
-      <input placeholder="인스타그램 URL (선택)" value={form.instagram_url} onChange={e => setForm({ ...form, instagram_url: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+      <div>
+        <label className="text-sm text-gray-500 block mb-1">장소</label>
+        <RichEditor key={richEditorKey + 50} value={form.location} onChange={v => setForm({ ...form, location: v })} placeholder="장소를 입력하세요" rows={2} />
+      </div>
+
+      {/* ✅ FIX: separate date and time fields; time uses <TimeInput> (no scroll picker) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div>
+          <label className="text-sm text-gray-500 block mb-1">날짜</label>
+          <input
+            type="date"
+            value={form.eventDate}
+            onChange={e => setForm({ ...form, eventDate: e.target.value })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="text-sm text-gray-500 block mb-1">시간 (HH:MM)</label>
+          <TimeInput
+            value={form.eventTime}
+            onChange={v => setForm({ ...form, eventTime: v })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+        </div>
+      </div>
+
+      <input
+        placeholder="인스타그램 URL (선택)"
+        value={form.instagram_url}
+        onChange={e => setForm({ ...form, instagram_url: e.target.value })}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+      />
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
         <ImageUploadPanel
@@ -635,7 +778,9 @@ function EventsTab() {
         />
       </div>
       <div className="flex gap-2 pt-1">
-        <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : editTarget ? '수정 완료' : '추가'}</button>
+        <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">
+          {uploading ? '업로드 중...' : editTarget ? '수정 완료' : '추가'}
+        </button>
         <button onClick={resetForm} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
       </div>
     </div>
@@ -647,13 +792,29 @@ function EventsTab() {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="font-medium text-gray-900 text-sm">{event.title}</p>
-            {event.location && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" />{event.location}</p>}
-            {event.event_date && <p className="text-xs text-gray-400 mt-0.5">{new Date(event.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</p>}
+            {event.location && (
+              <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                <MapPin size={12} weight="fill" />{event.location.replace(/<[^>]+>/g, '')}
+              </p>
+            )}
+            {event.event_date && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                {new Date(event.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+              </p>
+            )}
           </div>
           <div className="flex gap-2 flex-shrink-0">
             {isArchived
-              ? <><button onClick={() => handleRestore(event.id)} className="text-xs text-green-600 hover:underline whitespace-nowrap">복원</button><button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button><button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button></>
-              : <><button onClick={() => handleArchive(event.id)} className="text-xs text-green-600 hover:underline whitespace-nowrap">보관</button><button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button><button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button></>
+              ? <>
+                  <button onClick={() => handleRestore(event.id)} className="text-xs text-green-600 hover:underline whitespace-nowrap">복원</button>
+                  <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
+                  <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
+                </>
+              : <>
+                  <button onClick={() => handleArchive(event.id)} className="text-xs text-green-600 hover:underline whitespace-nowrap">보관</button>
+                  <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
+                  <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
+                </>
             }
           </div>
         </div>
@@ -711,7 +872,6 @@ function EventsTab() {
     </div>
   )
 }
-// ─── Restaurants Tab ──────────────────────────────────────────────────────────
 const SPOT_CATEGORIES = ['맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
 
 function RestaurantsTab() {
@@ -726,7 +886,7 @@ function RestaurantsTab() {
   })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
-  const [pendingReplacements, setPendingReplacements] = useState([]) // { idx, file, previewUrl }
+  const [pendingReplacements, setPendingReplacements] = useState([])
   const [uploading, setUploading] = useState(false)
   const [richEditorKey, setRichEditorKey] = useState(0)
 
@@ -756,15 +916,12 @@ function RestaurantsTab() {
     setPendingReplacements(prev => prev.filter(p => p.idx !== idx))
     setEditTarget(prev => ({ ...prev, image_urls: (prev.image_urls || []).filter(u => u !== url) }))
   }
-
-  // Stores crop locally — does NOT upload to Supabase yet.
   const handlePendingReplace = (idx, file, previewUrl) => {
     setPendingReplacements(prev => {
       const next = prev.filter(p => p.idx !== idx)
       return [...next, { idx, file, previewUrl }]
     })
   }
-
   const handleReorderImages = (reorderedUrls) => {
     if (editTarget) setEditTarget({ ...editTarget, image_urls: reorderedUrls })
   }
@@ -785,14 +942,9 @@ function RestaurantsTab() {
     setUploading(true)
     let image_urls = [...(editTarget?.image_urls || [])]
 
-    // Upload pending replacements (crops of existing images)
     for (const { idx, file } of pendingReplacements) {
-      // Delete the original file from storage first to avoid orphaned files
       const oldFileName = image_urls[idx]?.split('/').pop()
-      if (oldFileName) {
-        await supabase.storage.from('place-images').remove([oldFileName])
-      }
-
+      if (oldFileName) await supabase.storage.from('place-images').remove([oldFileName])
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
       const { error } = await supabase.storage.from('place-images').upload(fileName, file)
@@ -801,7 +953,6 @@ function RestaurantsTab() {
       image_urls[idx] = urlData.publicUrl
     }
 
-    // Upload new files
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
@@ -909,7 +1060,9 @@ function RestaurantsTab() {
         />
       </div>
       <div className="flex gap-2 pt-1">
-        <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">{uploading ? '업로드 중...' : editTarget ? '수정 완료' : '추가'}</button>
+        <button onClick={handleSave} disabled={uploading} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50">
+          {uploading ? '업로드 중...' : editTarget ? '수정 완료' : '추가'}
+        </button>
         <button onClick={resetForm} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
       </div>
     </div>
