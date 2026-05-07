@@ -6,7 +6,7 @@ import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { broadcastQRExpiry } from '../lib/qrSync'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin } from 'phosphor-react'
+import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)

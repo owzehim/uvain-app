@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapPin, Ticket } from 'phosphor-react'
+import { MapPin, Ticket } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 
 export function RichText({ text, className = '' }) {

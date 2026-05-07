@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { getMapIconSvg } from '../lib/mapCategories'
-import { MapPin } from 'phosphor-react'
+import { MapPin } from '@phosphor-icons/react'
 
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)

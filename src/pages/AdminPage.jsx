@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { ImageCropper } from '../components/ImageCropper'
-import { Plus, Eye, EyeSlash, MapPin, Ticket } from 'phosphor-react'
+import { Plus, Eye, EyeSlash, MapPin, Ticket } from '@phosphor-icons/react'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

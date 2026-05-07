@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Check, Plus, Minus } from 'phosphor-react'
+import { X, Check, Plus, Minus } from '@phosphor-icons/react'
 import imageCompression from 'browser-image-compression'
 
 // ── Compression helper ────────────────────────────────────────────────────────

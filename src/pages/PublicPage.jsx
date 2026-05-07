@@ -4,7 +4,7 @@ import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, getMapIconSvg } from '../lib/mapCategories'
-import { MapPin, Lock, ForkKnife, Calendar, Users } from 'phosphor-react'
+import { MapPin, Lock, ForkKnife, Calendar, Users } from '@phosphor-icons/react'
 
 export default function PublicPage() {
   const [activeTab, setActiveTab] = useState('map')

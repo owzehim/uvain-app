@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { X } from 'phosphor-react'
+import { X } from '@phosphor-icons/react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
