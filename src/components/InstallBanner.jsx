@@ -34,7 +34,6 @@ export default function InstallBanner() {
   const ios = isIOS();
 
   useEffect(() => {
-    // 이미 설치됐거나 최근에 닫은 경우 표시 안 함
     if (isInStandaloneMode() || wasDismissedRecently()) return;
 
     if (!ios) {
@@ -54,9 +53,7 @@ export default function InstallBanner() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        dismiss();
-      }
+      if (outcome === "accepted") dismiss();
     }
   };
 
@@ -70,33 +67,24 @@ export default function InstallBanner() {
   return (
     <div style={styles.overlay}>
       <div style={styles.banner}>
-        {/* 닫기 버튼 */}
         <button onClick={dismiss} style={styles.closeBtn} aria-label="닫기">
           ✕
         </button>
 
-        {/* 아이콘 */}
         <div style={styles.iconWrapper}>
-          <img src="/icons/icon-192x192.png" alt="uvain" style={styles.icon} />
+          <img src="/icon-192.png" alt="uvain" style={styles.icon} />
         </div>
 
-        {/* 텍스트 */}
         <p style={styles.title}>앱으로 더 편하게 사용하세요 📱</p>
         <p style={styles.subtitle}>
           홈 화면에 추가하면 앱처럼 빠르게 실행할 수 있어요.
         </p>
 
-        {/* iOS 안내 */}
         {ios ? (
           <div style={styles.iosGuide}>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>1</span>
-              하단의{" "}
-              <strong>
-                공유 버튼{" "}
-                <span style={{ fontSize: "1.1em" }}>⎙</span>
-              </strong>
-              을 탭하세요
+              하단의 <strong>공유 버튼 ⎙</strong>을 탭하세요
             </p>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>2</span>
