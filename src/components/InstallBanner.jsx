@@ -81,23 +81,30 @@ export default function InstallBanner() {
           <div style={styles.iosGuide}>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>1</span>
-              하단의{" "}
-              <strong style={styles.stepText}>
-                공유 버튼 <Export size={14} weight="regular" style={{ verticalAlign: "middle" }} />
-              </strong>
-              을 탭하세요
+              <span style={styles.stepContent}>
+                하단의{" "}
+                <strong style={styles.stepText}>
+                  공유 버튼 <Export size={14} weight="bold" style={{ verticalAlign: "middle" }} />
+                </strong>
+                을 탭하세요
+              </span>
             </p>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>2</span>
-              <strong style={styles.stepText}>홈 화면에 추가</strong>를 선택하세요
+              <span style={styles.stepContent}>
+                <strong style={styles.stepText}>
+                  홈 화면에 추가 <PlusSquare size={14} weight="bold" style={{ verticalAlign: "middle" }} />
+                </strong>
+                를 선택하세요
+              </span>
             </p>
             <p style={styles.iosStep}>
               <span style={styles.stepNum}>3</span>
-              오른쪽 상단의{" "}
-              <strong style={styles.stepText}>
-                추가 <PlusSquare size={13} weight="regular" style={{ verticalAlign: "middle" }} />
-              </strong>
-              를 탭하세요
+              <span style={styles.stepContent}>
+                오른쪽 상단의{" "}
+                <strong style={styles.stepText}>추가</strong>
+                를 탭하세요
+              </span>
             </p>
           </div>
         ) : (
@@ -201,6 +208,12 @@ const styles = {
     fontSize: "12px",
     fontWeight: "700",
     flexShrink: 0,
+  },
+  stepContent: {
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "4px",
   },
   stepText: {
     display: "inline-flex",
