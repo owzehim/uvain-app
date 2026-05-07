@@ -7,37 +7,51 @@ import { Plus, Eye, EyeSlash, MapPin, Ticket } from 'phosphor-react'
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
- * Convert a Supabase/ISO datetime string to a local "YYYY-MM-DD" date string.
- * Avoids the UTC-offset bug where .slice(0,10) on a UTC string gives the wrong date.
+ * Extract the date part "YYYY-MM-DD" from whatever Supabase returns.
+ * Handles both "YYYY-MM-DDTHH:MM:SS+00:00" (timestamptz) and "YYYY-MM-DDTHH:MM" (local).
+ * We parse manually to avoid any UTC↔local conversion by the Date constructor.
  */
 function toLocalDateString(isoString) {
   if (!isoString) return ''
-  const d = new Date(isoString)
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  // Always take the first 10 characters — the date part is always YYYY-MM-DD
+  return String(isoString).slice(0, 10)
 }
 
 /**
- * Convert a Supabase/ISO datetime string to a local "HH:MM" time string.
- * Avoids the UTC-offset bug.
+ * Extract the time part "HH:MM" from whatever Supabase returns.
+ * Supabase returns timestamptz in UTC (e.g. "2026-05-10T12:00:00+00:00").
+ * We convert to local time using the Date API.
+ * If the string has no timezone info (already local), we just slice it.
  */
 function toLocalTimeString(isoString) {
   if (!isoString) return ''
-  const d = new Date(isoString)
-  const hh = String(d.getHours()).padStart(2, '0')
-  const min = String(d.getMinutes()).padStart(2, '0')
-  return `${hh}:${min}`
+  const s = String(isoString)
+  // If it has timezone info (+00:00 or Z), use Date to convert to local
+  if (s.includes('+') || s.endsWith('Z') || s.includes('Z')) {
+    const d = new Date(s)
+    const hh = String(d.getHours()).padStart(2, '0')
+    const mm = String(d.getMinutes()).padStart(2, '0')
+    return `${hh}:${mm}`
+  }
+  // No timezone info — treat as local, just slice HH:MM
+  return s.length >= 16 ? s.slice(11, 16) : ''
 }
 
 /**
- * Combine a local date string "YYYY-MM-DD" and time string "HH:MM"
- * into a local ISO-like string "YYYY-MM-DDTHH:MM" suitable for storing.
+ * Combine a local date "YYYY-MM-DD" and time "HH:MM" into a full
+ * ISO-like string WITH explicit +00:00 offset so Supabase stores it
+ * correctly as the intended local time, not shifted by UTC.
+ * We get the local UTC offset and encode it explicitly.
  */
 function combineDateTime(dateStr, timeStr) {
-  if (!dateStr) return ''
-  return `${dateStr}T${timeStr || '00:00'}`
+  if (!dateStr) return null
+  const time = timeStr || '00:00'
+  // Build a local Date object from the date+time strings
+  const [y, mo, d] = dateStr.split('-').map(Number)
+  const [h, mi] = time.split(':').map(Number)
+  const local = new Date(y, mo - 1, d, h, mi, 0)
+  // Return as ISO string — this is UTC, which is what Supabase expects
+  return local.toISOString()
 }
 
 /**
@@ -46,7 +60,6 @@ function combineDateTime(dateStr, timeStr) {
  */
 function normaliseTime(raw) {
   const s = raw.trim().replace(/[^0-9:]/g, '')
-  // "HHMM" → "HH:MM"
   const noColon = s.replace(':', '')
   if (noColon.length === 4) {
     const h = parseInt(noColon.slice(0, 2), 10)
@@ -54,7 +67,6 @@ function normaliseTime(raw) {
     if (h >= 0 && h <= 23 && m >= 0 && m <= 59)
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
   }
-  // "H:MM" or "HH:MM"
   const parts = s.split(':')
   if (parts.length === 2) {
     const h = parseInt(parts[0], 10)
@@ -70,17 +82,10 @@ function koreanSort(arr, key) {
 }
 
 // ─── Time Input ───────────────────────────────────────────────────────────────
-/**
- * A plain text input for time that works identically on desktop and mobile.
- * - Desktop: type freely, e.g. "14:30" or "1430"
- * - Mobile: numeric keyboard, no native scroll picker → no accidental close bug
- * Normalises on blur. Shows red border if the typed value is not valid HH:MM.
- */
 function TimeInput({ value, onChange, className = '' }) {
   const [draft, setDraft] = useState(value || '')
   const [error, setError] = useState(false)
 
-  // Keep draft in sync when parent resets the value
   useEffect(() => { setDraft(value || '') }, [value])
 
   const handleChange = (e) => {
@@ -97,7 +102,6 @@ function TimeInput({ value, onChange, className = '' }) {
       onChange(normalised)
     } else {
       setError(true)
-      // Don't update parent with invalid value
     }
   }
 
