@@ -79,33 +79,35 @@ export default function InstallBanner() {
 
         {ios ? (
           <div style={styles.iosGuide}>
-            <p style={styles.iosStep}>
-              <span style={styles.stepNum}>1</span>
-              <span style={styles.stepContent}>
-                하단의{" "}
-                <strong style={styles.stepText}>
-                  공유 버튼 <Export size={14} weight="bold" style={{ verticalAlign: "middle" }} />
-                </strong>
-                을 탭하세요
-              </span>
-            </p>
-            <p style={styles.iosStep}>
-              <span style={styles.stepNum}>2</span>
-              <span style={styles.stepContent}>
-                <strong style={styles.stepText}>
-                  홈 화면에 추가 <PlusSquare size={14} weight="bold" style={{ verticalAlign: "middle" }} />
-                </strong>
-                를 선택하세요
-              </span>
-            </p>
-            <p style={styles.iosStep}>
-              <span style={styles.stepNum}>3</span>
-              <span style={styles.stepContent}>
-                오른쪽 상단의{" "}
-                <strong style={styles.stepText}>추가</strong>
-                를 탭하세요
-              </span>
-            </p>
+            <div style={styles.iosContent}>
+              <p style={styles.iosStep}>
+                <span style={styles.stepNum}>1</span>
+                <span style={styles.stepContent}>
+                  하단의{" "}
+                  <strong style={styles.stepText}>
+                    공유 버튼 <Export size={14} weight="bold" style={{ verticalAlign: "middle" }} />
+                  </strong>
+                  을 탭하세요
+                </span>
+              </p>
+              <p style={styles.iosStep}>
+                <span style={styles.stepNum}>2</span>
+                <span style={styles.stepContent}>
+                  <strong style={styles.stepText}>
+                    홈 화면에 추가 <PlusSquare size={14} weight="bold" style={{ verticalAlign: "middle" }} />
+                  </strong>
+                  를 선택하세요
+                </span>
+              </p>
+              <p style={styles.iosStep}>
+                <span style={styles.stepNum}>3</span>
+                <span style={styles.stepContent}>
+                  오른쪽 상단의{" "}
+                  <strong style={styles.stepText}>추가</strong>
+                  를 탭하세요
+                </span>
+              </p>
+            </div>
           </div>
         ) : (
           <button onClick={handleInstall} style={styles.installBtn}>
@@ -170,7 +172,7 @@ const styles = {
     marginBottom: "6px",
   },
   title: {
-    fontSize: "17px",
+    fontSize: "20px",
     fontWeight: "700",
     margin: 0,
     color: "#111",
@@ -186,7 +188,12 @@ const styles = {
     borderRadius: "12px",
     padding: "14px 16px",
     marginBottom: "16px",
-    textAlign: "left",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iosContent: {
+    textAlign: "center",
   },
   iosStep: {
     fontSize: "14px",
@@ -194,6 +201,7 @@ const styles = {
     margin: "6px 0",
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "10px",
   },
   stepNum: {
@@ -214,6 +222,7 @@ const styles = {
     alignItems: "center",
     flexWrap: "wrap",
     gap: "4px",
+    justifyContent: "center",
   },
   stepText: {
     display: "inline-flex",
