@@ -1,6 +1,5 @@
 // src/lib/mapCategories.js
 // Using Phosphor icons as SVG strings for categories
-
 export const MAP_CATEGORIES = [
   '전체',
   '맛집',
@@ -34,6 +33,15 @@ const PHOSPHOR_ICONS = {
 
 // Export icon SVG strings for use in JSX
 export const CATEGORY_ICONS = PHOSPHOR_ICONS
+
+// ✅ NEW: Pre-computed icon variants (orange and white) — no runtime string replacement
+export const CATEGORY_ICONS_ORANGE = {}
+export const CATEGORY_ICONS_WHITE = {}
+
+MAP_CATEGORIES.forEach((cat) => {
+  CATEGORY_ICONS_ORANGE[cat] = PHOSPHOR_ICONS[cat].replace('fill="currentColor"', 'fill="#f97316"')
+  CATEGORY_ICONS_WHITE[cat] = PHOSPHOR_ICONS[cat].replace('fill="currentColor"', 'fill="white"')
+})
 
 // SVG strings for map markers
 export const getMapIconSvg = (category, color = 'white') => {
