@@ -293,7 +293,7 @@ export function SpotCard({ selected, onClose }) {
               </p>
             )}
             {selected.discount_terms && (
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-800 mt-0.5">
                 ※ <RichText text={selected.discount_terms} />
               </p>
             )}
