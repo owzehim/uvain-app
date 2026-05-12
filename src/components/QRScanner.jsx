@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { BrowserQRCodeReader, NotFoundException } from '@zxing/browser'
+import { BrowserQRCodeReader } from '@zxing/browser'
 
 export default function QRScanner({ onScan, onError }) {
   const videoRef = useRef(null)
@@ -12,11 +12,15 @@ export default function QRScanner({ onScan, onError }) {
     reader
       .decodeFromVideoDevice(undefined, videoRef.current, (result, err, controls) => {
         controlsRef.current = controls
+
         if (result) {
           controls.stop()
           onScan(result.getText())
+          return
         }
-        if (err && !(err instanceof NotFoundException)) {
+
+        // Any real error (not just “no code found in this frame”)
+        if (err) {
           setStatus('카메라 오류. 카메라 권한을 허용해주세요.')
           if (onError) onError(err)
         }
@@ -27,7 +31,9 @@ export default function QRScanner({ onScan, onError }) {
         if (onError) onError(err)
       })
 
-    return () => { controlsRef.current?.stop() }
+    return () => {
+      controlsRef.current?.stop()
+    }
   }, [onScan, onError])
 
   return (
