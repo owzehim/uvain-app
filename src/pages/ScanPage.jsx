@@ -13,7 +13,6 @@ export default function ScanPage() {
   const navigate = useNavigate()
 
   const handleScan = useCallback(async (rawValue) => {
-    // QR encodes: https://uvain-app.vercel.app/redeem?store_id=UUID
     let storeId = null
     try {
       const url = new URL(rawValue)
