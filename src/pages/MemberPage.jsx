@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useQRToken } from '../hooks/useQRToken'
 import { QRCodeSVG } from 'qrcode.react'
@@ -69,21 +70,35 @@ export default function MemberPage() {
     )
   }
 
-  const qrValue = token ? window.location.origin + '/verify/' + token + '_' + member?.student_number : ''
-  const isValid = member?.is_member && member?.membership_valid_until && new Date(member.membership_valid_until) >= new Date()
+  const qrValue = token
+    ? window.location.origin + '/verify/' + token + '_' + member?.student_number
+    : ''
+  const isValid =
+    member?.is_member &&
+    member?.membership_valid_until &&
+    new Date(member.membership_valid_until) >= new Date()
 
   return (
     <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}>
       {/* 헤더 */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
+      <div
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+      >
         <h1 className="font-bold text-gray-900">UvA-IN</h1>
         <div className="flex gap-2">
           {isAdmin && (
-            <button onClick={() => { window.location.href = '/admin' }} className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700">
+            <button
+              onClick={() => { window.location.href = '/admin' }}
+              className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+            >
               관리자
             </button>
           )}
-          <button onClick={() => supabase.auth.signOut()} className="text-sm text-gray-500 px-3 py-1 rounded-lg hover:bg-gray-100">
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="text-sm text-gray-500 px-3 py-1 rounded-lg hover:bg-gray-100"
+          >
             로그아웃
           </button>
         </div>
@@ -101,7 +116,10 @@ export default function MemberPage() {
       </div>
 
       {/* 하단 탭 */}
-      <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
+      <div
+        className="bg-white border-t border-gray-100 flex flex-shrink-0"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+      >
         {[
           { key: 'qr', label: 'MY', icon: QrCode },
           { key: 'events', label: 'EVENTS', icon: Calendar },
@@ -109,7 +127,14 @@ export default function MemberPage() {
         ].map((tab) => {
           const Icon = tab.icon
           return (
-            <button key={tab.key} onClick={() => handleTabChange(tab.key)} className={'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' + (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')}>
+            <button
+              key={tab.key}
+              onClick={() => handleTabChange(tab.key)}
+              className={
+                'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' +
+                (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
+              }
+            >
               <Icon size={20} weight={activeTab === tab.key ? 'fill' : 'regular'} />
               {tab.label}
             </button>
@@ -120,7 +145,11 @@ export default function MemberPage() {
   )
 }
 
+// ─── QR Tab ───────────────────────────────────────────────────────────────────
+
 function QRTab({ member, isValid, qrValue, secondsLeft }) {
+  const navigate = useNavigate()
+
   useEffect(() => {
     if (!member?.student_number) return
     broadcastQRExpiry(member.student_number)
@@ -133,10 +162,17 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
+
+        {/* Member info card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-900">{member?.full_name}</h2>
-            <span className={'text-xs font-medium px-2 py-1 rounded-full ' + (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')}>
+            <span
+              className={
+                'text-xs font-medium px-2 py-1 rounded-full ' +
+                (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
+              }
+            >
               {isValid ? '✓ 유효' : '✗ 만료'}
             </span>
           </div>
@@ -146,6 +182,8 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
             <p>{'유효기간: ' + (member?.membership_valid_until ?? '없음')}</p>
           </div>
         </div>
+
+        {/* QR code or expired message */}
         {isValid ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
             <p className="text-sm text-gray-500 mb-4">멤버십 QR 코드</p>
@@ -158,7 +196,10 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
                 <p className="text-sm font-semibold text-gray-700">{displaySeconds}초</p>
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-orange-500 transition-all duration-100" style={{ width: `${progressPercent}%` }} />
+                <div
+                  className="h-full bg-orange-500 transition-all duration-100"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-4 text-center">15초마다 자동 갱신됩니다</p>
@@ -169,10 +210,23 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
             <p className="text-sm text-red-400 mt-1">임원에게 문의하세요</p>
           </div>
         )}
+
+        {/* ✅ NEW: Scan discount button — only shown when membership is valid */}
+        {isValid && (
+          <button
+            onClick={() => navigate('/scan')}
+            className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
+          >
+            🎟 매장 QR 스캔하기
+          </button>
+        )}
+
       </div>
     </div>
   )
 }
+
+// ─── Nav Button (for event image slider on desktop) ───────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
   return (
@@ -203,12 +257,16 @@ function NavBtn({ onClick, children, style = {} }) {
     </button>
   )
 }
+
+// ─── Events Tab ───────────────────────────────────────────────────────────────
+
 function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
-  const setSlide = (eventId, idx) => setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
+  const setSlide = (eventId, idx) =>
+    setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
 
   useEffect(() => {
     if (!expandedId) return
@@ -231,8 +289,29 @@ function EventsTab({ events }) {
     const start = new Date(ev.event_date)
     const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
     const pad = (n) => String(n).padStart(2, '0')
-    const fmt = (d) => d.getUTCFullYear() + '' + pad(d.getUTCMonth() + 1) + '' + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + '' + pad(d.getUTCMinutes()) + '00Z'
-    const ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' + fmt(start) + '\nDTEND:' + fmt(end) + '\nSUMMARY:' + ev.title + '\nLOCATION:' + (ev.location || '') + '\nDESCRIPTION:' + (ev.description || '') + '\nEND:VEVENT\nEND:VCALENDAR'
+    const fmt = (d) =>
+      d.getUTCFullYear() +
+      '' +
+      pad(d.getUTCMonth() + 1) +
+      '' +
+      pad(d.getUTCDate()) +
+      'T' +
+      pad(d.getUTCHours()) +
+      '' +
+      pad(d.getUTCMinutes()) +
+      '00Z'
+    const ics =
+      'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' +
+      fmt(start) +
+      '\nDTEND:' +
+      fmt(end) +
+      '\nSUMMARY:' +
+      ev.title +
+      '\nLOCATION:' +
+      (ev.location || '') +
+      '\nDESCRIPTION:' +
+      (ev.description || '') +
+      '\nEND:VEVENT\nEND:VCALENDAR'
     const blob = new Blob([ics], { type: 'text/calendar' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -250,7 +329,10 @@ function EventsTab({ events }) {
 
     return (
       <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <button onClick={() => setExpandedId(isExpanded ? null : ev.id)} className="w-full text-left p-5">
+        <button
+          onClick={() => setExpandedId(isExpanded ? null : ev.id)}
+          className="w-full text-left p-5"
+        >
           <div className="flex items-center justify-between">
             <p className="font-semibold text-gray-900">{ev.title}</p>
             <span className="text-gray-400 text-sm ml-2">{isExpanded ? '▲' : '▼'}</span>
@@ -291,15 +373,15 @@ function EventsTab({ events }) {
                     if (start == null) return
                     const dx = e.changedTouches[0].clientX - start
                     e.currentTarget._swipeStartX = null
-                    if (dx < -40 && currentSlide < imgs.length - 1) {
-                      setSlide(ev.id, currentSlide + 1)
-                    } else if (dx > 40 && currentSlide > 0) {
-                      setSlide(ev.id, currentSlide - 1)
-                    }
+                    if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
+                    else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
                   }}
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-                    <div className="flex h-full" style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}>
+                    <div
+                      className="flex h-full"
+                      style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}
+                    >
                       {imgs.map((url, i) => (
                         <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
                           <img src={url} alt={'이미지 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
@@ -309,7 +391,9 @@ function EventsTab({ events }) {
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
-                          <div key={i} onClick={() => setSlide(ev.id, i)} className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
+                          <div key={i} onClick={() => setSlide(ev.id, i)}
+                            className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')}
+                          />
                         ))}
                       </div>
                     )}
@@ -319,7 +403,10 @@ function EventsTab({ events }) {
                 {/* 데스크톱 슬라이더 */}
                 <div className="hidden md:block">
                   <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-                    <div className="flex h-full" style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}>
+                    <div
+                      className="flex h-full"
+                      style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}
+                    >
                       {imgs.map((url, i) => (
                         <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
                           <img src={url} alt={'이미지 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
@@ -329,18 +416,16 @@ function EventsTab({ events }) {
                     {imgs.length > 1 && (
                       <>
                         {currentSlide > 0 && (
-                          <NavBtn onClick={() => setSlide(ev.id, currentSlide - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}>
-                            ‹
-                          </NavBtn>
+                          <NavBtn onClick={() => setSlide(ev.id, currentSlide - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}>‹</NavBtn>
                         )}
                         {currentSlide < imgs.length - 1 && (
-                          <NavBtn onClick={() => setSlide(ev.id, currentSlide + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
-                            ›
-                          </NavBtn>
+                          <NavBtn onClick={() => setSlide(ev.id, currentSlide + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>›</NavBtn>
                         )}
                         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                           {imgs.map((_, i) => (
-                            <div key={i} onClick={() => setSlide(ev.id, i)} className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
+                            <div key={i} onClick={() => setSlide(ev.id, i)}
+                              className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')}
+                            />
                           ))}
                         </div>
                       </>
@@ -351,16 +436,26 @@ function EventsTab({ events }) {
             )}
 
             <div className="px-5 pb-5">
-              {ev.description && <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />}
+              {ev.description && (
+                <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />
+              )}
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
-                  <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5">
+                  <button
+                    onClick={() => addToCalendar(ev)}
+                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5"
+                  >
                     <Calendar size={14} weight="fill" />
                     캘린더에 추가
                   </button>
                 )}
                 {instaUrl && (
-                  <a href={instaUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors">
+                  <a
+                    href={instaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors"
+                  >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
@@ -390,7 +485,6 @@ function EventsTab({ events }) {
           </div>
         ) : (
           <div className="space-y-3">
-            {/* UPCOMING EVENTS */}
             {upcomingEvents.length > 0 && (
               <div>
                 {(() => {
@@ -409,10 +503,12 @@ function EventsTab({ events }) {
               </div>
             )}
 
-            {/* PAST EVENTS SECTION */}
             {pastEvents.length > 0 && (
               <div className="mt-6">
-                <button onClick={() => setPastEventsExpanded(!pastEventsExpanded)} className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors">
+                <button
+                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+                  className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-gray-600 font-semibold">지난 이벤트</span>
                     <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">{pastEvents.length}</span>
@@ -445,11 +541,12 @@ function EventsTab({ events }) {
   )
 }
 
+// ─── Map Tab ──────────────────────────────────────────────────────────────────
+
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
 
-  // ✅ NEW: useMemo to prevent unnecessary filtering
   const filtered = useMemo(
     () =>
       activeCategory === '전체'
@@ -464,21 +561,20 @@ function MapTab({ restaurants }) {
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
-          // ✅ NEW: Use pre-computed icon variants instead of calling getMapIconSvg
           const iconSvg = isActive ? CATEGORY_ICONS_WHITE[cat] : CATEGORY_ICONS_ORANGE[cat]
           return (
             <button
               key={cat}
-              onClick={() => {
-                setActiveCategory(cat)
-                setSelected(null)
-              }}
+              onClick={() => { setActiveCategory(cat); setSelected(null) }}
               className={
                 'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
                 (isActive ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
               }
             >
-              <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }} dangerouslySetInnerHTML={{ __html: iconSvg }} />
+              <span
+                style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                dangerouslySetInnerHTML={{ __html: iconSvg }}
+              />
               {cat}
             </button>
           )

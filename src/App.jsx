@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
-
 import LoginPage from './pages/LoginPage'
 import MemberPage from './pages/MemberPage'
 import AdminPage from './pages/AdminPage'
 import VerifyPage from './pages/VerifyPage'
 import PublicPage from './pages/PublicPage'
+import ScanPage from './pages/ScanPage'          // ← NEW
 import InstallBanner from './components/InstallBanner'
 
 function App() {
@@ -32,12 +32,13 @@ function App() {
     <BrowserRouter>
       <InstallBanner />
       <Routes>
-        <Route path="/login" element={!session ? <LoginPage /> : <Navigate to="/member" />} />
-        <Route path="/member" element={session ? <MemberPage /> : <Navigate to="/public" />} />
-        <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
+        <Route path="/login"        element={!session ? <LoginPage />  : <Navigate to="/member" />} />
+        <Route path="/member"       element={session  ? <MemberPage /> : <Navigate to="/public" />} />
+        <Route path="/admin"        element={session  ? <AdminPage />  : <Navigate to="/login"  />} />
+        <Route path="/scan"         element={session  ? <ScanPage />   : <Navigate to="/login"  />} />  {/* ← NEW */}
         <Route path="/verify/:token" element={<VerifyPage />} />
-        <Route path="/public" element={<PublicPage />} />
-        <Route path="*" element={<Navigate to={session ? "/member" : "/public"} />} />
+        <Route path="/public"       element={<PublicPage />} />
+        <Route path="*"             element={<Navigate to={session ? "/member" : "/public"} />} />
       </Routes>
     </BrowserRouter>
   )
