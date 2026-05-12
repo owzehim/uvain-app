@@ -77,9 +77,8 @@ export default function ScanPage() {
               매장에 비치된 QR 코드를 스캔하면 할인이 자동으로 기록됩니다.
             </p>
             <QRScanner
-              onScan={handleScan}
-              onError={() => { setState(STATE.ERROR); setErrorMsg('카메라 접근이 거부되었습니다.') }}
-            />
+  onScan={handleScan}
+/>
           </>
         )}
 
