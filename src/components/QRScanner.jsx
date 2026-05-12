@@ -19,10 +19,17 @@ export default function QRScanner({ onScan, onError }) {
           return
         }
 
-        // Any real error (not just “no code found in this frame”)
         if (err) {
-          setStatus('카메라 오류. 카메라 권한을 허용해주세요.')
-          if (onError) onError(err)
+          // NotFoundException = no QR code found in this frame — this is normal, ignore it
+          const isNotFound =
+            err.name === 'NotFoundException' ||
+            err.message?.includes('No MultiFormat Readers') ||
+            err.message?.includes('No code detected')
+
+          if (!isNotFound) {
+            setStatus('카메라 오류. 카메라 권한을 허용해주세요.')
+            if (onError) onError(err)
+          }
         }
       })
       .then(() => setStatus('매장 QR 코드를 스캔해주세요'))
