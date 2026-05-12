@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BrowserQRCodeReader } from '@zxing/browser'
 
-export default function QRScanner({ onScan, onError }) {
+export default function QRScanner({ onScan }) {
   const videoRef = useRef(null)
   const controlsRef = useRef(null)
   const [status, setStatus] = useState('카메라 초기화 중...')
@@ -10,38 +10,22 @@ export default function QRScanner({ onScan, onError }) {
     const reader = new BrowserQRCodeReader()
 
     reader
-      .decodeFromVideoDevice(undefined, videoRef.current, (result, err, controls) => {
+      .decodeFromVideoDevice(undefined, videoRef.current, (result, _err, controls) => {
         controlsRef.current = controls
 
         if (result) {
           controls.stop()
           onScan(result.getText())
-          return
         }
-
-        if (err) {
-          // NotFoundException = no QR code found in this frame — this is normal, ignore it
-          const isNotFound =
-            err.name === 'NotFoundException' ||
-            err.message?.includes('No MultiFormat Readers') ||
-            err.message?.includes('No code detected')
-
-          if (!isNotFound) {
-            setStatus('카메라 오류. 카메라 권한을 허용해주세요.')
-            if (onError) onError(err)
-          }
-        }
+        // ignore all errors — they are mostly "no QR in this frame" noise
       })
       .then(() => setStatus('매장 QR 코드를 스캔해주세요'))
-      .catch((err) => {
-        setStatus('카메라에 접근할 수 없습니다.')
-        if (onError) onError(err)
-      })
+      .catch(() => setStatus('카메라에 접근할 수 없습니다.'))
 
     return () => {
       controlsRef.current?.stop()
     }
-  }, [onScan, onError])
+  }, [onScan])
 
   return (
     <div className="flex flex-col items-center gap-3 w-full">
