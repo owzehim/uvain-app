@@ -1,15 +1,15 @@
 import { supabase } from './supabase'
 
 export async function logRedemption({ userId, storeId }) {
-
   // ── 1. Get member data ─────────────────────────────────────────────────
   const { data: member, error: memberError } = await supabase
     .from('members')
-    .select('full_name, university, student_number, major, year_in_uni, membership_valid_until, is_member')
+    .select('*')
     .eq('user_id', userId)
     .single()
 
   if (memberError || !member) {
+    console.error('Member fetch error:', memberError)
     return { success: false, message: '멤버 정보를 찾을 수 없습니다.' }
   }
 
@@ -35,6 +35,7 @@ export async function logRedemption({ userId, storeId }) {
     .single()
 
   if (partnershipError || !partnership) {
+    console.error('Partnership fetch error:', partnershipError)
     return { success: false, message: '유효하지 않은 제휴 매장입니다.' }
   }
 
