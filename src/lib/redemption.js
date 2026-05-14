@@ -1,69 +1,56 @@
 import { supabase } from './supabase'
 
 export async function logRedemption({ userId, storeId }) {
-  // ── 1. Get member data ─────────────────────────────────────────────────
-  const { data: member, error: memberError } = await supabase
-    .from('members')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
-
-  if (memberError || !member) {
-    console.error('Member fetch error:', memberError)
-    return { success: false, message: '멤버 정보를 찾을 수 없습니다.' }
-  }
-
-  // ── 2. Check membership is active and not expired ─────────────────────
-  if (!member.is_member) {
-    return { success: false, message: '멤버십이 활성화되어 있지 않습니다.' }
-  }
-
-  const now = new Date()
-  const validUntil = member.membership_valid_until
-    ? new Date(member.membership_valid_until)
-    : null
-
-  if (!validUntil || validUntil < now) {
-    return { success: false, message: '멤버십이 만료되었습니다.' }
-  }
-
-  // ── 3. Get partnership info ────────────────────────────────────────────
-  const { data: partnership, error: partnershipError } = await supabase
-    .from('partnerships')
-    .select('name')
-    .eq('id', storeId)
-    .single()
-
-  if (partnershipError || !partnership) {
-    console.error('Partnership fetch error:', partnershipError)
-    return { success: false, message: '유효하지 않은 제휴 매장입니다.' }
-  }
-
-  // ── 4. Call the Edge Function ──────────────────────────────────────────
-  const { data: sessionData } = await supabase.auth.getSession()
+  // 1) 세션(JWT) 가져오기
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
   const session = sessionData?.session
 
-  if (!session) {
+  if (sessionError || !session) {
     return { success: false, message: '로그인이 필요합니다.' }
   }
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-redemption`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ userId, storeId }),
+  // 2) Edge Function 호출 (모든 검증 + 로깅 거기서 처리)
+  let response
+  try {
+    response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-redemption`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ userId, storeId }),
+      }
+    )
+  } catch (err) {
+    console.error('log-redemption network error:', err)
+    return {
+      success: false,
+      message: '서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.',
     }
-  )
-
-  const result = await response.json()
-
-  if (!result.success) {
-    return { success: false, message: result.message || '기록에 실패했습니다.' }
   }
 
-  return { success: true, storeName: partnership.name }
+  let result
+  try {
+    result = await response.json()
+  } catch (err) {
+    console.error('log-redemption JSON parse error:', err)
+    return {
+      success: false,
+      message: '서버 응답을 해석할 수 없습니다. 잠시 후 다시 시도해주세요.',
+    }
+  }
+
+  if (!response.ok || !result?.success) {
+    return {
+      success: false,
+      message: result?.message || '할인을 적용할 수 없습니다. 다시 시도해주세요.',
+    }
+  }
+
+  return {
+    success: true,
+    storeName: result.storeName || '매장',
+  }
 }
