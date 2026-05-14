@@ -38,8 +38,9 @@ export async function logRedemption({ userId, storeId }) {
     return { success: false, message: '유효하지 않은 제휴 매장입니다.' }
   }
 
-  // ── 4. Call the Edge Function to log to both Google Sheets ────────────
-  const { data: { session } } = await supabase.auth.getSession()
+  // ── 4. Call the Edge Function ──────────────────────────────────────────
+  const { data: sessionData } = await supabase.auth.getSession()
+  const session = sessionData?.session
 
   if (!session) {
     return { success: false, message: '로그인이 필요합니다.' }
