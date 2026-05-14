@@ -51,7 +51,7 @@ console.log('storeId parsed:', storeId)
         return
       }
 
-      const result = await logRedemption({ userId: user.id, storeId })
+      const result = await logRedemption({ storeId })
 
       if (result.success) {
         setStoreName(result.storeName || '매장')

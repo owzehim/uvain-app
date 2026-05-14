@@ -12,35 +12,79 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, storeId } = await req.json()
+    const authHeader = req.headers.get('Authorization') || ''
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
 
-    if (!userId || !storeId) {
+    const { storeId } = await req.json().catch(() => ({}))
+
+    if (!token || !storeId) {
       return new Response(
-        JSON.stringify({ success: false, message: 'Missing userId or storeId' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ success: false, message: '잘못된 요청입니다.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
-    // ── Supabase admin client ─────────────────────────────────────────────
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
 
-    // ── 1. 멤버 정보 (있으면 사용, 없어도 실패 안 함) ────────────────────
-    const { data: member } = await supabase
+    // 1) 유저 확인 (JWT로)
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    })
+
+    const { data: userData, error: userError } = await authClient.auth.getUser()
+    const user = userData?.user
+
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, message: '로그인이 필요합니다.' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // 2) 서비스 롤 클라이언트
+    const admin = createClient(supabaseUrl, serviceKey)
+
+    // 3) 멤버 정보 (필수)
+    const { data: member, error: memberError } = await admin
       .from('members')
       .select(
-        'full_name, university, student_number, major, year_in_uni, membership_valid_until'
+        'full_name, university, student_number, major, year_in_uni, membership_valid_until, is_member'
       )
-      .eq('user_id', userId)
-      .maybeSingle()
+      .eq('user_id', user.id)
+      .single()
 
-    // ── 2. 제휴 매장 정보 (이건 반드시 있어야 함) ───────────────────────
-    const { data: partnership, error: partnershipError } = await supabase
+    if (memberError || !member) {
+      return new Response(
+        JSON.stringify({ success: false, message: '멤버 정보를 찾을 수 없습니다.' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // 4) 멤버십 상태 체크
+    const now = new Date()
+    const validUntil = member.membership_valid_until
+      ? new Date(member.membership_valid_until)
+      : null
+
+    if (!member.is_member) {
+      return new Response(
+        JSON.stringify({ success: false, message: '멤버십이 활성화되어 있지 않습니다.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    if (!validUntil || validUntil < now) {
+      return new Response(
+        JSON.stringify({ success: false, message: '멤버십이 만료되었습니다.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // 5) 제휴 매장 정보
+    const { data: partnership, error: partnershipError } = await admin
       .from('partnerships')
       .select('name, apps_script_url')
       .eq('id', storeId)
@@ -49,15 +93,11 @@ serve(async (req) => {
     if (partnershipError || !partnership) {
       return new Response(
         JSON.stringify({ success: false, message: '유효하지 않은 제휴 매장입니다.' }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
-    // ── 3. 날짜/시간 (Amsterdam) ──────────────────────────────────────
-    const now = new Date()
+    // 6) 시간 정보 (Amsterdam)
     const date = now.toLocaleDateString('ko-KR', { timeZone: 'Europe/Amsterdam' })
     const time = now.toLocaleTimeString('ko-KR', {
       timeZone: 'Europe/Amsterdam',
@@ -65,51 +105,44 @@ serve(async (req) => {
       minute: '2-digit',
     })
 
-    // 이니셜 (멤버 이름 있을 때만)
-    const initials = member?.full_name
-      ? member.full_name
-          .split(' ')
-          .map((w: string) => w[0]?.toUpperCase() ?? '')
-          .join('.')
-      : ''
+    const initials = (member.full_name || '')
+      .split(' ')
+      .map((w: string) => w[0]?.toUpperCase() ?? '')
+      .join('.')
 
-    // ── 4. 마스터 시트용 payload (내부용, 값 없으면 빈 값) ────────────────
+    // 7) 마스터 시트용 payload (멤버 정보 꽉 채움)
     const masterPayload = {
       type: 'master',
       date,
       time,
-      full_name: member?.full_name ?? '',
-      university: member?.university ?? '',
-      student_id: member?.student_number ?? '',
-      major: member?.major ?? '',
-      year: member?.year_in_uni ?? '',
-      membership_valid_until: member?.membership_valid_until ?? '',
+      full_name: member.full_name || '',
+      university: member.university || '',
+      student_id: member.student_number || '',
+      major: member.major || '',
+      year: member.year_in_uni || '',
+      membership_valid_until: member.membership_valid_until || '',
       place_name: partnership.name,
       store_id: storeId,
     }
 
-    // ── 5. 매장 시트용 payload (제휴 매장용, 안전한 정보만) ───────────────
+    // 8) 매장 시트용 payload
     const storePayload = {
       type: 'store',
       date,
       time,
       initials,
-      university: member?.university ?? '',
-      student_id: member?.student_number ?? '',
-      membership_valid_until: member?.membership_valid_until ?? '',
+      university: member.university || '',
+      student_id: member.student_number || '',
+      membership_valid_until: member.membership_valid_until || '',
     }
 
-    // ── 6. 구글 Apps Script 두 개 동시에 호출 ───────────────────────────
-    const masterUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
-    const storeUrl = partnership.apps_script_url
-
     const [masterRes, storeRes] = await Promise.all([
-      fetch(masterUrl, {
+      fetch(masterSheetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(masterPayload),
       }),
-      fetch(storeUrl, {
+      fetch(partnership.apps_script_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(storePayload),
@@ -117,37 +150,25 @@ serve(async (req) => {
     ])
 
     if (!masterRes.ok || !storeRes.ok) {
-      console.error(
-        'Sheet POST failed:',
-        masterRes.ok ? 'OK' : await masterRes.text(),
-        storeRes.ok ? 'OK' : await storeRes.text()
-      )
-      // 하지만 유저한테는 실패로 돌려보내지 않음
+      console.error('Sheet POST failed:', await masterRes.text(), await storeRes.text())
     }
 
-    // ── 7. Supabase redemptions 백업 로그 ───────────────────────────────
-    await supabase.from('redemptions').insert({
-      user_id: userId,
+    // 9) redemptions 테이블 로그
+    await admin.from('redemptions').insert({
+      user_id: user.id,
       store_id: storeId,
       redeemed_at: now.toISOString(),
     })
 
-    // 항상 성공으로 응답 (매장만 유효하면)
     return new Response(
       JSON.stringify({ success: true, storeName: partnership.name }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {
     console.error('log-redemption fatal error:', err)
     return new Response(
       JSON.stringify({ success: false, message: '서버 오류가 발생했습니다.' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }
 })
