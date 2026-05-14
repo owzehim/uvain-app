@@ -31,7 +31,7 @@ export async function logRedemption({ storeId }) {
 
     // Call Google Apps Script webhook
     const response = await fetch(
-      'https://script.google.com/macros/d/YOUR_SCRIPT_ID/usercallable',
+      'https://script.google.com/macros/s/AKfycbwejyk76fjur-mM34s1_mIJutd5CwtHTXgxNoRUSKa37il0xU4aPZp-gGyvfSDTRcRc/usercallable',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
