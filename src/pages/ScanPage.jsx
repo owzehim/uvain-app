@@ -37,7 +37,8 @@ export default function ScanPage() {
       handlingRef.current = false
       return
     }
-
+  
+console.log('storeId parsed:', storeId)
     setState(STATE.LOADING)
 
     try {
