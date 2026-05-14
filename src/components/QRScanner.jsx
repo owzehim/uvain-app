@@ -3,10 +3,11 @@ import { Html5Qrcode } from 'html5-qrcode'
 
 export default function QRScanner({ onScan }) {
   const scannerRef = useRef(null)
+  const scannedRef = useRef(false)
 
   useEffect(() => {
     const scannerId = 'qr-scanner-container'
-    const scanner = new Html5Qrcode(scannerId)
+    const scanner = new Html5Qrcode(scannerId, { verbose: false })
     scannerRef.current = scanner
 
     scanner.start(
@@ -17,8 +18,16 @@ export default function QRScanner({ onScan }) {
         aspectRatio: 1.0,
       },
       (decodedText) => {
-        scanner.stop().catch(() => {})
-        onScan(decodedText)
+        // prevent firing twice
+        if (scannedRef.current) return
+        scannedRef.current = true
+
+        // stop scanner then call onScan
+        scanner.stop()
+          .catch(() => {})
+          .finally(() => {
+            onScan(decodedText)
+          })
       },
       () => {
         // ignore per-frame errors
@@ -28,7 +37,9 @@ export default function QRScanner({ onScan }) {
     })
 
     return () => {
-      scanner.stop().catch(() => {})
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {})
+      }
     }
   }, [onScan])
 
