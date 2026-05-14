@@ -4,9 +4,6 @@ export async function logRedemption({ storeId }) {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    console.log('User:', user)
-    console.log('Auth Error:', authError)
-    
     if (authError || !user) {
       return { success: false, message: '로그인이 필요합니다.' }
     }
@@ -17,9 +14,6 @@ export async function logRedemption({ storeId }) {
       .select('*')
       .eq('user_id', user.id)
       .single()
-
-    console.log('Member Data:', memberData)
-    console.log('Member Error:', memberError)
 
     if (memberError) {
       console.error('Member fetch error:', memberError)
@@ -48,7 +42,7 @@ export async function logRedemption({ storeId }) {
           time: time,
           fullName: memberData.full_name || 'N/A',
           university: memberData.university || 'N/A',
-          studentId: memberData.student_id || 'N/A',
+          studentId: memberData.student_number || 'N/A',
           major: memberData.major || 'N/A',
           year: memberData.year || 'N/A',
           membershipValidUntil: memberData.membership_valid_until || 'N/A',
