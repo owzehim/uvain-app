@@ -15,8 +15,18 @@ export async function logRedemption({ storeId }) {
       .eq('user_id', user.id)
       .single()
 
-    if (memberError || !memberData) {
+    if (memberError) {
+      console.error('Member fetch error:', memberError)
       return { success: false, message: '멤버 정보를 찾을 수 없습니다.' }
+    }
+
+    if (!memberData) {
+      return { success: false, message: '멤버 정보를 찾을 수 없습니다.' }
+    }
+
+    // Check if at least full_name and student_id exist
+    if (!memberData.full_name || !memberData.student_id) {
+      return { success: false, message: '이름과 학번은 필수입니다.' }
     }
 
     // Get current date and time
@@ -24,9 +34,9 @@ export async function logRedemption({ storeId }) {
     const date = now.toISOString().split('T')[0]
     const time = now.toTimeString().split(' ')[0]
 
-    // Call Google Apps Script webhook
+    // Call Google Apps Script webhook - use empty string for missing fields
     const response = await fetch(
-      'https://script.google.com/macros/d/AKfycbycP_zrq9KS-8YSeJ0KuCWETGxScs7zuwixQWzmD6ZG34fSnZSfquea0sLhogp8EQ-J/usercallable',
+      'https://script.google.com/macros/d/YOUR_SCRIPT_ID/usercallable',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,12 +45,12 @@ export async function logRedemption({ storeId }) {
           storeId: storeId,
           date: date,
           time: time,
-          fullName: memberData.full_name,
-          university: memberData.university,
-          studentId: memberData.student_id,
-          major: memberData.major,
-          year: memberData.year,
-          membershipValidUntil: memberData.membership_valid_until,
+          fullName: memberData.full_name || 'N/A',
+          university: memberData.university || 'N/A',
+          studentId: memberData.student_id || 'N/A',
+          major: memberData.major || 'N/A',
+          year: memberData.year || 'N/A',
+          membershipValidUntil: memberData.membership_valid_until || 'N/A',
         }),
       }
     )
