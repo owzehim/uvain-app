@@ -4,6 +4,9 @@ export async function logRedemption({ storeId }) {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
+    console.log('User:', user)
+    console.log('Auth Error:', authError)
+    
     if (authError || !user) {
       return { success: false, message: '로그인이 필요합니다.' }
     }
@@ -11,22 +14,20 @@ export async function logRedemption({ storeId }) {
     // Get member data from Supabase
     const { data: memberData, error: memberError } = await supabase
       .from('members')
-      .select('full_name, university, student_id, major, year, membership_valid_until')
+      .select('*')
       .eq('user_id', user.id)
       .single()
 
+    console.log('Member Data:', memberData)
+    console.log('Member Error:', memberError)
+
     if (memberError) {
       console.error('Member fetch error:', memberError)
-      return { success: false, message: '멤버 정보를 찾을 수 없습니다.' }
+      return { success: false, message: `DB Error: ${memberError.message}` }
     }
 
     if (!memberData) {
       return { success: false, message: '멤버 정보를 찾을 수 없습니다.' }
-    }
-
-    // Check if at least full_name and student_id exist
-    if (!memberData.full_name || !memberData.student_id) {
-      return { success: false, message: '이름과 학번은 필수입니다.' }
     }
 
     // Get current date and time
@@ -34,7 +35,7 @@ export async function logRedemption({ storeId }) {
     const date = now.toISOString().split('T')[0]
     const time = now.toTimeString().split(' ')[0]
 
-    // Call Google Apps Script webhook - use empty string for missing fields
+    // Call Google Apps Script webhook
     const response = await fetch(
       'https://script.google.com/macros/d/YOUR_SCRIPT_ID/usercallable',
       {
