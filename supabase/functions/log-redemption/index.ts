@@ -26,7 +26,6 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 
-    // Use service role key - try both old and new secret names
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
       || (() => {
         try {
@@ -44,12 +43,10 @@ serve(async (req) => {
       )
     }
 
-    // Use service role client to verify the JWT token
     const admin = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false },
     })
 
-    // Verify user via their JWT token using admin client
     const { data: userData, error: userError } = await admin.auth.getUser(token)
     const user = userData?.user
 
@@ -63,10 +60,10 @@ serve(async (req) => {
 
     console.log('User verified:', user.id)
 
-    // 멤버 정보
+    // Note: "University" is capitalized in the DB
     const { data: member, error: memberError } = await admin
       .from('members')
-      .select('full_name, university, student_number, major, year_in_uni, membership_valid_until, is_member')
+      .select('full_name, University, student_number, major, membership_valid_until, is_member')
       .eq('user_id', user.id)
       .single()
 
@@ -132,10 +129,9 @@ serve(async (req) => {
       date,
       time,
       full_name: member.full_name || '',
-      university: member.university || '',
+      university: member.University || '',
       student_id: member.student_number || '',
       major: member.major || '',
-      year: member.year_in_uni || '',
       membership_valid_until: member.membership_valid_until || '',
       place_name: partnership.name,
       store_id: storeId,
@@ -147,7 +143,7 @@ serve(async (req) => {
       date,
       time,
       initials,
-      university: member.university || '',
+      university: member.University || '',
       student_id: member.student_number || '',
       membership_valid_until: member.membership_valid_until || '',
     }
