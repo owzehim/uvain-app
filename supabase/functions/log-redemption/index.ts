@@ -11,14 +11,6 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // DEBUG - remove after fixing
-  console.log('KEYS DEBUG:', {
-    anon: Deno.env.get('SUPABASE_ANON_KEY'),
-    publishable: Deno.env.get('SUPABASE_PUBLISHABLE_KEYS'),
-    service: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
-    secret: Deno.env.get('SUPABASE_SECRET_KEYS'),
-  })
-
   try {
     const authHeader = req.headers.get('Authorization') || ''
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
@@ -33,62 +25,62 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
-      || JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') || '{}').anon_key
-      || JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') || '{}').anon
-      || ''
+
+    // Use service role key - try both old and new secret names
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      || JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').service_role_key
-      || JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').service_role
-      || ''
-    const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
+      || (() => {
+        try {
+          const raw = Deno.env.get('SUPABASE_SECRET_KEYS') || '{}'
+          const parsed = JSON.parse(raw)
+          return parsed.service_role_key || parsed.service_role || Object.values(parsed)[0] || ''
+        } catch { return '' }
+      })()
 
-    console.log('RESOLVED KEYS:', {
-      hasAnonKey: !!anonKey,
-      hasServiceKey: !!serviceKey,
-      hasUrl: !!supabaseUrl,
-      hasMasterSheet: !!masterSheetUrl,
+    if (!serviceKey) {
+      console.error('No service key found')
+      return new Response(
+        JSON.stringify({ success: false, message: '서버 설정 오류입니다.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // Use service role client to verify the JWT token
+    const admin = createClient(supabaseUrl, serviceKey, {
+      auth: { persistSession: false },
     })
 
-    // 1) 유저 확인 (JWT로)
-    const authClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-    })
-
-    const { data: userData, error: userError } = await authClient.auth.getUser()
+    // Verify user via their JWT token using admin client
+    const { data: userData, error: userError } = await admin.auth.getUser(token)
     const user = userData?.user
 
     if (userError || !user) {
+      console.error('Auth error:', userError)
       return new Response(
         JSON.stringify({ success: false, message: '로그인이 필요합니다.' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
-    // 2) 서비스 롤 클라이언트
-    const admin = createClient(supabaseUrl, serviceKey)
+    console.log('User verified:', user.id)
 
-    // 3) 멤버 정보 (필수)
+    // 멤버 정보
     const { data: member, error: memberError } = await admin
       .from('members')
-      .select(
-        'full_name, university, student_number, major, year_in_uni, membership_valid_until, is_member'
-      )
+      .select('full_name, university, student_number, major, year_in_uni, membership_valid_until, is_member')
       .eq('user_id', user.id)
       .single()
 
     if (memberError || !member) {
+      console.error('Member error:', memberError)
       return new Response(
         JSON.stringify({ success: false, message: '멤버 정보를 찾을 수 없습니다.' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
-    // 4) 멤버십 상태 체크
+    // 멤버십 상태 체크
     const now = new Date()
-    const validUntil = member.membership_valid_until
-      ? new Date(member.membership_valid_until)
-      : null
+    const validUntil = member.membership_valid_until ? new Date(member.membership_valid_until) : null
 
     if (!member.is_member) {
       return new Response(
@@ -104,7 +96,7 @@ serve(async (req) => {
       )
     }
 
-    // 5) 제휴 매장 정보
+    // 제휴 매장 정보
     const { data: partnership, error: partnershipError } = await admin
       .from('partnerships')
       .select('name, apps_script_url')
@@ -112,13 +104,14 @@ serve(async (req) => {
       .single()
 
     if (partnershipError || !partnership) {
+      console.error('Partnership error:', partnershipError)
       return new Response(
         JSON.stringify({ success: false, message: '유효하지 않은 제휴 매장입니다.' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
-    // 6) 시간 정보 (Amsterdam)
+    // 시간 정보 (Amsterdam)
     const date = now.toLocaleDateString('ko-KR', { timeZone: 'Europe/Amsterdam' })
     const time = now.toLocaleTimeString('ko-KR', {
       timeZone: 'Europe/Amsterdam',
@@ -131,7 +124,9 @@ serve(async (req) => {
       .map((w: string) => w[0]?.toUpperCase() ?? '')
       .join('.')
 
-    // 7) 마스터 시트용 payload
+    const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
+
+    // 마스터 시트용 payload
     const masterPayload = {
       type: 'master',
       date,
@@ -146,7 +141,7 @@ serve(async (req) => {
       store_id: storeId,
     }
 
-    // 8) 매장 시트용 payload
+    // 매장 시트용 payload
     const storePayload = {
       type: 'store',
       date,
@@ -174,7 +169,7 @@ serve(async (req) => {
       console.error('Sheet POST failed:', await masterRes.text(), await storeRes.text())
     }
 
-    // 9) redemptions 테이블 로그
+    // redemptions 테이블 로그
     await admin.from('redemptions').insert({
       user_id: user.id,
       store_id: storeId,
