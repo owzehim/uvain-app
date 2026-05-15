@@ -11,6 +11,14 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // DEBUG - remove after fixing
+  console.log('KEYS DEBUG:', {
+    anon: Deno.env.get('SUPABASE_ANON_KEY'),
+    publishable: Deno.env.get('SUPABASE_PUBLISHABLE_KEYS'),
+    service: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+    secret: Deno.env.get('SUPABASE_SECRET_KEYS'),
+  })
+
   try {
     const authHeader = req.headers.get('Authorization') || ''
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
@@ -25,14 +33,22 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const anonKey = Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') 
-  ? JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS')!).anon 
-  : Deno.env.get('SUPABASE_ANON_KEY')!
-
-const serviceKey = Deno.env.get('SUPABASE_SECRET_KEYS')
-  ? JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!).service_role
-  : Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+      || JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') || '{}').anon_key
+      || JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') || '{}').anon
+      || ''
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      || JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').service_role_key
+      || JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').service_role
+      || ''
     const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
+
+    console.log('RESOLVED KEYS:', {
+      hasAnonKey: !!anonKey,
+      hasServiceKey: !!serviceKey,
+      hasUrl: !!supabaseUrl,
+      hasMasterSheet: !!masterSheetUrl,
+    })
 
     // 1) 유저 확인 (JWT로)
     const authClient = createClient(supabaseUrl, anonKey, {
@@ -115,7 +131,7 @@ const serviceKey = Deno.env.get('SUPABASE_SECRET_KEYS')
       .map((w: string) => w[0]?.toUpperCase() ?? '')
       .join('.')
 
-    // 7) 마스터 시트용 payload (멤버 정보 꽉 채움)
+    // 7) 마스터 시트용 payload
     const masterPayload = {
       type: 'master',
       date,
