@@ -25,8 +25,13 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const anonKey = Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') 
+  ? JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS')!).anon 
+  : Deno.env.get('SUPABASE_ANON_KEY')!
+
+const serviceKey = Deno.env.get('SUPABASE_SECRET_KEYS')
+  ? JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!).service_role
+  : Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
 
     // 1) 유저 확인 (JWT로)
