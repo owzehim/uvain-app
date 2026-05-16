@@ -58,12 +58,12 @@ serve(async (req) => {
       )
     }
 
-    console.log('User verified:', user.id)
-
-    // Note: "University" is capitalized in the DB
+    // ── Fetch member profile ─────────────────────────────────────────────
+    // Added `year` to the select — make sure this column exists in your members table.
+    // If it doesn't exist yet, remove it from the select and it will just send '' below.
     const { data: member, error: memberError } = await admin
       .from('members')
-      .select('full_name, University, student_number, major, membership_valid_until, is_member')
+      .select('full_name, University, student_number, major, year, membership_valid_until, is_member')
       .eq('user_id', user.id)
       .single()
 
@@ -75,7 +75,7 @@ serve(async (req) => {
       )
     }
 
-    // 멤버십 상태 체크
+    // ── Membership validity check ────────────────────────────────────────
     const now = new Date()
     const validUntil = member.membership_valid_until ? new Date(member.membership_valid_until) : null
 
@@ -93,10 +93,13 @@ serve(async (req) => {
       )
     }
 
-    // 제휴 매장 정보
+    // ── Fetch partnership ────────────────────────────────────────────────
     const { data: partnership, error: partnershipError } = await admin
       .from('partnerships')
-      .select('name, apps_script_url')
+      .select('name, sheet_name, apps_script_url')
+      // sheet_name = the exact tab name in the Google Sheet, e.g. "Northeast Kitchen"
+      // Add this column to your partnerships table if it doesn't exist.
+      // Alternatively you can just use `name` if the tab name matches the partnership name exactly.
       .eq('id', storeId)
       .single()
 
@@ -108,44 +111,48 @@ serve(async (req) => {
       )
     }
 
-    // 시간 정보 (Amsterdam)
-    const date = now.toLocaleDateString('ko-KR', { timeZone: 'Europe/Amsterdam' })
-    const time = now.toLocaleTimeString('ko-KR', {
+    // ── Date / time (Amsterdam) ──────────────────────────────────────────
+    const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Amsterdam' }) // e.g. 16/05/2026
+    const time = now.toLocaleTimeString('en-GB', {
       timeZone: 'Europe/Amsterdam',
       hour: '2-digit',
       minute: '2-digit',
     })
 
-    const initials = (member.full_name || '')
-      .split(' ')
-      .map((w: string) => w[0]?.toUpperCase() ?? '')
-      .join('.')
+    // ── Safe field helpers (blank if missing) ────────────────────────────
+    const safe = (v: unknown) => (v != null && v !== '' ? String(v) : '')
 
     const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
 
-    // 마스터 시트용 payload
+    // ── Master sheet payload (All Scans tab) ─────────────────────────────
     const masterPayload = {
       type: 'master',
       date,
       time,
-      full_name: member.full_name || '',
-      university: member.University || '',
-      student_id: member.student_number || '',
-      major: member.major || '',
-      membership_valid_until: member.membership_valid_until || '',
-      place_name: partnership.name,
-      store_id: storeId,
+      full_name:              safe(member.full_name),
+      university:             safe(member.University),
+      student_id:             safe(member.student_number),
+      major:                  safe(member.major),
+      year:                   safe(member.year),          // year of major
+      membership_valid_until: safe(member.membership_valid_until),
+      place_name:             partnership.name,
+      store_id:               storeId,
     }
 
-    // 매장 시트용 payload
+    // ── Partnership sheet payload (e.g. Northeast Kitchen tab) ───────────
+    // Uses sheet_name so Apps Script knows which tab to write to.
+    // Falls back to partnership.name if sheet_name is not set.
     const storePayload = {
       type: 'store',
+      sheet_name:             partnership.sheet_name || partnership.name,
       date,
       time,
-      initials,
-      university: member.University || '',
-      student_id: member.student_number || '',
-      membership_valid_until: member.membership_valid_until || '',
+      full_name:              safe(member.full_name),
+      university:             safe(member.University),
+      student_id:             safe(member.student_number),
+      major:                  safe(member.major),
+      year:                   safe(member.year),          // year of major
+      membership_valid_until: safe(member.membership_valid_until),
     }
 
     const [masterRes, storeRes] = await Promise.all([
@@ -162,13 +169,15 @@ serve(async (req) => {
     ])
 
     if (!masterRes.ok || !storeRes.ok) {
-      console.error('Sheet POST failed:', await masterRes.text(), await storeRes.text())
+      const masterText = await masterRes.text()
+      const storeText  = await storeRes.text()
+      console.error('Sheet POST failed — master:', masterText, '| store:', storeText)
     }
 
-    // redemptions 테이블 로그
+    // ── Log to redemptions table ─────────────────────────────────────────
     await admin.from('redemptions').insert({
-      user_id: user.id,
-      store_id: storeId,
+      user_id:     user.id,
+      store_id:    storeId,
       redeemed_at: now.toISOString(),
     })
 
@@ -176,6 +185,7 @@ serve(async (req) => {
       JSON.stringify({ success: true, storeName: partnership.name }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
+
   } catch (err) {
     console.error('log-redemption fatal error:', err)
     return new Response(
