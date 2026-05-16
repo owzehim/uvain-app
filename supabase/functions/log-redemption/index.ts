@@ -14,7 +14,6 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization') || ''
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
-
     const { storeId } = await req.json().catch(() => ({}))
 
     if (!token || !storeId) {
@@ -25,15 +24,15 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      || (() => {
-        try {
-          const raw = Deno.env.get('SUPABASE_SECRET_KEYS') || '{}'
-          const parsed = JSON.parse(raw)
-          return parsed.service_role_key || parsed.service_role || Object.values(parsed)[0] || ''
-        } catch { return '' }
-      })()
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || (() => {
+      try {
+        const raw = Deno.env.get('SUPABASE_SECRET_KEYS') || '{}'
+        const parsed = JSON.parse(raw)
+        return parsed.service_role_key || parsed.service_role || Object.values(parsed)[0] || ''
+      } catch {
+        return ''
+      }
+    })()
 
     if (!serviceKey) {
       console.error('No service key found')
@@ -58,12 +57,10 @@ serve(async (req) => {
       )
     }
 
-    // ── Fetch member profile ─────────────────────────────────────────────
-    // Added `year` to the select — make sure this column exists in your members table.
-    // If it doesn't exist yet, remove it from the select and it will just send '' below.
+    // ── Fetch member profile ───────────────────────────────────────────────
     const { data: member, error: memberError } = await admin
       .from('members')
-      .select('full_name, University, student_number, major, year, membership_valid_until, is_member')
+      .select('first_name, last_name, University, student_number, major, year, membership_valid_until, is_member')
       .eq('user_id', user.id)
       .single()
 
@@ -75,7 +72,7 @@ serve(async (req) => {
       )
     }
 
-    // ── Membership validity check ────────────────────────────────────────
+    // ── Membership validity check ──────────────────────────────────────────
     const now = new Date()
     const validUntil = member.membership_valid_until ? new Date(member.membership_valid_until) : null
 
@@ -93,13 +90,10 @@ serve(async (req) => {
       )
     }
 
-    // ── Fetch partnership ────────────────────────────────────────────────
+    // ── Fetch partnership ──────────────────────────────────────────────────
     const { data: partnership, error: partnershipError } = await admin
       .from('partnerships')
       .select('name, sheet_name, apps_script_url')
-      // sheet_name = the exact tab name in the Google Sheet, e.g. "Northeast Kitchen"
-      // Add this column to your partnerships table if it doesn't exist.
-      // Alternatively you can just use `name` if the tab name matches the partnership name exactly.
       .eq('id', storeId)
       .single()
 
@@ -111,47 +105,47 @@ serve(async (req) => {
       )
     }
 
-    // ── Date / time (Amsterdam) ──────────────────────────────────────────
-    const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Amsterdam' }) // e.g. 16/05/2026
+    // ── Date / time (Amsterdam) ────────────────────────────────────────────
+    const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Amsterdam' })
     const time = now.toLocaleTimeString('en-GB', {
       timeZone: 'Europe/Amsterdam',
       hour: '2-digit',
       minute: '2-digit',
     })
 
-    // ── Safe field helpers (blank if missing) ────────────────────────────
+    // ── Safe field helpers (blank if missing) ──────────────────────────────
     const safe = (v: unknown) => (v != null && v !== '' ? String(v) : '')
 
     const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
 
-    // ── Master sheet payload (All Scans tab) ─────────────────────────────
+    // ── Master sheet payload (All Scans tab) ───────────────────────────────
     const masterPayload = {
       type: 'master',
       date,
       time,
-      full_name:              safe(member.full_name),
-      university:             safe(member.University),
-      student_id:             safe(member.student_number),
-      major:                  safe(member.major),
-      year:                   safe(member.year),          // year of major
+      first_name: safe(member.first_name),
+      last_name: safe(member.last_name),
+      university: safe(member.University),
+      student_id: safe(member.student_number),
+      major: safe(member.major),
+      year: safe(member.year),
       membership_valid_until: safe(member.membership_valid_until),
-      place_name:             partnership.name,
-      store_id:               storeId,
+      place_name: partnership.name,
+      store_id: storeId,
     }
 
-    // ── Partnership sheet payload (e.g. Northeast Kitchen tab) ───────────
-    // Uses sheet_name so Apps Script knows which tab to write to.
-    // Falls back to partnership.name if sheet_name is not set.
+    // ── Partnership sheet payload (e.g. "Northeast Kitchen" tab) ───────────
     const storePayload = {
       type: 'store',
-      sheet_name:             partnership.sheet_name || partnership.name,
+      sheet_name: partnership.sheet_name || partnership.name,
       date,
       time,
-      full_name:              safe(member.full_name),
-      university:             safe(member.University),
-      student_id:             safe(member.student_number),
-      major:                  safe(member.major),
-      year:                   safe(member.year),          // year of major
+      first_name: safe(member.first_name),
+      last_name: safe(member.last_name),
+      university: safe(member.University),
+      student_id: safe(member.student_number),
+      major: safe(member.major),
+      year: safe(member.year),
       membership_valid_until: safe(member.membership_valid_until),
     }
 
@@ -170,14 +164,14 @@ serve(async (req) => {
 
     if (!masterRes.ok || !storeRes.ok) {
       const masterText = await masterRes.text()
-      const storeText  = await storeRes.text()
+      const storeText = await storeRes.text()
       console.error('Sheet POST failed — master:', masterText, '| store:', storeText)
     }
 
-    // ── Log to redemptions table ─────────────────────────────────────────
+    // ── Log to redemptions table ───────────────────────────────────────────
     await admin.from('redemptions').insert({
-      user_id:     user.id,
-      store_id:    storeId,
+      user_id: user.id,
+      store_id: storeId,
       redeemed_at: now.toISOString(),
     })
 
