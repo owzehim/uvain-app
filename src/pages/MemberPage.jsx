@@ -85,7 +85,7 @@ export default function MemberPage() {
         className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <h1 className="font-bold text-gray-900">UvA-IN</h1>
+        <h1 className="font-bold text-gray-900">SPOT</h1>
         <div className="flex gap-2">
           {isAdmin && (
             <button
