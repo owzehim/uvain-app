@@ -370,8 +370,10 @@ function MembersTab() {
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [form, setForm] = useState({
-    email: '', password: '', confirmPassword: '', full_name: '',
-    student_number: '', major: '', is_member: true, membership_valid_until: ''
+    email: '', password: '', confirmPassword: '',
+    first_name: '', last_name: '',
+    student_number: '', major: '',
+    is_member: true, membership_valid_until: ''
   })
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [showPassword, setShowPassword] = useState(false)
@@ -407,7 +409,7 @@ function MembersTab() {
   }
 
   const validateForm = () => {
-    if (!form.email || !form.password || !form.full_name || !form.student_number || !form.major) {
+    if (!form.email || !form.password || !form.first_name || !form.last_name || !form.student_number || !form.major) {
       alert('모든 필수 항목을 입력해주세요.'); return false
     }
     if (form.password !== form.confirmPassword) { alert('비밀번호가 일치하지 않습니다.'); return false }
@@ -424,14 +426,19 @@ function MembersTab() {
       const userId = authData.user?.id
       if (!userId) { alert('유저 ID를 가져오지 못했습니다.'); return }
       const { error: memberError } = await supabase.from('members').insert({
-        user_id: userId, full_name: form.full_name, student_number: form.student_number,
-        major: form.major, is_member: form.is_member,
-        membership_valid_until: form.membership_valid_until || null, totp_secret: generateSecret()
+        user_id: userId,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        student_number: form.student_number,
+        major: form.major,
+        is_member: form.is_member,
+        membership_valid_until: form.membership_valid_until || null,
+        totp_secret: generateSecret()
       })
       if (memberError) { alert('멤버 추가 실패: ' + memberError.message); return }
-      setCreatedCredentials({ email: form.email, password: form.password, name: form.full_name })
+      setCreatedCredentials({ email: form.email, password: form.password, name: `${form.first_name} ${form.last_name}` })
       setShowForm(false)
-      setForm({ email: '', password: '', confirmPassword: '', full_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
+      setForm({ email: '', password: '', confirmPassword: '', first_name: '', last_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
       setPasswordStrength(0)
       fetchMembers()
       setTimeout(() => setCreatedCredentials(null), 10000)
@@ -440,8 +447,11 @@ function MembersTab() {
 
   const handleEdit = async () => {
     const { error } = await supabase.from('members').update({
-      full_name: form.full_name, student_number: form.student_number,
-      major: form.major, is_member: form.is_member,
+      first_name: form.first_name,
+      last_name: form.last_name,
+      student_number: form.student_number,
+      major: form.major,
+      is_member: form.is_member,
       membership_valid_until: form.membership_valid_until || null
     }).eq('id', editTarget.id)
     if (error) { alert('수정 실패: ' + error.message); return }
@@ -459,8 +469,11 @@ function MembersTab() {
     setEditTarget(member)
     setForm({
       email: '', password: '', confirmPassword: '',
-      full_name: member.full_name, student_number: member.student_number,
-      major: member.major, is_member: member.is_member,
+      first_name: member.first_name || '',
+      last_name: member.last_name || '',
+      student_number: member.student_number,
+      major: member.major,
+      is_member: member.is_member,
       membership_valid_until: member.membership_valid_until || ''
     })
     setShowForm(true)
@@ -468,14 +481,14 @@ function MembersTab() {
 
   const openAdd = () => {
     setEditTarget(null)
-    setForm({ email: '', password: '', confirmPassword: '', full_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
+    setForm({ email: '', password: '', confirmPassword: '', first_name: '', last_name: '', student_number: '', major: '', is_member: true, membership_valid_until: '' })
     setPasswordStrength(0); setShowForm(true)
   }
 
   const copyToClipboard = (text) => { navigator.clipboard.writeText(text); alert('복사되었습니다!') }
   const strengthColor = () => ['bg-red-200','bg-orange-200','bg-yellow-200','bg-lime-200','bg-green-200'][passwordStrength] || 'bg-gray-200'
   const strengthText = () => ['매우 약함','약함','보통','강함','매우 강함'][passwordStrength] || ''
-  const sorted = koreanSort(members, 'full_name')
+  const sorted = koreanSort(members, 'last_name')
 
   return (
     <div className="space-y-4">
@@ -495,6 +508,7 @@ function MembersTab() {
             <button onClick={() => setCreatedCredentials(null)} className="text-green-600 text-xl">✕</button>
           </div>
           <div className="bg-white rounded-lg p-4 space-y-3 border border-green-100">
+            <div><p className="text-xs text-gray-500 mb-1">이름</p><p className="text-sm font-medium">{createdCredentials.name}</p></div>
             <div><p className="text-xs text-gray-500 mb-1">이메일</p><div className="flex items-center gap-2"><code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">{createdCredentials.email}</code><button onClick={() => copyToClipboard(createdCredentials.email)} className="text-blue-600 text-sm px-3 py-2 bg-blue-50 rounded whitespace-nowrap">복사</button></div></div>
             <div><p className="text-xs text-gray-500 mb-1">비밀번호</p><div className="flex items-center gap-2"><code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">{createdCredentials.password}</code><button onClick={() => copyToClipboard(createdCredentials.password)} className="text-blue-600 text-sm px-3 py-2 bg-blue-50 rounded whitespace-nowrap">복사</button></div></div>
             <p className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">ℹ️ 이 정보는 10초 후 자동으로 사라집니다.</p>
@@ -520,7 +534,10 @@ function MembersTab() {
           </div>
           <div className="space-y-3">
             <p className="font-medium text-gray-900 text-sm">👤 멤버 정보</p>
-            <div><label className="text-sm text-gray-700 block mb-1">이름 *</label><input placeholder="홍길동" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm text-gray-700 block mb-1">First Name *</label><input placeholder="John" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="text-sm text-gray-700 block mb-1">Last Name *</label><input placeholder="Doe" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <div><label className="text-sm text-gray-700 block mb-1">학번 *</label><input placeholder="2024001" value={form.student_number} onChange={e => setForm({ ...form, student_number: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="text-sm text-gray-700 block mb-1">전공 *</label><input placeholder="컴퓨터과학" value={form.major} onChange={e => setForm({ ...form, major: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
@@ -539,7 +556,7 @@ function MembersTab() {
               <div className="bg-white rounded-xl border border-gray-100 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm">{member.full_name}</p>
+                    <p className="font-medium text-gray-900 text-sm">{member.first_name} {member.last_name}</p>
                     <p className="text-xs text-gray-500">{member.student_number} · {member.major}</p>
                     <p className="text-xs text-gray-400">유효기간: {member.membership_valid_until || '없음'}</p>
                   </div>
@@ -550,10 +567,14 @@ function MembersTab() {
                   </div>
                 </div>
               </div>
+
               {showForm && editTarget && editTarget.id === member.id && (
                 <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 mt-2">
                   <h3 className="font-medium text-gray-900">멤버 수정</h3>
-                  <div><label className="text-sm text-gray-700 block mb-1">이름 *</label><input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div><label className="text-sm text-gray-700 block mb-1">First Name *</label><input value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                    <div><label className="text-sm text-gray-700 block mb-1">Last Name *</label><input value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div><label className="text-sm text-gray-700 block mb-1">학번 *</label><input value={form.student_number} onChange={e => setForm({ ...form, student_number: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
                     <div><label className="text-sm text-gray-700 block mb-1">전공 *</label><input value={form.major} onChange={e => setForm({ ...form, major: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
