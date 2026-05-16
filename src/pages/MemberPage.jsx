@@ -166,7 +166,7 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
         {/* Member info card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-gray-900">{member?.full_name}</h2>
+            <h2 className="font-semibold text-gray-900">{member?.first_name} {member?.last_name}</h2>
             <span
               className={
                 'text-xs font-medium px-2 py-1 rounded-full ' +
