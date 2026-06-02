@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { logRedemption } from '../lib/redemption'
@@ -15,11 +15,12 @@ export default function ScanPage() {
   const [state, setState] = useState(STATE.SCANNING)
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [userProfile, setUserProfile] = useState(null)
+  const [scanTime, setScanTime] = useState(null)
   const navigate = useNavigate()
   const handlingRef = useRef(false)
 
   async function handleScan(rawValue) {
-    // prevent double-firing
     if (handlingRef.current) return
     handlingRef.current = true
 
@@ -37,8 +38,7 @@ export default function ScanPage() {
       handlingRef.current = false
       return
     }
-  
-console.log('storeId parsed:', storeId)
+
     setState(STATE.LOADING)
 
     try {
@@ -51,10 +51,24 @@ console.log('storeId parsed:', storeId)
         return
       }
 
+      // Fetch user profile from profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, student_id, university, membership_valid_until')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) {
+        console.error('Profile fetch error:', profileError)
+      }
+
+      // Log the redemption
       const result = await logRedemption({ storeId })
 
       if (result.success) {
         setStoreName(result.storeName || '매장')
+        setUserProfile(profile)
+        setScanTime(new Date())
         setState(STATE.SUCCESS)
       } else {
         setState(STATE.ERROR)
@@ -73,6 +87,30 @@ console.log('storeId parsed:', storeId)
     setState(STATE.SCANNING)
     setStoreName('')
     setErrorMsg('')
+    setUserProfile(null)
+    setScanTime(null)
+  }
+
+  // Format date and time
+  const formatScanTime = (date) => {
+    if (!date) return ''
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const hours = String(d.getHours()).padStart(2, '0')
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day} ${hours}:${minutes}`
+  }
+
+  // Format membership valid until date
+  const formatMembershipDate = (dateStr) => {
+    if (!dateStr) return 'N/A'
+    const d = new Date(dateStr)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   return (
@@ -106,7 +144,7 @@ console.log('storeId parsed:', storeId)
         )}
 
         {state === STATE.SUCCESS && (
-          <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-xs">
+          <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
               <span className="text-green-600 text-4xl">✓</span>
             </div>
@@ -115,12 +153,45 @@ console.log('storeId parsed:', storeId)
               <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다.<br />
               이 화면을 직원에게 보여주세요.
             </p>
-            <button
-              onClick={reset}
-              className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
-            >
-              다시 스캔하기
-            </button>
+
+            {/* User Profile Card — Security Info */}
+            {userProfile && (
+              <div className="w-full mt-4 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+                <div className="space-y-3 text-left">
+                  {/* Scan Time */}
+                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <span className="text-xs font-medium text-gray-500">스캔 시간</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatScanTime(scanTime)}</span>
+                  </div>
+
+                  {/* Full Name */}
+                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <span className="text-xs font-medium text-gray-500">이름</span>
+                    <span className="text-sm font-semibold text-gray-900">{userProfile.full_name || 'N/A'}</span>
+                  </div>
+
+                  {/* Student ID */}
+                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <span className="text-xs font-medium text-gray-500">학번</span>
+                    <span className="text-sm font-semibold text-gray-900">{userProfile.student_id || 'N/A'}</span>
+                  </div>
+
+                  {/* University */}
+                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <span className="text-xs font-medium text-gray-500">대학</span>
+                    <span className="text-sm font-semibold text-gray-900">{userProfile.university || 'N/A'}</span>
+                  </div>
+
+                  {/* Membership Valid Until */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium text-gray-500">멤버십 유효기간</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatMembershipDate(userProfile.membership_valid_until)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Button: Only "홈으로 돌아가기" on success */}
             <button
               onClick={() => navigate('/member')}
               className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
@@ -137,6 +208,8 @@ console.log('storeId parsed:', storeId)
             </div>
             <h2 className="font-bold text-gray-900 text-xl">Check-In 실패</h2>
             <p className="text-gray-500 text-sm">{errorMsg}</p>
+
+            {/* Buttons: "다시 시도하기" + "홈으로 돌아가기" on error */}
             <button
               onClick={reset}
               className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
