@@ -3,29 +3,20 @@
 // The popup shown to members 50 minutes after a store visit.
 // Receives all state and actions from useReviewPrompt hook —
 // this component is purely presentational.
-//
-// Layout:
-//   1. Header     — store name + close button
-//   2. Stars      — 1–5 tap to select
-//   3. Tag chips  — multi-select, at least one required
-//   4. Comment    — optional textarea
-//   5. Submit     — disabled until valid
 // ─────────────────────────────────────────────────────────────
 
+import { useEffect, useRef, useState } from 'react'
 import { Star, BowlSteam, HandHeart, Sparkle, CoinVertical, X } from '@phosphor-icons/react'
 import { REVIEW_TAGS } from '../domain/reviewTypes'
 
-// ── Icon map — keyed by tag.icon string from reviewTypes ─────
 const TAG_ICONS = {
-  BowlSteam:    BowlSteam,
-  HandHeart:    HandHeart,
-  Sparkle:      Sparkle,
-  CoinVertical: CoinVertical,
+  BowlSteam,
+  HandHeart,
+  Sparkle,
+  CoinVertical,
 }
 
-// ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: Star row
-// ─────────────────────────────────────────────────────────────
+// ── Star row ──────────────────────────────────────────────────
 function StarRow({ rating, onSelect, error }) {
   return (
     <div className="flex flex-col items-center gap-2">
@@ -46,19 +37,14 @@ function StarRow({ rating, onSelect, error }) {
           </button>
         ))}
       </div>
-      {error && (
-        <p className="text-xs text-red-500">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )
 }
 
-// ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: Tag chip
-// ─────────────────────────────────────────────────────────────
+// ── Tag chip ──────────────────────────────────────────────────
 function TagChip({ tag, selected, onToggle }) {
   const IconComponent = TAG_ICONS[tag.icon]
-
   return (
     <button
       onClick={() => onToggle(tag.key)}
@@ -83,9 +69,7 @@ function TagChip({ tag, selected, onToggle }) {
   )
 }
 
-// ─────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────
+// ── Main component ────────────────────────────────────────────
 export default function ReviewModal({
   open,
   storeName,
@@ -101,45 +85,95 @@ export default function ReviewModal({
   onSubmit,
   onSkip,
 }) {
-  if (!open) return null
+  const [visible, setVisible] = useState(false)
+  const [closing, setClosing] = useState(false)
+
+  // swipe-down state
+  const touchStartY = useRef(null)
+  const touchStartX = useRef(null)
+  const sheetRef = useRef(null)
+
+  // slide-up on open
+  useEffect(() => {
+    if (open) {
+      setClosing(false)
+      requestAnimationFrame(() => setVisible(true))
+    }
+  }, [open])
+
+  const handleClose = () => {
+    setVisible(false)
+    setClosing(true)
+    setTimeout(() => {
+      setClosing(false)
+      onSkip()
+    }, 320)
+  }
+
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e) => {
+    if (touchStartY.current == null) return
+    const dy = e.changedTouches[0].clientY - touchStartY.current
+    const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current)
+    touchStartY.current = null
+    touchStartX.current = null
+
+    // only close if swipe is mostly downward and > 60px
+    if (dy > 60 && dy > dx) {
+      handleClose()
+    }
+  }
+
+  if (!open && !closing) return null
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — fades in/out */}
       <div
-        className="fixed inset-0 bg-black/50 z-[1100]"
-        onClick={onSkip}
+        className="fixed inset-0 z-[1100]"
+        style={{
+          background: 'rgba(0,0,0,0.5)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.32s ease',
+        }}
+        onClick={handleClose}
       />
 
-      {/* Modal sheet — slides up from bottom */}
+      {/* Sheet — slides up from bottom */}
       <div
+        ref={sheetRef}
         className="fixed bottom-0 left-0 right-0 z-[1200] bg-white rounded-t-3xl"
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)',
           maxHeight: '92dvh',
           overflowY: 'auto',
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.35s cubic-bezier(0.32, 0, 0.67, 0)',
         }}
-        // Prevent backdrop click from firing when tapping inside modal
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="flex items-center justify-between px-5 pt-2 pb-4">
           <div>
             <p className="text-xs text-orange-500 font-medium mb-0.5">방문 후기</p>
-            <h2 className="text-base font-bold text-gray-900">
-              {storeName}
-            </h2>
+            <h2 className="text-base font-bold text-gray-900">{storeName}</h2>
             <p className="text-xs text-gray-400 mt-0.5">
-              방문하셨나요? 솔직한 후기를 남겨주세요 😊
+              방문 하신 장소의 후기를 남겨주세요!
             </p>
           </div>
           <button
-            onClick={onSkip}
+            onClick={handleClose}
             className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex-shrink-0"
             aria-label="닫기"
           >
@@ -149,14 +183,10 @@ export default function ReviewModal({
 
         <div className="px-5 flex flex-col gap-6 pb-4">
 
-          {/* ── Star rating ── */}
-          <StarRow
-            rating={rating}
-            onSelect={onSelectRating}
-            error={errors.rating}
-          />
+          {/* Star rating */}
+          <StarRow rating={rating} onSelect={onSelectRating} error={errors.rating} />
 
-          {/* ── Tag chips ── */}
+          {/* Tag chips */}
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-gray-700">
               어떤 점이 좋았나요?
@@ -172,12 +202,10 @@ export default function ReviewModal({
                 />
               ))}
             </div>
-            {errors.tags && (
-              <p className="text-xs text-red-500">{errors.tags}</p>
-            )}
+            {errors.tags && <p className="text-xs text-red-500">{errors.tags}</p>}
           </div>
 
-          {/* ── Optional comment ── */}
+          {/* Comment */}
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-gray-700">
               한 줄 후기
@@ -191,17 +219,15 @@ export default function ReviewModal({
               rows={3}
               className="w-full px-3 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:border-orange-400 placeholder:text-gray-400"
             />
-            <p className="text-xs text-gray-400 text-right">
-              {comment.length}/200
-            </p>
+            <p className="text-xs text-gray-400 text-right">{comment.length}/200</p>
           </div>
 
-          {/* ── Server error ── */}
+          {/* Server error */}
           {submitError && (
             <p className="text-xs text-red-500 text-center">{submitError}</p>
           )}
 
-          {/* ── Actions ── */}
+          {/* Actions */}
           <div className="flex flex-col gap-2">
             <button
               onClick={onSubmit}
@@ -213,7 +239,7 @@ export default function ReviewModal({
               {submitting ? '저장 중...' : '후기 남기기'}
             </button>
             <button
-              onClick={onSkip}
+              onClick={handleClose}
               disabled={submitting}
               className="w-full py-3 text-gray-400 text-sm hover:text-gray-600 transition-colors"
             >
