@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       workbox: {
-  skipWaiting: true,
-  clientsClaim: true,
-},
+        skipWaiting: true,
+        clientsClaim: true,
+      },
       manifest: {
         name: 'UvA-IN 멤버십',
         short_name: 'UvA-IN',
@@ -28,21 +28,36 @@ export default defineConfig({
           {
             src: 'icon-192.png',
             sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'icon-512.png',
-            sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
-      }
-    })
+          },
+          {
+            src: 'icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+        ],
+      },
+    }),
   ],
+
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react':    ['react', 'react-dom', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-icons':    ['@phosphor-icons/react'],
+          'vendor-map':      ['leaflet', 'react-leaflet'],
+          'vendor-qr':       ['qrcode.react'],
+        },
+      },
+    },
+  },
 })
