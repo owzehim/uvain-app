@@ -82,15 +82,18 @@ function TagBarChart({ tagCounts, reviewCount }) {
 }
 
 // ── Lightbox ──────────────────────────────────────────────────
+// ── Lightbox ──────────────────────────────────────────────────
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
-  const [closing, setClosing] = useState(false)
-  const [offset, setOffset] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const startPos = useRef(null)
 
-  useEffect(() => { requestAnimationFrame(() => setVisible(true)) }, [])
+  const touchStartX = useRef(null)
+  const touchStartY = useRef(null)
+
+  // zoom-in + fade-in on open
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true))
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -103,88 +106,192 @@ function Lightbox({ imgs, startIndex, onClose }) {
   }, [imgs.length])
 
   const handleClose = () => {
-    setClosing(true); setVisible(false)
-    setTimeout(() => onClose(), 260)
+    setVisible(false)
+    setTimeout(() => onClose(), 250)
   }
 
-  const onTouchStart = (e) => {
-    startPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-    setIsDragging(true)
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
   }
 
-  const onTouchMove = (e) => {
-    if (!startPos.current) return
-    setOffset({
-      x: e.touches[0].clientX - startPos.current.x,
-      y: e.touches[0].clientY - startPos.current.y,
-    })
-  }
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current == null || touchStartY.current == null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    const dy = e.changedTouches[0].clientY - touchStartY.current
 
-  const onTouchEnd = () => {
-    if (!startPos.current) return
-    const { x: dx, y: dy } = offset
-    setIsDragging(false)
-    if (dy > 80 && Math.abs(dy) > Math.abs(dx)) { handleClose(); return }
-    if (dx < -50 && Math.abs(dx) > Math.abs(dy)) { setIndex((i) => Math.min(i + 1, imgs.length - 1)); setOffset({ x: 0, y: 0 }); startPos.current = null; return }
-    if (dx > 50 && Math.abs(dx) > Math.abs(dy)) { setIndex((i) => Math.max(i - 1, 0)); setOffset({ x: 0, y: 0 }); startPos.current = null; return }
-    setOffset({ x: 0, y: 0 }); startPos.current = null
-  }
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
 
-  const dragProgress = Math.min(Math.abs(offset.y) / 200, 1)
-  const backdropOpacity = visible ? Math.max(0.2, 0.7 - dragProgress * 0.5) : 0
-  const imgTransform = isDragging
-    ? `translate(${offset.x}px, ${offset.y}px) scale(${1 - dragProgress * 0.1})`
-    : closing ? 'scale(0.85)' : 'scale(1)'
+    // swipe down → close (vertical, downward)
+    if (absDy > absDx && dy > 60) {
+      handleClose()
+    }
+    // horizontal swipe → next/prev
+    else if (absDx > absDy && absDx > 40) {
+      if (dx < 0) {
+        // left → next
+        setIndex((i) => Math.min(i + 1, imgs.length - 1))
+      } else {
+        // right → prev
+        setIndex((i) => Math.max(i - 1, 0))
+      }
+    }
+
+    touchStartX.current = null
+    touchStartY.current = null
+  }
 
   return (
     <>
       <style>{`
-        @keyframes lbIn { from { transform: scale(0.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .lb-enter { animation: lbIn 0.28s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes lightboxZoomIn {
+          from { transform: scale(0.9); }
+          to   { transform: scale(1); }
+        }
+        .lightbox-zoom-enter {
+          animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
       `}</style>
+
       <div
-        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
         onClick={handleClose}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
-          position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          opacity: backdropOpacity,
-          transition: isDragging ? 'none' : 'opacity 0.26s ease',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'rgba(0, 0, 0, 0.7)', // 70% transparent background
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.25s ease',
         }}
       >
-        <button onClick={(e) => { e.stopPropagation(); handleClose() }}
-          style={{ position: 'absolute', top: 16, right: 20, background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '999px', width: 36, height: 36, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, opacity: visible ? 1 : 0, transition: 'opacity 0.2s ease 0.1s' }}
-        >×</button>
+        {/* Close button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); handleClose() }}
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 20,
+            background: 'rgba(255,255,255,0.15)',
+            border: 'none',
+            color: '#fff',
+            borderRadius: '999px',
+            width: 36,
+            height: 36,
+            fontSize: 20,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 0.2s ease 0.05s',
+          }}
+        >
+          ×
+        </button>
 
+        {/* Prev button */}
         {index > 0 && (
-          <button onClick={(e) => { e.stopPropagation(); setIndex((i) => i - 1) }}
-            style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '999px', width: 44, height: 44, fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}
-          >‹</button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setIndex((i) => Math.max(i - 1, 0)) }}
+            style={{
+              position: 'absolute',
+              left: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              color: '#fff',
+              borderRadius: '999px',
+              width: 44,
+              height: 44,
+              fontSize: 24,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10000,
+            }}
+          >
+            ‹
+          </button>
         )}
 
+        {/* Image — full opacity, no drag tracking */}
         <img
-          key={index} src={imgs[index]} alt={'사진 ' + (index + 1)}
+          src={imgs[index]}
+          alt={'사진 ' + (index + 1)}
           onClick={(e) => e.stopPropagation()}
-          className={visible && !closing && !isDragging ? 'lb-enter' : ''}
+          className={visible ? 'lightbox-zoom-enter' : ''}
           style={{
-            maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 12,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.5)', userSelect: 'none', WebkitUserSelect: 'none',
-            transform: imgTransform, opacity: closing ? 0 : 1,
-            transition: isDragging ? 'none' : 'transform 0.26s cubic-bezier(0.4,0,0.2,1), opacity 0.26s ease',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            objectFit: 'contain',
+            borderRadius: 12,
+            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
           }}
         />
 
+        {/* Next button */}
         {index < imgs.length - 1 && (
-          <button onClick={(e) => { e.stopPropagation(); setIndex((i) => i + 1) }}
-            style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '999px', width: 44, height: 44, fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}
-          >›</button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setIndex((i) => Math.min(i + 1, imgs.length - 1)) }}
+            style={{
+              position: 'absolute',
+              right: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              color: '#fff',
+              borderRadius: '999px',
+              width: 44,
+              height: 44,
+              fontSize: 24,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10000,
+            }}
+          >
+            ›
+          </button>
         )}
 
+        {/* Dots */}
         {imgs.length > 1 && (
-          <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 6 }}>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 20,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
             {imgs.map((_, i) => (
-              <div key={i} onClick={(e) => { e.stopPropagation(); setIndex(i) }}
-                style={{ width: i === index ? 8 : 6, height: i === index ? 8 : 6, borderRadius: '999px', background: i === index ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all 0.2s' }}
+              <div
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setIndex(i) }}
+                style={{
+                  width: i === index ? 8 : 6,
+                  height: i === index ? 8 : 6,
+                  borderRadius: '999px',
+                  background: i === index ? '#fff' : 'rgba(255,255,255,0.4)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
               />
             ))}
           </div>
@@ -312,7 +419,14 @@ export function SpotCard({ selected, onClose }) {
   const iconSvg = CATEGORY_ICONS[selected.category]
   const hasReviews = summary && summary.review_count > 0
 
-const discountTerms = selected.discount_terms?.replace(/\s/g, '') ? selected.discount_terms : null
+// treat empty / whitespace / HTML-only as empty (no ※)
+const rawTerms = selected.discount_terms ?? ''
+const cleanedTerms = rawTerms
+  .replace(/<[^>]*>/g, '')   // remove HTML tags like <p>, <br>, etc.
+  .replace(/&nbsp;/gi, '')   // remove non-breaking spaces
+  .replace(/\s/g, '')        // remove whitespace
+
+const discountTerms = cleanedTerms ? selected.discount_terms : null
 
   const noImageStyle = {
     transform: closing ? 'translateY(110%)' : 'translateY(0)',
