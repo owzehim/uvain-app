@@ -13,29 +13,17 @@ import { shouldShowReviewPrompt } from '../domain/reviewDomain'
 
 /**
  * Fetches the next review prompt that is due for the current user.
- * Returns the first pending prompt where prompt_at <= now.
- * Returns null if there is nothing to show.
  *
- * Called on app load (e.g. when MemberPage mounts).
+ * @param {{ testMode?: boolean }} options
+ *   testMode: if true, pretends it's 50 min in the future so any
+ *   pending prompt is immediately considered due. Remove for production.
  *
- * @returns {Promise<{
- *   data: {
- *     id: string,
- *     redemption_id: number,
- *     store_id: string,
- *     prompt_at: string,
- *     status: string,
- *     partnerships: { name: string }
- *   }|null,
- *   error: object|null
- * }>}
+ * @returns {Promise<{ data: object|null, error: object|null }>}
  */
-export async function getPendingReviewPrompt() {
+export async function getPendingReviewPrompt({ testMode = false } = {}) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { data: null, error: { message: '로그인이 필요합니다.' } }
 
-  // Fetch all pending prompts for this user, joined with store name
-  // We join partnerships to get the store name for the modal header
   const { data, error } = await supabase
     .from('review_prompts')
     .select(`
@@ -57,8 +45,12 @@ export async function getPendingReviewPrompt() {
 
   if (!data || data.length === 0) return { data: null, error: null }
 
-  // Use domain logic to find the first one that is actually due
-  const now = new Date()
+  // ⚠️ TEST MODE: shift now 50 min forward so any pending prompt is due
+  // To revert: change to `const now = new Date()`
+  const now = testMode
+    ? new Date(new Date().getTime() + 50 * 60 * 1000)
+    : new Date()
+
   const duePrompt = data.find((p) => shouldShowReviewPrompt(p, now))
 
   return { data: duePrompt ?? null, error: null }

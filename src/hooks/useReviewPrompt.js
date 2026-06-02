@@ -15,24 +15,16 @@ import { createReview } from '../api/reviewApi'
 import { validateReviewInput } from '../domain/reviewDomain'
 
 export function useReviewPrompt() {
-  // The pending prompt fetched from Supabase (null = nothing to show)
-  const [prompt, setPrompt]       = useState(null)
-
-  // Modal open/close state
-  const [open, setOpen]           = useState(false)
-
-  // Form state inside the modal
-  const [rating, setRating]       = useState(null)   // 1–5 or null
-  const [tags, setTags]           = useState([])     // string[]
-  const [comment, setComment]     = useState('')
-
-  // Async states
-  const [loading, setLoading]     = useState(true)   // initial fetch
-  const [submitting, setSubmitting] = useState(false)
-  const [errors, setErrors]       = useState({})     // { rating?, tags? }
+  const [prompt, setPrompt]           = useState(null)
+  const [open, setOpen]               = useState(false)
+  const [rating, setRating]           = useState(null)
+  const [tags, setTags]               = useState([])
+  const [comment, setComment]         = useState('')
+  const [loading, setLoading]         = useState(true)
+  const [submitting, setSubmitting]   = useState(false)
+  const [errors, setErrors]           = useState({})
   const [submitError, setSubmitError] = useState(null)
 
-  // Prevent double-fetch on StrictMode double-mount
   const fetchedRef = useRef(false)
 
   // ── 1. On mount: check for a due prompt ──────────────────
@@ -42,29 +34,35 @@ export function useReviewPrompt() {
 
     async function checkForPrompt() {
       setLoading(true)
-      const { data, error } = await getPendingReviewPrompt()
-      if (!error && data) {
-        setPrompt(data)
+
+      // ⚠️ TEST MODE: fetch pending prompts and treat any pending one as due
+      // by passing a now that is 50 min in the future.
+      // To revert: remove the override and use getPendingReviewPrompt() as-is.
+      const { data: allPending, error } = await getPendingReviewPrompt({ testMode: true })
+
+      if (!error && allPending) {
+        setPrompt(allPending)
         setOpen(true)
       }
       setLoading(false)
     }
 
-    checkForPrompt()
+    // ⚠️ TEST MODE: show after 10 seconds instead of waiting for prompt_at
+    // To revert: change to checkForPrompt()
+    setTimeout(checkForPrompt, 10_000)
   }, [])
 
-  // ── 2. Tag toggle helper ──────────────────────────────────
+  // ── 2. Tag toggle ─────────────────────────────────────────
   const toggleTag = useCallback((tagKey) => {
     setTags((prev) =>
       prev.includes(tagKey)
         ? prev.filter((t) => t !== tagKey)
         : [...prev, tagKey]
     )
-    // Clear tag error as soon as user selects something
     setErrors((prev) => ({ ...prev, tags: undefined }))
   }, [])
 
-  // ── 3. Star rating setter ─────────────────────────────────
+  // ── 3. Star rating ────────────────────────────────────────
   const selectRating = useCallback((value) => {
     setRating(value)
     setErrors((prev) => ({ ...prev, rating: undefined }))
@@ -74,7 +72,6 @@ export function useReviewPrompt() {
   const submitReview = useCallback(async () => {
     if (!prompt) return
 
-    // Validate using domain layer (no Supabase involved)
     const validation = validateReviewInput({ rating, tags })
     if (!validation.valid) {
       setErrors(validation.errors)
@@ -98,9 +95,7 @@ export function useReviewPrompt() {
       return
     }
 
-    // Mark prompt as submitted in Supabase
     await markPromptSubmitted(prompt.id)
-
     setSubmitting(false)
     closeModal()
   }, [prompt, rating, tags, comment])
@@ -108,17 +103,15 @@ export function useReviewPrompt() {
   // ── 5. Skip / dismiss ─────────────────────────────────────
   const skipReview = useCallback(async () => {
     if (!prompt) return
-    // Fire and forget — don't block the UI
     markPromptDismissed(prompt.id).catch((err) =>
       console.warn('markPromptDismissed failed:', err?.message)
     )
     closeModal()
   }, [prompt])
 
-  // ── 6. Close and reset all form state ────────────────────
+  // ── 6. Close and reset ────────────────────────────────────
   function closeModal() {
     setOpen(false)
-    // Small delay before resetting so closing animation isn't jarring
     setTimeout(() => {
       setPrompt(null)
       setRating(null)
@@ -129,27 +122,19 @@ export function useReviewPrompt() {
     }, 350)
   }
 
-  // ── Derived: store name for modal header ─────────────────
-  // prompt.partnerships is the joined object from Supabase:
-  // { name: 'Northeast Kitchen' }
   const storeName = prompt?.partnerships?.name ?? prompt?.store_id ?? '매장'
 
   return {
-    // State
     loading,
     open,
     prompt,
     storeName,
-
-    // Form state
     rating,
     tags,
     comment,
     errors,
     submitError,
     submitting,
-
-    // Actions
     selectRating,
     toggleTag,
     setComment,
