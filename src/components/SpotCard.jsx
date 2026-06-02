@@ -1,10 +1,80 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, Ticket } from '@phosphor-icons/react'
+import { MapPin, Ticket, Star, StarHalf } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
+// ── NEW ──────────────────────────────────────────────────────
+import { BowlSteam, HandHeart, Sparkle, CoinVertical } from '@phosphor-icons/react'
+import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
+import { computeStarDisplay, getSortedTagsForDisplay, formatAverageRating } from '../domain/reviewDomain'
+// ─────────────────────────────────────────────────────────────
 
 export function RichText({ text, className = '' }) {
   if (!text) return null
   return <span className={className} dangerouslySetInnerHTML={{ __html: text }} />
+}
+
+// ── NEW: icon map for tag display in SpotCard ─────────────────
+const TAG_ICON_COMPONENTS = {
+  BowlSteam,
+  HandHeart,
+  Sparkle,
+  CoinVertical,
+}
+
+// ── NEW: Star display row (read-only, for SpotCard) ───────────
+function StarDisplay({ averageRating }) {
+  const formatted = formatAverageRating(averageRating)
+  if (!formatted) return null
+
+  const { filled, half, empty } = computeStarDisplay(averageRating)
+
+  return (
+    <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
+        {Array.from({ length: filled }).map((_, i) => (
+          <Star key={'f' + i} size={12} weight="fill" color="#f97316" />
+        ))}
+        {half && <StarHalf size={12} weight="fill" color="#f97316" />}
+        {Array.from({ length: empty }).map((_, i) => (
+          <Star key={'e' + i} size={12} weight="regular" color="#d1d5db" />
+        ))}
+      </div>
+      <span className="text-xs text-amber-500 font-medium">{formatted}</span>
+    </div>
+  )
+}
+
+// ── NEW: Tag breakdown section (section 3 of SpotCard) ────────
+function TagBreakdown({ tagCounts, reviewCount }) {
+  const sorted = getSortedTagsForDisplay(tagCounts)
+  if (sorted.length === 0) return null
+
+  return (
+    <div className="px-4 pb-4">
+      <div className="pt-3 border-t border-gray-100">
+        <p className="text-xs font-semibold text-gray-500 mb-2">
+          멤버 리뷰
+          <span className="text-gray-400 font-normal ml-1">({reviewCount}개)</span>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {sorted.map((tag) => {
+            const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
+            return (
+              <div
+                key={tag.key}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-orange-50 rounded-2xl"
+              >
+                {IconComponent && (
+                  <IconComponent size={13} weight="fill" color="#f97316" />
+                )}
+                <span className="text-xs text-orange-700 font-medium">{tag.label}</span>
+                <span className="text-xs text-orange-400 font-semibold">{tag.count}</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function Lightbox({ imgs, startIndex, onClose }) {
@@ -114,7 +184,10 @@ export function SpotCard({ selected, onClose }) {
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
 
-  // ── Read window dimensions once per mount, not on every render ──────────
+  // ── NEW: fetch live review summary for this store ─────────
+  const { summary } = useStoreReviewSummary(selected?.id)
+  // ─────────────────────────────────────────────────────────
+
   const { WIN_H, WIN_W } = useMemo(() => ({
     WIN_H: typeof window !== 'undefined' ? window.innerHeight : 700,
     WIN_W: typeof window !== 'undefined' ? window.innerWidth : 1024,
@@ -240,6 +313,8 @@ export function SpotCard({ selected, onClose }) {
         </div>
 
         <div className="flex-1" style={{ overflowY: 'hidden' }}>
+
+          {/* ── SECTION 1: Place info ── */}
           <div className="px-4 pt-1 pb-3">
             {/* Category / badges */}
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
@@ -267,13 +342,15 @@ export function SpotCard({ selected, onClose }) {
               )}
             </div>
 
-            {/* Name + rating */}
-            <div className="flex items-center gap-2">
+            {/* Name + live star rating */}
+            <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold text-gray-900">{selected.name}</p>
-              {selected.rating > 0 && (
-                <p className="text-xs text-amber-500">
-                  {'★'.repeat(Math.round(selected.rating)) + ' ' + selected.rating}
-                </p>
+              {/* ── NEW: live rating replaces selected.rating ── */}
+              {summary && summary.review_count > 0 && (
+                <div className="flex items-center gap-1">
+                  <StarDisplay averageRating={summary.average_rating} />
+                  <span className="text-xs text-gray-400">({summary.review_count})</span>
+                </div>
               )}
             </div>
 
@@ -297,26 +374,43 @@ export function SpotCard({ selected, onClose }) {
                 ※ <RichText text={selected.discount_terms} />
               </p>
             )}
-            {(selected.review || selected.reviewer_name) && (
-              <div className="mt-2 pt-2 border-t border-gray-100">
-                {selected.review && (
-                  <RichText text={selected.review} className="text-xs text-gray-600 block" />
-                )}
-                {selected.reviewer_name && (
-                  <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>
-                )}
-              </div>
-            )}
           </div>
 
-          {!hasImages && <div className="pb-16" />}
+          {!hasImages && (
+            <>
+              {/* ── SECTION 3: Tag breakdown (no-image layout) ── */}
+              {summary && summary.review_count > 0 && (
+                <TagBreakdown
+                  tagCounts={summary.tag_counts}
+                  reviewCount={summary.review_count}
+                />
+              )}
 
-          {/* ── Images ── */}
+              {/* ── SECTION 4: 임원들 리뷰 (no-image layout) ── */}
+              {(selected.review || selected.reviewer_name) && (
+                <div className="px-4 pb-4">
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 mb-1.5">임원들 리뷰</p>
+                    {selected.review && (
+                      <RichText text={selected.review} className="text-xs text-gray-600 block" />
+                    )}
+                    {selected.reviewer_name && (
+                      <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="pb-16" />
+            </>
+          )}
+
+          {/* ── SECTION 2: Images ── */}
           {hasImages && (
             <div className="pb-6">
               {/* Mobile slider */}
               <div
-                className="md:hidden px-4 pb-20"
+                className="md:hidden px-4"
                 onTouchStart={(e) => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
                 onTouchEnd={(e) => {
                   const start = e.currentTarget._swipeStartX
@@ -348,7 +442,6 @@ export function SpotCard({ selected, onClose }) {
                         key={i}
                         className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
                       >
-                        {/* ✅ Only load the visible slide eagerly; rest are lazy */}
                         <img
                           src={url}
                           alt={'사진 ' + (i + 1)}
@@ -379,7 +472,7 @@ export function SpotCard({ selected, onClose }) {
 
               {/* Desktop grid */}
               <div
-                className="hidden md:flex gap-3 px-4 pb-20 overflow-x-auto"
+                className="hidden md:flex gap-3 px-4 overflow-x-auto"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {imgs.map((url, i) => (
@@ -389,7 +482,6 @@ export function SpotCard({ selected, onClose }) {
                     className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center"
                     style={{ height: '220px', minWidth: '140px', maxWidth: '360px', cursor: 'zoom-in' }}
                   >
-                    {/* ✅ Lazy-load all desktop thumbnails except the first */}
                     <img
                       src={url}
                       alt={'사진 ' + (i + 1)}
@@ -402,6 +494,32 @@ export function SpotCard({ selected, onClose }) {
                   </div>
                 ))}
               </div>
+
+              {/* ── SECTION 3: Tag breakdown (image layout) ── */}
+              {summary && summary.review_count > 0 && (
+                <TagBreakdown
+                  tagCounts={summary.tag_counts}
+                  reviewCount={summary.review_count}
+                />
+              )}
+
+              {/* ── SECTION 4: 임원들 리뷰 (image layout) ── */}
+              {(selected.review || selected.reviewer_name) && (
+                <div className="px-4 pb-20">
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 mb-1.5">임원들 리뷰</p>
+                    {selected.review && (
+                      <RichText text={selected.review} className="text-xs text-gray-600 block" />
+                    )}
+                    {selected.reviewer_name && (
+                      <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Spacer when no 임원들 리뷰 */}
+              {!selected.review && !selected.reviewer_name && <div className="pb-20" />}
             </div>
           )}
         </div>
@@ -423,7 +541,7 @@ export function SpotCard({ selected, onClose }) {
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap1.5"
+              className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-1.5"
               onTouchStart={(e) => e.stopPropagation()}
             >
               <MapPin size={14} weight="fill" />

@@ -60,7 +60,7 @@ serve(async (req) => {
     // ── Fetch member profile ───────────────────────────────────────────────
     const { data: member, error: memberError } = await admin
       .from('members')
-      .select('first_name, last_name, University, student_number, major, year, membership_valid_until, is_member')
+      .select('first_name, last_name, University, student_number, major, year, year_of_birth, country_of_origin, gender, membership_valid_until, is_member')
       .eq('user_id', user.id)
       .single()
 
@@ -116,37 +116,66 @@ serve(async (req) => {
     // ── Safe field helpers (blank if missing) ──────────────────────────────
     const safe = (v: unknown) => (v != null && v !== '' ? String(v) : '')
 
+    // ── NEW: Insert into redemptions and capture the id ───────────────────
+    // We need the id so we can find this row later when the review arrives
+    const { data: redemption, error: redemptionError } = await admin
+      .from('redemptions')
+      .insert({
+        user_id: user.id,
+        store_id: storeId,
+        redeemed_at: now.toISOString(),
+      })
+      .select('id')
+      .single()
+
+    if (redemptionError || !redemption) {
+      console.error('Redemption insert error:', redemptionError)
+      return new Response(
+        JSON.stringify({ success: false, message: '방문 기록 저장에 실패했습니다.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    const redemptionId = redemption.id  // ← the int8 id we'll pass to sheets
+
     // ── Master sheet payload (All Scans tab) ───────────────────────────────
     const masterPayload = {
       type: 'master',
       date,
       time,
-      first_name: safe(member.first_name),
-      last_name: safe(member.last_name),
-      university: safe(member.University),
-      student_id: safe(member.student_number),
-      major: safe(member.major),
-      year: safe(member.year),
+      first_name:             safe(member.first_name),
+      last_name:              safe(member.last_name),
+      university:             safe(member.University),
+      student_id:             safe(member.student_number),
+      major:                  safe(member.major),
+      year:                   safe(member.year),
+      year_of_birth:          safe(member.year_of_birth),
+      country_of_origin:      safe(member.country_of_origin),
+      gender:                 safe(member.gender),
       membership_valid_until: safe(member.membership_valid_until),
-      place_name: partnership.name,
-      store_id: storeId,
+      place_name:             partnership.name,
+      redemption_id:          redemptionId,   // ← NEW
     }
 
-    // ── Partnership sheet payload (e.g. "Northeast Kitchen" tab) ───────────
+    // ── Partnership sheet payload ──────────────────────────────────────────
     const storePayload = {
       type: 'store',
-      sheet_name: partnership.sheet_name || partnership.name,
+      sheet_name:             partnership.sheet_name || partnership.name,
       date,
       time,
-      first_name: safe(member.first_name),
-      last_name: safe(member.last_name),
-      university: safe(member.University),
-      student_id: safe(member.student_number),
-      major: safe(member.major),
-      year: safe(member.year),
+      first_name:             safe(member.first_name),
+      last_name:              safe(member.last_name),
+      university:             safe(member.University),
+      major:                  safe(member.major),
+      year:                   safe(member.year),
+      year_of_birth:          safe(member.year_of_birth),
+      country_of_origin:      safe(member.country_of_origin),
+      gender:                 safe(member.gender),
       membership_valid_until: safe(member.membership_valid_until),
+      redemption_id:          redemptionId,   // ← NEW
     }
 
+    // ── POST to both sheets (fire and forget — don't block the response) ──
     const [masterRes, storeRes] = await Promise.all([
       fetch(partnership.master_apps_script_url, {
         method: 'POST',
@@ -162,16 +191,9 @@ serve(async (req) => {
 
     if (!masterRes.ok || !storeRes.ok) {
       const masterText = await masterRes.text()
-      const storeText = await storeRes.text()
+      const storeText  = await storeRes.text()
       console.error('Sheet POST failed — master:', masterText, '| store:', storeText)
     }
-
-    // ── Log to redemptions table ───────────────────────────────────────────
-    await admin.from('redemptions').insert({
-      user_id: user.id,
-      store_id: storeId,
-      redeemed_at: now.toISOString(),
-    })
 
     return new Response(
       JSON.stringify({ success: true, storeName: partnership.name }),

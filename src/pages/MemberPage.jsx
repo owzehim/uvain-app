@@ -8,6 +8,10 @@ import { SpotCard, RichText } from '../components/SpotCard'
 import { broadcastQRExpiry } from '../lib/qrSync'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
+// ── NEW ──────────────────────────────────────────────────────
+import { useReviewPrompt } from '../hooks/useReviewPrompt'
+import ReviewModal from '../components/ReviewModal'
+// ─────────────────────────────────────────────────────────────
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -18,6 +22,24 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const { token, secondsLeft } = useQRToken(member?.totp_secret)
+
+  // ── NEW: review prompt hook ───────────────────────────────
+  const {
+    open: reviewOpen,
+    storeName,
+    rating,
+    tags,
+    comment,
+    errors,
+    submitError,
+    submitting,
+    selectRating,
+    toggleTag,
+    setComment,
+    submitReview,
+    skipReview,
+  } = useReviewPrompt()
+  // ─────────────────────────────────────────────────────────
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,6 +102,25 @@ export default function MemberPage() {
 
   return (
     <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}>
+
+      {/* ── NEW: Review modal — rendered at top level so it floats above all tabs ── */}
+      <ReviewModal
+        open={reviewOpen}
+        storeName={storeName}
+        rating={rating}
+        tags={tags}
+        comment={comment}
+        errors={errors}
+        submitError={submitError}
+        submitting={submitting}
+        onSelectRating={selectRating}
+        onToggleTag={toggleTag}
+        onCommentChange={setComment}
+        onSubmit={submitReview}
+        onSkip={skipReview}
+      />
+      {/* ──────────────────────────────────────────────────────────────────────── */}
+
       {/* 헤더 */}
       <div
         className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
@@ -211,7 +252,6 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
           </div>
         )}
 
-        {/* ✅ NEW: Scan discount button — only shown when membership is valid */}
         {isValid && (
           <button
             onClick={() => navigate('/scan')}
@@ -226,7 +266,7 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
   )
 }
 
-// ─── Nav Button (for event image slider on desktop) ───────────────────────────
+// ─── Nav Button ───────────────────────────────────────────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
   return (
@@ -364,7 +404,6 @@ function EventsTab({ events }) {
           <div>
             {imgs.length > 0 && (
               <div className="px-4">
-                {/* 모바일 슬라이더 */}
                 <div
                   className="md:hidden"
                   onTouchStart={(e) => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
@@ -400,7 +439,6 @@ function EventsTab({ events }) {
                   </div>
                 </div>
 
-                {/* 데스크톱 슬라이더 */}
                 <div className="hidden md:block">
                   <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
                     <div
