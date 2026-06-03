@@ -119,7 +119,6 @@ export default function ScanPage() {
     ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
     : ''
 
-  // Conditionally set status bar style based on state
   const isSuccessState = state === STATE.SUCCESS
 
   return (
@@ -127,35 +126,28 @@ export default function ScanPage() {
       className="flex flex-col bg-gray-50 overflow-hidden"
       style={{ height: '100dvh' }}
     >
-      {/* Meta tag for status bar styling on success */}
-      {isSuccessState && (
-        <style>{`
-          body {
-            color-scheme: light;
-          }
-        `}</style>
-      )}
-
-      {/* Header – orange on success, white otherwise */}
+      {/* Safe area + Header combined – orange on success, white otherwise */}
       <div
-        className={`px-2 py-3 flex items-center flex-shrink-0 ${
+        className={`flex-shrink-0 ${
           isSuccessState
             ? 'bg-orange-500 border-b border-orange-600'
             : 'bg-white border-b border-gray-100'
         }`}
         style={{ paddingTop: `calc(env(safe-area-inset-top) + 12px)` }}
       >
-        <button
-          onClick={() => navigate('/member')}
-          className={`px-2 py-1 rounded-lg transition-colors ${
-            isSuccessState
-              ? 'text-white hover:text-orange-100 hover:bg-orange-600'
-              : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
-          }`}
-          aria-label="뒤로"
-        >
-          <ArrowLeft size={20} weight="bold" />
-        </button>
+        <div className="px-2 py-3 flex items-center">
+          <button
+            onClick={() => navigate('/member')}
+            className={`px-2 py-1 rounded-lg transition-colors ${
+              isSuccessState
+                ? 'text-white hover:text-orange-100 hover:bg-orange-600'
+                : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
+            }`}
+            aria-label="뒤로"
+          >
+            <ArrowLeft size={20} weight="bold" />
+          </button>
+        </div>
       </div>
 
       {/* Body */}
