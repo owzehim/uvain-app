@@ -126,34 +126,36 @@ export default function ScanPage() {
     >
       {/* Header */}
       <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center flex-shrink-0"
+        className="bg-white border-b border-gray-100 px-2 py-3 flex items-center flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button
           onClick={() => navigate('/member')}
           className="text-gray-500 hover:text-gray-800 px-2 py-1 rounded-lg hover:bg-gray-100"
+          aria-label="뒤로"
         >
-          <ArrowLeft size={20} weight="fill" />
+          <ArrowLeft size={20} weight="bold" />
         </button>
       </div>
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
-        {/* Blinking orange dot – only on success, top-left with equal spacing */}
+        {/* Blinking orange dot – only on success, top-left with on/off blink */}
         {state === STATE.SUCCESS && (
           <>
             <style>{`
               @keyframes recordingDot {
-                0%   { opacity: 0.2; }
+                0%   { opacity: 1; }
                 50%  { opacity: 1; }
-                100% { opacity: 0.2; }
+                50.1% { opacity: 0; }
+                100% { opacity: 0; }
               }
             `}</style>
             <div
               className="absolute"
               style={{
                 top: 4,
-                left: 4,
+                left: 16,
                 zIndex: 10,
               }}
             >
@@ -164,7 +166,7 @@ export default function ScanPage() {
                   height: 8,
                   borderRadius: 9999,
                   backgroundColor: '#f97316',
-                  animation: 'recordingDot 1s ease-in-out infinite',
+                  animation: 'recordingDot 1s step-start infinite',
                 }}
               />
             </div>
@@ -189,7 +191,7 @@ export default function ScanPage() {
             <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
 
             <p className="text-gray-500 text-sm">
-              <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다.
+              <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다
             </p>
 
             <p className="text-base font-bold text-orange-500">
@@ -228,7 +230,7 @@ export default function ScanPage() {
 
               <div className="flex justify-between items-center">
                 <span className="text-xs font-medium text-gray-500">
-                  멤버십 유효기간
+                  Membership Validi Until
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {formatMembershipDate(member?.membership_valid_until)}
