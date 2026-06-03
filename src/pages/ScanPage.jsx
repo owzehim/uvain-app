@@ -125,21 +125,20 @@ export default function ScanPage() {
     >
       {/* Header */}
       <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 flex-shrink-0"
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button
           onClick={() => navigate('/member')}
-          className="text-gray-500 hover:text-gray-800 text-sm px-2 py-1 rounded-lg hover:bg-gray-100"
+          className="text-gray-500 hover:text-gray-800 text-lg px-2 py-1 rounded-lg hover:bg-gray-100"
         >
-          ← 뒤로
+          &lt;
         </button>
-        <h1 className="font-bold text-gray-900">Check-In QR 스캔</h1>
       </div>
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
-        {/* Blinking orange dot – only on success, top-left of content area */}
+        {/* Blinking orange dot – only on success, top-left with equal spacing */}
         {state === STATE.SUCCESS && (
           <>
             <style>{`
@@ -153,7 +152,7 @@ export default function ScanPage() {
               className="absolute"
               style={{
                 top: 4,
-                left: 10,
+                right: 4,
                 zIndex: 10,
               }}
             >
@@ -199,28 +198,28 @@ export default function ScanPage() {
             {/* Security profile card */}
             <div className="w-full mt-4 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm text-left space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-500">스캔 시간</span>
+                <span className="text-xs font-medium text-gray-500">Scan Time</span>
                 <span className="text-sm font-semibold text-gray-900">
                   {formatScanTime(scanTime)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-500">이름</span>
+                <span className="text-xs font-medium text-gray-500">Full Name</span>
                 <span className="text-sm font-semibold text-gray-900">
                   {fullName || 'N/A'}
                 </span>
               </div>
 
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-500">학번</span>
+                <span className="text-xs font-medium text-gray-500">Student ID</span>
                 <span className="text-sm font-semibold text-gray-900">
                   {member?.student_number || 'N/A'}
                 </span>
               </div>
 
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-500">대학</span>
+                <span className="text-xs font-medium text-gray-500">University</span>
                 <span className="text-sm font-semibold text-gray-900">
                   {member?.University || 'N/A'}
                 </span>
@@ -228,7 +227,7 @@ export default function ScanPage() {
 
               <div className="flex justify-between items-center">
                 <span className="text-xs font-medium text-gray-500">
-                  멤버십 유효기간
+                  Membership Valid Until
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {formatMembershipDate(member?.membership_valid_until)}
