@@ -9,6 +9,7 @@ import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
+import { logRedemption } from '../lib/redemption'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -394,6 +395,12 @@ function QRTab({ member, isValid }) {
   const currentOffset = useRef(0)
   const liftedRef = useRef(false)
 
+  // Scan/check-in state (similar to ScanPage)
+  const [scanState, setScanState] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
+  const [scanError, setScanError] = useState('')
+  const [storeName, setStoreName] = useState('')
+  const handlingRef = useRef(false)
+
   const getMaxLift = () => activityRef.current?.offsetHeight ?? 260
 
   const setTranslate = (offset) => {
@@ -443,11 +450,80 @@ function QRTab({ member, isValid }) {
     setTranslate(lifted ? getMaxLift() : 0)
   }, [lifted])
 
-  // When QR is scanned, decodedText is your token (e.g. `${otp}_${studentNumber}`)
-  const handleQRScanned = (decodedText) => {
-    console.log('QR scanned in MY tab:', decodedText)
-    // IMPORTANT: route is defined as /verify/:token
-    navigate(`/verify/${encodeURIComponent(decodedText)}`)
+  // Handle QR scan (same logic as ScanPage: parse store_id, logRedemption, verify membership)
+  const handleQRScanned = async (rawValue) => {
+    if (handlingRef.current) return
+    handlingRef.current = true
+
+    setScanError('')
+    setStoreName('')
+
+    let storeId = null
+
+    try {
+      const url = new URL(rawValue)
+      storeId = url.searchParams.get('store_id')
+    } catch {
+      if (rawValue.startsWith('store:')) {
+        storeId = rawValue.replace('store:', '')
+      }
+    }
+
+    if (!storeId) {
+      setScanState('error')
+      setScanError('유효하지 않은 QR 코드입니다. 매장 QR을 스캔해주세요.')
+      handlingRef.current = false
+      return
+    }
+
+    setScanState('loading')
+
+    try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser()
+
+      if (authError || !user) {
+        setScanState('error')
+        setScanError('로그인이 필요합니다.')
+        handlingRef.current = false
+        return
+      }
+
+      // (optional) fetch member row if you want to use it here as well
+      const { error: memberError } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (memberError) {
+        console.warn('members fetch error:', memberError)
+      }
+
+      // Log the redemption (same as ScanPage)
+      const result = await logRedemption({ storeId })
+
+      if (result.success) {
+        setStoreName(result.storeName || '매장')
+        setScanState('success')
+
+        // Simple feedback inside MY tab
+        alert(`${result.storeName || '매장'}에서 Check-In이 기록되었습니다.`)
+      } else {
+        setScanState('error')
+        setScanError(
+          result.message || 'Check-In을 기록할 수 없습니다. 다시 시도해주세요.'
+        )
+      }
+    } catch (err) {
+      console.error('handleQRScanned error:', err)
+      setScanState('error')
+      setScanError('오류가 발생했습니다: ' + (err?.message || '알 수 없는 오류'))
+    }
+
+    handlingRef.current = false
   }
 
   const W = 'calc(100vw - 32px)'
@@ -456,7 +532,6 @@ function QRTab({ member, isValid }) {
   }
 
   return (
-    // overflow: hidden clips everything — activity is invisible until card moves up
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
       {/* Activity stats — anchored to bottom, naturally hidden behind card */}
       <div
@@ -540,6 +615,21 @@ function QRTab({ member, isValid }) {
             위로 올려서 이번 달 활동 보기
           </span>
         </div>
+
+        {/* Optional inline error message below guide text */}
+        {scanState === 'error' && scanError && (
+          <div
+            style={{
+              width: '100%',
+              marginTop: '8px',
+              textAlign: 'right',
+              fontSize: '12px',
+              color: '#ef4444',
+            }}
+          >
+            {scanError}
+          </div>
+        )}
       </div>
     </div>
   )
