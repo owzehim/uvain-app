@@ -4,16 +4,13 @@ import { useActivityStats } from '../hooks/useActivityStats'
 export default function ActivityStatsCard({ userId }) {
   const { stats, loading } = useActivityStats(userId)
 
-  const now = new Date()
-  const monthLabel = `${now.getMonth() + 1}월`
-
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <ChartLine size={16} className="text-gray-500" />
         <h3 className="font-semibold text-gray-900 text-sm">
-          {monthLabel} 활동 통계
+          이번 달 활동
         </h3>
       </div>
 
