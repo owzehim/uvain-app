@@ -291,13 +291,20 @@ function MembershipCard({ member, isValid }) {
             cursor: 'pointer',
             padding: '8px',
             boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
+          {/* Scanner wrapper — centered and sized properly */}
           <div style={{
             width: '100%',
             height: '100%',
             overflow: 'hidden',
             borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}>
             <QRScanner onScan={() => {}} />
           </div>
