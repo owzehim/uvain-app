@@ -8,6 +8,7 @@ import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
+import QRScanner from '../components/QRScanner'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -180,7 +181,6 @@ export default function MemberPage() {
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
 function MembershipCard({ member, isValid }) {
-  const navigate = useNavigate()
   const [flipped, setFlipped] = useState(false)
   const swipeStartX = useRef(null)
 
@@ -218,7 +218,6 @@ function MembershipCard({ member, isValid }) {
         margin: '0 auto',
         position: 'relative',
         flexShrink: 0,
-        // 3D perspective for the flip
         perspective: '1200px',
       }}
       onTouchStart={handleTouchStartCard}
@@ -316,41 +315,36 @@ function MembershipCard({ member, isValid }) {
             height: cardW,
             top: '50%',
             left: '50%',
-            // rotateY(180deg) flips it, rotate(90deg) keeps landscape
             transform: 'translate(-50%, -50%) rotateY(180deg) rotate(90deg)',
             transformOrigin: 'center center',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            background: '#1a1a1a',
+            background: '#000',
             borderRadius: '16px',
             overflow: 'hidden',
             userSelect: 'none',
+            padding: '8px',
+            boxSizing: 'border-box',
           }}
         >
-          {/* Scan hint */}
-          <div style={{
-            position: 'absolute', top: '6%', left: 0, right: 0,
-            textAlign: 'center', color: 'rgba(255,255,255,0.5)',
-            fontSize: fs.valid, fontWeight: 500,
-          }}>
-            QR 코드를 스캔하세요 · 좌우로 스와이프하여 닫기
-          </div>
+          {/* QRScanner — only renders when flipped */}
+          {flipped && (
+            <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '10px' }}>
+              <QRScanner onScan={() => {}} />
+            </div>
+          )}
 
-          {/* Scan iframe — loads /scan inside the card */}
-          <iframe
-            src="/scan"
-            style={{
-              position: 'absolute',
-              top: '16%',
-              left: '4%',
-              width: '92%',
-              height: '78%',
-              border: 'none',
-              borderRadius: '10px',
-              background: '#000',
-            }}
-            allow="camera"
-          />
+          {/* Swipe hint */}
+          {!flipped && (
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center', color: 'rgba(255,255,255,0.5)',
+              fontSize: fs.valid, fontWeight: 500,
+            }}>
+              좌우로 스와이프하여 닫기
+            </div>
+          )}
         </div>
 
       </div>
