@@ -9,7 +9,6 @@ import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import { UserCircle, CheckCircle, XCircle } from '@phosphor-icons/react'
-import ActivityStatsCard from '../components/ActivityStatsCard'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
