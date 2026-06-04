@@ -179,6 +179,119 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
+function MembershipCard({ member, isValid, onClick }) {
+  const studentNum = member?.student_number ? String(member.student_number) : '00000000'
+  const part1 = studentNum.slice(0, 4)
+  const part2 = studentNum.slice(4, 8)
+  const part3 = 'XXXX'
+  const part4 = member?.year_of_birth ? String(member.year_of_birth) : '????'
+  const cardNumber = `${part1} ${part2} ${part3} ${part4}`
+
+  const validUntil = member?.membership_valid_until
+    ? (() => {
+        const d = new Date(member.membership_valid_until)
+        const dd = String(d.getDate()).padStart(2, '0')
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        const yy = String(d.getFullYear()).slice(-2)
+        return `${dd}/${mm}/${yy}`
+      })()
+    : 'N/A'
+
+  // Card dimensions — portrait orientation
+  // cardW = short side (portrait width), cardH = long side (portrait height)
+  const W = 'calc(100vw - 32px)'   // base unit: portrait width
+  const cardW = W
+  const cardH = `calc(${W} * 1.586)`
+
+  // All sizes derived from W so they scale with the card on any screen
+  const fs = {
+    label:   `calc(${W} * 0.045)`,   // "UvA-IN BENEFITS"
+    number:  `calc(${W} * 0.075)`,   // card number
+    valid:   `calc(${W} * 0.038)`,   // valid until line
+    name:    `calc(${W} * 0.052)`,   // cardholder name
+    logo:    `calc(${W} * 0.18)`,    // logo circle diameter
+  }
+
+  return (
+    <div style={{
+      width: cardW,
+      height: cardH,
+      margin: '0 auto',
+      position: 'relative',
+      flexShrink: 0,
+    }}>
+      <div
+        onClick={isValid ? onClick : undefined}
+        style={{
+          position: 'absolute',
+          width: cardH,
+          height: cardW,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) rotate(90deg)',
+          transformOrigin: 'center center',
+          background: '#f97316',
+          borderRadius: '16px',
+          color: '#fff',
+          overflow: 'hidden',
+          userSelect: 'none',
+          cursor: isValid ? 'pointer' : 'default',
+        }}
+      >
+        {/* TOP: label */}
+        <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
+          <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
+            UvA-IN BENEFITS
+          </span>
+        </div>
+
+        {/* Card number */}
+        <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+            {cardNumber}
+          </div>
+        </div>
+
+        {/* Valid Until — horizontally centered */}
+        <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
+          <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
+            Valid Until: {validUntil}
+          </div>
+        </div>
+
+        {/* Name — bottom-left */}
+        <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
+          <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
+            {member?.first_name} {member?.last_name}
+          </div>
+        </div>
+
+        {/* Logo — bottom-right, perfect square derived from W */}
+        <div style={{
+          position: 'absolute',
+          bottom: '5%',
+          right: '4%',
+          width: fs.logo,
+          height: fs.logo,
+          borderRadius: '50%',
+          border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}>
+          <img
+            src="/UvA-IN-logo-transparent.png"
+            alt="UvA-IN logo"
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          />
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+// ─── QR Tab ───────────────────────────────────────────────────────────────────
+
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
@@ -274,27 +387,6 @@ function QRTab({ member, isValid }) {
         />
       </div>
 
-    </div>
-  )
-}
-
-// ─── QR Tab ───────────────────────────────────────────────────────────────────
-
-function QRTab({ member, isValid }) {
-  const navigate = useNavigate()
-  return (
-    <div className="h-full overflow-y-auto">
-      <div className="px-4 py-6 max-w-md mx-auto space-y-4">
-
-        <MembershipCard
-          member={member}
-          isValid={isValid}
-          onClick={() => navigate('/scan')}
-        />
-
-        {isValid && <ActivityStatsCard userId={member?.user_id} />}
-
-      </div>
     </div>
   )
 }
