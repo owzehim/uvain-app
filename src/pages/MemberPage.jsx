@@ -199,7 +199,7 @@ function MembershipCard({ member, isValid, onClick }) {
 
   // Card dimensions — portrait orientation
   // cardW = short side (portrait width), cardH = long side (portrait height)
-  const W = 'calc(100vw - 32px)'   // base unit: portrait width
+  const W = 'calc(100vw - 80px)'   // base unit: portrait width
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
 
