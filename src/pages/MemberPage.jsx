@@ -180,42 +180,34 @@ export default function MemberPage() {
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
-function QRTab({ member, isValid }) {
+export default function QRTab({ member, isValid }) {
   const navigate = useNavigate()
   const [revealed, setRevealed] = useState(false)
-
-  // Touch swipe detection
   const touchStartY = useRef(null)
 
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY
   }
-
   const handleTouchEnd = (e) => {
     if (touchStartY.current == null) return
     const dy = touchStartY.current - e.changedTouches[0].clientY
     touchStartY.current = null
-    if (dy > 50) setRevealed(true)   // swipe up → reveal stats
-    if (dy < -50) setRevealed(false) // swipe down → back to card
+    if (dy > 50) setRevealed(true)
+    if (dy < -50) setRevealed(false)
   }
 
-  const initials = [member?.first_name, member?.last_name]
-    .filter(Boolean)
-    .map((n) => n[0].toUpperCase())
-    .join('')
+  const cardNumber = formatCardNumber(member?.student_number, member?.year_of_birth)
 
   return (
     <div
-      className="h-full relative overflow-hidden"
+      className="h-full relative overflow-hidden bg-gray-50"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
 
-      {/* ── Layer 1: Stats (sits behind, always rendered) ── */}
+      {/* ── Layer 1: Stats — sits behind card ── */}
       <div className="absolute inset-0 overflow-y-auto">
         <div className="px-4 max-w-md mx-auto" style={{ paddingTop: '1.5rem' }}>
-
-          {/* Back affordance */}
           <button
             onClick={() => setRevealed(false)}
             className="flex items-center gap-1 text-xs text-gray-400 mb-4 active:text-gray-600 transition-colors"
@@ -223,9 +215,7 @@ function QRTab({ member, isValid }) {
             <ArrowUp size={12} style={{ transform: 'rotate(180deg)' }} />
             카드로 돌아가기
           </button>
-
           {isValid && <ActivityStatsCard userId={member?.user_id} />}
-
           {!isValid && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center mt-4">
               <p className="text-gray-400 text-sm">멤버십이 만료되었습니다.</p>
@@ -235,101 +225,159 @@ function QRTab({ member, isValid }) {
         </div>
       </div>
 
-      {/* ── Layer 2: Credit card (slides up on swipe) ── */}
+      {/* ── Layer 2: Credit card — slides up on swipe ── */}
       <div
-        className="absolute inset-x-0 bottom-0"
+        className="absolute inset-0"
         style={{
-          top: revealed ? '-100%' : '0',
-          transition: 'top 0.45s cubic-bezier(0.32, 0, 0.67, 0)',
+          transform: revealed ? 'translateY(-100%)' : 'translateY(0)',
+          transition: 'transform 0.45s cubic-bezier(0.32, 0, 0.67, 0)',
         }}
       >
-        {/* Card fills full height */}
-        <div
-          className="h-full px-4 flex flex-col"
-          style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem' }}
-        >
-          {/* The card itself — tappable, fills available space */}
+        <div className="h-full px-5 flex flex-col justify-center" style={{ paddingBottom: '1rem' }}>
+
+          {/* Card — portrait, fills height */}
           <div
             onClick={() => isValid && navigate('/scan')}
-            className="flex-1 rounded-3xl flex flex-col justify-between p-7 select-none"
+            className="relative w-full flex-1 rounded-3xl overflow-hidden select-none"
             style={{
               background: '#f97316',
+              maxHeight: 'calc(100dvh - 160px)',
               cursor: isValid ? 'pointer' : 'default',
               WebkitTapHighlightColor: 'transparent',
+              // All text inside is rotated 90° CCW — card reads sideways
             }}
           >
-            {/* Top row: label + avatar */}
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-orange-200 text-xs font-semibold tracking-widest uppercase mb-1">
-                  UvA-IN Member
-                </p>
-                <div className="flex items-center gap-1.5">
-                  {isValid
-                    ? <CheckCircle size={13} weight="fill" color="white" />
-                    : <XCircle size={13} weight="fill" color="rgba(255,255,255,0.5)" />
-                  }
-                  <span className="text-white text-xs font-medium opacity-80">
-                    {isValid
-                      ? `유효 · ${member?.membership_valid_until?.slice(0, 10) ?? ''}`
-                      : '멤버십 만료'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Avatar */}
+            {/* ── Rotated inner content ── */}
+            <div
+              className="absolute inset-0 flex"
+              style={{
+                // rotate the entire content layer so the card reads landscape when held sideways
+                transform: 'rotate(-90deg)',
+                transformOrigin: 'center center',
+              }}
+            >
+              {/* We need a fixed-size inner box matching the rotated dimensions */}
               <div
-                className="flex items-center justify-center rounded-full flex-shrink-0"
+                className="relative flex flex-col justify-between"
                 style={{
-                  width: 52,
-                  height: 52,
-                  background: 'rgba(255,255,255,0.2)',
+                  // swap width/height so content fills correctly after rotation
+                  width: '100%',
+                  height: '100%',
+                  padding: '7%',
                 }}
               >
-                {initials ? (
-                  <span className="text-white font-bold text-lg">{initials}</span>
-                ) : (
-                  <UserCircle size={32} weight="fill" color="white" />
-                )}
-              </div>
-            </div>
+                {/* TOP ROW: UvA-IN MEMBER label (right) + logo placeholder (left) */}
+                <div className="flex items-start justify-between">
+                  {/* Logo placeholder — replace src with actual logo later */}
+                  <div
+                    className="rounded-xl bg-white bg-opacity-20 flex items-center justify-center"
+                    style={{ width: 48, height: 48 }}
+                  >
+                    {/* TODO: <img src="/logo.png" className="w-full h-full object-contain" /> */}
+                    <span className="text-white text-[9px] font-bold opacity-60 text-center leading-tight">LOGO</span>
+                  </div>
 
-            {/* Name — hero */}
-            <div>
-              <h2
-                className="text-white font-black leading-none tracking-tight"
-                style={{ fontSize: '3rem' }}
-              >
-                {member?.first_name}
-              </h2>
-              <h2
-                className="text-white font-black leading-none tracking-tight"
-                style={{ fontSize: '3rem', opacity: 0.65 }}
-              >
-                {member?.last_name}
-              </h2>
-            </div>
+                  <div className="text-right">
+                    <p className="text-white font-black text-sm tracking-widest uppercase">UvA-IN</p>
+                    <p className="text-orange-200 text-[10px] tracking-wider uppercase">Member</p>
+                  </div>
+                </div>
 
-            {/* Bottom: tap hint + swipe hint */}
-            <div className="flex items-end justify-between">
-              {isValid ? (
-                <p className="text-white text-xs opacity-50">
-                  탭하여 Check-In
-                </p>
-              ) : (
-                <span />
-              )}
-              <div className="flex flex-col items-center gap-1 opacity-40">
-                <ArrowUp size={14} color="white" />
-                <p className="text-white text-xs">활동 보기</p>
+                {/* MIDDLE: chip + contactless */}
+                <div className="flex items-center gap-4">
+                  {/* Chip */}
+                  <div
+                    className="rounded-md flex items-center justify-center"
+                    style={{
+                      width: 44,
+                      height: 34,
+                      background: 'linear-gradient(135deg, #d4af37 0%, #f5e17a 40%, #b8962e 100%)',
+                    }}
+                  >
+                    <div className="grid grid-cols-2 gap-px opacity-60" style={{ width: 28, height: 22 }}>
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="bg-yellow-900 bg-opacity-40 rounded-sm" />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Contactless icon */}
+                  <div className="flex flex-col items-center gap-0.5 opacity-70">
+                    {[14, 20, 26].map((size, i) => (
+                      <div
+                        key={i}
+                        className="border-white rounded-full"
+                        style={{
+                          width: size,
+                          height: size / 2,
+                          borderWidth: 1.5,
+                          borderBottomColor: 'transparent',
+                          borderLeftColor: 'transparent',
+                          borderRightColor: 'transparent',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* CARD NUMBER */}
+                <div>
+                  <p
+                    className="text-white font-mono font-bold tracking-widest"
+                    style={{ fontSize: '1.35rem', letterSpacing: '0.15em' }}
+                  >
+                    {cardNumber}
+                  </p>
+                </div>
+
+                {/* BOTTOM ROW: name left, validity right */}
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-orange-200 text-[9px] uppercase tracking-widest mb-0.5">Cardholder</p>
+                    <p className="text-white font-bold text-sm tracking-wide uppercase">
+                      {member?.first_name} {member?.last_name}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-orange-200 text-[9px] uppercase tracking-widest mb-0.5">Valid</p>
+                    <div className="flex items-center gap-1 justify-end">
+                      {isValid
+                        ? <CheckCircle size={11} weight="fill" color="white" />
+                        : <XCircle size={11} weight="fill" color="rgba(255,255,255,0.5)" />
+                      }
+                      <p className="text-white text-xs font-medium">
+                        {member?.membership_valid_until?.slice(0, 7) ?? '—'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Swipe hint */}
+          <div className="flex flex-col items-center gap-1 mt-4 opacity-40">
+            <ArrowUp size={14} color="#374151" />
+            <p className="text-gray-500 text-xs">위로 스와이프 · 활동 보기</p>
+          </div>
+
         </div>
       </div>
 
     </div>
   )
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatCardNumber(studentNumber, yearOfBirth) {
+  // 1613 8333 XXXX 2004
+  const sn = String(studentNumber ?? '').replace(/\D/g, '').padEnd(8, '0')
+  const yob = String(yearOfBirth ?? '????')
+  const part1 = sn.slice(0, 4)
+  const part2 = sn.slice(4, 8)
+  return `${part1}  ${part2}  XXXX  ${yob}`
 }
 
 // ─── Nav Button ───────────────────────────────────────────────────────────────
