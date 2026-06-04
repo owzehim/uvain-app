@@ -179,23 +179,24 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid, onClick }) {
-  const studentNum = member?.student_number ? String(member.student_number) : '00000000'
-  const part1 = studentNum.slice(0, 4)
-  const part2 = studentNum.slice(4, 8)
-  const part3 = 'XXXX'
-  const part4 = member?.year_of_birth ? String(member.year_of_birth) : '????'
-  const cardNumber = `${part1} ${part2} ${part3} ${part4}`
+function MembershipCard({ member, isValid }) {
+  const navigate = useNavigate()
+  const [flipped, setFlipped] = useState(false)
+  const swipeStartX = useRef(null)
 
-  const validUntil = member?.membership_valid_until
-    ? (() => {
-        const d = new Date(member.membership_valid_until)
-        const dd = String(d.getDate()).padStart(2, '0')
-        const mm = String(d.getMonth() + 1).padStart(2, '0')
-        const yy = String(d.getFullYear()).slice(-2)
-        return `${dd}/${mm}/${yy}`
-      })()
-    : 'N/A'
+  const handleTouchStartCard = (e) => {
+    swipeStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEndCard = (e) => {
+    if (swipeStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - swipeStartX.current
+    if (Math.abs(dx) > 40) {
+      // Swipe left or right → flip back
+      setFlipped(false)
+    }
+    swipeStartX.current = null
+  }
 
   const W = 'calc(100vw - 32px)'
   const cardW = W
@@ -206,79 +207,149 @@ function MembershipCard({ member, isValid, onClick }) {
     number: `calc(${W} * 0.075)`,
     valid:  `calc(${W} * 0.038)`,
     name:   `calc(${W} * 0.052)`,
-    logo:   `calc(${W} * 0.26)`,  // increased from 0.18
+    logo:   `calc(${W} * 0.26)`,
   }
 
   return (
-    <div style={{
-      width: cardW,
-      height: cardH,
-      margin: '0 auto',
-      position: 'relative',
-      flexShrink: 0,
-    }}>
+    <div
+      style={{
+        width: cardW,
+        height: cardH,
+        margin: '0 auto',
+        position: 'relative',
+        flexShrink: 0,
+        // 3D perspective for the flip
+        perspective: '1200px',
+      }}
+      onTouchStart={handleTouchStartCard}
+      onTouchEnd={handleTouchEndCard}
+    >
+      {/* Flip container */}
       <div
-        onClick={isValid ? onClick : undefined}
         style={{
           position: 'absolute',
-          width: cardH,
-          height: cardW,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) rotate(90deg)',
-          transformOrigin: 'center center',
-          background: '#f97316',
-          borderRadius: '16px',
-          color: '#fff',
-          overflow: 'hidden',
-          userSelect: 'none',
-          cursor: isValid ? 'pointer' : 'default',
+          width: '100%',
+          height: '100%',
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1)',
+          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* TOP: label */}
-        <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-          <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
-            UvA-IN BENEFITS
-          </span>
-        </div>
 
-        {/* Card number */}
-        <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
-          <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-            {cardNumber}
+        {/* ── FRONT ── */}
+        <div
+          onClick={() => isValid && setFlipped(true)}
+          style={{
+            position: 'absolute',
+            width: cardH,
+            height: cardW,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotate(90deg)',
+            transformOrigin: 'center center',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            background: '#f97316',
+            borderRadius: '16px',
+            color: '#fff',
+            overflow: 'hidden',
+            userSelect: 'none',
+            cursor: isValid ? 'pointer' : 'default',
+          }}
+        >
+          {/* Label */}
+          <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
+            <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
+              UvA-IN BENEFITS
+            </span>
+          </div>
+
+          {/* Card number */}
+          <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+              {`${String(member?.student_number ?? '00000000').slice(0,4)} ${String(member?.student_number ?? '00000000').slice(4,8)} XXXX ${member?.year_of_birth ?? '????'}`}
+            </div>
+          </div>
+
+          {/* Valid Until */}
+          <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
+            <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
+              Valid Until: {member?.membership_valid_until
+                ? (() => { const d = new Date(member.membership_valid_until); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}` })()
+                : 'N/A'}
+            </div>
+          </div>
+
+          {/* Name */}
+          <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
+            <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
+              {member?.first_name} {member?.last_name}
+            </div>
+          </div>
+
+          {/* Logo */}
+          <div style={{
+            position: 'absolute', bottom: '5%', right: '4%',
+            width: fs.logo, height: fs.logo,
+            borderRadius: '50%',
+            border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
+            overflow: 'hidden', flexShrink: 0,
+          }}>
+            <img
+              src="/UvA-IN-logo-transparent.png"
+              alt="UvA-IN logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+            />
+          </div>
+
+          {/* Tap hint */}
+          <div style={{ position: 'absolute', top: '8%', right: '7%', opacity: 0.6, fontSize: fs.valid }}>
+            탭하여 스캔 ▶
           </div>
         </div>
 
-        {/* Valid Until */}
-        <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
-          <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
-            Valid Until: {validUntil}
+        {/* ── BACK ── (rotated 180deg on Y, then landscape rotate) */}
+        <div
+          style={{
+            position: 'absolute',
+            width: cardH,
+            height: cardW,
+            top: '50%',
+            left: '50%',
+            // rotateY(180deg) flips it, rotate(90deg) keeps landscape
+            transform: 'translate(-50%, -50%) rotateY(180deg) rotate(90deg)',
+            transformOrigin: 'center center',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            background: '#1a1a1a',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            userSelect: 'none',
+          }}
+        >
+          {/* Scan hint */}
+          <div style={{
+            position: 'absolute', top: '6%', left: 0, right: 0,
+            textAlign: 'center', color: 'rgba(255,255,255,0.5)',
+            fontSize: fs.valid, fontWeight: 500,
+          }}>
+            QR 코드를 스캔하세요 · 좌우로 스와이프하여 닫기
           </div>
-        </div>
 
-        {/* Name — bottom-left */}
-        <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
-          <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
-            {member?.first_name} {member?.last_name}
-          </div>
-        </div>
-
-        {/* Logo — bottom-right */}
-        <div style={{
-          position: 'absolute',
-          bottom: '5%',
-          right: '4%',
-          width: fs.logo,
-          height: fs.logo,
-          borderRadius: '50%',
-          border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
-          overflow: 'hidden',
-          flexShrink: 0,
-        }}>
-          <img
-            src="/UvA-IN-logo-transparent.png"
-            alt="UvA-IN logo"
-            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          {/* Scan iframe — loads /scan inside the card */}
+          <iframe
+            src="/scan"
+            style={{
+              position: 'absolute',
+              top: '16%',
+              left: '4%',
+              width: '92%',
+              height: '78%',
+              border: 'none',
+              borderRadius: '10px',
+              background: '#000',
+            }}
+            allow="camera"
           />
         </div>
 
