@@ -481,14 +481,11 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   )
 }
 
-// ─── QR Tab with Slide-in Animation & Snap Swipe ───────────────────────────────
+// ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
-  // Track if this is the first render (for slide-in animation)
-  const [hasAnimated, setHasAnimated] = useState(false)
-
-  // Slide-up card behaviour
+  // Slide-up card behaviour (used only when isValid === true)
   const [lifted, setLifted] = useState(false)
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
@@ -496,8 +493,8 @@ function QRTab({ member, isValid }) {
   const currentOffset = useRef(0)
   const liftedRef = useRef(false)
 
-  // Check-in state
-  const [state, setState] = useState('scanning')
+  // Check-in state (mirrors ScanPage) – used only when isValid === true
+  const [state, setState] = useState('scanning') // 'scanning' | 'loading' | 'success' | 'error'
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [checkinMember, setCheckinMember] = useState(null)
@@ -511,13 +508,6 @@ function QRTab({ member, isValid }) {
       cardLayerRef.current.style.transform = `translateY(${-offset}px)`
     }
   }
-
-  // Trigger slide-in animation on first valid render
-  useEffect(() => {
-    if (isValid && !hasAnimated) {
-      setHasAnimated(true)
-    }
-  }, [isValid, hasAnimated])
 
   const handleTouchStart = (e) => {
     if (cardLayerRef.current) {
@@ -539,14 +529,11 @@ function QRTab({ member, isValid }) {
     const dy = touchStartY.current - e.changedTouches[0].clientY
     const raw = currentOffset.current + dy
     const max = getMaxLift()
-    
-    // SNAP behavior: snap to fully lifted or fully down based on velocity/distance
     const shouldLift = raw > max * 0.3
 
     if (cardLayerRef.current) {
-      // Use a snappier easing for the snap effect
       cardLayerRef.current.style.transition =
-        'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
 
     setTranslate(shouldLift ? max : 0)
@@ -558,12 +545,12 @@ function QRTab({ member, isValid }) {
   useEffect(() => {
     if (cardLayerRef.current) {
       cardLayerRef.current.style.transition =
-        'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
     setTranslate(lifted ? getMaxLift() : 0)
   }, [lifted])
 
-  // Helpers
+  // Helpers (from ScanPage)
   const formatScanTime = (date) => {
     if (!date) return ''
     const d = new Date(date)
@@ -672,7 +659,10 @@ function QRTab({ member, isValid }) {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // NON-VALID MEMBERSHIP
+  // SPECIAL CASE: NON-VALID MEMBERSHIP
+  // - No swipe up
+  // - No guide text
+  // - Only dotted-outline card (MembershipCard handles !isValid UI)
   // ────────────────────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
@@ -682,9 +672,9 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
+  // ── From here on: VALID members only (full ScanPage behavior) ──────────────
+
   // LOADING PAGE
-  // ────────────────────────────────────────────────────────────────────────────
   if (state === 'loading') {
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
@@ -696,12 +686,11 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
   // SUCCESS PAGE
-  // ────────────────────────────────────────────────────────────────────────────
   if (state === 'success') {
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
+        {/* Blinking orange dot – top-left */}
         <>
           <style>{`
             @keyframes recordingDot {
@@ -791,9 +780,7 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
   // ERROR PAGE
-  // ────────────────────────────────────────────────────────────────────────────
   if (state === 'error') {
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
@@ -820,25 +807,9 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // SCANNING PAGE (with slide-in animation on first load)
-  // ────────────────────────────────────────────────────────────────────────────
+  // SCANNING PAGE (valid membership: card + swipe + guide text)
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
-      {/* Slide-in animation keyframes */}
-      <style>{`
-        @keyframes slideUpCard {
-          from {
-            transform: translateY(100vh);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
-
       {/* Activity stats */}
       <div
         ref={activityRef}
@@ -854,7 +825,7 @@ function QRTab({ member, isValid }) {
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
 
-      {/* Card layer with slide-in animation */}
+      {/* Card layer */}
       <div
         ref={cardLayerRef}
         style={{
@@ -873,8 +844,6 @@ function QRTab({ member, isValid }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-end',
-          // Slide-in animation only on first load
-          animation: hasAnimated ? 'slideUpCard 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
