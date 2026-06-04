@@ -198,9 +198,10 @@ function MembershipCard({ member, isValid }) {
       style={{
         background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
         borderRadius: '16px',
-        padding: '24px 24px 20px',
+        padding: '24px',
         color: '#fff',
         position: 'relative',
+        height: '200px',
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(249,115,22,0.35)',
         userSelect: 'none',
@@ -210,28 +211,26 @@ function MembershipCard({ member, isValid }) {
       <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '160px', height: '160px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '-60px', left: '-30px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
 
-      {/* Top row: label only */}
-      <div style={{ marginBottom: '48px' }}>
+      {/* TOP: label — anchored to top */}
+      <div style={{ position: 'absolute', top: '24px', left: '24px' }}>
         <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
       </div>
 
-      {/* Card number */}
-      <div style={{ fontFamily: 'monospace', fontSize: '22px', fontWeight: 700, letterSpacing: '0.12em', marginBottom: '8px', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-        {cardNumber}
-      </div>
+      {/* BOTTOM: card number + valid + name — anchored to bottom */}
+      <div style={{ position: 'absolute', bottom: '24px', left: '24px', right: '24px' }}>
+        {/* Card number */}
+        <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', marginBottom: '6px', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+          {cardNumber}
+        </div>
 
-      {/* Valid indicator — sits under the XXXX segment */}
-      <div style={{ marginBottom: '20px' }}>
-        <span style={{ fontSize: '12px', fontWeight: 500, opacity: 0.9 }}>
-          Valid {isValid ? '✓' : '✗'}: {validUntil}
-        </span>
-      </div>
-
-      {/* Card holder name */}
-      <div>
-        <div style={{ fontSize: '10px', opacity: 0.7, marginBottom: '2px', letterSpacing: '0.06em' }}>CARD HOLDER</div>
-        <div style={{ fontWeight: 600, fontSize: '15px', letterSpacing: '0.04em' }}>
-          {member?.first_name} {member?.last_name}
+        {/* Valid indicator + name on same row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
+            Valid {isValid ? '✓' : '✗'}: {validUntil}
+          </div>
+          <div style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '0.04em', textAlign: 'right' }}>
+            {member?.first_name} {member?.last_name}
+          </div>
         </div>
       </div>
     </div>
