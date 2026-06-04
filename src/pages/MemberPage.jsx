@@ -182,9 +182,11 @@ export default function MemberPage() {
 // ─── Membership Card ──────────────────────────────────────────────────────────
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
+
   const W = 'calc(100vw - 32px)'
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
+
   const fs = {
     label: `calc(${W} * 0.045)`,
     number: `calc(${W} * 0.075)`,
@@ -255,7 +257,9 @@ function MembershipCard({ member, isValid, onQRScanned }) {
                   textShadow: '0 1px 4px rgba(0,0,0,0.15)',
                 }}
               >
-                {`${String(member?.student_number ?? '00000000').slice(0, 4)} ${String(member?.student_number ?? '00000000').slice(4, 8)} XXXX ${member?.year_of_birth ?? '????'}`}
+                {`${String(member?.student_number ?? '00000000').slice(0, 4)} ${String(
+                  member?.student_number ?? '00000000'
+                ).slice(4, 8)} XXXX ${member?.year_of_birth ?? '????'}`}
               </div>
             </div>
 
@@ -280,7 +284,9 @@ function MembershipCard({ member, isValid, onQRScanned }) {
                 {member?.membership_valid_until
                   ? (() => {
                       const d = new Date(member.membership_valid_until)
-                      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
+                      return `${String(d.getDate()).padStart(2, '0')}/${String(
+                        d.getMonth() + 1
+                      ).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
                     })()
                   : 'N/A'}
               </div>
@@ -356,7 +362,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             justifyContent: 'center',
           }}
         >
-          {/* Scanner wrapper — centered and sized properly */}
+          {/* Scanner wrapper — prevent click from bubbling so card doesn't flip back immediately */}
           <div
             style={{
               width: '100%',
@@ -378,9 +384,9 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
-
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
+
   const [lifted, setLifted] = useState(false)
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
@@ -417,10 +423,12 @@ function QRTab({ member, isValid }) {
     const raw = currentOffset.current + dy
     const max = getMaxLift()
     const shouldLift = raw > max * 0.3
+
     if (cardLayerRef.current) {
       cardLayerRef.current.style.transition =
         'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
+
     setTranslate(shouldLift ? max : 0)
     liftedRef.current = shouldLift
     setLifted(shouldLift)
@@ -435,10 +443,11 @@ function QRTab({ member, isValid }) {
     setTranslate(lifted ? getMaxLift() : 0)
   }, [lifted])
 
-  // Handle QR code scan
-  const handleQRScanned = (qrData) => {
-    console.log('QR Code scanned:', qrData)
-    navigate('/verify', { state: { qrData } })
+  // When QR is scanned, decodedText is your token (e.g. `${otp}_${studentNumber}`)
+  const handleQRScanned = (decodedText) => {
+    console.log('QR scanned in MY tab:', decodedText)
+    // IMPORTANT: route is defined as /verify/:token
+    navigate(`/verify/${encodeURIComponent(decodedText)}`)
   }
 
   const W = 'calc(100vw - 32px)'
@@ -448,13 +457,7 @@ function QRTab({ member, isValid }) {
 
   return (
     // overflow: hidden clips everything — activity is invisible until card moves up
-    <div
-      style={{
-        position: 'relative',
-        height: '100%',
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
       {/* Activity stats — anchored to bottom, naturally hidden behind card */}
       <div
         ref={activityRef}
@@ -478,7 +481,6 @@ function QRTab({ member, isValid }) {
           bottom: 0,
           left: 0,
           right: 0,
-          // Extend the background upward so it fully covers the activity below
           paddingTop: '100vh',
           marginTop: '-100vh',
           backgroundColor: 'var(--background, #ffffff)',
@@ -498,7 +500,7 @@ function QRTab({ member, isValid }) {
         {/* Spacer so card sits vertically centered */}
         <div style={{ flex: 1 }} />
 
-        {/* Pass the QR scan handler to MembershipCard */}
+        {/* Membership card with scanner on back */}
         <MembershipCard
           member={member}
           isValid={isValid}

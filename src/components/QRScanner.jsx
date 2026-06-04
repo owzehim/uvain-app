@@ -26,8 +26,15 @@ export default function QRScanner({ onScan }) {
           (decodedText) => {
             if (!isMounted) return
             if (scannedRef.current) return
+
             scannedRef.current = true
+            console.log('QR Code detected:', decodedText)
             onScan(decodedText)
+
+            // allow another scan after 2 seconds
+            setTimeout(() => {
+              scannedRef.current = false
+            }, 2000)
           },
           () => {}
         )
@@ -64,8 +71,7 @@ export default function QRScanner({ onScan }) {
           border-width: 0 !important;
         }
 
-        /* Remove the default rectangle border and replace with
-           square corner brackets in orange */
+        /* Remove the default rectangle border and replace with square corner brackets in orange */
         #qr-scanner-container video {
           border-radius: 12px;
         }
@@ -94,7 +100,10 @@ export default function QRScanner({ onScan }) {
       `}</style>
 
       {/* Wrapper so we can overlay our own corner brackets */}
-      <div className="relative w-full max-w-xs" style={{ aspectRatio: '1' }}>
+      <div
+        className="relative w-full max-w-xs"
+        style={{ aspectRatio: '1' }}
+      >
         <div
           id="qr-scanner-container"
           className="w-full h-full rounded-2xl overflow-hidden"
@@ -112,21 +121,63 @@ export default function QRScanner({ onScan }) {
           }}
         >
           {/* Top-left */}
-          <span style={{ position: 'absolute', top: 0, left: 0, width: 28, height: 28,
-            borderTop: '3px solid #f97316', borderLeft: '3px solid #f97316', borderRadius: '4px 0 0 0' }} />
+          <span
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 28,
+              height: 28,
+              borderTop: '3px solid #f97316',
+              borderLeft: '3px solid #f97316',
+              borderRadius: '4px 0 0 0',
+            }}
+          />
           {/* Top-right */}
-          <span style={{ position: 'absolute', top: 0, right: 0, width: 28, height: 28,
-            borderTop: '3px solid #f97316', borderRight: '3px solid #f97316', borderRadius: '0 4px 0 0' }} />
+          <span
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 28,
+              height: 28,
+              borderTop: '3px solid #f97316',
+              borderRight: '3px solid #f97316',
+              borderRadius: '0 4px 0 0',
+            }}
+          />
           {/* Bottom-left */}
-          <span style={{ position: 'absolute', bottom: 0, left: 0, width: 28, height: 28,
-            borderBottom: '3px solid #f97316', borderLeft: '3px solid #f97316', borderRadius: '0 0 0 4px' }} />
+          <span
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: 28,
+              height: 28,
+              borderBottom: '3px solid #f97316',
+              borderLeft: '3px solid #f97316',
+              borderRadius: '0 0 0 4px',
+            }}
+          />
           {/* Bottom-right */}
-          <span style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28,
-            borderBottom: '3px solid #f97316', borderRight: '3px solid #f97316', borderRadius: '0 0 4px 0' }} />
+          <span
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: 28,
+              height: 28,
+              borderBottom: '3px solid #f97316',
+              borderRight: '3px solid #f97316',
+              borderRadius: '0 0 4px 0',
+            }}
+          />
         </div>
       </div>
 
-      <p className="text-sm text-gray-500 text-center">매장 QR 코드를 스캔해주세요</p>
+      <p className="text-sm text-gray-500 text-center">
+        매장 QR 코드를 스캔해주세요
+      </p>
     </div>
   )
 }
