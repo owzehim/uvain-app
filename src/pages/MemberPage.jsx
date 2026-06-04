@@ -388,6 +388,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
+  // Slide-up card behaviour
   const [lifted, setLifted] = useState(false)
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
@@ -395,10 +396,12 @@ function QRTab({ member, isValid }) {
   const currentOffset = useRef(0)
   const liftedRef = useRef(false)
 
-  // Scan/check-in state (similar to ScanPage)
-  const [scanState, setScanState] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
-  const [scanError, setScanError] = useState('')
+  // Check-in state (mirrors ScanPage)
+  const [state, setState] = useState('scanning') // 'scanning' | 'loading' | 'success' | 'error'
   const [storeName, setStoreName] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+  const [checkinMember, setCheckinMember] = useState(null)
+  const [scanTime, setScanTime] = useState(null)
   const handlingRef = useRef(false)
 
   const getMaxLift = () => activityRef.current?.offsetHeight ?? 260
@@ -450,14 +453,45 @@ function QRTab({ member, isValid }) {
     setTranslate(lifted ? getMaxLift() : 0)
   }, [lifted])
 
-  // Handle QR scan (same logic as ScanPage: parse store_id, logRedemption, verify membership)
+  // Helpers (copied from ScanPage)
+  const formatScanTime = (date) => {
+    if (!date) return ''
+    const d = new Date(date)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const h = String(d.getHours()).padStart(2, '0')
+    const min = String(d.getMinutes()).padStart(2, '0')
+    return `${y}-${m}-${day} ${h}:${min}`
+  }
+
+  const formatMembershipDate = (dateStr) => {
+    if (!dateStr) return 'N/A'
+    const d = new Date(dateStr)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+
+  const fullName = checkinMember
+    ? `${checkinMember.first_name || ''} ${checkinMember.last_name || ''}`.trim()
+    : ''
+
+  const reset = () => {
+    setState('scanning')
+    setStoreName('')
+    setErrorMsg('')
+    setCheckinMember(null)
+    setScanTime(null)
+  }
+
+  // Handle QR scan — SAME logic as ScanPage.handleScan, but stays inside this tab
   const handleQRScanned = async (rawValue) => {
     if (handlingRef.current) return
     handlingRef.current = true
 
-    setScanError('')
-    setStoreName('')
-
+    setErrorMsg('')
     let storeId = null
 
     try {
@@ -470,13 +504,13 @@ function QRTab({ member, isValid }) {
     }
 
     if (!storeId) {
-      setScanState('error')
-      setScanError('유효하지 않은 QR 코드입니다. 매장 QR을 스캔해주세요.')
+      setState('error')
+      setErrorMsg('유효하지 않은 QR 코드입니다. 매장 QR을 스캔해주세요.')
       handlingRef.current = false
       return
     }
 
-    setScanState('loading')
+    setState('loading')
 
     try {
       const {
@@ -485,16 +519,16 @@ function QRTab({ member, isValid }) {
       } = await supabase.auth.getUser()
 
       if (authError || !user) {
-        setScanState('error')
-        setScanError('로그인이 필요합니다.')
+        setState('error')
+        setErrorMsg('로그인이 필요합니다.')
         handlingRef.current = false
         return
       }
 
-      // (optional) fetch member row if you want to use it here as well
-      const { error: memberError } = await supabase
+      // Fetch user profile from members table
+      const { data: memberRow, error: memberError } = await supabase
         .from('members')
-        .select('id')
+        .select('first_name, last_name, student_number, "University", membership_valid_until')
         .eq('user_id', user.id)
         .single()
 
@@ -507,20 +541,19 @@ function QRTab({ member, isValid }) {
 
       if (result.success) {
         setStoreName(result.storeName || '매장')
-        setScanState('success')
-
-        // Simple feedback inside MY tab
-        alert(`${result.storeName || '매장'}에서 Check-In이 기록되었습니다.`)
+        setCheckinMember(memberRow || null)
+        setScanTime(new Date())
+        setState('success')
       } else {
-        setScanState('error')
-        setScanError(
+        setState('error')
+        setErrorMsg(
           result.message || 'Check-In을 기록할 수 없습니다. 다시 시도해주세요.'
         )
       }
     } catch (err) {
       console.error('handleQRScanned error:', err)
-      setScanState('error')
-      setScanError('오류가 발생했습니다: ' + (err?.message || '알 수 없는 오류'))
+      setState('error')
+      setErrorMsg('오류가 발생했습니다: ' + (err?.message || '알 수 없는 오류'))
     }
 
     handlingRef.current = false
@@ -531,6 +564,117 @@ function QRTab({ member, isValid }) {
     guide: `calc(${W} * 0.032)`,
   }
 
+  // ── Render different "pages" inside the tab, mirroring ScanPage ────────────
+
+  // LOADING PAGE
+  if (state === 'loading') {
+    return (
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
+        <div className="flex flex-col items-center gap-4 mt-20">
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
+          <p className="text-gray-500 text-sm">멤버십 확인 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // SUCCESS PAGE (copied from ScanPage success block)
+  if (state === 'success') {
+    return (
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
+        <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
+          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+            <span className="text-green-600 text-4xl">✓</span>
+          </div>
+          <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
+          <p className="text-gray-500 text-sm">
+            <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다
+          </p>
+          <p className="text-base font-bold text-orange-500">
+            이 화면을 직원에게 보여주세요
+          </p>
+
+          {/* Security profile card with orange outline */}
+          <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <span className="text-xs font-medium text-gray-500">Scan Time</span>
+              <span className="text-sm font-semibold text-gray-900">
+                {formatScanTime(scanTime)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <span className="text-xs font-medium text-gray-500">Full Name</span>
+              <span className="text-sm font-semibold text-gray-900">
+                {fullName || 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <span className="text-xs font-medium text-gray-500">Student ID</span>
+              <span className="text-sm font-semibold text-gray-900">
+                {checkinMember?.student_number || 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <span className="text-xs font-medium text-gray-500">University</span>
+              <span className="text-sm font-semibold text-gray-900">
+                {checkinMember?.University || 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-medium text-gray-500">
+                Membership Valid Until
+              </span>
+              <span className="text-sm font-semibold text-gray-900">
+                {formatMembershipDate(checkinMember?.membership_valid_until)}
+              </span>
+            </div>
+          </div>
+
+          {/* HOME button */}
+          <div className="w-full mt-8">
+            <button
+              onClick={() => {
+                reset()
+                navigate('/member')
+              }}
+              className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
+            >
+              홈으로 돌아가기
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ERROR PAGE (copied from ScanPage error block)
+  if (state === 'error') {
+    return (
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
+        <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-xs">
+          <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
+            <span className="text-red-500 text-4xl">✕</span>
+          </div>
+          <h2 className="font-bold text-gray-900 text-xl">Check-In 실패</h2>
+          <p className="text-gray-500 text-sm">{errorMsg}</p>
+          <button
+            onClick={reset}
+            className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
+          >
+            다시 시도하기
+          </button>
+          <button
+            onClick={() => navigate('/member')}
+            className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
+          >
+            홈으로 돌아가기
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // SCANNING PAGE (original card + activity + scanner on back)
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
       {/* Activity stats — anchored to bottom, naturally hidden behind card */}
@@ -575,7 +719,6 @@ function QRTab({ member, isValid }) {
         {/* Spacer so card sits vertically centered */}
         <div style={{ flex: 1 }} />
 
-        {/* Membership card with scanner on back */}
         <MembershipCard
           member={member}
           isValid={isValid}
@@ -615,21 +758,6 @@ function QRTab({ member, isValid }) {
             위로 올려서 이번 달 활동 보기
           </span>
         </div>
-
-        {/* Optional inline error message below guide text */}
-        {scanState === 'error' && scanError && (
-          <div
-            style={{
-              width: '100%',
-              marginTop: '8px',
-              textAlign: 'right',
-              fontSize: '12px',
-              color: '#ef4444',
-            }}
-          >
-            {scanError}
-          </div>
-        )}
       </div>
     </div>
   )
