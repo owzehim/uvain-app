@@ -179,7 +179,7 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid }) {
+function MembershipCard({ member, isValid, onClick }) {
   const studentNum = member?.student_number ? String(member.student_number) : '00000000'
   const part1 = studentNum.slice(0, 4)
   const part2 = studentNum.slice(4, 8)
@@ -187,7 +187,6 @@ function MembershipCard({ member, isValid }) {
   const part4 = member?.year_of_birth ? String(member.year_of_birth) : '????'
   const cardNumber = `${part1} ${part2} ${part3} ${part4}`
 
-  // Format: DD/MM/YY
   const validUntil = member?.membership_valid_until
     ? (() => {
         const d = new Date(member.membership_valid_until)
@@ -200,6 +199,7 @@ function MembershipCard({ member, isValid }) {
 
   return (
     <div
+      onClick={isValid ? onClick : undefined}
       style={{
         background: '#f97316',
         borderRadius: '16px',
@@ -210,23 +210,30 @@ function MembershipCard({ member, isValid }) {
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(249,115,22,0.35)',
         userSelect: 'none',
+        cursor: isValid ? 'pointer' : 'default',
+        transition: 'opacity 0.15s',
       }}
+      onMouseDown={(e) => { if (isValid) e.currentTarget.style.opacity = '0.85' }}
+      onMouseUp={(e) => { e.currentTarget.style.opacity = '1' }}
+      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+      onTouchStart={(e) => { if (isValid) e.currentTarget.style.opacity = '0.85' }}
+      onTouchEnd={(e) => { e.currentTarget.style.opacity = '1' }}
     >
       <div style={{ position: 'absolute', inset: 0 }}>
 
         {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
+          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBERSHIP CARD</span>
         </div>
 
-        {/* Card number — locked above bottom rows */}
+        {/* Card number */}
         <div style={{ position: 'absolute', bottom: '28%', left: '7%', right: '7%' }}>
           <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
             {cardNumber}
           </div>
         </div>
 
-        {/* Valid Until — centered across full card width */}
+        {/* Valid Until — centered */}
         <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
             Valid Until: {validUntil}
@@ -253,18 +260,14 @@ function QRTab({ member, isValid }) {
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
 
-        <MembershipCard member={member} isValid={isValid} />
+        <MembershipCard
+          member={member}
+          isValid={isValid}
+          onClick={() => navigate('/scan')}
+        />
 
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
 
-        {isValid && (
-          <button
-            onClick={() => navigate('/scan')}
-            className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
-          >
-            맴버십 check-in 하기
-          </button>
-        )}
       </div>
     </div>
   )
