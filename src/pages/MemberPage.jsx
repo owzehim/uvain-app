@@ -240,6 +240,15 @@ function MembershipCard({ member, isValid, onClick }) {
           </div>
         </div>
 
+        {/* Logo — bottom-right */}
+        <div style={{ position: 'absolute', bottom: '5%', right: '5%' }}>
+          <img
+            src="/UvA-IN-logo-transparent.png"
+            alt="UvA-IN logo"
+            style={{ width: '14%', minWidth: '40px', aspectRatio: '1/1', objectFit: 'contain' }}
+          />
+        </div>
+
       </div>
     </div>
   )
