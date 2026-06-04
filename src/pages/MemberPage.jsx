@@ -194,10 +194,73 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     logo: `calc(${W} * 0.26)`,
   }
 
-  const canFlip = !!isValid
+  // ── If membership is NOT valid: show dotted outline only ──────────────────
+  if (!isValid) {
+    return (
+      <div
+        style={{
+          width: cardW,
+          height: cardH,
+          margin: '0 auto',
+          flexShrink: 0,
+          borderRadius: '16px',
+          border: '2px dashed #d4d4d8', // dotted/ dashed outline
+          background: '#f9fafb',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#9ca3af',
+          textAlign: 'center',
+          padding: '16px',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
+          UvA-IN MEMBERSHIP
+        </span>
+        <span
+          style={{
+            marginTop: '8px',
+            fontSize: '14px',
+            fontWeight: 500,
+          }}
+        >
+          활성화된 멤버십이 없습니다
+        </span>
+        {member?.first_name && (
+          <span
+            style={{
+              marginTop: '4px',
+              fontSize: '13px',
+              color: '#a1a1aa',
+            }}
+          >
+            {member.first_name} {member.last_name}
+          </span>
+        )}
+        <span
+          style={{
+            marginTop: '10px',
+            fontSize: '11px',
+            color: '#b0b0b8',
+          }}
+        >
+          멤버십 갱신은 운영진에게 문의해주세요
+        </span>
+      </div>
+    )
+  }
 
+  // ── Valid membership: full flip card with scanner ─────────────────────────
   const handleToggle = () => {
-    if (!canFlip) return
     setFlipped((f) => !f)
   }
 
@@ -209,7 +272,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         margin: '0 auto',
         perspective: '1200px',
         flexShrink: 0,
-        cursor: canFlip ? 'pointer' : 'default',
+        cursor: 'pointer',
       }}
       onClick={handleToggle}
     >
