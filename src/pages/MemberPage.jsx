@@ -180,8 +180,6 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-import QRScanner from '../components/QRScanner'
-
 function MembershipCard({ member, isValid }) {
   const [flipped, setFlipped] = useState(false)
   const swipeStartX = useRef(null)
