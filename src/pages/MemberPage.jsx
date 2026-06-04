@@ -180,7 +180,6 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-
 function MembershipCard({ member, isValid }) {
   const [flipped, setFlipped] = useState(false)
 
@@ -299,7 +298,8 @@ function MembershipCard({ member, isValid }) {
             transformOrigin: 'center center',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            background: '#f97316',
+            background: '#000',
+            border: '3px solid #f97316',
             borderRadius: '16px',
             overflow: 'hidden',
             userSelect: 'none',
