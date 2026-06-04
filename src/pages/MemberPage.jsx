@@ -179,7 +179,6 @@ export default function MemberPage() {
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
-
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
