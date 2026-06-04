@@ -197,15 +197,20 @@ function MembershipCard({ member, isValid, onClick }) {
       })()
     : 'N/A'
 
-  // Portrait card fills screen width minus 32px edge spacing
-  // cardW = portrait short side, cardH = portrait long side
-  // Inner landscape card: width = cardH, height = cardW, rotated 90deg
-  const cardW = 'calc(100vw - 32px)'
-  const cardH = `calc(${cardW} * 1.586)`
+  // Card dimensions — portrait orientation
+  // cardW = short side (portrait width), cardH = long side (portrait height)
+  const W = 'calc(100vw - 32px)'   // base unit: portrait width
+  const cardW = W
+  const cardH = `calc(${W} * 1.586)`
 
-  // Logo size: based on cardW (the landscape card's height after rotation)
-  // Using a CSS calc so it's always a perfect square visually
-  const logoSize = `calc(${cardW} * 0.14)`
+  // All sizes derived from W so they scale with the card on any screen
+  const fs = {
+    label:   `calc(${W} * 0.045)`,   // "UvA-IN BENEFITS"
+    number:  `calc(${W} * 0.075)`,   // card number
+    valid:   `calc(${W} * 0.038)`,   // valid until line
+    name:    `calc(${W} * 0.052)`,   // cardholder name
+    logo:    `calc(${W} * 0.18)`,    // logo circle diameter
+  }
 
   return (
     <div style={{
@@ -235,51 +240,48 @@ function MembershipCard({ member, isValid, onClick }) {
       >
         {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
+          <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
+            UvA-IN BENEFITS
+          </span>
         </div>
 
         {/* Card number */}
         <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
-          <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
             {cardNumber}
           </div>
         </div>
 
         {/* Valid Until — horizontally centered */}
         <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
-          <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
+          <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
             Valid Until: {validUntil}
           </div>
         </div>
 
         {/* Name — bottom-left */}
         <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
-          <div style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '0.04em' }}>
+          <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
             {member?.first_name} {member?.last_name}
           </div>
         </div>
 
-        {/* Logo — bottom-right, explicitly square using same calc unit */}
+        {/* Logo — bottom-right, perfect square derived from W */}
         <div style={{
           position: 'absolute',
           bottom: '5%',
           right: '4%',
-          width: logoSize,
-          height: logoSize,
+          width: fs.logo,
+          height: fs.logo,
           borderRadius: '50%',
-          border: '2px solid rgba(255,255,255,0.85)',
+          border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
           overflow: 'hidden',
           flexShrink: 0,
         }}>
           <img
             src="/UvA-IN-logo-transparent.png"
             alt="UvA-IN logo"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              display: 'block',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
           />
         </div>
 
