@@ -482,10 +482,11 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
+// ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
-  // Slide-up card behaviour
+  // Slide-up card behaviour (used only when isValid === true)
   const [lifted, setLifted] = useState(false)
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
@@ -493,7 +494,7 @@ function QRTab({ member, isValid }) {
   const currentOffset = useRef(0)
   const liftedRef = useRef(false)
 
-  // Check-in state (mirrors ScanPage)
+  // Check-in state (mirrors ScanPage) – used only when isValid === true
   const [state, setState] = useState('scanning') // 'scanning' | 'loading' | 'success' | 'error'
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -583,7 +584,6 @@ function QRTab({ member, isValid }) {
     setScanTime(null)
   }
 
-  // Handle QR scan — SAME logic as ScanPage.handleScan
   const handleQRScanned = async (rawValue) => {
     if (handlingRef.current) return
     handlingRef.current = true
@@ -622,7 +622,6 @@ function QRTab({ member, isValid }) {
         return
       }
 
-      // Fetch user profile from members table
       const { data: memberRow, error: memberError } = await supabase
         .from('members')
         .select('first_name, last_name, student_number, "University", membership_valid_until')
@@ -633,7 +632,6 @@ function QRTab({ member, isValid }) {
         console.warn('members fetch error:', memberError)
       }
 
-      // Log the redemption (same as ScanPage)
       const result = await logRedemption({ storeId })
 
       if (result.success) {
@@ -661,7 +659,21 @@ function QRTab({ member, isValid }) {
     guide: `calc(${W} * 0.032)`,
   }
 
-  // ── Render different "pages" inside the tab, mirroring ScanPage ────────────
+  // ────────────────────────────────────────────────────────────────────────────
+  // SPECIAL CASE: NON-VALID MEMBERSHIP
+  // - No swipe up
+  // - No guide text
+  // - Only dotted-outline card (MembershipCard handles !isValid UI)
+  // ────────────────────────────────────────────────────────────────────────────
+  if (!isValid) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center px-4 py-6">
+        <MembershipCard member={member} isValid={false} />
+      </div>
+    )
+  }
+
+  // ── From here on: VALID members only (full ScanPage behavior) ──────────────
 
   // LOADING PAGE
   if (state === 'loading') {
@@ -675,11 +687,11 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // SUCCESS PAGE (copied from ScanPage, including blinking orange dot)
+  // SUCCESS PAGE
   if (state === 'success') {
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
-        {/* Blinking orange dot – only on success, top-left with on/off blink */}
+        {/* Blinking orange dot – top-left */}
         <>
           <style>{`
             @keyframes recordingDot {
@@ -718,7 +730,6 @@ function QRTab({ member, isValid }) {
             이 화면을 직원에게 보여주세요
           </p>
 
-          {/* Security profile card with orange outline */}
           <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
               <span className="text-xs font-medium text-gray-500">Scan Time</span>
@@ -754,7 +765,6 @@ function QRTab({ member, isValid }) {
             </div>
           </div>
 
-          {/* HOME button */}
           <div className="w-full mt-8">
             <button
               onClick={() => {
@@ -771,7 +781,7 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // ERROR PAGE (copied from ScanPage)
+  // ERROR PAGE
   if (state === 'error') {
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
@@ -798,7 +808,7 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // SCANNING PAGE (original card + activity + scanner on back)
+  // SCANNING PAGE (valid membership: card + swipe + guide text)
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
       {/* Activity stats */}
@@ -849,7 +859,7 @@ function QRTab({ member, isValid }) {
           onQRScanned={handleQRScanned}
         />
 
-        {/* Guide text */}
+        {/* Guide text (only for valid membership) */}
         <div
           style={{
             width: '100%',
