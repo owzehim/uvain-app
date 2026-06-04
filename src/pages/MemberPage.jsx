@@ -179,8 +179,6 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-// ─── Membership Card ──────────────────────────────────────────────────────────
-// REPLACE the existing MembershipCard function with this
 function MembershipCard({ member, isValid }) {
   const studentNum = member?.student_number ? String(member.student_number) : '00000000'
   const part1 = studentNum.slice(0, 4)
@@ -189,11 +187,17 @@ function MembershipCard({ member, isValid }) {
   const part4 = member?.year_of_birth ? String(member.year_of_birth) : '????'
   const cardNumber = `${part1} ${part2} ${part3} ${part4}`
 
-  const validUntil = member?.membership_valid_until
-    ? new Date(member.membership_valid_until).toLocaleDateString('en-GB', {
-        day: '2-digit', month: 'short', year: 'numeric',
-      })
-    : 'N/A'
+  // Format: DD/MM/YY
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A'
+    const d = new Date(dateStr)
+    const dd = String(d.getDate()).padStart(2, '0')
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const yy = String(d.getFullYear()).slice(-2)
+    return `${dd}/${mm}/${yy}`
+  }
+
+  const validUntil = formatDate(member?.membership_valid_until)
 
   return (
     <div
@@ -202,8 +206,6 @@ function MembershipCard({ member, isValid }) {
         borderRadius: '16px',
         color: '#fff',
         position: 'relative',
-        // Credit card ratio: width / 1.586 = height
-        // We use padding-bottom trick so it scales with container width
         width: '100%',
         paddingBottom: 'calc(100% / 1.586)',
         overflow: 'hidden',
@@ -211,8 +213,7 @@ function MembershipCard({ member, isValid }) {
         userSelect: 'none',
       }}
     >
-      {/* Inner absolute fill — all content goes here */}
-      <div style={{ position: 'absolute', inset: 0, padding: '6% 7%' }}>
+      <div style={{ position: 'absolute', inset: 0 }}>
 
         {/* Decorative circles */}
         <div style={{ position: 'absolute', top: '-15%', right: '-10%', width: '50%', height: '50%', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
@@ -223,23 +224,23 @@ function MembershipCard({ member, isValid }) {
           <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
         </div>
 
-        {/* Card number — locked above bottom rows */}
+        {/* Card number */}
         <div style={{ position: 'absolute', bottom: '28%', left: '7%', right: '7%' }}>
           <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
             {cardNumber}
           </div>
         </div>
 
-        {/* Valid — starts at 50% (under XXXX), one row above name */}
-        <div style={{ position: 'absolute', bottom: '16%', left: '50%', right: '7%' }}>
+        {/* Valid — horizontally centered, one row above name */}
+        <div style={{ position: 'absolute', bottom: '16%', left: '0', right: '0', textAlign: 'center' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
             Valid {isValid ? '✓' : '✗'}: {validUntil}
           </div>
         </div>
 
-        {/* Name — bottom-left */}
+        {/* Name — bottom-left, bigger */}
         <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
-          <div style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '0.04em' }}>
+          <div style={{ fontWeight: 600, fontSize: '17px', letterSpacing: '0.04em' }}>
             {member?.first_name} {member?.last_name}
           </div>
         </div>
@@ -248,7 +249,6 @@ function MembershipCard({ member, isValid }) {
     </div>
   )
 }
-
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
