@@ -150,7 +150,7 @@ async function syncReviewToSheets({ redemptionId, storeId, rating, tags, comment
       store_id:      storeId,
       user_id:       userId,
       rating,
-      tags_string:   tagsToSheetString(tags),   // '음식이 맛있어요, 가성비가 좋아요'
+      tags: tags,   // send the raw array e.g. ['GREAT_FOOD', 'GOOD_VALUE']
       comment:       comment || '',
     },
     headers: {
