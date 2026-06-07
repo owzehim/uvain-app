@@ -6,9 +6,9 @@ import MemberPage from './pages/MemberPage'
 import AdminPage from './pages/AdminPage'
 import VerifyPage from './pages/VerifyPage'
 import PublicPage from './pages/PublicPage'
-import ScanPage from './pages/ScanPage'          
+import ScanPage from './pages/ScanPage'
 import InstallBanner from './components/InstallBanner'
-import RegistrationPage from './pages/RegistrationPage';
+import RegistrationPage from './pages/RegistrationPage'
 import EmailConfirmedPage from './pages/EmailConfirmedPage'
 
 function App() {
@@ -18,32 +18,65 @@ function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
     })
+
     return () => subscription.unsubscribe()
   }, [])
 
-  if (session === undefined) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">로딩 중...</p>
-    </div>
-  )
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">로딩 중...</p>
+      </div>
+    )
+  }
+
+  const role = session?.user?.user_metadata?.role
+  const isAdmin = role === 'admin'
 
   return (
     <BrowserRouter>
       <InstallBanner />
       <Routes>
-  <Route path="/login" element={!session ? <LoginPage /> : <Navigate to="/member" />} />
-  <Route path="/member" element={session ? <MemberPage /> : <Navigate to="/public" />} />
-  <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
-  <Route path="/scan" element={session ? <ScanPage /> : <Navigate to="/login" />} />
-  <Route path="/verify/:token" element={<VerifyPage />} />
-  <Route path="/public" element={<PublicPage />} />
-  <Route path="/register" element={<RegistrationPage />} />
-  <Route path="*" element={<Navigate to={session ? '/member' : '/public'} />} />
-  <Route path="/email-confirmed" element={<EmailConfirmedPage />} />
-</Routes>
+        <Route
+          path="/login"
+          element={!session ? <LoginPage /> : <Navigate to="/member" />}
+        />
+
+        <Route
+          path="/member"
+          element={session ? <MemberPage /> : <Navigate to="/public" />}
+        />
+
+        <Route
+          path="/admin"
+          element={
+            isAdmin
+              ? <AdminPage />
+              : <Navigate to={session ? '/member' : '/login'} />
+          }
+        />
+
+        <Route
+          path="/scan"
+          element={session ? <ScanPage /> : <Navigate to="/login" />}
+        />
+
+        <Route path="/verify/:token" element={<VerifyPage />} />
+        <Route path="/public" element={<PublicPage />} />
+        <Route path="/register" element={<RegistrationPage />} />
+        <Route path="/email-confirmed" element={<EmailConfirmedPage />} />
+
+        <Route
+          path="*"
+          element={<Navigate to={session ? '/member' : '/public'} />}
+        />
+      </Routes>
     </BrowserRouter>
   )
 }
