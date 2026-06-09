@@ -325,6 +325,7 @@ export default function RegistrationPage() {
     handleSubmit,
     goNext,
     goBack,
+    setProfileFile,
   } = useRegisterMember();
 
   const yearOptions = getYearOptions(formData.educationLevel);
@@ -410,6 +411,7 @@ export default function RegistrationPage() {
             goBack={goBack}
             loading={loading}
             navigate={navigate}
+            setProfileFile={setProfileFile}
           />
         )}
 
@@ -529,11 +531,7 @@ function AboutStep({ formData, handleChange, goNext }) {
         />
       </Field>
 
-      <button
-        type="button"
-        onClick={goNext}
-        style={s.submitBtn}
-      >
+      <button type="button" onClick={goNext} style={s.submitBtn}>
         Next →
       </button>
     </div>
@@ -639,6 +637,7 @@ function AccountStep({
   goBack,
   loading,
   navigate,
+  setProfileFile,
 }) {
   return (
     <form onSubmit={handleSubmit} style={s.form}>
@@ -677,7 +676,17 @@ function AccountStep({
         </Field>
       </Row>
 
-      {/* Profile picture can be added later here */}
+      <Field label="Profile picture (optional)">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files && e.target.files[0];
+            setProfileFile(file || null);
+          }}
+          style={s.input}
+        />
+      </Field>
 
       <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
         <button
