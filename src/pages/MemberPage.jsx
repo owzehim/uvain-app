@@ -260,26 +260,24 @@ function QRTab({ member, isValid }) {
             </p>
 
             {/* Avatar circle in the top-right of the orange card */}
-            <div
-              className="flex items-center justify-center rounded-full overflow-hidden flex-shrink-0 border border-white/40"
-              style={{
-                width: 44,
-                height: 44,
-                backgroundColor: hasProfileImage ? '#ffffff' : avatarColor,
-              }}
-            >
-              {hasProfileImage ? (
-                <img
-                  src={member.profile_image_url}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : initials ? (
-                <span className="text-white font-bold text-base">{initials}</span>
-              ) : (
-                <UserCircle size={28} weight="fill" color="white" />
-              )}
-            </div>
+<div
+  className="w-24 h-24 flex items-center justify-center rounded-full overflow-hidden flex-shrink-0 border border-white/40"
+  style={{
+    backgroundColor: hasProfileImage ? '#ffffff' : avatarColor,
+  }}
+>
+  {hasProfileImage ? (
+    <img
+      src={member.profile_image_url}
+      alt="Profile"
+      className="w-full h-full object-cover"
+    />
+  ) : initials ? (
+    <span className="text-white font-bold text-2xl">{initials}</span>
+  ) : (
+    <UserCircle size={42} weight="fill" color="white" />
+  )}
+</div>
           </div>
 
           {/* Name */}
