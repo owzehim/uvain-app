@@ -220,16 +220,28 @@ export default function SettingsPage() {
 
       // 4) get public URL
       const { data: publicData } = supabase.storage
-        .from('profile-images')
-        .getPublicUrl(filePath)
+  .from('profile-images')
+  .getPublicUrl(filePath)
 
-      const url = publicData?.publicUrl || null
+// Base public URL from Supabase
+let url = publicData?.publicUrl || null
 
-      // 5) save in DB
-      const { error: updateError } = await supabase
+// Add a version query param so browsers treat each upload as a new resource
+if (url) {
+  url = `${url}?v=${Date.now()}`
+}
+
+const { error: updateError } = await supabase
   .from('members')
   .update({ profile_image_url: url })
   .eq('user_id', member.user_id)
+
+if (updateError) {
+  console.error('Profile image DB update failed:', updateError)
+  throw updateError
+}
+
+setMember((prev) => (prev ? { ...prev, profile_image_url: url } : prev))
 
       if (updateError) {
         console.error('Profile image DB update failed:', updateError)
