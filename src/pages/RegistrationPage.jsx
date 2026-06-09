@@ -779,13 +779,13 @@ const s = {
     fontWeight: 600,
     width: '100%',
   },
-  errorBanner: {
+    errorBanner: {
     padding: '10px 12px',
     marginBottom: '4px',
     borderRadius: '6px',
     backgroundColor: '#fef2f2',
     color: '#b91c1c',
-    border: '1px solid '#fecaca',
+    border: '1px solid #fecaca',
     fontSize: '13px',
   },
   successBanner: {
