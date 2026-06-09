@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import {
+  MAP_CATEGORIES,
+  CATEGORY_ICONS_WHITE,
+  CATEGORY_ICONS_ORANGE,
+} from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
@@ -19,7 +23,7 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
 
-  // ── NEW: review prompt hook ───────────────────────────────
+  // ── Review prompt hook ───────────────────────────────
   const {
     open: reviewOpen,
     storeName,
@@ -35,43 +39,65 @@ export default function MemberPage() {
     submitReview,
     skipReview,
   } = useReviewPrompt()
-  // ─────────────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────
 
+  // Load user, member, events, restaurants
   useEffect(() => {
-  const fetchData = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const fetchData = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
 
-    // NEW: derive admin flag from user metadata, same as App.jsx
-    const isAdminUser = user?.user_metadata?.role === 'admin'
+      if (userError || !user) {
+        console.error('auth.getUser error:', userError)
+        setLoading(false)
+        return
+      }
 
-    const { data: memberData } = await supabase
-      .from('members')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
+      // Admin flag from user metadata (same logic as App.jsx)
+      const isAdminUser = user?.user_metadata?.role === 'admin'
 
-    const { data: eventData } = await supabase
-      .from('events')
-      .select('*')
-      .order('event_date', { ascending: true })
+      // Members: maybeSingle() so we don't get a 406 if the admin has no row in members
+      const { data: memberData, error: memberError } = await supabase
+        .from('members')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
 
-    const { data: restaurantData } = await supabase
-      .from('restaurants')
-      .select('*')
-      .order('created_at', { ascending: false })
+      if (memberError) {
+        console.warn('members error (can be normal if no row):', memberError.message)
+      }
 
-    setMember(memberData)
-    setIsAdmin(isAdminUser)
-    setEvents(eventData || [])
-    setRestaurants(restaurantData || [])
-    setLoading(false)
-  }
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('*')
+        .order('event_date', { ascending: true })
 
-  fetchData()
-}, [])
+      if (eventError) {
+        console.error('events error:', eventError.message)
+      }
 
+      const { data: restaurantData, error: restaurantError } = await supabase
+        .from('restaurants')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (restaurantError) {
+        console.error('restaurants error:', restaurantError.message)
+      }
+
+      setMember(memberData || null)
+      setIsAdmin(isAdminUser)
+      setEvents(eventData || [])
+      setRestaurants(restaurantData || [])
+      setLoading(false)
+    }
+
+    fetchData()
+  }, [])
+
+  // Prevent iOS edge-swipe
   useEffect(() => {
     const handler = (e) => {
       if (e.touches[0]?.clientX < 30) e.preventDefault()
@@ -99,9 +125,11 @@ export default function MemberPage() {
     new Date(member.membership_valid_until) >= new Date()
 
   return (
-    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}>
-
-      {/* ── NEW: Review modal — rendered at top level so it floats above all tabs ── */}
+    <div
+      className="flex flex-col bg-gray-50 overflow-hidden"
+      style={{ height: '100dvh' }}
+    >
+      {/* Review modal */}
       <ReviewModal
         open={reviewOpen}
         storeName={storeName}
@@ -117,7 +145,6 @@ export default function MemberPage() {
         onSubmit={submitReview}
         onSkip={skipReview}
       />
-      {/* ──────────────────────────────────────────────────────────────────────── */}
 
       {/* 헤더 */}
       <div
@@ -128,7 +155,9 @@ export default function MemberPage() {
         <div className="flex gap-2">
           {isAdmin && (
             <button
-              onClick={() => { window.location.href = '/admin' }}
+              onClick={() => {
+                window.location.href = '/admin'
+              }}
               className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
             >
               관리자
@@ -146,9 +175,7 @@ export default function MemberPage() {
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
         <div key={tabKey} className="h-full animate-quick-fade-slide-up">
-          {activeTab === 'qr' && (
-  <QRTab member={member} isValid={isValid} />
-)}
+          {activeTab === 'qr' && <QRTab member={member} isValid={isValid} />}
           {activeTab === 'events' && <EventsTab events={events} />}
           {activeTab === 'map' && <MapTab restaurants={restaurants} />}
         </div>
@@ -197,8 +224,7 @@ function QRTab({ member, isValid }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
-
-        {/* ── Greeting card ── */}
+        {/* Greeting card */}
         <div
           className="rounded-3xl p-6 relative overflow-hidden"
           style={{ background: '#f97316' }}
@@ -220,7 +246,7 @@ function QRTab({ member, isValid }) {
             </div>
           </div>
 
-          {/* Name — big and bold, hero element */}
+          {/* Name */}
           <div className="mb-6">
             <h2
               className="text-white font-black leading-none tracking-tight"
@@ -238,10 +264,11 @@ function QRTab({ member, isValid }) {
 
           {/* Bottom row: validity */}
           <div className="flex items-center gap-2">
-            {isValid
-              ? <CheckCircle size={14} weight="fill" color="white" />
-              : <XCircle size={14} weight="fill" color="rgba(255,255,255,0.5)" />
-            }
+            {isValid ? (
+              <CheckCircle size={14} weight="fill" color="white" />
+            ) : (
+              <XCircle size={14} weight="fill" color="rgba(255,255,255,0.5)" />
+            )}
             <span className="text-white text-xs font-medium opacity-80">
               {isValid
                 ? `유효 · ${member?.membership_valid_until?.slice(0, 10) ?? ''}`
@@ -250,10 +277,10 @@ function QRTab({ member, isValid }) {
           </div>
         </div>
 
-        {/* ── Activity stats ── */}
+        {/* Activity stats */}
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
 
-        {/* ── Check-in button ── */}
+        {/* Check-in button */}
         {isValid && (
           <button
             onClick={() => navigate('/scan')}
@@ -263,19 +290,17 @@ function QRTab({ member, isValid }) {
           </button>
         )}
 
-        {/* ── Expired state ── */}
+        {/* Expired state */}
         {!isValid && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center">
             <p className="text-gray-400 text-sm">멤버십이 만료되었습니다.</p>
             <p className="text-gray-400 text-xs mt-1">갱신은 협회에 문의해 주세요.</p>
           </div>
         )}
-
       </div>
     </div>
   )
 }
-
 // ─── Nav Button ───────────────────────────────────────────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
@@ -300,8 +325,12 @@ function NavBtn({ onClick, children, style = {} }) {
         flexShrink: 0,
         ...style,
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(30,30,30,0.92)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(30,30,30,0.7)')}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.background = 'rgba(30,30,30,0.92)')
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.background = 'rgba(30,30,30,0.7)')
+      }
     >
       {children}
     </button>
@@ -324,11 +353,18 @@ function EventsTab({ events }) {
     if (!ev) return
     const imgs = ev['image_urls'] || []
     if (imgs.length <= 1) return
+
     const handler = (e) => {
       if (e.key === 'ArrowRight') {
-        setSlide(expandedId, Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1))
+        setSlide(
+          expandedId,
+          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
+        )
       } else if (e.key === 'ArrowLeft') {
-        setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
+        setSlide(
+          expandedId,
+          Math.max((slideIndexes[expandedId] || 0) - 1, 0),
+        )
       }
     }
     window.addEventListener('keydown', handler)
@@ -350,6 +386,7 @@ function EventsTab({ events }) {
       '' +
       pad(d.getUTCMinutes()) +
       '00Z'
+
     const ics =
       'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' +
       fmt(start) +
@@ -362,6 +399,7 @@ function EventsTab({ events }) {
       '\nDESCRIPTION:' +
       (ev.description || '') +
       '\nEND:VEVENT\nEND:VCALENDAR'
+
     const blob = new Blob([ics], { type: 'text/calendar' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -378,14 +416,19 @@ function EventsTab({ events }) {
     const currentSlide = slideIndexes[ev.id] || 0
 
     return (
-      <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div
+        key={ev.id}
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      >
         <button
           onClick={() => setExpandedId(isExpanded ? null : ev.id)}
           className="w-full text-left p-5"
         >
           <div className="flex items-center justify-between">
             <p className="font-semibold text-gray-900">{ev.title}</p>
-            <span className="text-gray-400 text-sm ml-2">{isExpanded ? '▲' : '▼'}</span>
+            <span className="text-gray-400 text-sm ml-2">
+              {isExpanded ? '▲' : '▼'}
+            </span>
           </div>
           {ev.event_date && (
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
@@ -414,34 +457,65 @@ function EventsTab({ events }) {
           <div>
             {imgs.length > 0 && (
               <div className="px-4">
+                {/* Mobile swiper */}
                 <div
                   className="md:hidden"
-                  onTouchStart={(e) => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
+                  onTouchStart={(e) => {
+                    e.currentTarget._swipeStartX = e.touches[0].clientX
+                  }}
                   onTouchEnd={(e) => {
                     const start = e.currentTarget._swipeStartX
                     if (start == null) return
                     const dx = e.changedTouches[0].clientX - start
                     e.currentTarget._swipeStartX = null
-                    if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
-                    else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
+                    if (dx < -40 && currentSlide < imgs.length - 1)
+                      setSlide(ev.id, currentSlide + 1)
+                    else if (dx > 40 && currentSlide > 0)
+                      setSlide(ev.id, currentSlide - 1)
                   }}
                 >
-                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
+                  <div
+                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    style={{ aspectRatio: '1/1' }}
+                  >
                     <div
                       className="flex h-full"
-                      style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}
+                      style={{
+                        transform: 'translateX(-' + currentSlide * 100 + '%)',
+                        transition: 'transform 0.3s ease',
+                      }}
                     >
                       {imgs.map((url, i) => (
-                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-                          <img src={url} alt={'이미지 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt={'이미지 ' + (i + 1)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            draggable={false}
+                          />
                         </div>
                       ))}
                     </div>
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
-                          <div key={i} onClick={() => setSlide(ev.id, i)}
-                            className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')}
+                          <div
+                            key={i}
+                            onClick={() => setSlide(ev.id, i)}
+                            className={
+                              'rounded-full cursor-pointer transition-all ' +
+                              (i === currentSlide
+                                ? 'bg-white w-2 h-2'
+                                : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                            }
                           />
                         ))}
                       </div>
@@ -449,30 +523,82 @@ function EventsTab({ events }) {
                   </div>
                 </div>
 
+                {/* Desktop controls */}
                 <div className="hidden md:block">
-                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
+                  <div
+                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    style={{ aspectRatio: '1/1' }}
+                  >
                     <div
                       className="flex h-full"
-                      style={{ transform: 'translateX(-' + currentSlide * 100 + '%)', transition: 'transform 0.3s ease' }}
+                      style={{
+                        transform: 'translateX(-' + currentSlide * 100 + '%)',
+                        transition: 'transform 0.3s ease',
+                      }}
                     >
                       {imgs.map((url, i) => (
-                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-                          <img src={url} alt={'이미지 ' + (i + 1)} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt={'이미지 ' + (i + 1)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            draggable={false}
+                          />
                         </div>
                       ))}
                     </div>
+
                     {imgs.length > 1 && (
                       <>
                         {currentSlide > 0 && (
-                          <NavBtn onClick={() => setSlide(ev.id, currentSlide - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}>‹</NavBtn>
+                          <NavBtn
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide - 1)
+                            }
+                            style={{
+                              position: 'absolute',
+                              left: '10px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                            }}
+                          >
+                            ‹
+                          </NavBtn>
                         )}
                         {currentSlide < imgs.length - 1 && (
-                          <NavBtn onClick={() => setSlide(ev.id, currentSlide + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>›</NavBtn>
+                          <NavBtn
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide + 1)
+                            }
+                            style={{
+                              position: 'absolute',
+                              right: '10px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                            }}
+                          >
+                            ›
+                          </NavBtn>
                         )}
                         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                           {imgs.map((_, i) => (
-                            <div key={i} onClick={() => setSlide(ev.id, i)}
-                              className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')}
+                            <div
+                              key={i}
+                              onClick={() => setSlide(ev.id, i)}
+                              className={
+                                'rounded-full cursor-pointer transition-all ' +
+                                (i === currentSlide
+                                  ? 'bg-white w-2 h-2'
+                                  : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                              }
                             />
                           ))}
                         </div>
@@ -485,7 +611,10 @@ function EventsTab({ events }) {
 
             <div className="px-5 pb-5">
               {ev.description && (
-                <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />
+                <RichText
+                  text={ev.description}
+                  className="text-sm text-gray-600 mt-3 leading-relaxed block"
+                />
               )}
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
@@ -504,7 +633,12 @@ function EventsTab({ events }) {
                     rel="noopener noreferrer"
                     className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
                     Instagram 에서 열기
@@ -519,8 +653,12 @@ function EventsTab({ events }) {
   }
 
   const now = new Date()
-  const upcomingEvents = events.filter((ev) => ev.event_date && new Date(ev.event_date) >= now)
-  const pastEvents = events.filter((ev) => ev.event_date && new Date(ev.event_date) < now)
+  const upcomingEvents = events.filter(
+    (ev) => ev.event_date && new Date(ev.event_date) >= now,
+  )
+  const pastEvents = events.filter(
+    (ev) => ev.event_date && new Date(ev.event_date) < now,
+  )
 
   return (
     <div className="h-full overflow-y-auto">
@@ -539,10 +677,19 @@ function EventsTab({ events }) {
                   let currentMonth = null
                   const blocks = []
                   upcomingEvents.forEach((ev) => {
-                    const label = ev.event_date ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
+                    const label = ev.event_date
+                      ? `${new Date(ev.event_date).getMonth() + 1}월`
+                      : '날짜 미정'
                     if (label !== currentMonth) {
                       currentMonth = label
-                      blocks.push(<p key={`month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{label}</p>)
+                      blocks.push(
+                        <p
+                          key={`month-${label}`}
+                          className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                        >
+                          {label}
+                        </p>,
+                      )
                     }
                     blocks.push(renderEvent(ev))
                   })
@@ -554,25 +701,43 @@ function EventsTab({ events }) {
             {pastEvents.length > 0 && (
               <div className="mt-6">
                 <button
-                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+                  onClick={() =>
+                    setPastEventsExpanded(!pastEventsExpanded)
+                  }
                   className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-semibold">지난 이벤트</span>
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">{pastEvents.length}</span>
+                    <span className="text-gray-600 font-semibold">
+                      지난 이벤트
+                    </span>
+                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
+                      {pastEvents.length}
+                    </span>
                   </div>
-                  <span className="text-gray-400 text-lg">{pastEventsExpanded ? '▲' : '▼'}</span>
+                  <span className="text-gray-400 text-lg">
+                    {pastEventsExpanded ? '▲' : '▼'}
+                  </span>
                 </button>
+
                 {pastEventsExpanded && (
                   <div className="space-y-3 mt-3">
                     {(() => {
                       let currentMonth = null
                       const blocks = []
                       pastEvents.forEach((ev) => {
-                        const label = ev.event_date ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
+                        const label = ev.event_date
+                          ? `${new Date(ev.event_date).getMonth() + 1}월`
+                          : '날짜 미정'
                         if (label !== currentMonth) {
                           currentMonth = label
-                          blocks.push(<p key={`past-month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{label}</p>)
+                          blocks.push(
+                            <p
+                              key={`past-month-${label}`}
+                              className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                            >
+                              {label}
+                            </p>,
+                          )
                         }
                         blocks.push(renderEvent(ev))
                       })
@@ -588,7 +753,6 @@ function EventsTab({ events }) {
     </div>
   )
 }
-
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
 
 function MapTab({ restaurants }) {
@@ -600,7 +764,7 @@ function MapTab({ restaurants }) {
       activeCategory === '전체'
         ? restaurants
         : restaurants.filter((r) => r.category === activeCategory),
-    [restaurants, activeCategory]
+    [restaurants, activeCategory],
   )
 
   return (
@@ -609,18 +773,31 @@ function MapTab({ restaurants }) {
       <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
-          const iconSvg = isActive ? CATEGORY_ICONS_WHITE[cat] : CATEGORY_ICONS_ORANGE[cat]
+          const iconSvg = isActive
+            ? CATEGORY_ICONS_WHITE[cat]
+            : CATEGORY_ICONS_ORANGE[cat]
           return (
             <button
               key={cat}
-              onClick={() => { setActiveCategory(cat); setSelected(null) }}
+              onClick={() => {
+                setActiveCategory(cat)
+                setSelected(null)
+              }}
               className={
                 'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
-                (isActive ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+                (isActive
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
               }
             >
               <span
-                style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{
+                  width: 16,
+                  height: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
                 dangerouslySetInnerHTML={{ __html: iconSvg }}
               />
               {cat}
@@ -631,8 +808,14 @@ function MapTab({ restaurants }) {
 
       {/* 지도 */}
       <div className="flex-1 relative overflow-hidden">
-        <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-        {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
+        <MapView
+          restaurants={filtered}
+          selected={selected}
+          onSelect={setSelected}
+        />
+        {selected && (
+          <SpotCard selected={selected} onClose={() => setSelected(null)} />
+        )}
       </div>
     </div>
   )
