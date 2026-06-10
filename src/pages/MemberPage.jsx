@@ -231,7 +231,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
 
-  // ── NON-VALID MEMBERSHIP: dotted card, now in #E0E6D6 ──────────────────────
+  // ── NON-VALID MEMBERSHIP: dotted card ──────────────────────────────────────
   if (!isValid) {
     return (
       <div
@@ -242,7 +242,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           flexShrink: 0,
           borderRadius: '16px',
           border: '2px dashed #cbd5b1',
-          background: '#E0E6D6',
+          background: '#efeddc',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -298,7 +298,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     )
   }
 
-  // ── VALID MEMBERSHIP: minimal front in #E0E6D6 + scanner back ──────────────
+  // ── VALID MEMBERSHIP: front in #efeddc + scanner back ──────────────────────
   const handleToggle = () => {
     setFlipped((f) => !f)
   }
@@ -326,7 +326,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* FRONT SIDE (NEW RESET DESIGN) */}
+        {/* FRONT SIDE */}
         <div
           style={{
             position: 'absolute',
@@ -347,7 +347,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
                 width: '100%',
                 height: '100%',
                 borderRadius: '16px',
-                background: '#E0E6D6',
+                background: '#efeddc',
                 border: '1px solid #cbd5b1',
                 boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
                 display: 'flex',
@@ -358,35 +358,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
                 boxSizing: 'border-box',
               }}
             >
-              <div>
-                <p
-                  style={{
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: '#111827',
-                    fontFamily: '"Alien Block", system-ui, sans-serif',
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Tap to Check‑IN
-                </p>
-                <p
-                  style={{
-                    marginTop: 8,
-                    fontSize: '13px',
-                    color: '#374151',
-                    fontFamily: '"Handjet", system-ui, sans-serif',
-                  }}
-                >
-                  뒤집으면 카메라가 열립니다
-                </p>
-              </div>
+              {/* Card front content — add your design here */}
             </div>
           </div>
         </div>
 
-        {/* BACK SIDE (scanner) – unchanged */}
+        {/* BACK SIDE (scanner) */}
         <div
           style={{
             position: 'absolute',
@@ -433,6 +410,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     </div>
   )
 }
+
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid }) {
