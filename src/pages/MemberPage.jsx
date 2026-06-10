@@ -232,6 +232,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardH = `calc(${W} * 1.586)`
 
   const fs = {
+    // still used for guide text in QRTab, left here for consistency if needed later
     label: `calc(${W} * 0.045)`,
     number: `calc(${W} * 0.075)`,
     valid: `calc(${W} * 0.038)`,
@@ -239,7 +240,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     logo: `calc(${W} * 0.26)`,
   }
 
-  // ── If membership is NOT valid: show dotted outline only ──────────────────
+  // ── NON-VALID MEMBERSHIP: keep dotted-outline design as before ─────────────
   if (!isValid) {
     return (
       <div
@@ -304,7 +305,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     )
   }
 
-  // ── Valid membership: full flip card with scanner ─────────────────────────
+  // ── VALID MEMBERSHIP: new minimal white front + same camera back ───────────
   const handleToggle = () => {
     setFlipped((f) => !f)
   }
@@ -332,7 +333,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* FRONT SIDE (orange membership card) */}
+        {/* FRONT SIDE (NEW: white, portrait, no rotation, no member details) */}
         <div
           style={{
             position: 'absolute',
@@ -344,141 +345,49 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             style={{
               width: '100%',
               height: '100%',
-              position: 'relative',
-              flexShrink: 0,
+              padding: '12px',
+              boxSizing: 'border-box',
             }}
           >
             <div
               style={{
-                position: 'absolute',
-                width: cardH,
-                height: cardW,
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%) rotate(90deg)',
-                transformOrigin: 'center center',
-                background: '#f97316',
+                width: '100%',
+                height: '100%',
                 borderRadius: '16px',
-                color: '#fff',
-                overflow: 'hidden',
-                userSelect: 'none',
+                background: '#ffffff',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
               }}
             >
-              {/* Label */}
-              <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-                <span
+              <div>
+                <p
                   style={{
-                    fontWeight: 700,
-                    fontSize: fs.label,
-                    letterSpacing: '0.08em',
-                  }}
-                >
-                  UvA-IN BENEFITS
-                </span>
-              </div>
-
-              {/* Card number */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '24%',
-                  left: '7%',
-                  right: '7%',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'monospace',
-                    fontSize: fs.number,
-                    fontWeight: 700,
-                    letterSpacing: '0.12em',
-                    textShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                  }}
-                >
-                  {`${String(member?.student_number ?? '00000000').slice(0, 4)} ${String(
-                    member?.student_number ?? '00000000'
-                  ).slice(4, 8)} XXXX ${member?.year_of_birth ?? '????'}`}
-                </div>
-              </div>
-
-              {/* Valid Until */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '16%',
-                  left: 0,
-                  right: 0,
-                  textAlign: 'center',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: fs.valid,
-                    fontWeight: 500,
-                    opacity: 0.9,
-                  }}
-                >
-                  Valid Until:{' '}
-                  {member?.membership_valid_until
-                    ? (() => {
-                        const d = new Date(member.membership_valid_until)
-                        return `${String(d.getDate()).padStart(2, '0')}/${String(
-                          d.getMonth() + 1
-                        ).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
-                      })()
-                    : 'N/A'}
-                </div>
-              </div>
-
-              {/* Name */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '8%',
-                  left: '7%',
-                }}
-              >
-                <div
-                  style={{
+                    fontSize: '15px',
                     fontWeight: 600,
-                    fontSize: fs.name,
-                    letterSpacing: '0.04em',
+                    color: '#111827',
                   }}
                 >
-                  {member?.first_name} {member?.last_name}
-                </div>
-              </div>
-
-              {/* Logo */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '5%',
-                  right: '4%',
-                  width: fs.logo,
-                  height: fs.logo,
-                  borderRadius: '50%',
-                  border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
-                  overflow: 'hidden',
-                  flexShrink: 0,
-                }}
-              >
-                <img
-                  src="/UvA-IN-logo-transparent.png"
-                  alt="UvA-IN logo"
+                  탭해서 Check-IN 하기
+                </p>
+                <p
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    display: 'block',
+                    marginTop: 6,
+                    fontSize: '12px',
+                    color: '#6b7280',
                   }}
-                />
+                >
+                  뒤집으면 카메라가 열립니다
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* BACK SIDE (scanner) */}
+        {/* BACK SIDE (scanner) — unchanged */}
         <div
           style={{
             position: 'absolute',
