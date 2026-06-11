@@ -223,103 +223,126 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
-// ─── Membership Card ───────────────────────────────────────────────────────────
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
-
   const W = 'calc(100vw - 32px)'
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
-
   const fs = {
     brand: `calc(${W} * 0.038)`,
     valid: `calc(${W} * 0.032)`,
     name: `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.152)`,
   }
-
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
-
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
-const MetalFrame = ({ children }) => (
-  <div
-    style={{
-      width: '100%',
-      height: '100%',
-      borderRadius: '28px',
-      padding: '4px',
-      boxSizing: 'border-box',
-      background: '#c5c5c5',
-      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-      position: 'relative',
-      overflow: 'visible',
-    }}
-  >
-    {/* Left grip handle */}
+  const MetalFrame = ({ children }) => (
     <div
       style={{
-        position: 'absolute',
-        top: '50%',
-        left: '-6px',
-        transform: 'translateY(-50%)',
-        width: '12px',
-        height: '48%',
-        borderRadius: '6px',
-        background: '#b8b8b8',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-      }}
-    />
-    
-    {/* Right grip handle */}
-    <div
-      style={{
-        position: 'absolute',
-        top: '50%',
-        right: '-6px',
-        transform: 'translateY(-50%)',
-        width: '12px',
-        height: '48%',
-        borderRadius: '6px',
-        background: '#b8b8b8',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-      }}
-    />
-
-    {/* Subtle brushed texture */}
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        borderRadius: '28px',
-        backgroundImage:
-          'repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 2px)',
-        opacity: 0.5,
-        pointerEvents: 'none',
-      }}
-    />
-
-    {/* Inner card surface */}
-    <div
-      style={{
-        position: 'relative',
         width: '100%',
         height: '100%',
-        borderRadius: '24px',
-        background: '#F6F4F1',
-        border: '1px solid #d6d3c0',
+        borderRadius: '28px',
+        padding: '4px',
         boxSizing: 'border-box',
-        overflow: 'hidden',
+        background: '#c5c5c5',
+        boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+        position: 'relative',
+        overflow: 'visible',
       }}
     >
-      {children}
+      {/* Top tab with pill-shaped hole */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '-12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '60px',
+          height: '16px',
+          background: '#c5c5c5',
+          borderRadius: '8px 8px 0 0',
+          boxShadow: '0 -2px 4px rgba(0,0,0,0.15)',
+          zIndex: 5,
+        }}
+      >
+        {/* Pill-shaped hole */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '2px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '40px',
+            height: '10px',
+            background: '#F6F4F1',
+            borderRadius: '5px',
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
+          }}
+        />
+      </div>
+
+      {/* Left side rail — positioned INSIDE the card */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '12%',
+          left: '2px',
+          width: '8px',
+          height: '76%',
+          borderRadius: '4px',
+          background: '#b8b8b8',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2)',
+        }}
+      />
+
+      {/* Right side rail — positioned INSIDE the card */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '12%',
+          right: '2px',
+          width: '8px',
+          height: '76%',
+          borderRadius: '4px',
+          background: '#b8b8b8',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2)',
+        }}
+      />
+
+      {/* Subtle brushed texture */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: '28px',
+          backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 2px)',
+          opacity: 0.5,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Inner card surface */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          borderRadius: '24px',
+          background: '#F6F4F1',
+          border: '1px solid #d6d3c0',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
+        }}
+      >
+        {children}
+      </div>
     </div>
-  </div>
-)
+  )
 
   const cardFront = (
     <MetalFrame>
@@ -368,14 +391,9 @@ const MetalFrame = ({ children }) => (
                 }}
               />
             ) : (
-              <UserCircle
-                size="72%"
-                weight="fill"
-                color="rgba(44,42,39,0.55)"
-              />
+              <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
             )}
           </div>
-
           <div
             style={{
               display: 'flex',
@@ -410,9 +428,7 @@ const MetalFrame = ({ children }) => (
             >
               Valid Until{' '}
               {member?.membership_valid_until
-                ? new Date(
-                    member.membership_valid_until,
-                  ).toLocaleDateString('en-CA')
+                ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
                 : 'N/A'}
             </span>
             <span
@@ -511,11 +527,7 @@ const MetalFrame = ({ children }) => (
                 gap: `calc(${W} * 0.02)`,
               }}
             >
-              <QrCode
-                size={`calc(${W} * 0.1)`}
-                weight="bold"
-                color="rgba(44,42,39,0.25)"
-              />
+              <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
               <span
                 style={{
                   fontFamily: '"Handjet", system-ui, sans-serif',
@@ -551,7 +563,7 @@ const MetalFrame = ({ children }) => (
     </MetalFrame>
   )
 
-  // ── NON-VALID ───────────────────────────────────────────────────────────────
+  // ── NON-VALID ─────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
       <div
@@ -624,7 +636,7 @@ const MetalFrame = ({ children }) => (
     )
   }
 
-  // ── VALID: flip card ────────────────────────────────────────────────────────
+  // ── VALID: flip card ──────────────────────────────────────────────────────
   return (
     <div
       style={{
