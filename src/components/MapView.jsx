@@ -1,54 +1,100 @@
 import { useEffect, useRef } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import * as maptilersdk from '@maptiler/sdk'
+import '@maptiler/sdk/dist/maptiler-sdk.css'
 import { getMapIconSvg } from '../lib/mapCategories'
 import { MapPin } from '@phosphor-icons/react'
 
+// Set your API key
+maptilersdk.config.apiKey = import.meta.env.VITE_MAPTILER_API_KEY
+
 export default function MapView({ restaurants, selected, onSelect }) {
-  const mapRef = useRef(null)
-  const mapInstanceRef = useRef(null)
+  const mapContainer = useRef(null)
+  const map = useRef(null)
   const markersRef = useRef([])
   const markerDataRef = useRef([])
   const initializedRef = useRef(false)
 
-  // ─── Helper: build marker HTML ───────────────────────────────────────────
-  const createMarkerHtml = (r, isSelected = false) => {
+  // ─── Helper: Create marker element ──────────────────────────────────────
+  const createMarkerElement = (r, isSelected = false) => {
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
     const bg = isSponsored ? '#f97316' : 'white'
     const border = isSponsored
       ? '3px solid white'
       : isSelected
-      ? '3px solid #f97316'
-      : '2px solid #e5e7eb'
+        ? '3px solid #f97316'
+        : '2px solid #e5e7eb'
     const shadow = isSelected
       ? '0 3px 12px rgba(249,115,22,0.5)'
       : isSponsored
-      ? '0 3px 12px rgba(249,115,22,0.4)'
-      : '0 2px 6px rgba(0,0,0,0.15)'
+        ? '0 3px 12px rgba(249,115,22,0.4)'
+        : '0 2px 6px rgba(0,0,0,0.15)'
     const displayName = r.map_label || r.name || ''
     const name =
       displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
     const iconColor = isSponsored ? 'white' : '#f97316'
     const iconSvg = getMapIconSvg(r.category, iconColor)
 
-    return (
-      '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
-      '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg +
-      ';border:' + border + ';border-radius:50%;display:flex;align-items:center;' +
-      'justify-content:center;box-shadow:' + shadow + ';flex-shrink:0;">' +
-      '<div style="width:' + (isSponsored ? 24 : 16) + 'px;height:' +
-      (isSponsored ? 24 : 16) + 'px;display:flex;align-items:center;justify-content:center;">' +
-      iconSvg + '</div></div>' +
-      '<div style="background:white;color:#374151;font-size:9px;font-weight:600;' +
-      'padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);' +
-      'max-width:90px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div></div>'
-    )
+    const el = document.createElement('div')
+    el.className = 'custom-marker'
+    el.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+    `
+
+    const markerCircle = document.createElement('div')
+    markerCircle.style.cssText = `
+      width: ${size}px;
+      height: ${size}px;
+      background: ${bg};
+      border: ${border};
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: ${shadow};
+      flex-shrink: 0;
+    `
+
+    const iconContainer = document.createElement('div')
+    iconContainer.style.cssText = `
+      width: ${isSponsored ? 24 : 16}px;
+      height: ${isSponsored ? 24 : 16}px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `
+    iconContainer.innerHTML = iconSvg
+    markerCircle.appendChild(iconContainer)
+
+    const label = document.createElement('div')
+    label.style.cssText = `
+      background: white;
+      color: #374151;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 1px 4px;
+      border-radius: 4px;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `
+    label.textContent = name
+
+    el.appendChild(markerCircle)
+    el.appendChild(label)
+
+    return el
   }
 
-  // ─── Render all markers (only called when the list changes) ──────────────
-  const renderMarkers = (map, data) => {
-    if (!map) return
+  // ─── Render all markers ────────────────────────────────────────────────
+  const renderMarkers = (mapInstance, data) => {
+    if (!mapInstance) return
 
     // Guard: skip if IDs haven't changed
     const newIds = (data || [])
@@ -59,7 +105,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     if (newIds === oldIds) return
 
     // Remove old markers
-    markersRef.current.forEach((m) => m.remove())
+    markersRef.current.forEach((marker) => marker.remove())
     markersRef.current = []
     markerDataRef.current = []
 
@@ -71,126 +117,141 @@ export default function MapView({ restaurants, selected, onSelect }) {
     )
 
     sorted.forEach((r) => {
-      const size = r.is_sponsored ? 42 : 34
-      const iconWidth = size + 20
-      const iconHeight = size + 28
+      const el = createMarkerElement(r, false)
+      const marker = new maptilersdk.Marker({ element: el })
+        .setLngLat([r.longitude, r.latitude])
+        .addTo(mapInstance)
 
-      const markerIcon = L.divIcon({
-        className: 'custom-marker',
-        html: createMarkerHtml(r, false),
-        iconSize: [iconWidth, iconHeight],
-        iconAnchor: [iconWidth / 2, size / 2],
-        popupAnchor: [0, -(size / 2)],
-      })
+      el.addEventListener('click', () => onSelect(r))
 
-      const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
-      m.on('click', () => onSelect(r))
-      // Track selection state on the marker object itself
-      m._isSelected = false
-      markersRef.current.push(m)
-      markerDataRef.current.push({ r, marker: m })
+      marker._isSelected = false
+      marker._restaurant = r
+      markersRef.current.push(marker)
+      markerDataRef.current.push({ r, marker })
     })
 
+    // Fit bounds
     if (valid.length === 1) {
-      map.setView([valid[0].latitude, valid[0].longitude], 15)
+      mapInstance.flyTo({
+        center: [valid[0].longitude, valid[0].latitude],
+        zoom: 15,
+        duration: 1000,
+      })
     } else if (valid.length > 1) {
-      const bounds = L.latLngBounds(valid.map((r) => [r.latitude, r.longitude]))
-      map.fitBounds(bounds, { padding: [40, 40] })
+      const bounds = valid.reduce(
+        (b, r) => b.extend([r.longitude, r.latitude]),
+        new maptilersdk.LngLatBounds(
+          [valid[0].longitude, valid[0].latitude],
+          [valid[0].longitude, valid[0].latitude]
+        )
+      )
+      mapInstance.fitBounds(bounds, { padding: 40, duration: 1000 })
     }
   }
 
-  // ─── Initialize map once ─────────────────────────────────────────────────
+  // ─── Initialize map once ──────────────────────────────────────────────
   useEffect(() => {
-    if (initializedRef.current || !mapRef.current) return
+    if (initializedRef.current || !mapContainer.current) return
     initializedRef.current = true
 
-    const map = L.map(mapRef.current, {
-      zoomControl: false,
-      scrollWheelZoom: true,
-      dragging: true,
-      tap: true,
-    }).setView([52.3676, 4.9041], 13)
+    map.current = new maptilersdk.Map({
+      container: mapContainer.current,
+      style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${import.meta.env.VITE_MAPTILER_API_KEY}`,
+      center: [4.9041, 52.3676],
+      zoom: 13,
+    })
 
-    L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      { attribution: '© OpenStreetMap © CARTO', maxZoom: 19 }
-    ).addTo(map)
+    map.current.addControl(new maptilersdk.FullscreenControl())
+    map.current.addControl(new maptilersdk.NavigationControl())
+    map.current.addControl(new maptilersdk.GeolocateControl())
 
-    L.control.zoom({ position: 'bottomright' }).addTo(map)
-    mapInstanceRef.current = map
+    return () => {
+      // Cleanup on unmount if needed
+    }
   }, [])
 
-  // ─── Re-render markers when restaurants list changes ─────────────────────
+  // ─── Re-render markers when restaurants list changes ──────────────────
   useEffect(() => {
-    if (!mapInstanceRef.current) return
-    renderMarkers(mapInstanceRef.current, restaurants)
+    if (!map.current) return
+    renderMarkers(map.current, restaurants)
   }, [restaurants])
 
-  // ─── Update ONLY the 2 affected markers when selection changes ───────────
+  // ─── Update ONLY the affected markers when selection changes ──────────
   useEffect(() => {
-    if (!mapInstanceRef.current) return
+    if (!map.current) return
 
     markerDataRef.current.forEach(({ r, marker }) => {
       const isSelected = !!(selected && r.id === selected.id)
 
-      // Skip if selection state hasn't changed for this marker
       if (marker._isSelected === isSelected) return
+
       marker._isSelected = isSelected
+      const newEl = createMarkerElement(r, isSelected)
+      marker.setElement(newEl)
 
-      const size = r.is_sponsored ? 42 : 34
-      const iconWidth = size + 20
-      const iconHeight = size + 28
-
-      marker.setIcon(
-        L.divIcon({
-          className: 'custom-marker',
-          html: createMarkerHtml(r, isSelected),
-          iconSize: [iconWidth, iconHeight],
-          iconAnchor: [iconWidth / 2, size / 2],
-          popupAnchor: [0, -(size / 2)],
-        })
-      )
+      // Re-attach click listener
+      newEl.addEventListener('click', () => onSelect(r))
     })
   }, [selected])
 
-  // ─── Pan to selected spot ─────────────────────────────────────────────────
+  // ─── Pan to selected spot ──────────────────────────────────────────────
   useEffect(() => {
-    if (!mapInstanceRef.current || !selected) return
-    mapInstanceRef.current.setView(
-      [selected.latitude, selected.longitude],
-      16,
-      { animate: true }
-    )
+    if (!map.current || !selected) return
+    map.current.flyTo({
+      center: [selected.longitude, selected.latitude],
+      zoom: 16,
+      duration: 1000,
+    })
   }, [selected])
 
-  // ─── Locate me button ─────────────────────────────────────────────────────
+  // ─── Locate me button ──────────────────────────────────────────────────
   const locateMe = () => {
-    const map = mapInstanceRef.current
-    if (!map) return
+    if (!map.current) return
 
-    map.locate({ setView: true, maxZoom: 16 })
-    map.once('locationfound', (e) => {
-      L.circleMarker(e.latlng, {
-        radius: 8,
-        fillColor: '#f97316',
-        color: 'white',
-        weight: 2,
-        fillOpacity: 1,
-      })
-        .addTo(map)
-        .bindPopup('현재 위치')
-        .openPopup()
-    })
-    map.once('locationerror', () => {
-      alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
-    })
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          map.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 16,
+            duration: 1000,
+          })
+
+          // Add a marker for current location
+          const el = document.createElement('div')
+          el.style.cssText = `
+            width: 16px;
+            height: 16px;
+            background: #f97316;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          `
+          new maptilersdk.Marker({ element: el })
+            .setLngLat([longitude, latitude])
+            .setPopup(new maptilersdk.Popup().setText('현재 위치'))
+            .addTo(map.current)
+            .getPopup()
+            .addTo(map.current)
+        },
+        () => {
+          alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
+        }
+      )
+    }
   }
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '300px' }}>
       <div
-        ref={mapRef}
-        style={{ width: '100%', height: '100%', minHeight: '300px', zIndex: 1 }}
+        ref={mapContainer}
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: '300px',
+          zIndex: 1,
+        }}
       />
       <button
         onClick={locateMe}
