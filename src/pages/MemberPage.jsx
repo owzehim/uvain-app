@@ -223,7 +223,6 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
-// ─── Membership Card ─────────────────────────────────────────────────────────
 // ─── Membership Card ───────────────────────────────────────────────────────────
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
@@ -247,85 +246,81 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
-  // Metal frame wrapper
-  const MetalFrame = ({ children }) => (
+  /// Metal frame wrapper - matching your photo
+const MetalFrame = ({ children }) => (
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      borderRadius: '28px',
+      padding: '4px',
+      boxSizing: 'border-box',
+      background: '#c5c5c5',
+      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+      position: 'relative',
+      overflow: 'visible',
+    }}
+  >
+    {/* Left grip handle */}
     <div
       style={{
+        position: 'absolute',
+        top: '50%',
+        left: '-6px',
+        transform: 'translateY(-50%)',
+        width: '12px',
+        height: '48%',
+        borderRadius: '6px',
+        background: '#b8b8b8',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      }}
+    />
+    
+    {/* Right grip handle */}
+    <div
+      style={{
+        position: 'absolute',
+        top: '50%',
+        right: '-6px',
+        transform: 'translateY(-50%)',
+        width: '12px',
+        height: '48%',
+        borderRadius: '6px',
+        background: '#b8b8b8',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      }}
+    />
+
+    {/* Subtle brushed texture */}
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        borderRadius: '28px',
+        backgroundImage:
+          'repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 2px)',
+        opacity: 0.5,
+        pointerEvents: 'none',
+      }}
+    />
+
+    {/* Inner card surface */}
+    <div
+      style={{
+        position: 'relative',
         width: '100%',
         height: '100%',
-        borderRadius: '26px',
-        padding: '3px',
+        borderRadius: '24px',
+        background: '#F6F4F1',
+        border: '1px solid #d6d3c0',
         boxSizing: 'border-box',
-        background:
-          'linear-gradient(145deg, #f7f7f7 0%, #d3d3d3 35%, #f2f2f2 70%, #bfbfbf 100%)',
-        boxShadow:
-          '0 18px 40px rgba(15, 23, 42, 0.45), 0 0 0 1px rgba(255,255,255,0.65)',
-        position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Left handle */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '-4px',
-          transform: 'translateY(-50%)',
-          width: '12px',
-          height: '46%',
-          borderRadius: '999px',
-          background:
-            'linear-gradient(90deg, #bcbcbc 0%, #f0f0f0 50%, #bababa 100%)',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.6)',
-        }}
-      />
-      {/* Right handle */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          right: '-4px',
-          transform: 'translateY(-50%)',
-          width: '12px',
-          height: '46%',
-          borderRadius: '999px',
-          background:
-            'linear-gradient(90deg, #bababa 0%, #f0f0f0 50%, #bcbcbc 100%)',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.6)',
-        }}
-      />
-
-      {/* Brushed metal texture overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage:
-            'repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0px, rgba(255,255,255,0.16) 1px, rgba(255,255,255,0.02) 1px, rgba(255,255,255,0.02) 4px)',
-          opacity: 0.75,
-          mixBlendMode: 'soft-light',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Inner card surface */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
-          borderRadius: '22px',
-          background: 'linear-gradient(180deg, #fbfbfb 0%, #f3f4f6 100%)',
-          border: '1px solid rgba(255,255,255,0.9)',
-          boxSizing: 'border-box',
-          overflow: 'hidden',
-        }}
-      >
-        {children}
-      </div>
+      {children}
     </div>
-  )
-
+  </div>
+)
   const cardFront = (
     <MetalFrame>
       <div
