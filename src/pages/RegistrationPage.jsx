@@ -9,207 +9,30 @@ import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
 
 const COUNTRIES = [
-  'Afghanistan',
-  'Albania',
-  'Algeria',
-  'Andorra',
-  'Angola',
-  'Argentina',
-  'Armenia',
-  'Australia',
-  'Austria',
-  'Azerbaijan',
-  'Bahamas',
-  'Bahrain',
-  'Bangladesh',
-  'Barbados',
-  'Belarus',
-  'Belgium',
-  'Belize',
-  'Benin',
-  'Bhutan',
-  'Bolivia',
-  'Bosnia and Herzegovina',
-  'Botswana',
-  'Brazil',
-  'Brunei',
-  'Bulgaria',
-  'Burkina Faso',
-  'Burundi',
-  'Cambodia',
-  'Cameroon',
-  'Canada',
-  'Cape Verde',
-  'Central African Republic',
-  'Chad',
-  'Chile',
-  'China',
-  'Colombia',
-  'Comoros',
-  'Congo',
-  'Costa Rica',
-  'Croatia',
-  'Cuba',
-  'Cyprus',
-  'Czech Republic',
-  'Czechia',
-  'Denmark',
-  'Djibouti',
-  'Dominica',
-  'Dominican Republic',
-  'Ecuador',
-  'Egypt',
-  'El Salvador',
-  'Equatorial Guinea',
-  'Eritrea',
-  'Estonia',
-  'Eswatini',
-  'Ethiopia',
-  'Fiji',
-  'Finland',
-  'France',
-  'Gabon',
-  'Gambia',
-  'Georgia',
-  'Germany',
-  'Ghana',
-  'Greece',
-  'Grenada',
-  'Guatemala',
-  'Guinea',
-  'Guinea-Bissau',
-  'Guyana',
-  'Haiti',
-  'Honduras',
-  'Hungary',
-  'Iceland',
-  'India',
-  'Indonesia',
-  'Iran',
-  'Iraq',
-  'Ireland',
-  'Israel',
-  'Italy',
-  'Jamaica',
-  'Japan',
-  'Jordan',
-  'Kazakhstan',
-  'Kenya',
-  'Kiribati',
-  'Kosovo',
-  'Kuwait',
-  'Kyrgyzstan',
-  'Laos',
-  'Latvia',
-  'Lebanon',
-  'Lesotho',
-  'Liberia',
-  'Libya',
-  'Liechtenstein',
-  'Lithuania',
-  'Luxembourg',
-  'Madagascar',
-  'Malawi',
-  'Malaysia',
-  'Maldives',
-  'Mali',
-  'Malta',
-  'Marshall Islands',
-  'Mauritania',
-  'Mauritius',
-  'Mexico',
-  'Micronesia',
-  'Moldova',
-  'Monaco',
-  'Mongolia',
-  'Montenegro',
-  'Morocco',
-  'Mozambique',
-  'Myanmar',
-  'Namibia',
-  'Nauru',
-  'Nepal',
-  'Netherlands',
-  'New Zealand',
-  'Nicaragua',
-  'Niger',
-  'Nigeria',
-  'North Korea',
-  'North Macedonia',
-  'Norway',
-  'Oman',
-  'Pakistan',
-  'Palau',
-  'Palestine',
-  'Panama',
-  'Papua New Guinea',
-  'Paraguay',
-  'Peru',
-  'Philippines',
-  'Poland',
-  'Portugal',
-  'Qatar',
-  'Romania',
-  'Russia',
-  'Rwanda',
-  'Saint Kitts and Nevis',
-  'Saint Lucia',
-  'Saint Vincent and the Grenadines',
-  'Samoa',
-  'San Marino',
-  'Sao Tome and Principe',
-  'Saudi Arabia',
-  'Senegal',
-  'Serbia',
-  'Seychelles',
-  'Sierra Leone',
-  'Singapore',
-  'Slovakia',
-  'Slovenia',
-  'Solomon Islands',
-  'Somalia',
-  'South Africa',
-  'South Korea',
-  'South Sudan',
-  'Spain',
-  'Sri Lanka',
-  'Sudan',
-  'Suriname',
-  'Sweden',
-  'Switzerland',
-  'Syria',
-  'Taiwan',
-  'Tajikistan',
-  'Tanzania',
-  'Thailand',
-  'Timor-Leste',
-  'Togo',
-  'Tonga',
-  'Trinidad and Tobago',
-  'Tunisia',
-  'Turkey',
-  'Turkmenistan',
-  'Tuvalu',
-  'Uganda',
-  'Ukraine',
-  'United Arab Emirates',
-  'United Kingdom',
-  'United States',
-  'Uruguay',
-  'Uzbekistan',
-  'Vanuatu',
-  'Vatican City',
-  'Venezuela',
-  'Vietnam',
-  'Yemen',
-  'Zambia',
-  'Zimbabwe',
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
+  'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia',
+  'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada',
+  'Cape Verde', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Croatia',
+  'Cuba', 'Cyprus', 'Czech Republic', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt',
+  'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon',
+  'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
+  'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel',
+  'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan',
+  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar',
+  'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia',
+  'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal',
+  'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman', 'Pakistan',
+  'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar',
+  'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino',
+  'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia',
+  'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden',
+  'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago',
+  'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States',
+  'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe',
 ];
 
 const GENDERS = ['female', 'male', 'non-binary', 'prefer not to say'];
-
 const UNIVERSITY_OPTIONS = ['University of Amsterdam (UvA)'];
-
 const MAJOR_OPTIONS = [
   'Business Administration',
   'Business Analytics',
@@ -224,22 +47,11 @@ const MAJOR_OPTIONS = [
 // Sorted versions for typeahead
 const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b));
-const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) =>
-  a.localeCompare(b)
-);
-const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) =>
-  a.localeCompare(b)
-);
+const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b));
+const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) => a.localeCompare(b));
 
-// ── Typeahead select component ──────────────────────────────────────────────
-
-function TypeaheadSelect({
-  name,
-  value,
-  onChange,
-  options,
-  placeholder = '',
-}) {
+// ── Typeahead select component ────────────────────────────────────────────────
+function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
   const [inputValue, setInputValue] = useState(value || '');
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -274,7 +86,6 @@ function TypeaheadSelect({
     const val = e.target.value;
     setInputValue(val);
     setOpen(true);
-
     if (val === '') {
       onChange({ target: { name, value: '' } });
     }
@@ -311,8 +122,7 @@ function TypeaheadSelect({
   );
 }
 
-// ── Main component ──────────────────────────────────────────────────────────
-
+// ── Main component ────────────────────────────────────────────────────────────
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const {
@@ -346,20 +156,13 @@ export default function RegistrationPage() {
                 margin: 0,
               }}
             >
-              We sent a confirmation link to
-              <br />
+              We sent a confirmation link to <br />
               <strong style={{ color: '#111827' }}>{formData.email}</strong>
               <br />
-              Please open that email, verify your address, then come back
-              and log in.
+              Please open that email, verify your address, then come back and log in.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            style={s.submitBtn}
-          >
+          <button type="button" onClick={() => navigate('/login')} style={s.submitBtn}>
             Go to login
           </button>
         </div>
@@ -372,10 +175,9 @@ export default function RegistrationPage() {
       <div style={s.card}>
         {/* Header */}
         <div style={s.header}>
-          <h1 style={s.title}>Create your SPOT account</h1>
+          <h1 style={s.title}>Account Register</h1>
           <p style={s.subtitle}>
-            Your membership will be <strong>inactive</strong> after
-            registration. The board will activate it once verified.
+            Your membership will be <strong>inactive</strong> after registration. The board will activate it once verified.
           </p>
         </div>
 
@@ -385,11 +187,7 @@ export default function RegistrationPage() {
         {error && <div style={s.errorBanner}>{error}</div>}
 
         {step === 'about' && (
-          <AboutStep
-            formData={formData}
-            handleChange={handleChange}
-            goNext={goNext}
-          />
+          <AboutStep formData={formData} handleChange={handleChange} goNext={goNext} />
         )}
 
         {step === 'academic' && (
@@ -421,8 +219,7 @@ export default function RegistrationPage() {
   );
 }
 
-// ── Step indicator ───────────────────────────────────────────────────────────
-
+// ── Step indicator ─────────────────────────────────────────────────────────────
 function StepIndicator({ currentStep }) {
   const steps = [
     { key: 'about', label: 'About you', number: 1 },
@@ -437,11 +234,7 @@ function StepIndicator({ currentStep }) {
       {steps.map((step, i) => {
         const active = i === activeIndex;
         const completed = i < activeIndex;
-        const bg = completed
-          ? '#22c55e'
-          : active
-          ? '#f97316'
-          : '#e5e7eb';
+        const bg = completed ? '#22c55e' : active ? '#f97316' : '#e5e7eb';
         const color = completed || active ? '#ffffff' : '#6b7280';
 
         return (
@@ -471,15 +264,23 @@ function StepIndicator({ currentStep }) {
   );
 }
 
-// ── Step 1: About you ───────────────────────────────────────────────────────
-
+// ── Step 1: About you ──────────────────────────────────────────────────────────
 function AboutStep({ formData, handleChange, goNext }) {
+  // Check if all required fields are filled
+  const isComplete =
+    formData.firstName.trim() &&
+    formData.lastName.trim() &&
+    formData.firstNameKorean.trim() &&
+    formData.lastNameKorean.trim() &&
+    formData.gender &&
+    formData.countryOfOrigin;
+
   return (
     <div style={s.form}>
       <SectionTitle>About you</SectionTitle>
 
       <Row>
-        <Field label="First name *">
+        <Field label="First name (English) *">
           <input
             name="firstName"
             value={formData.firstName}
@@ -487,7 +288,7 @@ function AboutStep({ formData, handleChange, goNext }) {
             style={s.input}
           />
         </Field>
-        <Field label="Last name *">
+        <Field label="Last name (English) *">
           <input
             name="lastName"
             value={formData.lastName}
@@ -496,6 +297,29 @@ function AboutStep({ formData, handleChange, goNext }) {
           />
         </Field>
       </Row>
+
+      <Row>
+        <Field label="First name (Korean) *">
+          <input
+            name="firstNameKorean"
+            value={formData.firstNameKorean}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+        <Field label="Last name (Korean) *">
+          <input
+            name="lastNameKorean"
+            value={formData.lastNameKorean}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+      </Row>
+
+      <p style={s.helperText}>
+        💡 If you don't have a Korean name, you may fill both fields in English.
+      </p>
 
       <Row>
         <Field label="Year of birth (optional)">
@@ -531,15 +355,23 @@ function AboutStep({ formData, handleChange, goNext }) {
         />
       </Field>
 
-      <button type="button" onClick={goNext} style={s.submitBtn}>
+      <button
+        type="button"
+        onClick={goNext}
+        disabled={!isComplete}
+        style={{
+          ...s.submitBtn,
+          opacity: isComplete ? 1 : 0.5,
+          cursor: isComplete ? 'pointer' : 'not-allowed',
+        }}
+      >
         Next →
       </button>
     </div>
   );
 }
 
-// ── Step 2: Academic info ───────────────────────────────────────────────────
-
+// ── Step 2: Academic info ──────────────────────────────────────────────────────
 function AcademicStep({
   formData,
   handleChange,
@@ -548,6 +380,13 @@ function AcademicStep({
   goNext,
   goBack,
 }) {
+  // Check if all required fields are filled
+  const isComplete =
+    formData.university &&
+    formData.major &&
+    formData.educationLevel &&
+    (yearOptions.length === 0 || formData.yearNumber);
+
   return (
     <div style={s.form}>
       <SectionTitle>Academic information</SectionTitle>
@@ -619,7 +458,13 @@ function AcademicStep({
         <button
           type="button"
           onClick={goNext}
-          style={{ ...s.submitBtn, flex: 1 }}
+          disabled={!isComplete}
+          style={{
+            ...s.submitBtn,
+            flex: 1,
+            opacity: isComplete ? 1 : 0.5,
+            cursor: isComplete ? 'pointer' : 'not-allowed',
+          }}
         >
           Next →
         </button>
@@ -628,8 +473,7 @@ function AcademicStep({
   );
 }
 
-// ── Step 3: Account & login info ────────────────────────────────────────────
-
+// ── Step 3: Account & login info ───────────────────────────────────────────────
 function AccountStep({
   formData,
   handleChange,
@@ -639,6 +483,14 @@ function AccountStep({
   navigate,
   setProfileFile,
 }) {
+  // Check if all required fields are filled
+  const isComplete =
+    formData.email &&
+    formData.password &&
+    formData.confirmPassword &&
+    formData.password === formData.confirmPassword &&
+    formData.password.length >= 6;
+
   return (
     <form onSubmit={handleSubmit} style={s.form}>
       <SectionTitle>Final step</SectionTitle>
@@ -676,6 +528,12 @@ function AccountStep({
         </Field>
       </Row>
 
+      {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+        <p style={{ ...s.helperText, color: '#dc2626' }}>
+          ⚠️ Passwords do not match
+        </p>
+      )}
+
       <Field label="Profile picture (optional)">
         <input
           type="file"
@@ -698,12 +556,12 @@ function AccountStep({
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !isComplete}
           style={{
             ...s.submitBtn,
             flex: 1,
-            opacity: loading ? 0.6 : 1,
-            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading || !isComplete ? 0.6 : 1,
+            cursor: loading || !isComplete ? 'not-allowed' : 'pointer',
           }}
         >
           {loading ? 'Creating account…' : 'Create account'}
@@ -724,8 +582,7 @@ function AccountStep({
   );
 }
 
-// ── Small layout helpers ─────────────────────────────────────────────────────
-
+// ── Small layout helpers ───────────────────────────────────────────────────────
 function SectionTitle({ children }) {
   return <p style={sectionTitleStyle}>{children}</p>;
 }
@@ -743,8 +600,7 @@ function Field({ label, children }) {
   );
 }
 
-// ── Styles ───────────────────────────────────────────────────────────────────
-
+// ── Styles ─────────────────────────────────────────────────────────────────────
 const sectionTitleStyle = {
   fontSize: '12px',
   fontWeight: 700,
@@ -781,8 +637,7 @@ const s = {
     justifyContent: 'center',
     backgroundColor: '#f9fafb',
     padding: '32px 16px',
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   },
   card: {
     backgroundColor: 'white',
@@ -906,6 +761,12 @@ const s = {
     fontSize: '11px',
     color: '#9ca3af',
     textAlign: 'center',
+  },
+  helperText: {
+    fontSize: '12px',
+    color: '#6b7280',
+    margin: '4px 0 0',
+    fontStyle: 'italic',
   },
   // typeahead styles
   typeaheadContainer: {
