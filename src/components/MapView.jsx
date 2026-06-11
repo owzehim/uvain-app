@@ -5,7 +5,8 @@ import { getMapIconSvg } from '../lib/mapCategories'
 import { MapPin } from '@phosphor-icons/react'
 
 // Set your API key
-maptilersdk.config.apiKey = import.meta.env.VITE_MAPTILER_API_KEY
+const API_KEY = import.meta.env.VITE_MAPTILER_API_KEY
+maptilersdk.config.apiKey = API_KEY
 
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapContainer = useRef(null)
@@ -156,7 +157,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     map.current = new maptilersdk.Map({
       container: mapContainer.current,
-      style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${import.meta.env.VITE_MAPTILER_API_KEY}`,
+      style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${API_KEY}`,
       center: [4.9041, 52.3676],
       zoom: 13,
     })
