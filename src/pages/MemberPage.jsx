@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear } from '@phosphor-icons/react'
+import { QrCode, Calendar, MapPin, Gear, UserCircle } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -223,7 +223,28 @@ export default function MemberPage() {
   )
 }
 
-// ─── Membership Card with Flip Animation & Lazy Camera ──────────────────────
+// ─── Pastel avatar colors (deterministic per user) ───────────────────────────
+const PASTEL_COLORS = [
+  '#FFB3B3', // soft red
+  '#FFD9A0', // soft orange
+  '#FFF3A0', // soft yellow
+  '#B3F0C2', // soft green
+  '#A8D8FF', // soft blue
+  '#C5B3FF', // soft purple
+  '#FFB3E6', // soft pink
+  '#B3F0EE', // soft teal
+]
+
+function getPastelColor(seed) {
+  const str = seed || 'default'
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0
+  }
+  return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
+}
+
+// ─── Membership Card ─────────────────────────────────────────────────────────
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
 
@@ -235,14 +256,11 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     brand:    `calc(${W} * 0.038)`,
     valid:    `calc(${W} * 0.032)`,
     name:     `calc(${W} * 0.052)`,
-    initials: `calc(${W} * 0.065)`,
     wordmark: `calc(${W} * 0.152)`,
   }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
-  const avatarBg = getAvatarColor(avatarSeed)
-  const initials =
-    `${member?.first_name?.[0] || ''}${member?.last_name?.[0] || ''}`.toUpperCase()
+  const pastelBg = getPastelColor(avatarSeed)
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
 
@@ -265,23 +283,18 @@ function MembershipCard({ member, isValid, onQRScanned }) {
       {/* TOP: avatar + info */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
 
-        {/* Avatar circle */}
+        {/* Avatar */}
         <div
           style={{
             width: avatarSize,
             height: avatarSize,
             borderRadius: '50%',
-            background: hasProfileImage ? 'transparent' : avatarBg,
+            background: hasProfileImage ? 'transparent' : pastelBg,
             flexShrink: 0,
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: fs.initials,
-            fontWeight: 700,
-            color: '#ffffff',
-            fontFamily: '"Handjet", system-ui, sans-serif',
-            letterSpacing: '0.04em',
             userSelect: 'none',
           }}
         >
@@ -292,7 +305,11 @@ function MembershipCard({ member, isValid, onQRScanned }) {
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           ) : (
-            initials || '?'
+            <UserCircle
+              size="72%"
+              weight="fill"
+              color="rgba(44,42,39,0.55)"
+            />
           )}
         </div>
 
@@ -332,7 +349,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             fontFamily: '"Handjet", system-ui, sans-serif',
             fontSize: fs.name,
             fontWeight: 800,
-            color: '#2C2A27',
+            color: '#f97316',
             letterSpacing: '0.04em',
             textTransform: 'uppercase',
             marginTop: `calc(${W} * 0.008)`,
@@ -446,7 +463,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           {cardFront}
         </div>
 
-                {/* BACK (scanner) */}
+        {/* BACK (scanner) */}
         <div
           style={{
             position: 'absolute',
@@ -473,8 +490,8 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             {flipped && <QRScanner onScan={onQRScanned} />}
           </div>
         </div>
-        </div>
       </div>
+    </div>
   )
 }
 

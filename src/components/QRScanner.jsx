@@ -26,13 +26,9 @@ export default function QRScanner({ onScan }) {
           (decodedText) => {
             if (!isMounted) return
             if (scannedRef.current) return
-
             scannedRef.current = true
             onScan(decodedText)
-
-            setTimeout(() => {
-              scannedRef.current = false
-            }, 2000)
+            setTimeout(() => { scannedRef.current = false }, 2000)
           },
           () => {}
         )
@@ -77,17 +73,18 @@ export default function QRScanner({ onScan }) {
           border: none !important;
         }
 
-        /* Shaded overlay matches card background instead of black */
+        /* Shaded overlay — card background color #F6F4F1 at 75% opacity */
         #qr-shaded-region {
           border: none !important;
-          box-shadow: 0 0 0 9999px rgba(246, 244, 241, 0.6) !important;
+          box-shadow: 0 0 0 9999px rgba(246, 244, 241, 0.75) !important;
         }
 
+        /* Subtle inner border on the scan box */
         #qr-shaded-region::before {
           content: '';
           position: absolute;
           inset: 0;
-          border: 2.5px solid rgba(44, 42, 39, 0.15);
+          border: 1.5px solid rgba(44, 42, 39, 0.12);
           border-radius: 12px;
           pointer-events: none;
         }
@@ -102,7 +99,7 @@ export default function QRScanner({ onScan }) {
           className="w-full h-full rounded-2xl overflow-hidden"
         />
 
-        {/* Corner brackets — warm charcoal to match card text */}
+        {/* Corner brackets in warm charcoal */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -114,10 +111,10 @@ export default function QRScanner({ onScan }) {
           }}
         >
           {[
-            { top: 0, left: 0, borderTop: true, borderLeft: true, radius: '4px 0 0 0' },
-            { top: 0, right: 0, borderTop: true, borderRight: true, radius: '0 4px 0 0' },
-            { bottom: 0, left: 0, borderBottom: true, borderLeft: true, radius: '0 0 0 4px' },
-            { bottom: 0, right: 0, borderBottom: true, borderRight: true, radius: '0 0 4px 0' },
+            { top: 0,    left: 0,    borderTop: true,    borderLeft: true,  radius: '4px 0 0 0' },
+            { top: 0,    right: 0,   borderTop: true,    borderRight: true, radius: '0 4px 0 0' },
+            { bottom: 0, left: 0,    borderBottom: true, borderLeft: true,  radius: '0 0 0 4px' },
+            { bottom: 0, right: 0,   borderBottom: true, borderRight: true, radius: '0 0 4px 0' },
           ].map((corner, i) => (
             <span
               key={i}
@@ -125,14 +122,14 @@ export default function QRScanner({ onScan }) {
                 position: 'absolute',
                 width: 28,
                 height: 28,
-                ...(corner.top !== undefined && { top: corner.top }),
+                ...(corner.top    !== undefined && { top:    corner.top }),
                 ...(corner.bottom !== undefined && { bottom: corner.bottom }),
-                ...(corner.left !== undefined && { left: corner.left }),
-                ...(corner.right !== undefined && { right: corner.right }),
-                ...(corner.borderTop && { borderTop: '3px solid #2C2A27' }),
+                ...(corner.left   !== undefined && { left:   corner.left }),
+                ...(corner.right  !== undefined && { right:  corner.right }),
+                ...(corner.borderTop    && { borderTop:    '3px solid #2C2A27' }),
                 ...(corner.borderBottom && { borderBottom: '3px solid #2C2A27' }),
-                ...(corner.borderLeft && { borderLeft: '3px solid #2C2A27' }),
-                ...(corner.borderRight && { borderRight: '3px solid #2C2A27' }),
+                ...(corner.borderLeft   && { borderLeft:   '3px solid #2C2A27' }),
+                ...(corner.borderRight  && { borderRight:  '3px solid #2C2A27' }),
                 borderRadius: corner.radius,
               }}
             />
@@ -142,10 +139,23 @@ export default function QRScanner({ onScan }) {
 
       {/* Instruction text */}
       <div className="flex flex-col items-center gap-1 text-center px-4">
-        <p style={{ fontSize: '14px', fontWeight: 600, color: '#2C2A27', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.04em' }}>
+        <p style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#2C2A27',
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          letterSpacing: '0.04em',
+          margin: 0,
+        }}>
           매장 QR 코드를 스캔해주세요
         </p>
-        <p style={{ fontSize: '12px', color: '#9ca3af', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.02em' }}>
+        <p style={{
+          fontSize: '12px',
+          color: 'rgba(44,42,39,0.45)',
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          letterSpacing: '0.02em',
+          margin: 0,
+        }}>
           카메라가 실행되지 않으면 앱을 재시작해주세요
         </p>
       </div>
