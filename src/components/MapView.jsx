@@ -1,16 +1,20 @@
 import { useEffect, useRef } from 'react'
 import * as maptilersdk from '@maptiler/sdk'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
-import '@maptiler/sdk/dist/maptiler-sdk.css'
 
 // Optimize map rendering
 if (typeof window !== 'undefined') {
   const style = document.createElement('style')
   style.textContent = `
     .maplibregl-canvas { image-rendering: optimizeSpeed; }
+    .maplibregl-ctrl-top-left { display: none !important; }
+    .maplibregl-ctrl-top-right { display: none !important; }
+    .maplibregl-ctrl-bottom-left { display: none !important; }
+    .maplibregl-ctrl-bottom-right { display: none !important; }
   `
   document.head.appendChild(style)
 }
+
 import { getMapIconSvg } from '../lib/mapCategories'
 import { MapPin } from '@phosphor-icons/react'
 
@@ -161,29 +165,26 @@ export default function MapView({ restaurants, selected, onSelect }) {
   }
 
   // ─── Initialize map once ──────────────────────────────────────────────
-useEffect(() => {
-  if (initializedRef.current || !mapContainer.current) return
-  initializedRef.current = true
+  useEffect(() => {
+    if (initializedRef.current || !mapContainer.current) return
+    initializedRef.current = true
 
-  // Delay map initialization slightly to let page render first
-  const timer = setTimeout(() => {
     map.current = new maptilersdk.Map({
       container: mapContainer.current,
       style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${API_KEY}`,
       center: [4.9041, 52.3676],
       zoom: 13,
       attributionControl: false,
-      optimizeForTerrain: false, // Disable terrain optimization
-      preserveDrawingBuffer: false, // Disable screenshot capability
+      optimizeForTerrain: false,
+      preserveDrawingBuffer: false,
     })
 
-    map.current.addControl(new maptilersdk.FullscreenControl())
-    map.current.addControl(new maptilersdk.NavigationControl())
-    map.current.addControl(new maptilersdk.GeolocateControl())
-  }, 100)
+    // Don't add any controls - we're hiding them with CSS
 
-  return () => clearTimeout(timer)
-}, [])
+    return () => {
+      // Cleanup if needed
+    }
+  }, [])
 
   // ─── Re-render markers when restaurants list changes ──────────────────
   useEffect(() => {
