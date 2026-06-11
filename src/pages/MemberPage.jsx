@@ -231,6 +231,25 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
 
+  // All font sizes scale relative to card width (100vw - 32px)
+  // Percentages are tuned to match the mockup proportions
+  const fs = {
+    brand:    `calc(${W} * 0.038)`,  // "UvA-IN Membership" label
+    valid:    `calc(${W} * 0.032)`,  // "Valid Until" line
+    name:     `calc(${W} * 0.052)`,  // Full name
+    initials: `calc(${W} * 0.065)`,  // Avatar initials
+    wordmark: `calc(${W} * 0.152)`,  // "UvA-IN" bottom
+  }
+
+  // Avatar: colored background derived from name, white initials
+  const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
+  const avatarBg = getAvatarColor(avatarSeed)
+  const initials =
+    `${member?.first_name?.[0] || ''}${member?.last_name?.[0] || ''}`.toUpperCase()
+
+  // Avatar size also scales with card width
+  const avatarSize = `calc(${W} * 0.19)`
+
   const cardFront = (
     <div
       style={{
@@ -240,7 +259,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         background: '#F6F4F1',
         border: '1px solid #d6d3c0',
         boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-        padding: '24px',
+        padding: `calc(${W} * 0.07)`,
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
@@ -249,33 +268,41 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     >
       {/* TOP: avatar + info */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        {/* Avatar */}
+
+        {/* Avatar circle */}
         <div
           style={{
-            width: '64px',
-            height: '64px',
+            width: avatarSize,
+            height: avatarSize,
             borderRadius: '50%',
-            background: '#d6d3c0',
-            border: '2px solid #b5b29e',
+            background: avatarBg,
             flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '11px',
-            color: '#6b6a5e',
+            fontSize: fs.initials,
+            fontWeight: 700,
+            color: '#ffffff',
             fontFamily: '"Handjet", system-ui, sans-serif',
             letterSpacing: '0.04em',
+            userSelect: 'none',
           }}
         >
-          {member?.first_name?.[0]}{member?.last_name?.[0]}
+          {initials || '?'}
         </div>
 
         {/* Info block */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', textAlign: 'right' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: `calc(${W} * 0.01)`,
+          textAlign: 'right',
+        }}>
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: '13px',
+              fontSize: fs.brand,
               fontWeight: 700,
               color: '#1a1a1a',
               letterSpacing: '0.08em',
@@ -287,12 +314,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: '11px',
+              fontSize: fs.valid,
               fontWeight: 500,
               color: '#6b6a5e',
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              marginTop: '4px',
+              marginTop: `calc(${W} * 0.012)`,
             }}
           >
             Valid Until{' '}
@@ -303,12 +330,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: '18px',
+              fontSize: fs.name,
               fontWeight: 800,
               color: '#1a1a1a',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              marginTop: '2px',
+              marginTop: `calc(${W} * 0.008)`,
             }}
           >
             {member?.first_name} {member?.last_name}
@@ -324,7 +351,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         <span
           style={{
             fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-            fontSize: '52px',
+            fontSize: fs.wordmark,
             fontWeight: 900,
             color: '#1a1a1a',
             letterSpacing: '-0.01em',
@@ -363,7 +390,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
       >
         <span
           style={{
-            fontSize: '13px',
+            fontSize: fs.brand,
             fontWeight: 600,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
@@ -372,15 +399,15 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         >
           UvA-IN MEMBERSHIP
         </span>
-        <span style={{ marginTop: '8px', fontSize: '14px', fontWeight: 500 }}>
+        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
           활성화된 멤버십이 없습니다
         </span>
         {member?.first_name && (
-          <span style={{ marginTop: '4px', fontSize: '13px', color: '#6b7280' }}>
+          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
             {member.first_name} {member.last_name}
           </span>
         )}
-        <span style={{ marginTop: '10px', fontSize: '11px', color: '#9ca3af' }}>
+        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
           멤버십 갱신은 운영진에게 문의해주세요
         </span>
       </div>
@@ -466,6 +493,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     </div>
   )
 }
+
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid }) {
@@ -850,24 +878,12 @@ function QRTab({ member, isValid }) {
             transition: 'opacity 0.25s ease',
           }}
         >
-          <span
-            style={{
-              fontSize: fs.guide,
-              color: 'rgba(0,0,0,0.4)',
-              fontWeight: 500,
-            }}
-          >
-            눌러서 Check-IN 하기
-          </span>
-          <span
-            style={{
-              fontSize: fs.guide,
-              color: 'rgba(0,0,0,0.4)',
-              fontWeight: 500,
-            }}
-          >
-            위로 올려서 이번 달 활동 보기
-          </span>
+          <span style={{ fontSize: fs.guide, color: '#f97316', fontWeight: 500 }}>
+  눌러서 Check-IN 하기
+</span>
+<span style={{ fontSize: fs.guide, color: '#f97316', fontWeight: 500 }}>
+  위로 올려서 이번 달 활동 보기
+</span>
         </div>
       </div>
     </div>
