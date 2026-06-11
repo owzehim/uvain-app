@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import * as maptilersdk from '@maptiler/sdk'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
 
@@ -28,9 +28,10 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const markersRef = useRef(new Map())
   const initializedRef = useRef(false)
   const mapReadyRef = useRef(false)
+  const previousSelectedRef = useRef(null)
 
   // ─── Helper: Create marker element ──────────────────────────────────────
-  const createMarkerElement = (r, isSelected = false) => {
+  const createMarkerElement = useCallback((r, isSelected = false) => {
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
     const bg = isSponsored ? '#f97316' : 'white'
@@ -72,6 +73,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
       justify-content: center;
       box-shadow: ${shadow};
       flex-shrink: 0;
+      transition: all 0.2s ease;
     `
 
     const iconContainer = document.createElement('div')
@@ -105,10 +107,55 @@ export default function MapView({ restaurants, selected, onSelect }) {
     el.appendChild(label)
 
     return el
-  }
+  }, [])
 
-  // ─── Render all markers ──────────────────────────────────────────────
-  const renderMarkers = (data, selectedId = null) => {
+  // ─── Update only the selected marker styling ──────────────────────────
+  const updateMarkerSelection = useCallback(() => {
+    const previousId = previousSelectedRef.current
+    const currentId = selected?.id
+
+    // Only update if selection actually changed
+    if (previousId === currentId) return
+
+    // Update previous marker (if exists)
+    if (previousId) {
+      const prevData = markersRef.current.get(previousId)
+      if (prevData) {
+        const prevRestaurant = restaurants.find((r) => r.id === previousId)
+        if (prevRestaurant) {
+          const newEl = createMarkerElement(prevRestaurant, false)
+          const oldEl = prevData.marker.getElement()
+          if (oldEl && oldEl.parentNode) {
+            oldEl.parentNode.replaceChild(newEl, oldEl)
+            newEl.addEventListener('click', () => onSelect(prevRestaurant))
+            markersRef.current.set(previousId, { marker: prevData.marker, element: newEl })
+          }
+        }
+      }
+    }
+
+    // Update current marker (if exists)
+    if (currentId) {
+      const currData = markersRef.current.get(currentId)
+      if (currData) {
+        const currRestaurant = restaurants.find((r) => r.id === currentId)
+        if (currRestaurant) {
+          const newEl = createMarkerElement(currRestaurant, true)
+          const oldEl = currData.marker.getElement()
+          if (oldEl && oldEl.parentNode) {
+            oldEl.parentNode.replaceChild(newEl, oldEl)
+            newEl.addEventListener('click', () => onSelect(currRestaurant))
+            markersRef.current.set(currentId, { marker: currData.marker, element: newEl })
+          }
+        }
+      }
+    }
+
+    previousSelectedRef.current = currentId
+  }, [selected, restaurants, createMarkerElement, onSelect])
+
+  // ─── Render all markers (only on initial load or restaurant list change) ──
+  const renderMarkers = useCallback((data) => {
     if (!map.current || !mapReadyRef.current) return
 
     // Remove all old markers
@@ -123,8 +170,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     )
 
     sorted.forEach((r) => {
-      const isSelected = selectedId ? r.id === selectedId : false
-      const el = createMarkerElement(r, isSelected)
+      const el = createMarkerElement(r, false)
       const marker = new maptilersdk.Marker({ element: el })
         .setLngLat([r.longitude, r.latitude])
         .addTo(map.current)
@@ -151,7 +197,9 @@ export default function MapView({ restaurants, selected, onSelect }) {
       )
       map.current.fitBounds(bounds, { padding: 40, duration: 1000 })
     }
-  }
+
+    previousSelectedRef.current = null
+  }, [createMarkerElement, onSelect])
 
   // ─── Initialize map once ──────────────────────────────────────────────
   useEffect(() => {
@@ -166,12 +214,14 @@ export default function MapView({ restaurants, selected, onSelect }) {
       attributionControl: false,
       optimizeForTerrain: false,
       preserveDrawingBuffer: false,
+      pitch: 0,
+      bearing: 0,
     })
 
     // Wait for map to be fully loaded before rendering markers
     map.current.on('load', () => {
       mapReadyRef.current = true
-      renderMarkers(restaurants, selected?.id)
+      renderMarkers(restaurants)
     })
 
     return () => {
@@ -179,19 +229,19 @@ export default function MapView({ restaurants, selected, onSelect }) {
     }
   }, [])
 
-  // ─── Re-render markers when restaurants list changes ──────────────────
+  // ─── Re-render markers only when restaurants list changes ──────────────
   useEffect(() => {
     if (mapReadyRef.current) {
-      renderMarkers(restaurants, selected?.id)
+      renderMarkers(restaurants)
     }
-  }, [restaurants])
+  }, [restaurants, renderMarkers])
 
-  // ─── Re-render markers when selection changes ──────────────────────────
+  // ─── Update ONLY selection styling (no full re-render) ──────────────────
   useEffect(() => {
     if (mapReadyRef.current) {
-      renderMarkers(restaurants, selected?.id)
+      updateMarkerSelection()
     }
-  }, [selected])
+  }, [selected, updateMarkerSelection])
 
   // ─── Pan to selected spot ──────────────────────────────────────────────
   useEffect(() => {
