@@ -1,13 +1,8 @@
-// src/components/MapView.jsx
-
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getMapIconSvg } from '../lib/mapCategories'
 import { MapPin } from '@phosphor-icons/react'
-
-// MapTiler API key (Vercel 환경변수에서 읽음)
-const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
 
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapRef = useRef(null)
@@ -24,47 +19,30 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const border = isSponsored
       ? '3px solid white'
       : isSelected
-        ? '3px solid #f97316'
-        : '2px solid #e5e7eb'
+      ? '3px solid #f97316'
+      : '2px solid #e5e7eb'
     const shadow = isSelected
       ? '0 3px 12px rgba(249,115,22,0.5)'
       : isSponsored
-        ? '0 3px 12px rgba(249,115,22,0.4)'
-        : '0 2px 6px rgba(0,0,0,0.15)'
-
+      ? '0 3px 12px rgba(249,115,22,0.4)'
+      : '0 2px 6px rgba(0,0,0,0.15)'
     const displayName = r.map_label || r.name || ''
     const name =
       displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
-
     const iconColor = isSponsored ? 'white' : '#f97316'
     const iconSvg = getMapIconSvg(r.category, iconColor)
 
     return (
       '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
-      '<div style="width:' +
-      size +
-      'px;height:' +
-      size +
-      'px;background:' +
-      bg +
-      ';border:' +
-      border +
-      ';border-radius:50%;display:flex;align-items:center;' +
-      'justify-content:center;box-shadow:' +
-      shadow +
-      ';flex-shrink:0;">' +
-      '<div style="width:' +
-      (isSponsored ? 24 : 16) +
-      'px;height:' +
-      (isSponsored ? 24 : 16) +
-      'px;display:flex;align-items:center;justify-content:center;">' +
-      iconSvg +
-      '</div></div>' +
+      '<div style="width:' + size + 'px;height:' + size + 'px;background:' + bg +
+      ';border:' + border + ';border-radius:50%;display:flex;align-items:center;' +
+      'justify-content:center;box-shadow:' + shadow + ';flex-shrink:0;">' +
+      '<div style="width:' + (isSponsored ? 24 : 16) + 'px;height:' +
+      (isSponsored ? 24 : 16) + 'px;display:flex;align-items:center;justify-content:center;">' +
+      iconSvg + '</div></div>' +
       '<div style="background:white;color:#374151;font-size:9px;font-weight:600;' +
       'padding:1px 4px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.1);' +
-      'max-width:90px;overflow:hidden;text-overflow:ellipsis;">' +
-      name +
-      '</div></div>'
+      'max-width:90px;overflow:hidden;text-overflow:ellipsis;">' + name + '</div></div>'
     )
   }
 
@@ -88,9 +66,8 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const valid = (data || []).filter((r) => r.latitude && r.longitude)
     if (valid.length === 0) return
 
-    // Sponsored markers on top
     const sorted = [...valid].sort(
-      (a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0),
+      (a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0)
     )
 
     sorted.forEach((r) => {
@@ -106,15 +83,10 @@ export default function MapView({ restaurants, selected, onSelect }) {
         popupAnchor: [0, -(size / 2)],
       })
 
-      const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(
-        map,
-      )
-
+      const m = L.marker([r.latitude, r.longitude], { icon: markerIcon }).addTo(map)
       m.on('click', () => onSelect(r))
-
       // Track selection state on the marker object itself
       m._isSelected = false
-
       markersRef.current.push(m)
       markerDataRef.current.push({ r, marker: m })
     })
@@ -137,28 +109,14 @@ export default function MapView({ restaurants, selected, onSelect }) {
       scrollWheelZoom: true,
       dragging: true,
       tap: true,
-    }).setView([52.3676, 4.9041], 13) // Amsterdam 기본 위치
+    }).setView([52.3676, 4.9041], 13)
 
-    // MapTiler 커스텀 스타일
     L.tileLayer(
-      `https://api.maptiler.com/maps/019e706d-8f70-7fa6-bbe7-d48f8bc6e123/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-          '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>',
-        maxZoom: 20,
-        tileSize: 512,
-        zoomOffset: -1,
-        crossOrigin: true,
-      },
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      { attribution: '© OpenStreetMap © CARTO', maxZoom: 19 }
     ).addTo(map)
 
-    L.control
-      .zoom({
-        position: 'bottomright',
-      })
-      .addTo(map)
-
+    L.control.zoom({ position: 'bottomright' }).addTo(map)
     mapInstanceRef.current = map
   }, [])
 
@@ -168,7 +126,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     renderMarkers(mapInstanceRef.current, restaurants)
   }, [restaurants])
 
-  // ─── Update ONLY the affected markers when selection changes ─────────────
+  // ─── Update ONLY the 2 affected markers when selection changes ───────────
   useEffect(() => {
     if (!mapInstanceRef.current) return
 
@@ -190,7 +148,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
           iconSize: [iconWidth, iconHeight],
           iconAnchor: [iconWidth / 2, size / 2],
           popupAnchor: [0, -(size / 2)],
-        }),
+        })
       )
     })
   }, [selected])
@@ -198,13 +156,10 @@ export default function MapView({ restaurants, selected, onSelect }) {
   // ─── Pan to selected spot ─────────────────────────────────────────────────
   useEffect(() => {
     if (!mapInstanceRef.current || !selected) return
-
     mapInstanceRef.current.setView(
       [selected.latitude, selected.longitude],
       16,
-      {
-        animate: true,
-      },
+      { animate: true }
     )
   }, [selected])
 
@@ -214,7 +169,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
     if (!map) return
 
     map.locate({ setView: true, maxZoom: 16 })
-
     map.once('locationfound', (e) => {
       L.circleMarker(e.latlng, {
         radius: 8,
@@ -227,29 +181,16 @@ export default function MapView({ restaurants, selected, onSelect }) {
         .bindPopup('현재 위치')
         .openPopup()
     })
-
     map.once('locationerror', () => {
-      alert('위를 가져올 수 없어요. 위치 권한을 허용해주세요.')
+      alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
     })
   }
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        minHeight: '300px',
-      }}
-    >
+    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '300px' }}>
       <div
         ref={mapRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          minHeight: '300px',
-          zIndex: 1,
-        }}
+        style={{ width: '100%', height: '100%', minHeight: '300px', zIndex: 1 }}
       />
       <button
         onClick={locateMe}
