@@ -99,8 +99,8 @@ const translations = {
     alumni: 'Alumni',
   },
   ko: {
-    title: '계정 등록',
-    subtitle: '등록 후 회원 자격은 비활성 상태입니다. 보드에서 확인 후 활성화됩니다.',
+    title: '회원가입',
+    subtitle: '등록 후 회원 자격은 비활성 상태입니다. 임원이 확인 후 활성화됩니다.',
     aboutYou: '당신에 대해',
     academicInfo: '학력 정보',
     finalStep: '마지막 단계',
@@ -349,13 +349,6 @@ export default function RegistrationPage() {
 
 // ── Step 1: About you ──────────────────────────────────────────────────────────
 function AboutStep({ formData, handleChange, goNext, language, t }) {
-  const isComplete =
-    formData.firstName.trim() &&
-    formData.lastName.trim() &&
-    (language === 'en' || (formData.firstNameKorean?.trim() && formData.lastNameKorean?.trim())) &&
-    formData.gender &&
-    formData.countryOfOrigin;
-
   return (
     <div style={s.form}>
       <SectionTitle>{t.aboutYou}</SectionTitle>
@@ -437,11 +430,8 @@ function AboutStep({ formData, handleChange, goNext, language, t }) {
       <button
         type="button"
         onClick={goNext}
-        disabled={!isComplete}
         style={{
           ...s.submitBtn,
-          opacity: isComplete ? 1 : 0.5,
-          cursor: isComplete ? 'pointer' : 'not-allowed',
         }}
       >
         {t.next}
@@ -461,12 +451,6 @@ function AcademicStep({
   language,
   t,
 }) {
-  const isComplete =
-    formData.university &&
-    formData.major &&
-    formData.educationLevel &&
-    (yearOptions.length === 0 || formData.yearNumber);
-
   const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
 
   return (
@@ -540,12 +524,9 @@ function AcademicStep({
         <button
           type="button"
           onClick={goNext}
-          disabled={!isComplete}
           style={{
             ...s.submitBtn,
             flex: 1,
-            opacity: isComplete ? 1 : 0.5,
-            cursor: isComplete ? 'pointer' : 'not-allowed',
           }}
         >
           {t.next}
