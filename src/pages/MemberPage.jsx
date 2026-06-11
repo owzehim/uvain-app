@@ -826,9 +826,6 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 // ─── Events Tab ───────────────────────────────────────────────────────────────
-import { useState } from 'react'
-import EventCard from '../components/EventCard'
-
 function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
@@ -1033,8 +1030,6 @@ function EventsTab({ events }) {
     </div>
   )
 }
-
-export default EventsTab
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
 
