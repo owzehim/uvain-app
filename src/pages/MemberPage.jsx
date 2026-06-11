@@ -223,6 +223,8 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
+// Replace the MembershipCard function in MemberPage.jsx with this updated version
+
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
   const W = 'calc(100vw - 32px)'
@@ -255,7 +257,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         overflow: 'visible',
       }}
     >
-      {/* Top tab with pill-shaped hole — WIDER */}
+      {/* Top tab with pill-shaped hole */}
       <div
         style={{
           position: 'absolute',
@@ -286,36 +288,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         />
       </div>
 
-      {/* Left side rail — positioned OUTSIDE and ON TOP */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '8%',
-          left: '-10px',
-          width: '10px',
-          height: '84%',
-          borderRadius: '5px',
-          background: '#b8b8b8',
-          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3)',
-          zIndex: 20,
-        }}
-      />
-
-      {/* Right side rail — positioned OUTSIDE and ON TOP */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '8%',
-          right: '-10px',
-          width: '10px',
-          height: '84%',
-          borderRadius: '5px',
-          background: '#b8b8b8',
-          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3)',
-          zIndex: 20,
-        }}
-      />
-
       {/* Subtle brushed texture */}
       <div
         style={{
@@ -343,6 +315,36 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           zIndex: 1,
         }}
       >
+        {/* Left side rail — INSIDE the card, on the left edge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '25%',
+            left: '3px',
+            width: '6px',
+            height: '50%',
+            borderRadius: '3px',
+            background: '#b8b8b8',
+            boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 1px 2px rgba(0,0,0,0.2)',
+            zIndex: 15,
+          }}
+        />
+
+        {/* Right side rail — INSIDE the card, on the right edge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '25%',
+            right: '3px',
+            width: '6px',
+            height: '50%',
+            borderRadius: '3px',
+            background: '#b8b8b8',
+            boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 1px 2px rgba(0,0,0,0.2)',
+            zIndex: 15,
+          }}
+        />
+
         {children}
       </div>
     </div>
