@@ -59,8 +59,10 @@ const translations = {
     aboutYou: 'About you',
     academicInfo: 'Academic information',
     finalStep: 'Final step',
-    firstName: 'First name *',
-    lastName: 'Last name *',
+    firstName: 'First name (English) *',
+    lastName: 'Last name (English) *',
+    firstNameKorean: 'First name (Korean) *',
+    lastNameKorean: 'Last name (Korean) *',
     yearOfBirth: 'Year of birth (optional)',
     gender: 'Gender *',
     nationality: 'Nationality *',
@@ -102,8 +104,10 @@ const translations = {
     aboutYou: '당신에 대해',
     academicInfo: '학력 정보',
     finalStep: '마지막 단계',
-    firstName: '이름 *',
-    lastName: '성 *',
+    firstName: '이름 (영문) *',
+    lastName: '성 (영문) *',
+    firstNameKorean: '이름 (한글) *',
+    lastNameKorean: '성 (한글) *',
     yearOfBirth: '출생 연도 (선택사항)',
     gender: '성별 *',
     nationality: '국적 *',
@@ -237,7 +241,7 @@ export default function RegistrationPage() {
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
     return (
-      <div style={{ ...s.page, fontFamily: language === 'en' ? 'Handjet, cursive' : '"Noto Sans KR", sans-serif' }}>
+      <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
         <div style={s.topBar}>
           <button
             type="button"
@@ -274,7 +278,7 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div style={{ ...s.page, fontFamily: language === 'en' ? 'Handjet, cursive' : '"Noto Sans KR", sans-serif' }}>
+    <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
       {/* Top Bar with Back Button and Language Toggle */}
       <div style={s.topBar}>
         <button
@@ -348,6 +352,7 @@ function AboutStep({ formData, handleChange, goNext, language, t }) {
   const isComplete =
     formData.firstName.trim() &&
     formData.lastName.trim() &&
+    (language === 'en' || (formData.firstNameKorean?.trim() && formData.lastNameKorean?.trim())) &&
     formData.gender &&
     formData.countryOfOrigin;
 
@@ -373,6 +378,27 @@ function AboutStep({ formData, handleChange, goNext, language, t }) {
           />
         </Field>
       </Row>
+
+      {language === 'ko' && (
+        <Row>
+          <Field label={t.firstNameKorean}>
+            <input
+              name="firstNameKorean"
+              value={formData.firstNameKorean || ''}
+              onChange={handleChange}
+              style={s.input}
+            />
+          </Field>
+          <Field label={t.lastNameKorean}>
+            <input
+              name="lastNameKorean"
+              value={formData.lastNameKorean || ''}
+              onChange={handleChange}
+              style={s.input}
+            />
+          </Field>
+        </Row>
+      )}
 
       <Row>
         <Field label={t.yearOfBirth}>
