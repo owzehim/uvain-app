@@ -876,8 +876,8 @@ function EventsTab({ events }) {
   const W = 'calc(100vw - 32px)'
   const fs = {
     day: `calc(${W} * 0.06)`,      // Small day text
-    date: `calc(${W} * 0.18)`,     // Extra large date numbers
-    month: `calc(${W} * 0.18)`,    // Same size as date number
+    date: `calc(${W} * 0.50)`,     // Extra large date numbers
+    month: `calc(${W} * 0.50)`,    // Same size as date number
     title: `calc(${W} * 0.042)`,   // Event title
     location: `calc(${W} * 0.036)`, // Location text
   }
