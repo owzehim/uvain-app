@@ -243,12 +243,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
 
-  // The back card has 12px outer padding + 12px inner padding = 24px total each side.
-  // QRScanner renders inside a max-w-xs (320px) centered box.
-  // QR_BOX_SIZE = 220px, centered in that box.
-  // We replicate this: outline box = 220/320 = 68.75% of the inner scanner area.
-  // Inner scanner area = card width - 2*24px padding = W - 48px.
-  // So outline = (W - 48px) * (220/320) ≈ W * 0.595
+  // Back: 12px outer + 12px inner = 24px padding each side → inner = W - 48px
+  // QRScanner: flex-col [video square (max-w-xs)] + [text ~40px] + gap ~12px
+  // Video fills max-w-xs = min(320px, inner). QR box = 220px centered in video.
+  // The whole QRScanner column is centered in the back card, so the video top
+  // sits at: center - (videoH/2 + textH/2 + gap/2) ≈ center - ~28px
+  // We shift the outline up by that same ~28px offset.
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
@@ -295,8 +295,15 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         </div>
       </div>
 
-      {/* MIDDLE: QR outline with icon centered inside */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* MIDDLE: QR outline shifted up to match back camera position */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        // Shift up ~28px to account for the text + gap below the video on the back
+        paddingBottom: '28px',
+      }}>
         <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
           {/* Corner brackets */}
           <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
@@ -304,23 +311,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
           <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
 
-          {/* QrCode icon + label centered inside the box */}
+          {/* QrCode icon centered inside */}
           <div style={{
             position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            gap: `calc(${W} * 0.02)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.35)" />
-            <span style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: `calc(${W} * 0.034)`,
-              fontWeight: 600,
-              color: 'rgba(44,42,39,0.45)',
-              letterSpacing: '0.05em',
-            }}>
-              눌러서 Check-IN 하기
-            </span>
+            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
           </div>
         </div>
       </div>
