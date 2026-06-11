@@ -223,7 +223,7 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
-// Metal frame wrapper - 제대로 수정됨
+// Metal frame wrapper - matching your photo
 const MetalFrame = ({ children }) => (
   <div
     style={{
@@ -238,61 +238,33 @@ const MetalFrame = ({ children }) => (
       overflow: 'visible',
     }}
   >
-    {/* TOP TAB - 더 넓게 */}
+    {/* Left grip handle */}
     <div
       style={{
         position: 'absolute',
-        top: '-20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '140px',
-        height: '24px',
-        borderRadius: '6px 6px 0 0',
-        background: '#c5c5c5',
-        boxShadow: '0 -3px 6px rgba(0,0,0,0.2)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 5,
-      }}
-    >
-      {/* Pill-shaped hole */}
-      <div
-        style={{
-          width: '50px',
-          height: '14px',
-          borderRadius: '999px',
-          background: '#999',
-          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)',
-        }}
-      />
-    </div>
-
-    {/* Left side rail - 중간에만, 위아래 안 닿음 */}
-    <div
-      style={{
-        position: 'absolute',
-        top: '25%',
-        left: '-16px',
-        width: '16px',
-        height: '50%',
-        borderRadius: '8px',
+        top: '50%',
+        left: '-6px',
+        transform: 'translateY(-50%)',
+        width: '12px',
+        height: '48%',
+        borderRadius: '6px',
         background: '#b8b8b8',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
       }}
     />
     
-    {/* Right side rail - 중간에만, 위아래 안 닿음 */}
+    {/* Right grip handle */}
     <div
       style={{
         position: 'absolute',
-        top: '25%',
-        right: '-16px',
-        width: '16px',
-        height: '50%',
-        borderRadius: '8px',
+        top: '50%',
+        right: '-6px',
+        transform: 'translateY(-50%)',
+        width: '12px',
+        height: '48%',
+        borderRadius: '6px',
         background: '#b8b8b8',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
       }}
     />
 
