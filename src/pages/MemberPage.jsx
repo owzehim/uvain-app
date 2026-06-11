@@ -829,43 +829,355 @@ function NavBtn({ onClick, children, style = {} }) {
 // ─── Events Tab ───────────────────────────────────────────────────────────────
 function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
+  const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
-  // Sort events by date
-  const sortedEvents = [...events].sort((a, b) => {
-    if (!a.event_date) return 1
-    if (!b.event_date) return -1
-    return new Date(a.event_date) - new Date(b.event_date)
-  })
+  const setSlide = (eventId, idx) =>
+    setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
 
-  // Get newest event (first upcoming event)
+  useEffect(() => {
+    if (!expandedId) return
+
+    const ev = events.find((e) => e.id === expandedId)
+    if (!ev) return
+
+    const imgs = ev['image_urls'] || []
+    if (imgs.length <= 1) return
+
+    const handler = (e) => {
+      if (e.key === 'ArrowRight') {
+        setSlide(
+          expandedId,
+          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
+        )
+      } else if (e.key === 'ArrowLeft') {
+        setSlide(
+          expandedId,
+          Math.max((slideIndexes[expandedId] || 0) - 1, 0),
+        )
+      }
+    }
+
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [expandedId, slideIndexes, events])
+
+  const addToCalendar = (ev) => {
+    const start = new Date(ev.event_date)
+    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
+
+    const pad = (n) => String(n).padStart(2, '0')
+    const fmt = (d) =>
+      d.getUTCFullYear() +
+      '' +
+      pad(d.getUTCMonth() + 1) +
+      '' +
+      pad(d.getUTCDate()) +
+      'T' +
+      pad(d.getUTCHours()) +
+      '' +
+      pad(d.getUTCMinutes()) +
+      '00Z'
+
+    const ics =
+      'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' +
+      fmt(start) +
+      '\nDTEND:' +
+      fmt(end) +
+      '\nSUMMARY:' +
+      ev.title +
+      '\nLOCATION:' +
+      (ev.location || '') +
+      '\nDESCRIPTION:' +
+      (ev.description || '') +
+      '\nEND:VEVENT\nEND:VCALENDAR'
+
+    const blob = new Blob([ics], { type: 'text/calendar' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = ev.title + '.ics'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const renderEvent = (ev) => {
+    const isExpanded = expandedId === ev.id
+    const imgs = ev['image_urls'] || []
+    const instaUrl = ev['instagram_url']
+    const currentSlide = slideIndexes[ev.id] || 0
+
+    return (
+      <div
+        key={ev.id}
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      >
+        <button
+          onClick={() => setExpandedId(isExpanded ? null : ev.id)}
+          className="w-full text-left p-5"
+        >
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-gray-900">{ev.title}</p>
+            <span className="text-gray-400 text-sm ml-2">
+              {isExpanded ? '▲' : '▼'}
+            </span>
+          </div>
+
+          {ev.event_date && (
+            <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
+              <Calendar size={14} weight="fill" />
+              <span>
+                {new Date(ev.event_date).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
+              </span>
+            </div>
+          )}
+
+          {ev.location && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
+              <MapPin size={14} weight="fill" />
+              <span>{ev.location}</span>
+            </div>
+          )}
+        </button>
+
+        {isExpanded && (
+          <div>
+            {imgs.length > 0 && (
+              <div className="px-4">
+                {/* Mobile swiper (touch) */}
+                <div
+                  className="md:hidden"
+                  onTouchStart={(e) => {
+                    e.currentTarget._swipeStartX = e.touches[0].clientX
+                  }}
+                  onTouchEnd={(e) => {
+                    const start = e.currentTarget._swipeStartX
+                    if (start == null) return
+                    const dx = e.changedTouches[0].clientX - start
+                    e.currentTarget._swipeStartX = null
+                    if (dx < -40 && currentSlide < imgs.length - 1)
+                      setSlide(ev.id, currentSlide + 1)
+                    else if (dx > 40 && currentSlide > 0)
+                      setSlide(ev.id, currentSlide - 1)
+                  }}
+                >
+                  <div
+                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    style={{ aspectRatio: '1/1' }} // 1:1 BOX
+                  >
+                    <div
+                      className="flex h-full"
+                      style={{
+                        transform: 'translateX(-' + currentSlide * 100 + '%)',
+                        transition: 'transform 0.3s ease',
+                      }}
+                    >
+                      {imgs.map((url, i) => (
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt={'이미지 ' + (i + 1)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            draggable={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {imgs.length > 1 && (
+                      <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                        {imgs.map((_, i) => (
+                          <div
+                            key={i}
+                            onClick={() => setSlide(ev.id, i)}
+                            className={
+                              'rounded-full cursor-pointer transition-all ' +
+                              (i === currentSlide
+                                ? 'bg-white w-2 h-2'
+                                : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                            }
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Desktop controls (same behavior as original) */}
+                <div className="hidden md:block">
+                  <div
+                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    style={{ aspectRatio: '1/1' }} // 1:1 BOX
+                  >
+                    <div
+                      className="flex h-full"
+                      style={{
+                        transform: 'translateX(-' + currentSlide * 100 + '%)',
+                        transition: 'transform 0.3s ease',
+                      }}
+                    >
+                      {imgs.map((url, i) => (
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt={'이미지 ' + (i + 1)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            draggable={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {imgs.length > 1 && (
+                      <>
+                        {currentSlide > 0 && (
+                          <NavBtn
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide - 1)
+                            }
+                            style={{
+                              position: 'absolute',
+                              left: '10px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                            }}
+                          >
+                            ‹
+                          </NavBtn>
+                        )}
+
+                        {currentSlide < imgs.length - 1 && (
+                          <NavBtn
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide + 1)
+                            }
+                            style={{
+                              position: 'absolute',
+                              right: '10px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                            }}
+                          >
+                            ›
+                          </NavBtn>
+                        )}
+
+                        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                          {imgs.map((_, i) => (
+                            <div
+                              key={i}
+                              onClick={() => setSlide(ev.id, i)}
+                              className={
+                                'rounded-full cursor-pointer transition-all ' +
+                                (i === currentSlide
+                                  ? 'bg-white w-2 h-2'
+                                  : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                              }
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="px-5 pb-5">
+              {ev.description && (
+                <RichText
+                  text={ev.description}
+                  className="text-sm text-gray-600 mt-3 leading-relaxed block"
+                />
+              )}
+
+              <div className="flex gap-2 mt-3">
+                {ev.event_date && (
+                  <button
+                    onClick={() => addToCalendar(ev)}
+                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5"
+                  >
+                    <Calendar size={14} weight="fill" />
+                    캘린더에 추가
+                  </button>
+                )}
+
+                {instaUrl && (
+                  <a
+                    href={instaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    {/* same Instagram SVG as before */}
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                    </svg>
+                    Instagram 에서 열기
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ---- NEWEST / OTHER / PAST SPLIT + TOP SECTION ----
+
   const now = new Date()
-  const newestEvent = sortedEvents.find(
-    (ev) => ev.event_date && new Date(ev.event_date) >= now
+  const upcomingEvents = events.filter(
+    (ev) => ev.event_date && new Date(ev.event_date) >= now,
+  )
+  const pastEvents = events.filter(
+    (ev) => ev.event_date && new Date(ev.event_date) < now,
   )
 
-  // Get other upcoming events (excluding newest)
-  const otherUpcomingEvents = sortedEvents.filter(
-    (ev) =>
-      ev.event_date &&
-      new Date(ev.event_date) >= now &&
-      ev.id !== newestEvent?.id
-  )
+  const newestEvent = upcomingEvents[0] || null
+  const otherUpcomingEvents = newestEvent
+    ? upcomingEvents.slice(1)
+    : upcomingEvents
 
-  // Get past events
-  const pastEvents = sortedEvents.filter(
-    (ev) => ev.event_date && new Date(ev.event_date) < now
-  )
-
-  // Format date helper
-  const formatDate = (dateStr) => {
+  const formatTopDate = (dateStr) => {
     if (!dateStr) return null
     const date = new Date(dateStr)
     const day = String(date.getDate()).padStart(2, '0')
     const month = String(date.getMonth() + 1).padStart(2, '0')
-    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
-    const monthName = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
-
+    const dayName = date
+      .toLocaleDateString('en-US', { weekday: 'short' })
+      .toUpperCase()
+    const monthName = date
+      .toLocaleDateString('en-US', { month: 'short' })
+      .toUpperCase()
     return {
       dayName,
       dateNum: `${day}.${month}`,
@@ -875,11 +1187,11 @@ function EventsTab({ events }) {
 
   const W = 'calc(100vw - 32px)'
   const fs = {
-    day: `calc(${W} * 0.06)`,      // Small day text
-    date: `calc(${W} * 0.24)`,     // Extra large date numbers
-    month: `calc(${W} * 0.24)`,    // Same size as date number
-    title: `calc(${W} * 0.042)`,   // Event title
-    location: `calc(${W} * 0.036)`, // Location text
+    day: `calc(${W} * 0.06)`,
+    date: `calc(${W} * 0.24)`,
+    month: `calc(${W} * 0.24)`,
+    title: `calc(${W} * 0.042)`,
+    location: `calc(${W} * 0.036)`,
   }
 
   return (
@@ -890,7 +1202,7 @@ function EventsTab({ events }) {
           <div className="mb-8 pb-6 border-b border-gray-100">
             <div className="flex gap-8 items-start">
               {/* LEFT SIDE - DATE */}
-              {formatDate(newestEvent.event_date) && (
+              {formatTopDate(newestEvent.event_date) && (
                 <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
                   <span
                     style={{
@@ -903,7 +1215,7 @@ function EventsTab({ events }) {
                       lineHeight: 0.85,
                     }}
                   >
-                    {formatDate(newestEvent.event_date).dayName}
+                    {formatTopDate(newestEvent.event_date).dayName}
                   </span>
 
                   <span
@@ -917,7 +1229,7 @@ function EventsTab({ events }) {
                       marginTop: '2px',
                     }}
                   >
-                    {formatDate(newestEvent.event_date).dateNum}
+                    {formatTopDate(newestEvent.event_date).dateNum}
                   </span>
 
                   <span
@@ -932,7 +1244,7 @@ function EventsTab({ events }) {
                       marginTop: '2px',
                     }}
                   >
-                    {formatDate(newestEvent.event_date).monthName}
+                    {formatTopDate(newestEvent.event_date).monthName}
                   </span>
                 </div>
               )}
@@ -969,25 +1281,37 @@ function EventsTab({ events }) {
           </div>
         )}
 
-        {/* MIDDLE SECTION - OTHER UPCOMING EVENTS (IN BOXES) */}
+        {/* MIDDLE SECTION - OTHER UPCOMING (WITH ORIGINAL CARDS) */}
         {otherUpcomingEvents.length > 0 && (
           <div className="mb-8">
-            {otherUpcomingEvents.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                isExpanded={expandedId === event.id}
-                onToggle={() =>
-                  setExpandedId(expandedId === event.id ? null : event.id)
+            {(() => {
+              let currentMonth = null
+              const blocks = []
+              otherUpcomingEvents.forEach((ev) => {
+                const label = ev.event_date
+                  ? `${new Date(ev.event_date).getMonth() + 1}월`
+                  : '날짜 미정'
+                if (label !== currentMonth) {
+                  currentMonth = label
+                  blocks.push(
+                    <p
+                      key={`month-${label}`}
+                      className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                    >
+                      {label}
+                    </p>,
+                  )
                 }
-              />
-            ))}
+                blocks.push(renderEvent(ev))
+              })
+              return blocks
+            })()}
           </div>
         )}
 
-        {/* BOTTOM SECTION - PAST EVENTS DROPDOWN */}
+        {/* BOTTOM SECTION - PAST EVENTS (ORIGINAL DROPDOWN) */}
         {pastEvents.length > 0 && (
-          <div>
+          <div className="mt-6">
             <button
               onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
               className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
@@ -1004,29 +1328,43 @@ function EventsTab({ events }) {
             </button>
 
             {pastEventsExpanded && (
-              <div className="mt-3 space-y-3">
-                {pastEvents.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    isExpanded={expandedId === event.id}
-                    onToggle={() =>
-                      setExpandedId(expandedId === event.id ? null : event.id)
+              <div className="space-y-3 mt-3">
+                {(() => {
+                  let currentMonth = null
+                  const blocks = []
+                  pastEvents.forEach((ev) => {
+                    const label = ev.event_date
+                      ? `${new Date(ev.event_date).getMonth() + 1}월`
+                      : '날짜 미정'
+                    if (label !== currentMonth) {
+                      currentMonth = label
+                      blocks.push(
+                        <p
+                          key={`past-month-${label}`}
+                          className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                        >
+                          {label}
+                        </p>,
+                      )
                     }
-                  />
-                ))}
+                    blocks.push(renderEvent(ev))
+                  })
+                  return blocks
+                })()}
               </div>
             )}
           </div>
         )}
 
         {/* EMPTY STATE */}
-        {!newestEvent && otherUpcomingEvents.length === 0 && pastEvents.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-2xl mb-2">📅</p>
-            <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
-          </div>
-        )}
+        {!newestEvent &&
+          otherUpcomingEvents.length === 0 &&
+          pastEvents.length === 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <p className="text-2xl mb-2">📅</p>
+              <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
+            </div>
+          )}
       </div>
     </div>
   )
