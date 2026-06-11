@@ -265,7 +265,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
       {/* TOP: avatar + info */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
 
-        {/* Avatar circle — photo if available, else colored initials */}
+        {/* Avatar circle */}
         <div
           style={{
             width: avatarSize,
@@ -308,7 +308,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             fontFamily: '"Handjet", system-ui, sans-serif',
             fontSize: fs.brand,
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#2C2A27',
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
           }}>
@@ -332,7 +332,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             fontFamily: '"Handjet", system-ui, sans-serif',
             fontSize: fs.name,
             fontWeight: 800,
-            color: '#1a1a1a',
+            color: '#2C2A27',
             letterSpacing: '0.04em',
             textTransform: 'uppercase',
             marginTop: `calc(${W} * 0.008)`,
@@ -351,7 +351,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
           fontSize: fs.wordmark,
           fontWeight: 900,
-          color: '#1a1a1a',
+          color: '#2C2A27',
           letterSpacing: '-0.01em',
           lineHeight: 1,
           textTransform: 'uppercase',
@@ -391,6 +391,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
           fontFamily: '"Alien Block", system-ui, sans-serif',
+          color: '#2C2A27',
         }}>
           UvA-IN MEMBERSHIP
         </span>
