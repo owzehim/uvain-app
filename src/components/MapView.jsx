@@ -1,10 +1,12 @@
+// src/components/MapView.jsx
+
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getMapIconSvg } from '../lib/mapCategories'
 import { MapPin } from '@phosphor-icons/react'
 
-// Read MapTiler key from environment
+// MapTiler API key (Vercel 환경변수에서 읽음)
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
 
 export default function MapView({ restaurants, selected, onSelect }) {
@@ -135,36 +137,21 @@ export default function MapView({ restaurants, selected, onSelect }) {
       scrollWheelZoom: true,
       dragging: true,
       tap: true,
-    }).setView([52.3676, 4.9041], 13) // Amsterdam default
+    }).setView([52.3676, 4.9041], 13) // Amsterdam 기본 위치
 
-    // MapTiler raster tiles with your custom style
-    if (MAPTILER_KEY) {
-      L.tileLayer(
-        `https://api.maptiler.com/maps/019e706d-8f70-7fa6-bbe7-d48f8bc6e123/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
-        {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-            '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>',
-          maxZoom: 20,
-          tileSize: 512,
-          zoomOffset: -1,
-          crossOrigin: true,
-        },
-      ).addTo(map)
-    } else {
-      // Fallback if key is missing (show warning in console)
-      console.warn(
-        'VITE_MAPTILER_KEY not set. Add it to .env.local or Vercel environment variables.',
-      )
-      // Fallback to CARTO tiles
-      L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-        {
-          attribution: '© OpenStreetMap © CARTO',
-          maxZoom: 19,
-        },
-      ).addTo(map)
-    }
+    // MapTiler 커스텀 스타일
+    L.tileLayer(
+      `https://api.maptiler.com/maps/019e706d-8f70-7fa6-bbe7-d48f8bc6e123/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+          '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>',
+        maxZoom: 20,
+        tileSize: 512,
+        zoomOffset: -1,
+        crossOrigin: true,
+      },
+    ).addTo(map)
 
     L.control
       .zoom({
@@ -242,7 +229,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     })
 
     map.once('locationerror', () => {
-      alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
+      alert('위를 가져올 수 없어요. 위치 권한을 허용해주세요.')
     })
   }
 
