@@ -479,66 +479,64 @@ const discountTerms = cleanedTerms ? selected.discount_terms : null
         <div className="flex-1" style={{ overflowY: 'hidden' }}>
 
           {/* ── Place info ── */}
-          <div className="px-4 pt-1 pb-3">
-            <div className="flex items-center gap-1.5 flex-wrap mb-1">
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-                {iconSvg && (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: iconSvg.replace('fill="currentColor"', 'fill="#f97316"'),
-                    }}
-                    style={{ width: '14px', height: '14px', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center' }}
-                  />
-                )}
-                {selected.category || '기타'}
-              </span>
-              {selected.price_range && (
-                <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
-                  {selected.price_range}
-                </span>
-              )}
-              {selected.is_sponsored && (
-                <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
-                  제휴
-                </span>
-              )}
-            </div>
+<div className="px-4 pt-1 pb-3">
+  {/* Category, price, sponsored badges */}
+  <div className="flex items-center gap-1.5 flex-wrap mb-1">
+    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
+      {iconSvg && (
+        <div dangerouslySetInnerHTML={{ __html: iconSvg.replace('fill="currentColor"', 'fill="#f97316"'), }}
+          style={{ width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+      )}
+      {selected.category || '기타'}
+    </span>
+    {selected.price_range && (
+      <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
+        {selected.price_range}
+      </span>
+    )}
+    {selected.is_sponsored && (
+      <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
+        제휴
+      </span>
+    )}
+  </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-semibold text-gray-900">{selected.name}</p>
-              {hasReviews && (
-                <div className="flex items-center gap-1">
-                  <StarDisplay averageRating={summary.average_rating} />
-                  <span className="text-xs text-gray-400">({summary.review_count})</span>
-                </div>
-              )}
-              {summaryLoading && (
-                <span className="text-xs text-gray-300">로딩 중...</span>
-              )}
-            </div>
+  {/* Store name */}
+  <p className="font-semibold text-gray-900">{selected.name}</p>
 
-            {selected.description && (
-              <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />
-            )}
-            {selected.address && (
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                <MapPin size={12} weight="fill" />
-                {selected.address}
-              </p>
-            )}
-            {selected.discount_info && (
-              <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
-                <Ticket size={14} weight="fill" color="#FF5252" />
-                <RichText text={selected.discount_info} />
-              </p>
-            )}
-            {discountTerms && (
-  <p className="text-xs text-gray-800 mt-0.5">
-    ※ <RichText text={discountTerms} />
-  </p>
-)}
-          </div>
+  {/* Star review - NOW UNDER THE TITLE */}
+  {hasReviews && (
+    <div className="flex items-center gap-1 mt-1">
+      <StarDisplay averageRating={summary.average_rating} />
+      <span className="text-xs text-gray-400">({summary.review_count})</span>
+    </div>
+  )}
+  {summaryLoading && (
+    <span className="text-xs text-gray-300 mt-1 block">로딩 중...</span>
+  )}
+
+  {/* Description, address, discount info */}
+  {selected.description && (
+    <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />
+  )}
+  {selected.address && (
+    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+      <MapPin size={12} weight="fill" />
+      {selected.address}
+    </p>
+  )}
+  {selected.discount_info && (
+    <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
+      <Ticket size={14} weight="fill" color="#FF5252" />
+      <RichText text={selected.discount_info} />
+    </p>
+  )}
+  {discountTerms && (
+    <p className="text-xs text-gray-800 mt-0.5">
+      ※ <RichText text={discountTerms} />
+    </p>
+  )}
+</div>
 
           {/* ── Images: same thumbnail grid on mobile + desktop ── */}
           {hasImages && (
