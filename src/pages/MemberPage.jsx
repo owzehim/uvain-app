@@ -223,30 +223,7 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
-// ─── Membership Card ───────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid, onQRScanned }) {
-  const [flipped, setFlipped] = useState(false)
-
-  const W = 'calc(100vw - 32px)'
-  const cardW = W
-  const cardH = `calc(${W} * 1.586)`
-
-  const fs = {
-    brand: `calc(${W} * 0.038)`,
-    valid: `calc(${W} * 0.032)`,
-    name: `calc(${W} * 0.052)`,
-    wordmark: `calc(${W} * 0.152)`,
-  }
-
-  const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
-  const pastelBg = getPastelColor(avatarSeed)
-  const avatarSize = `calc(${W} * 0.19)`
-  const hasProfileImage = !!member?.profile_image_url
-
-  const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
-  const BRACKET = 24
-
-// Metal frame wrapper - matching your photo exactly
+// Metal frame wrapper - 제대로 수정됨
 const MetalFrame = ({ children }) => (
   <div
     style={{
@@ -261,14 +238,14 @@ const MetalFrame = ({ children }) => (
       overflow: 'visible',
     }}
   >
-    {/* TOP TAB - wider with pill-shaped hole */}
+    {/* TOP TAB - 더 넓게 */}
     <div
       style={{
         position: 'absolute',
-        top: '-16px',
+        top: '-20px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '100px',
+        width: '140px',
         height: '24px',
         borderRadius: '6px 6px 0 0',
         background: '#c5c5c5',
@@ -282,8 +259,8 @@ const MetalFrame = ({ children }) => (
       {/* Pill-shaped hole */}
       <div
         style={{
-          width: '40px',
-          height: '12px',
+          width: '50px',
+          height: '14px',
           borderRadius: '999px',
           background: '#999',
           boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)',
@@ -291,28 +268,28 @@ const MetalFrame = ({ children }) => (
       />
     </div>
 
-    {/* Left side rail - OUTSIDE, THICK */}
+    {/* Left side rail - 중간에만, 위아래 안 닿음 */}
     <div
       style={{
         position: 'absolute',
-        top: '-4px',
-        left: '-14px',
-        width: '14px',
-        height: 'calc(100% + 8px)',
+        top: '25%',
+        left: '-16px',
+        width: '16px',
+        height: '50%',
         borderRadius: '8px',
         background: '#b8b8b8',
         boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
       }}
     />
     
-    {/* Right side rail - OUTSIDE, THICK */}
+    {/* Right side rail - 중간에만, 위아래 안 닿음 */}
     <div
       style={{
         position: 'absolute',
-        top: '-4px',
-        right: '-14px',
-        width: '14px',
-        height: 'calc(100% + 8px)',
+        top: '25%',
+        right: '-16px',
+        width: '16px',
+        height: '50%',
         borderRadius: '8px',
         background: '#b8b8b8',
         boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
