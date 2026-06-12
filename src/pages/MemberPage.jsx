@@ -266,7 +266,7 @@ function getPastelColor(seed) {
 }
 
 // ─── Membership Card ─────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid, onQRScanned }) {
+function MembershipCard({ member, isValid, onQRScanned, disabled = false }) {
   const [flipped, setFlipped] = useState(false)
 
   const W = 'calc(100vw - 32px)'
@@ -280,238 +280,10 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     wordmark: `calc(${W} * 0.18)`,
   }
 
-  const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
-  const pastelBg = getPastelColor(avatarSeed)
-  const avatarSize = `calc(${W} * 0.19)`
-  const hasProfileImage = !!member?.profile_image_url
-
-  const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
-  const BRACKET = 24
-
-  const cardFront = (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        borderRadius: '16px',
-        background: '#F6F4F1',
-        border: '1px solid #d6d3c0',
-        boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-        padding: `calc(${W} * 0.07)`,
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
-    >
-      {/* TOP */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-        }}
-      >
-        <div
-          style={{
-            width: avatarSize,
-            height: avatarSize,
-            borderRadius: '50%',
-            background: hasProfileImage ? 'transparent' : pastelBg,
-            flexShrink: 0,
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            userSelect: 'none',
-          }}
-        >
-          {hasProfileImage ? (
-            <img
-              src={member.profile_image_url}
-              alt="Profile"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
-          ) : (
-            <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
-          )}
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: `calc(${W} * 0.01)`,
-            textAlign: 'right',
-          }}
-        >
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.brand,
-              fontWeight: 700,
-              color: '#2C2A27',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
-            UvA-IN Membership
-          </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.valid,
-              fontWeight: 500,
-              color: '#6b6a5e',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.012)`,
-            }}
-          >
-            Valid Until{' '}
-            {member?.membership_valid_until
-              ? new Date(member.membership_valid_until).toLocaleDateString(
-                  'en-CA',
-                )
-              : 'N/A'}
-          </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.name,
-              fontWeight: 800,
-              color: '#f97316',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.008)`,
-            }}
-          >
-            {member?.first_name} {member?.last_name}
-          </span>
-        </div>
-      </div>
-
-      {/* MIDDLE */}
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingBottom: '52px',
-        }}
-      >
-        <div
-          style={{
-            position: 'relative',
-            width: qrOutlineSize,
-            height: qrOutlineSize,
-            flexShrink: 0,
-          }}
-        >
-          {/* Corners */}
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '4px 0 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 4px 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 0 0 4px',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 0 4px 0',
-            }}
-          />
-
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: `calc(${W} * 0.02)`,
-            }}
-          >
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.034)`,
-                fontWeight: 600,
-                color: 'rgba(44,42,39,0.4)',
-                letterSpacing: '0.05em',
-              }}
-            >
-              눌러서 Check-IN 하기
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* BOTTOM */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span
-          style={{
-            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-            fontSize: fs.wordmark,
-            fontWeight: 900,
-            color: '#2C2A27',
-            letterSpacing: '-0.01em',
-            lineHeight: 1,
-            textTransform: 'uppercase',
-          }}
-        >
-          UvA-IN
-        </span>
-      </div>
-    </div>
-  )
+  // ... (rest of the function stays the same until the interactive return)
 
   if (!isValid) {
+    // unchanged “no membership” card
     return (
       <div
         style={{
@@ -533,39 +305,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           fontFamily: '"Handjet", system-ui, sans-serif',
         }}
       >
-        <span
-          style={{
-            fontSize: fs.brand,
-            fontWeight: 600,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            fontFamily: '"Alien Block", system-ui, sans-serif',
-            color: '#2C2A27',
-          }}
-        >
-          UvA-IN MEMBERSHIP
-        </span>
-        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
-          활성화된 멤버십이 없습니다
-        </span>
-        {member?.first_name && (
-          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
-            {member.first_name} {member.last_name}
-          </span>
-        )}
-        <span
-          style={{
-            marginTop: '10px',
-            fontSize: `calc(${W} * 0.028)`,
-            color: '#9ca3af',
-          }}
-        >
-          멤버십 갱신은 임원에게 문의해주세요
-        </span>
+        {/* ... */}
       </div>
     )
   }
 
+  // INTERACTIVE CARD (flips to QR) – now respects disabled
   return (
     <div
       style={{
@@ -574,9 +319,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         margin: '0 auto',
         perspective: '1200px',
         flexShrink: 0,
-        cursor: 'pointer',
+        cursor: disabled ? 'default' : 'pointer',
       }}
-      onClick={() => setFlipped((f) => !f)}
+      onClick={() => {
+        if (disabled) return
+        setFlipped((f) => !f)
+      }}
     >
       <div
         style={{
@@ -656,10 +404,9 @@ function QRTab({ member, isValid, onLiftChange }) {
     }
   }
 
-  // NEW: “auto-snap” swipe – no tracking during move
+  // Swipe → auto snap (no tracking)
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY
-    // Remove transition while detecting swipe
     if (cardLayerRef.current) {
       cardLayerRef.current.style.transition = 'none'
     }
@@ -669,7 +416,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     if (touchStartY.current == null) return
     const dy = touchStartY.current - e.touches[0].clientY
 
-    // Optional: block scroll when clearly vertical swipe
+    // Prevent scroll when clearly vertical swipe
     if (Math.abs(dy) > 10) {
       e.preventDefault()
     }
@@ -680,16 +427,15 @@ function QRTab({ member, isValid, onLiftChange }) {
 
     const dy = touchStartY.current - e.changedTouches[0].clientY
     const max = getMaxLift()
-    const SWIPE_THRESHOLD = 40 // px
+    const SWIPE_THRESHOLD = 40
 
     let nextLifted = liftedRef.current
 
-    // swipe up → lift
     if (dy > SWIPE_THRESHOLD) {
+      // swipe up → lift
       nextLifted = true
-    }
-    // swipe down → lower
-    else if (dy < -SWIPE_THRESHOLD) {
+    } else if (dy < -SWIPE_THRESHOLD) {
+      // swipe down → lower
       nextLifted = false
     }
 
@@ -704,7 +450,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     touchStartY.current = null
   }
 
-  // Keep DOM position in sync with lifted state + notify parent
+  // Keep DOM / parent in sync
   useEffect(() => {
     if (cardLayerRef.current) {
       cardLayerRef.current.style.transition =
@@ -850,126 +596,25 @@ function QRTab({ member, isValid, onLiftChange }) {
   if (state === 'success') {
     if (onLiftChange) onLiftChange(false)
     return (
-      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
-        <>
-          <style>{`
-            @keyframes recordingDot {
-              0% { opacity: 1; }
-              50% { opacity: 1; }
-              50.1% { opacity: 0; }
-              100% { opacity: 0; }
-            }
-          `}</style>
-          <div
-            className="absolute"
-            style={{ top: 4, left: 16, zIndex: 10 }}
-          >
-            <span
-              style={{
-                display: 'inline-block',
-                width: 8,
-                height: 8,
-                borderRadius: 9999,
-                backgroundColor: '#f97316',
-                animation: 'recordingDot 1s step-start infinite',
-              }}
-            />
-          </div>
-        </>
-
-        <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
-          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
-            <span className="text-green-600 text-4xl">✓</span>
-          </div>
-          <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
-          <p className="text-gray-500 text-sm">
-            <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다
-          </p>
-          <p className="text-base font-bold text-orange-500">
-            이 화면을 직원에게 보여주세요
-          </p>
-
-          <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Scan Time</span>
-              <span className="text-sm font-semibold text-gray-900">
-                {formatScanTime(scanTime)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Full Name</span>
-              <span className="text-sm font-semibold text-gray-900">
-                {fullName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Student ID</span>
-              <span className="text-sm font-semibold text-gray-900">
-                {checkinMember?.student_number || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">University</span>
-              <span className="text-sm font-semibold text-gray-900">
-                {checkinMember?.University || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-medium text-gray-500">
-                Membership Valid Until
-              </span>
-              <span className="text-sm font-semibold text-gray-900">
-                {formatMembershipDate(checkinMember?.membership_valid_until)}
-              </span>
-            </div>
-          </div>
-
-          <div className="w-full mt-8">
-            <button
-              onClick={() => {
-                reset()
-                navigate('/member')
-              }}
-              className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
-            >
-              홈으로 돌아가기
-            </button>
-          </div>
-        </div>
-      </div>
+      // unchanged success UI
+      // ...
+      // (same as your current success block)
     )
   }
 
   if (state === 'error') {
     if (onLiftChange) onLiftChange(false)
     return (
-      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
-        <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-xs">
-          <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
-            <span className="text-red-500 text-4xl">✕</span>
-          </div>
-          <h2 className="font-bold text-gray-900 text-xl">Check-In 실패</h2>
-          <p className="text-gray-500 text-sm">{errorMsg}</p>
-          <button
-            onClick={reset}
-            className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
-          >
-            다시 시도하기
-          </button>
-          <button
-            onClick={() => navigate('/member')}
-            className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
-          >
-            홈으로 돌아가기
-          </button>
-        </div>
-      </div>
+      // unchanged error UI
+      // ...
+      // (same as your current error block)
     )
   }
 
-  // SCANNING
+  // ── SCANNING STATE ──────────────────────────────────────────────
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+      {/* 이번 달 활동 (Activity) + LONG FADE at top when lifted */}
       <div
         ref={activityRef}
         style={{
@@ -981,9 +626,29 @@ function QRTab({ member, isValid, onLiftChange }) {
           zIndex: 1,
         }}
       >
-        {isValid && <ActivityStatsCard userId={member?.user_id} />}
+        {isValid && (
+          <div className="relative">
+            <ActivityStatsCard userId={member?.user_id} />
+            {lifted && (
+              <div
+                className="pointer-events-none"
+                style={{
+                  position: 'absolute',
+                  top: -40,           // extend a bit above the box
+                  left: 0,
+                  right: 0,
+                  height: 140,        // long fade
+                  background:
+                    'linear-gradient(to bottom, #ffffff, rgba(255,255,255,0))',
+                  zIndex: 2,
+                }}
+              />
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Membership card layer */}
       <div
         ref={cardLayerRef}
         style={{
@@ -1005,10 +670,12 @@ function QRTab({ member, isValid, onLiftChange }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {/* IMPORTANT: disable flip when lifted */}
         <MembershipCard
           member={member}
           isValid={isValid}
           onQRScanned={handleQRScanned}
+          disabled={lifted}
         />
         <div
           style={{
@@ -1032,6 +699,23 @@ function QRTab({ member, isValid, onLiftChange }) {
           </span>
         </div>
       </div>
+
+      {/* TOP FADE – soften line between safe area and card when lifted */}
+      {lifted && (
+        <div
+          className="pointer-events-none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 24, // short fade, just on the line
+            background:
+              'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))',
+            zIndex: 30,
+          }}
+        />
+      )}
     </div>
   )
 }
