@@ -147,31 +147,32 @@ export default function MemberPage() {
 
       {/* 헤더 */}
             <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+  className="bg-white border-b border-gray-100 px-4 py-2 flex items-center justify-between flex-shrink-0"
+  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+>
+  {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
+  <div className="w-[60px]" />
+  <div className="flex gap-2 items-center">
+    {isAdmin && (
+      <button
+        onClick={() => {
+          window.location.href = '/admin'
+        }}
+        className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
       >
-        {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
-        <div className="w-[60px]" />
-        <div className="flex gap-2 items-center">
-          {isAdmin && (
-            <button
-              onClick={() => {
-                window.location.href = '/admin'
-              }}
-              className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
-            >
-              관리자
-            </button>
-          )}
-          <button
-            onClick={() => navigate('/settings')}
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-            aria-label="Settings"
-          >
-            <Gear size={20} weight="bold" />
-          </button>
-        </div>
-      </div>
+        관리자
+      </button>
+    )}
+
+    <button
+      onClick={() => navigate('/settings')}
+      className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+      aria-label="Settings"
+    >
+      <Gear size={20} weight="bold" />
+    </button>
+  </div>
+</div>
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
