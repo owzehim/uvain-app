@@ -1077,7 +1077,7 @@ const handleTouchEnd = (e) => {
             <span
               style={{
                 fontSize: fs.guide,
-                color: 'rgba(44,42,39,0.45)',
+                color: 'rgba(44,42,39,0.35)',
                 fontWeight: 500,
               }}
             >
