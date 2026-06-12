@@ -1611,18 +1611,18 @@ function EventsTab({ events }) {
 
         {/* Bottom area: time in Handjet, 00:00 AM/PM */}
         <div className="mt-4">
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: `calc(${W} * 0.06)`,
-              fontWeight: 600,
-              color: '#111827',
-              letterSpacing: '0.08em',
-            }}
-          >
-            {formatTopTime(nextEvent.event_date)}
-          </span>
-        </div>
+  <span
+    style={{
+      fontFamily: '"Handjet", system-ui, sans-serif',
+      fontSize: `calc(${W} * 0.06)`,  // keep current size for now
+      fontWeight: 700,                 // bolder
+      color: '#111827',
+      letterSpacing: '0.04em',         // less spacing, closer to left side
+    }}
+  >
+    {formatTopTime(nextEvent.event_date)}
+  </span>
+</div>
       </div>
     </div>
   </div>
