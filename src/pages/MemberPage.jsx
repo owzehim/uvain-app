@@ -125,7 +125,7 @@ export default function MemberPage() {
 
   return (
     <div
-      className="flex flex-col bg-gray-50 overflow-hidden"
+      className="flex flex-col bg-white overflow-hidden"
       style={{ height: '100dvh' }}
     >
       {/* Review modal */}
@@ -147,7 +147,7 @@ export default function MemberPage() {
 
       {/* 헤더 */}
             <div
-  className="bg-white border-b border-gray-100 px-4 py-2 flex items-center justify-between flex-shrink-0"
+  className="bg-white px-4 py-3 flex items-center justify-between flex-shrink-0"
   style={{ paddingTop: 'calc(env(safe-area-inset-top) + 4px)' }}
 >
   {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
@@ -751,7 +751,7 @@ function QRTab({ member, isValid }) {
           left: 0,
           right: 0,
           top: 0,
-          backgroundColor: '#f9fafb',
+          backgroundColor: '#ffffff',
           zIndex: 10,
           touchAction: 'none',
           display: 'flex',
