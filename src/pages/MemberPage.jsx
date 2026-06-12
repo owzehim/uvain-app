@@ -1587,7 +1587,7 @@ function EventsTab({ events }) {
       <span
         style={{
           fontFamily: '"Handjet", system-ui, sans-serif',
-          fontSize: '11px',           // small so it fits inside the column
+          fontSize: '20px',           // small so it fits inside the column
           fontWeight: 600,
           color: '#6b7280',
           letterSpacing: '0.02em',    // tighter spacing
