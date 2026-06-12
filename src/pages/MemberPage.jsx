@@ -1499,6 +1499,20 @@ function EventsTab({ events }) {
     }
   }
 
+  const formatTopTime = (dateStr) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+
+    let hours = d.getHours()
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+
+    hours = hours % 12
+    if (hours === 0) hours = 12
+
+    return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`
+  }
+
   const W = 'calc(100vw - 32px)'
   const fs = {
     day: `calc(${W} * 0.06)`,
@@ -1513,9 +1527,10 @@ function EventsTab({ events }) {
       <div className="px-4 py-6 max-w-md mx-auto">
         {nextEvent && (
   <div className="mb-8 pb-6">
-    <div className="flex gap-8 items-start">
+    <div className="flex items-stretch">
+      {/* LEFT: Date (same as before) */}
       {formatTopDate(nextEvent.event_date) && (
-        <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
+        <div className="flex-shrink-0 flex flex-col items-start justify-center leading-none pl-2 pr-3">
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
@@ -1559,32 +1574,55 @@ function EventsTab({ events }) {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col justify-start pr-2">
-        <h3
-          style={{
-            fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-            fontSize: fs.title,
-            fontWeight: 600,
-            color: '#1f2937',
-            margin: 0,
-          }}
-        >
-          {nextEvent.title}
-        </h3>
+      {/* MIDDLE: Thin vertical line */}
+      <div className="w-px bg-gray-200 mx-2" />
 
-        {nextEvent.location && (
-          <p
+      {/* RIGHT: top = title + location (orange), bottom = time */}
+      <div className="flex-1 flex flex-col justify-between pl-3 pr-2">
+        {/* Top area: event title + location, both orange, Noto Sans KR */}
+        <div className="flex flex-col">
+          <span
             style={{
               fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-              fontSize: fs.location,
-              fontWeight: 400,
-              color: '#6b7280',
-              margin: '4px 0 0 0',
+              fontSize: fs.title,
+              fontWeight: 600,
+              color: '#f97316',
+              lineHeight: 1.2,
             }}
           >
-            {nextEvent.location}
-          </p>
-        )}
+            {nextEvent.title}
+          </span>
+
+          {nextEvent.location && (
+            <span
+              style={{
+                fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                fontSize: fs.location,
+                fontWeight: 500,
+                color: '#f97316',
+                marginTop: '4px',
+                lineHeight: 1.2,
+              }}
+            >
+              {nextEvent.location}
+            </span>
+          )}
+        </div>
+
+        {/* Bottom area: time in Handjet, 00:00 AM/PM */}
+        <div className="mt-4">
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: `calc(${W} * 0.06)`,
+              fontWeight: 600,
+              color: '#111827',
+              letterSpacing: '0.08em',
+            }}
+          >
+            {formatTopTime(nextEvent.event_date)}
+          </span>
+        </div>
       </div>
     </div>
   </div>
