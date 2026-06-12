@@ -146,11 +146,12 @@ export default function MemberPage() {
       />
 
       {/* 헤더 */}
-      <div
+            <div
         className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <h1 className="font-bold text-gray-900">UvA-IN</h1>
+        {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
+        <div className="w-[60px]" />
         <div className="flex gap-2 items-center">
           {isAdmin && (
             <button
@@ -232,13 +233,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
 
-  const fs = {
-  day: `calc(${W} * 0.08)`,       // bigger day text
-  date: `calc(${W} * 0.40)`,      // MUCH bigger date
-  month: `calc(${W} * 0.40)`,     // same size as date
-  title: `calc(${W} * 0.042)`,
-  location: `calc(${W} * 0.036)`,
-}
+    const fs = {
+    brand: `calc(${W} * 0.038)`,   // “UvA-IN Membership”
+    valid: `calc(${W} * 0.032)`,   // “Valid Until …”
+    name:  `calc(${W} * 0.052)`,   // Member name
+    wordmark: `calc(${W} * 0.18)`, // BIG UvA-IN at bottom of card
+  }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
@@ -742,7 +742,7 @@ function QRTab({ member, isValid }) {
       </div>
 
       {/* Card layer — swipeable */}
-      <div
+            <div
         ref={cardLayerRef}
         style={{
           position: 'absolute',
@@ -756,8 +756,8 @@ function QRTab({ member, isValid }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',   // ← center the card vertically
-          padding: '16px 16px 0',
+          justifyContent: 'flex-start',   // start from top instead of center
+          padding: '32px 16px 0',         // push down a bit from very top
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
