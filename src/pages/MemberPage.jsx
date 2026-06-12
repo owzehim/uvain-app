@@ -990,64 +990,73 @@ const handleTouchEnd = (e) => {
     )
   }
 
-  // ── SCANNING STATE ──────────────────────────────────────────────
-  return (
-    <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
-      {/* 이번 달 활동 + long fade when lifted */}
-      <div
-        ref={activityRef}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '0 16px 16px',
-          zIndex: 1,
-        }}
-      >
-        {isValid && (
-          <div className="relative">
-            <ActivityStatsCard userId={member?.user_id} />
-          </div>
-        )}
-      </div>
+// ── SCANNING STATE ──────────────────────────────────────────────
+return (
+  <div
+    style={{
+      position: 'relative',
+      height: '100%',
+      overflow: 'hidden',
+      touchAction: 'none',
+    }}
+    onTouchStart={handleTouchStart}
+    onTouchMove={handleTouchMove}
+    onTouchEnd={handleTouchEnd}
+  >
+    {/* 이번 달 활동 + long fade when lifted */}
+    <div
+      ref={activityRef}
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '0 16px 16px',
+        zIndex: 1,
+      }}
+    >
+      {isValid && (
+        <div className="relative">
+          <ActivityStatsCard userId={member?.user_id} />
+        </div>
+      )}
+    </div>
 
-      {/* Membership card layer */}
+    {/* Membership card layer */}
+    <div
+      ref={cardLayerRef}
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        backgroundColor: '#ffffff',
+        zIndex: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        padding: '66px 16px 0',
+      }}
+    >
+      {/* Disable flipping when lifted */}
+      <MembershipCard
+        member={member}
+        isValid={isValid}
+        onQRScanned={handleQRScanned}
+        disabled={lifted}
+        onFlipChange={setCardFlipped}     // if you already added this
+      />
       <div
-        ref={cardLayerRef}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          top: 0,
-          backgroundColor: '#ffffff',
-          zIndex: 10,
-          touchAction: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          padding: '66px 16px 0',
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <MembershipCard
-  member={member}
-  isValid={isValid}
-  onQRScanned={handleQRScanned}
-  disabled={lifted}
-  onFlipChange={setCardFlipped}
-/>
-<div
   style={{
     width: '100%',
     display: 'flex',
-    justifyContent: 'flex-end',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
     paddingRight: '20px',
     paddingTop: '6px',
+    gap: 4,
   }}
 >
   {!cardFlipped && (
@@ -1062,28 +1071,39 @@ const handleTouchEnd = (e) => {
       {lifted ? '내려서 Check-IN 하기' : '위로 올려서 이번 달 활동 보기'}
     </span>
   )}
-</div>
-      </div>
 
-      {/* Top fade – soften the safe-area/card line when lifted */}
-      {lifted && (
-        <div
-          className="pointer-events-none"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 24, // short fade just on the line
-            background:
-              'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))',
-            zIndex: 30,
-          }}
-        />
-      )}
+  {cardFlipped && (
+    <span
+      style={{
+        fontSize: fs.guide,
+        color: 'rgba(44,42,39,0.45)',
+        fontWeight: 500,
+      }}
+    >
+      탭해서 돌아가기
+    </span>
+  )}
+</div>
     </div>
-  )
-}
+
+    {/* Top fade – soften the safe-area/card line when lifted */}
+    {lifted && (
+      <div
+        className="pointer-events-none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 24,
+          background:
+            'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))',
+          zIndex: 30,
+        }}
+      />
+    )}
+  </div>
+)
 
 // ─── Nav Button ───────────────────────────────────────────────────────────────
 function NavBtn({ onClick, children, style = {} }) {
