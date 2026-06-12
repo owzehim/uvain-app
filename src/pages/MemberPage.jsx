@@ -1027,26 +1027,25 @@ function QRTab({ member, isValid, onLiftChange }) {
           disabled={lifted}
         />
         <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            paddingRight: '20px',
-            paddingTop: '6px',
-            opacity: lifted ? 0 : 1,
-            transition: 'opacity 0.25s ease',
-          }}
-        >
-          <span
-            style={{
-              fontSize: fs.guide,
-              color: 'rgba(44,42,39,0.35)',
-              fontWeight: 500,
-            }}
-          >
-            위로 올려서 이번 달 활동 보기
-          </span>
-        </div>
+  style={{
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    paddingRight: '20px',
+    paddingTop: '6px',
+  }}
+>
+  <span
+    style={{
+      fontSize: fs.guide,
+      color: 'rgba(44,42,39,0.35)',
+      fontWeight: 500,
+      transition: 'color 0.25s ease',
+    }}
+  >
+    {lifted ? '내려서 Check-IN 하기' : '위로 올려서 이번 달 활동 보기'}
+  </span>
+</div>
       </div>
 
       {/* Top fade – soften the safe-area/card line when lifted */}

@@ -15,7 +15,7 @@ export default function ActivityStatsCard({ userId }) {
         style={{
           width: W,
           margin: '0 auto',
-          background: '#000000',
+          background: '#111827',
           borderRadius: '16px',
           padding: '20px 24px',
           boxSizing: 'border-box',
