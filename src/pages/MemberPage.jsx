@@ -185,18 +185,21 @@ export default function MemberPage() {
 
       {/* Floating settings button for MY tab (no header) */}
       {activeTab === 'qr' && (
-        <button
-          onClick={() => navigate('/settings')}
-          className={
-            'absolute right-4 rounded-full border border-gray-200 bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
-            (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
-          }
-          style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}
-          aria-label="Settings"
-        >
-          <Gear size={18} weight="bold" />
-        </button>
-      )}
+  <button
+    onClick={() => navigate('/settings')}
+    className={
+      'absolute right-4 rounded-full border border-gray-200 bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
+      (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
+    }
+    style={{
+      top: 'calc(env(safe-area-inset-top) + 8px)',
+      zIndex: 20,   // ensure it sits above the card layer (zIndex 10)
+    }}
+    aria-label="Settings"
+  >
+    <Gear size={18} weight="bold" />
+  </button>
+)}
 
       {/* Content */}
       <div className="flex-1 overflow-hidden">
