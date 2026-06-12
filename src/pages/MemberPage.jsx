@@ -1530,49 +1530,74 @@ function EventsTab({ events }) {
     <div className="flex items-stretch">
       {/* LEFT: Date (same as before) */}
       {formatTopDate(nextEvent.event_date) && (
-        <div className="flex-shrink-0 flex flex-col items-start justify-center leading-none pl-2 pr-3">
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.day,
-              fontWeight: 500,
-              color: '#9ca3af',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              lineHeight: 0.85,
-            }}
-          >
-            {formatTopDate(nextEvent.event_date).dayName}
-          </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.date,
-              fontWeight: 800,
-              color: '#1f2937',
-              letterSpacing: '0.02em',
-              lineHeight: 0.85,
-              marginTop: '2px',
-            }}
-          >
-            {formatTopDate(nextEvent.event_date).dateNum}
-          </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.month,
-              fontWeight: 800,
-              color: '#1f2937',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              lineHeight: 0.85,
-              marginTop: '2px',
-            }}
-          >
-            {formatTopDate(nextEvent.event_date).monthName}
-          </span>
-        </div>
-      )}
+  <div className="flex-shrink-0 flex flex-col items-start justify-center leading-none pl-2 pr-3">
+    {/* THU */}
+    <span
+      style={{
+        fontFamily: '"Handjet", system-ui, sans-serif',
+        fontSize: fs.day,
+        fontWeight: 500,
+        color: '#9ca3af',
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase',
+        lineHeight: 0.85,
+      }}
+    >
+      {formatTopDate(nextEvent.event_date).dayName}
+    </span>
+
+    {/* 04.02 */}
+    <span
+      style={{
+        fontFamily: '"Handjet", system-ui, sans-serif',
+        fontSize: fs.date,
+        fontWeight: 800,
+        color: '#1f2937',
+        letterSpacing: '0.02em',
+        lineHeight: 0.85,
+        marginTop: '2px',
+      }}
+    >
+      {formatTopDate(nextEvent.event_date).dateNum}
+    </span>
+
+    {/* Bottom row: FEB + time (small) on same line */}
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 4,
+        marginTop: '2px',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          fontSize: fs.month,
+          fontWeight: 800,
+          color: '#1f2937',
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          lineHeight: 0.85,
+        }}
+      >
+        {formatTopDate(nextEvent.event_date).monthName}
+      </span>
+
+      <span
+        style={{
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          fontSize: '11px',           // small so it fits inside the column
+          fontWeight: 600,
+          color: '#6b7280',
+          letterSpacing: '0.02em',    // tighter spacing
+        }}
+      >
+        {formatTopTime(nextEvent.event_date)}
+      </span>
+    </div>
+  </div>
+)}
 
       {/* MIDDLE: Thin vertical line */}
       <div className="w-px bg-gray-200 mx-2" />
