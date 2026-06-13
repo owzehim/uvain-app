@@ -1579,16 +1579,21 @@ function EventsTab({ events }) {
         </div>
       )}
 
-      {/* RIGHT: rectangular box with time, title, location */}
-      <div className="flex-1 flex items-center pr-3">
+            {/* RIGHT: rectangular box with time, title, location */}
+      <div className="flex-1 flex justify-end items-stretch pr-3">
         <div
           style={{
             borderRadius: '12px',
             border: '1px solid #e5e7eb',
-            backgroundColor: '#f9fafb',
+            backgroundColor: '#ffffff',   // same as background, no grey fill
             padding: '8px 10px',
-            width: '100%',
+            width: '70%',                 // narrower box
+            maxWidth: '230px',            // cap width so it doesn’t get too wide
             boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',     // vertically center text inside
+            height: '100%',               // match height of left side
           }}
         >
           {/* 1) Time (Handjet, bold) */}
