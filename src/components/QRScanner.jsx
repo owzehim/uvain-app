@@ -39,7 +39,26 @@ export default function QRScanner({ onScan }) {
       if (scanner) {
         try {
           const stopResult = scanner.stop()
-          if (stopResult?.catch) stopResult.catch((err) => console.warn('QR scanner stop error:', err?.message))
+          const doCleanup = () => {
+            // Explicitly stop all MediaStream tracks so iOS releases the camera
+            try {
+              const videoEl = document.querySelector('#qr-scanner-container video')
+              if (videoEl?.srcObject) {
+                videoEl.srcObject.getTracks().forEach((track) => track.stop())
+                videoEl.srcObject = null
+              }
+            } catch (e) {
+              console.warn('MediaStream track stop error:', e?.message)
+            }
+          }
+          if (stopResult?.then) {
+            stopResult.then(doCleanup).catch((err) => {
+              console.warn('QR scanner stop error:', err?.message)
+              doCleanup()
+            })
+          } else {
+            doCleanup()
+          }
         } catch (err) {
           console.warn('QR scanner stop threw:', err?.message)
         }
