@@ -3,9 +3,26 @@ import { Html5Qrcode } from 'html5-qrcode'
 
 const QR_BOX_SIZE = 220
 
+// Forcefully kills every active MediaStream track on the page.
+// This is the only 100%-reliable way to clear the iOS camera indicator.
+function stopAllCameraTracks() {
+  try {
+    const videos = document.querySelectorAll('video')
+    videos.forEach((v) => {
+      if (v.srcObject) {
+        v.srcObject.getTracks().forEach((t) => t.stop())
+        v.srcObject = null
+      }
+    })
+  } catch (e) {
+    console.warn('stopAllCameraTracks error:', e?.message)
+  }
+}
+
 export default function QRScanner({ onScan }) {
   const scannerRef = useRef(null)
   const scannedRef = useRef(false)
+  const streamRef  = useRef(null)   // hold a direct ref to the MediaStream
 
   useEffect(() => {
     const scannerId = 'qr-scanner-container'
@@ -13,11 +30,28 @@ export default function QRScanner({ onScan }) {
 
     async function startScanner() {
       try {
+        // Request the stream ourselves first so we own the reference
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+        })
+        streamRef.current = stream
+
+        // Stop it immediately — Html5Qrcode will open its own stream.
+        // We only needed the reference trick on older browsers; on modern
+        // iOS/Safari Html5Qrcode owns the stream, so we track via the video el.
+        stream.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
+
         const scanner = new Html5Qrcode(scannerId, { verbose: false })
         scannerRef.current = scanner
+
         await scanner.start(
           { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1.0 },
+          {
+            fps: 10,
+            qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE },
+            aspectRatio: 1.0,
+          },
           (decodedText) => {
             if (!isMounted || scannedRef.current) return
             scannedRef.current = true
@@ -36,32 +70,29 @@ export default function QRScanner({ onScan }) {
     return () => {
       isMounted = false
       const scanner = scannerRef.current
-      if (scanner) {
-        try {
-          const stopResult = scanner.stop()
-          const doCleanup = () => {
-            // Explicitly stop all MediaStream tracks so iOS releases the camera
-            try {
-              const videoEl = document.querySelector('#qr-scanner-container video')
-              if (videoEl?.srcObject) {
-                videoEl.srcObject.getTracks().forEach((track) => track.stop())
-                videoEl.srcObject = null
-              }
-            } catch (e) {
-              console.warn('MediaStream track stop error:', e?.message)
-            }
-          }
-          if (stopResult?.then) {
-            stopResult.then(doCleanup).catch((err) => {
-              console.warn('QR scanner stop error:', err?.message)
-              doCleanup()
-            })
-          } else {
-            doCleanup()
-          }
-        } catch (err) {
-          console.warn('QR scanner stop threw:', err?.message)
+
+      const killCamera = () => {
+        stopAllCameraTracks()
+        // Also kill the stream we may have held directly
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((t) => t.stop())
+          streamRef.current = null
         }
+      }
+
+      if (scanner) {
+        scanner
+          .stop()
+          .then(killCamera)
+          .catch((err) => {
+            console.warn('QR scanner stop error:', err?.message)
+            killCamera()
+          })
+          .finally(() => {
+            scannerRef.current = null
+          })
+      } else {
+        killCamera()
       }
     }
   }, [onScan])
@@ -79,12 +110,10 @@ export default function QRScanner({ onScan }) {
         #qr-scanner-container [id^="qr-code-full-region"] > div:last-child {
           border: none !important;
         }
-        /* Overlay: card background color */
         #qr-shaded-region {
           border: none !important;
           box-shadow: 0 0 0 9999px rgba(246, 244, 241, 0.75) !important;
         }
-        /* Scan box inner border: white */
         #qr-shaded-region::before {
           content: '';
           position: absolute;
@@ -98,10 +127,13 @@ export default function QRScanner({ onScan }) {
       <div className="relative w-full max-w-xs" style={{ aspectRatio: '1' }}>
         <div id="qr-scanner-container" className="w-full h-full rounded-2xl overflow-hidden" />
 
-        {/* Corner brackets — warm charcoal */}
         <div
           className="absolute pointer-events-none"
-          style={{ top: '50%', left: '50%', width: QR_BOX_SIZE, height: QR_BOX_SIZE, transform: 'translate(-50%, -50%)' }}
+          style={{
+            top: '50%', left: '50%',
+            width: QR_BOX_SIZE, height: QR_BOX_SIZE,
+            transform: 'translate(-50%, -50%)',
+          }}
         >
           {[
             { top: 0,    left: 0,  borderTop: true,    borderLeft: true,  radius: '4px 0 0 0' },
