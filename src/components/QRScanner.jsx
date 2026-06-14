@@ -15,14 +15,22 @@ export default function QRScanner({ onScan }) {
       try {
         const scanner = new Html5Qrcode(scannerId, { verbose: false })
         scannerRef.current = scanner
+
         await scanner.start(
           { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1.0 },
+          {
+            fps: 10,
+            qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE },
+            aspectRatio: 1.0,
+          },
           (decodedText) => {
             if (!isMounted || scannedRef.current) return
             scannedRef.current = true
             onScan(decodedText)
-            setTimeout(() => { scannedRef.current = false }, 2000)
+            // 2초 동안 같은 코드 중복 처리 방지
+            setTimeout(() => {
+              scannedRef.current = false
+            }, 2000)
           },
           () => {}
         )
@@ -36,10 +44,33 @@ export default function QRScanner({ onScan }) {
     return () => {
       isMounted = false
       const scanner = scannerRef.current
+      scannerRef.current = null
+
       if (scanner) {
         try {
           const stopResult = scanner.stop()
-          if (stopResult?.catch) stopResult.catch((err) => console.warn('QR scanner stop error:', err?.message))
+
+          // html5-qrcode는 stop()이 Promise를 반환함
+          if (stopResult && typeof stopResult.then === 'function') {
+            stopResult
+              .then(() => {
+                try {
+                  scanner.clear()
+                } catch (err) {
+                  console.warn('QR scanner clear error:', err?.message)
+                }
+              })
+              .catch((err) => {
+                console.warn('QR scanner stop error:', err?.message)
+              })
+          } else {
+            // 혹시 Promise가 아닐 경우를 대비
+            try {
+              scanner.clear()
+            } catch (err) {
+              console.warn('QR scanner clear error (non-promise):', err?.message)
+            }
+          }
         } catch (err) {
           console.warn('QR scanner stop threw:', err?.message)
         }
@@ -76,19 +107,54 @@ export default function QRScanner({ onScan }) {
         }
       `}</style>
 
-      <div className="relative w-full max-w-xs" style={{ aspectRatio: '1' }}>
-        <div id="qr-scanner-container" className="w-full h-full rounded-2xl overflow-hidden" />
-
-        {/* Corner brackets — warm charcoal */}
+      <div
+        className="relative w-full max-w-xs"
+        style={{ aspectRatio: '1' }}
+      >
+        <div
+          id="qr-scanner-container"
+          className="w-full h-full rounded-2xl overflow-hidden"
+        />
+        {/* Corner brackets */}
         <div
           className="absolute pointer-events-none"
-          style={{ top: '50%', left: '50%', width: QR_BOX_SIZE, height: QR_BOX_SIZE, transform: 'translate(-50%, -50%)' }}
+          style={{
+            top: '50%',
+            left: '50%',
+            width: QR_BOX_SIZE,
+            height: QR_BOX_SIZE,
+            transform: 'translate(-50%, -50%)',
+          }}
         >
           {[
-            { top: 0,    left: 0,  borderTop: true,    borderLeft: true,  radius: '4px 0 0 0' },
-            { top: 0,    right: 0, borderTop: true,    borderRight: true, radius: '0 4px 0 0' },
-            { bottom: 0, left: 0,  borderBottom: true, borderLeft: true,  radius: '0 0 0 4px' },
-            { bottom: 0, right: 0, borderBottom: true, borderRight: true, radius: '0 0 4px 0' },
+            {
+              top: 0,
+              left: 0,
+              borderTop: true,
+              borderLeft: true,
+              radius: '4px 0 0 0',
+            },
+            {
+              top: 0,
+              right: 0,
+              borderTop: true,
+              borderRight: true,
+              radius: '0 4px 0 0',
+            },
+            {
+              bottom: 0,
+              left: 0,
+              borderBottom: true,
+              borderLeft: true,
+              radius: '0 0 0 4px',
+            },
+            {
+              bottom: 0,
+              right: 0,
+              borderBottom: true,
+              borderRight: true,
+              radius: '0 0 4px 0',
+            },
           ].map((corner, i) => (
             <span
               key={i}
@@ -96,14 +162,22 @@ export default function QRScanner({ onScan }) {
                 position: 'absolute',
                 width: 28,
                 height: 28,
-                ...(corner.top    !== undefined && { top:    corner.top }),
+                ...(corner.top !== undefined && { top: corner.top }),
                 ...(corner.bottom !== undefined && { bottom: corner.bottom }),
-                ...(corner.left   !== undefined && { left:   corner.left }),
-                ...(corner.right  !== undefined && { right:  corner.right }),
-                ...(corner.borderTop    && { borderTop:    '3px solid #F6F4F1' }),
-                ...(corner.borderBottom && { borderBottom: '3px solid #F6F4F1' }),
-                ...(corner.borderLeft   && { borderLeft:   '3px solid #F6F4F1' }),
-                ...(corner.borderRight  && { borderRight:  '3px solid #F6F4F1' }),
+                ...(corner.left !== undefined && { left: corner.left }),
+                ...(corner.right !== undefined && { right: corner.right }),
+                ...(corner.borderTop && {
+                  borderTop: '3px solid #F6F4F1',
+                }),
+                ...(corner.borderBottom && {
+                  borderBottom: '3px solid #F6F4F1',
+                }),
+                ...(corner.borderLeft && {
+                  borderLeft: '3px solid #F6F4F1',
+                }),
+                ...(corner.borderRight && {
+                  borderRight: '3px solid #F6F4F1',
+                }),
                 borderRadius: corner.radius,
               }}
             />
@@ -112,11 +186,28 @@ export default function QRScanner({ onScan }) {
       </div>
 
       <div className="flex flex-col items-center gap-1 text-center px-4">
-        <p style={{ fontSize: '14px', fontWeight: 600, color: '#2C2A27', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.04em', margin: 0 }}>
+        <p
+          style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#2C2A27',
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            letterSpacing: '0.04em',
+            margin: 0,
+          }}
+        >
           매장 QR 코드를 스캔해주세요
         </p>
-        <p style={{ fontSize: '12px', color: 'rgba(44,42,39,0.45)', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.02em', margin: 0 }}>
-          카메라가 실행되지 않으면 앱을 재시작해주세요
+        <p
+          style={{
+            fontSize: '12px',
+            color: 'rgba(44,42,39,0.45)',
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            letterSpacing: '0.02em',
+            margin: 0,
+          }}
+        >
+          카메라가 실행되지 않으면 권한 설정을 확인한 뒤 다시 시도해주세요
         </p>
       </div>
     </div>
