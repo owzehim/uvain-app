@@ -1142,7 +1142,7 @@ function NavBtn({ onClick, children, style = {} }) {
   )
 }
 
-// ─── Events Tab ───────────────────────────────────────────────────────────────
+// ─── Events Tab ──────────────────────────────────────────────────────────────
 function EventsTab({ events }) {
   const now = new Date()
 
@@ -1159,20 +1159,15 @@ function EventsTab({ events }) {
   const otherUpcomingEvents = nextEvent ? upcomingEvents.slice(1) : upcomingEvents
 
   // ── State ───────────────────────────────────────────────────────────────────
-  const [selectedEvent, setSelectedEvent] = useState(nextEvent)   // top-section event
+  const [selectedEvent, setSelectedEvent] = useState(nextEvent)
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
-  // Calendar: start on the month that contains the most-upcoming event (or today)
   const initialMonth = nextEvent ? new Date(nextEvent.event_date) : now
   const [calMonth, setCalMonth] = useState(
     new Date(initialMonth.getFullYear(), initialMonth.getMonth(), 1)
   )
-
-  // Reset top-section to most-upcoming whenever the tab remounts
-  // (parent increments tabKey which remounts this component)
-  // — no extra effect needed; useState initialiser handles it.
 
   const setSlide = (eventId, idx) =>
     setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
@@ -1220,24 +1215,14 @@ function EventsTab({ events }) {
     const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
     const pad = (n) => String(n).padStart(2, '0')
     const fmt = (d) =>
-      d.getUTCFullYear() +
-      pad(d.getUTCMonth() + 1) +
-      pad(d.getUTCDate()) +
-      'T' +
-      pad(d.getUTCHours()) +
-      pad(d.getUTCMinutes()) +
-      '00Z'
+      d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) +
+      'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + '00Z'
     const ics =
-      'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' +
-      fmt(start) +
-      '\nDTEND:' +
-      fmt(end) +
-      '\nSUMMARY:' +
-      ev.title +
-      '\nLOCATION:' +
-      (ev.location || '') +
-      '\nDESCRIPTION:' +
-      (ev.description || '') +
+      'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' + fmt(start) +
+      '\nDTEND:' + fmt(end) +
+      '\nSUMMARY:' + ev.title +
+      '\nLOCATION:' + (ev.location || '') +
+      '\nDESCRIPTION:' + (ev.description || '') +
       '\nEND:VEVENT\nEND:VCALENDAR'
     const blob = new Blob([ics], { type: 'text/calendar' })
     const url = URL.createObjectURL(blob)
@@ -1257,62 +1242,55 @@ function EventsTab({ events }) {
   }
 
   // ── Calendar helpers ────────────────────────────────────────────────────────
-  // Build a map: "YYYY-MM-DD" → array of events on that day
   const eventsByDate = {}
   events.forEach((ev) => {
     if (!ev.event_date) return
-    const key = ev.event_date.slice(0, 10) // "YYYY-MM-DD"
+    const key = ev.event_date.slice(0, 10)
     if (!eventsByDate[key]) eventsByDate[key] = []
     eventsByDate[key].push(ev)
   })
 
-  const nextEventDateKey = nextEvent ? nextEvent.event_date.slice(0, 10) : null
-
-  // Dot colour for a given event
-  const dotColor = (ev) => {
-    if (nextEvent && ev.id === nextEvent.id) return '#f97316'       // orange = most upcoming
-    if (new Date(ev.event_date) >= now) return '#1f2937'            // black  = future
-    return '#d1d5db'                                                 // grey   = past
+  // Circle style per event
+  const circleStyle = (ev) => {
+    if (nextEvent && ev.id === nextEvent.id)
+      return { bg: '#f97316', border: 'none', color: '#ffffff' }        // orange filled
+    if (new Date(ev.event_date) >= now)
+      return { bg: '#1f2937', border: 'none', color: '#ffffff' }        // black filled
+    return { bg: '#f3f4f6', border: 'none', color: '#9ca3af' }          // grey filled, muted text
   }
 
-  // Days grid for calMonth
-  const calYear  = calMonth.getFullYear()
+  const calYear     = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
-  const firstDayOfMonth = new Date(calYear, calMonthIdx, 1).getDay() // 0=Sun
-  const daysInMonth = new Date(calYear, calMonthIdx + 1, 0).getDate()
+  const firstDayOfMonth = new Date(calYear, calMonthIdx, 1).getDay()
+  const daysInMonth     = new Date(calYear, calMonthIdx + 1, 0).getDate()
 
-  // Cells: leading nulls + day numbers
+  // Always render exactly 6 rows (42 cells) so the calendar height never changes
   const cells = [
     ...Array(firstDayOfMonth).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ]
-  // Pad to full weeks
-  while (cells.length % 7 !== 0) cells.push(null)
+  while (cells.length < 42) cells.push(null)
 
   const calMonthLabel = calMonth.toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric',
+    month: 'long', year: 'numeric',
   })
 
-  const prevMonth = () =>
-    setCalMonth(new Date(calYear, calMonthIdx - 1, 1))
-  const nextMonth = () =>
-    setCalMonth(new Date(calYear, calMonthIdx + 1, 1))
+  const prevMonth = () => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))
+  const nextMonth = () => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))
 
   const handleDayPress = (day) => {
     if (!day) return
     const key = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const dayEvents = eventsByDate[key]
     if (!dayEvents || dayEvents.length === 0) return
-    // If multiple events on same day, pick the first; could be extended later
     setSelectedEvent(dayEvents[0])
   }
 
-  // ── Reusable event card renderer (accordion list) ───────────────────────────
+  // ── Reusable event card renderer ────────────────────────────────────────────
   const renderEvent = (ev) => {
-    const isExpanded = expandedId === ev.id
-    const imgs = ev['image_urls'] || []
-    const instaUrl = ev['instagram_url']
+    const isExpanded  = expandedId === ev.id
+    const imgs        = ev['image_urls'] || []
+    const instaUrl    = ev['instagram_url']
     const currentSlide = slideIndexes[ev.id] || 0
 
     return (
@@ -1348,7 +1326,6 @@ function EventsTab({ events }) {
           <div>
             {imgs.length > 0 && (
               <div className="px-4">
-                {/* Mobile swipe */}
                 <div
                   className="md:hidden"
                   onTouchStart={(e) => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
@@ -1362,10 +1339,7 @@ function EventsTab({ events }) {
                   }}
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-                    <div
-                      className="flex h-full"
-                      style={{ transform: `translateX(-${currentSlide * 100}%)`, transition: 'transform 0.3s ease' }}
-                    >
+                    <div className="flex h-full" style={{ transform: `translateX(-${currentSlide * 100}%)`, transition: 'transform 0.3s ease' }}>
                       {imgs.map((url, i) => (
                         <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
                           <img src={url} alt={`이미지 ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
@@ -1383,13 +1357,9 @@ function EventsTab({ events }) {
                   </div>
                 </div>
 
-                {/* Desktop nav arrows */}
                 <div className="hidden md:block">
                   <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-                    <div
-                      className="flex h-full"
-                      style={{ transform: `translateX(-${currentSlide * 100}%)`, transition: 'transform 0.3s ease' }}
-                    >
+                    <div className="flex h-full" style={{ transform: `translateX(-${currentSlide * 100}%)`, transition: 'transform 0.3s ease' }}>
                       {imgs.map((url, i) => (
                         <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
                           <img src={url} alt={`이미지 ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
@@ -1445,7 +1415,6 @@ function EventsTab({ events }) {
     )
   }
 
-  // ── The display event (top section) ─────────────────────────────────────────
   const displayEvent = selectedEvent
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -1458,102 +1427,70 @@ function EventsTab({ events }) {
           <div className="mb-4 pb-2">
             <div className="px-2">
               <div className="flex flex-col">
-
-                {/* Day name */}
                 {formatTopDate(displayEvent.event_date) && (
                   <span style={{
                     fontFamily: '"Handjet", system-ui, sans-serif',
-                    fontSize: fs.day,
-                    fontWeight: 500,
-                    color: '#9ca3af',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    lineHeight: 0.85,
+                    fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
+                    letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
                   }}>
                     {formatTopDate(displayEvent.event_date).dayName}
                   </span>
                 )}
 
-                {/* Date + info box row */}
                 <div className="flex items-stretch mt-2">
-
-                  {/* LEFT: date numbers */}
                   {formatTopDate(displayEvent.event_date) && (
                     <div className="flex flex-col items-start justify-center">
                       <span style={{
                         fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: fs.date,
-                        fontWeight: 800,
-                        color: '#1f2937',
-                        letterSpacing: '0.02em',
-                        lineHeight: 0.85,
+                        fontSize: fs.date, fontWeight: 800, color: '#1f2937',
+                        letterSpacing: '0.02em', lineHeight: 0.85,
                       }}>
                         {formatTopDate(displayEvent.event_date).dateNum}
                       </span>
                       <span style={{
                         fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: fs.month,
-                        fontWeight: 800,
-                        color: '#1f2937',
-                        letterSpacing: '0.04em',
-                        textTransform: 'uppercase',
-                        lineHeight: 0.85,
-                        marginTop: '2px',
+                        fontSize: fs.month, fontWeight: 800, color: '#1f2937',
+                        letterSpacing: '0.04em', textTransform: 'uppercase',
+                        lineHeight: 0.85, marginTop: '2px',
                       }}>
                         {formatTopDate(displayEvent.event_date).monthName}
                       </span>
                     </div>
                   )}
 
-                  {/* RIGHT: info box */}
                   <div className="flex-1 flex items-stretch" style={{ paddingLeft: '16px', paddingRight: '4px' }}>
                     <div style={{
-                      borderRadius: '12px',
-                      border: '1px solid #e5e7eb',
-                      backgroundColor: '#ffffff',
-                      padding: '12px 14px',
-                      boxSizing: 'border-box',
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
+                      borderRadius: '12px', border: '1px solid #e5e7eb',
+                      backgroundColor: '#ffffff', padding: '12px 14px',
+                      boxSizing: 'border-box', width: '100%', height: '100%',
+                      display: 'flex', flexDirection: 'column', justifyContent: 'center',
                     }}>
-                      {/* 1) Event name — biggest, orange */}
                       <div>
                         <span style={{
                           fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                          fontSize: `calc(${W} * 0.052)`,
-                          fontWeight: 700,
-                          color: '#f97316',
-                          lineHeight: 1.2,
+                          fontSize: `calc(${W} * 0.052)`, fontWeight: 700,
+                          color: '#f97316', lineHeight: 1.2,
                         }}>
                           {displayEvent.title}
                         </span>
                       </div>
-                      {/* 2) Time */}
                       {displayEvent.event_date && (
                         <div style={{ marginTop: '6px' }}>
                           <span style={{
                             fontFamily: '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.042)`,
-                            fontWeight: 700,
-                            color: '#111827',
-                            letterSpacing: '0.04em',
+                            fontSize: `calc(${W} * 0.042)`, fontWeight: 700,
+                            color: '#111827', letterSpacing: '0.04em',
                           }}>
                             {formatTopTime(displayEvent.event_date)}
                           </span>
                         </div>
                       )}
-                      {/* 3) Location */}
                       {displayEvent.location && (
                         <div style={{ marginTop: '4px' }}>
                           <span style={{
                             fontFamily: '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.036)`,
-                            fontWeight: 700,
-                            color: '#4b5563',
-                            letterSpacing: '0.04em',
+                            fontSize: `calc(${W} * 0.036)`, fontWeight: 700,
+                            color: '#4b5563', letterSpacing: '0.04em',
                           }}>
                             {displayEvent.location}
                           </span>
@@ -1561,7 +1498,6 @@ function EventsTab({ events }) {
                       )}
                     </div>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -1570,8 +1506,6 @@ function EventsTab({ events }) {
 
         {/* ── CALENDAR ── */}
         <div style={{
-          borderRadius: '16px',
-          border: '1px solid #e5e7eb',
           backgroundColor: '#ffffff',
           padding: '16px',
           marginBottom: '32px',
@@ -1579,48 +1513,47 @@ function EventsTab({ events }) {
 
           {/* Month header */}
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '12px',
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', marginBottom: '12px',
           }}>
             <button
               onClick={prevMonth}
               style={{
-                width: 32, height: 32,
-                borderRadius: '50%',
-                border: 'none',
-                background: '#f3f4f6',
-                cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '16px', color: '#374151',
+                width: 32, height: 32, borderRadius: '50%',
+                border: 'none', background: '#f3f4f6',
+                cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                color: '#374151',
               }}
             >
-              ‹
+              {/* Phosphor CaretLeft */}
+              <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+                <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z" />
+              </svg>
             </button>
+
             <span style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: `calc(${W} * 0.045)`,
-              fontWeight: 700,
-              color: '#1f2937',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
+              fontSize: `calc(${W} * 0.045)`, fontWeight: 700,
+              color: '#1f2937', letterSpacing: '0.04em', textTransform: 'uppercase',
             }}>
               {calMonthLabel}
             </span>
+
             <button
               onClick={nextMonth}
               style={{
-                width: 32, height: 32,
-                borderRadius: '50%',
-                border: 'none',
-                background: '#f3f4f6',
-                cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '16px', color: '#374151',
+                width: 32, height: 32, borderRadius: '50%',
+                border: 'none', background: '#f3f4f6',
+                cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                color: '#374151',
               }}
             >
-              ›
+              {/* Phosphor CaretRight */}
+              <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+                <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
+              </svg>
             </button>
           </div>
 
@@ -1630,88 +1563,107 @@ function EventsTab({ events }) {
               <div key={d} style={{
                 textAlign: 'center',
                 fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.032)`,
-                fontWeight: 600,
-                color: '#9ca3af',
-                paddingBottom: '4px',
+                fontSize: `calc(${W} * 0.032)`, fontWeight: 600,
+                color: '#9ca3af', paddingBottom: '4px',
               }}>
                 {d}
               </div>
             ))}
           </div>
 
-          {/* Day cells */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+          {/* Day cells — always 42 cells (6 rows × 7) for fixed height */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
             {cells.map((day, idx) => {
-              if (!day) return <div key={`empty-${idx}`} />
+              // Empty cell — render a transparent placeholder of the same size
+              if (!day) {
+                return (
+                  <div
+                    key={`empty-${idx}`}
+                    style={{ aspectRatio: '1/1' }}
+                  />
+                )
+              }
 
               const dateKey = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-              const dayEvents = eventsByDate[dateKey] || []
-              const hasEvents = dayEvents.length > 0
+              const dayEvents  = eventsByDate[dateKey] || []
+              const hasEvents  = dayEvents.length > 0
 
               const isToday =
                 day === now.getDate() &&
                 calMonthIdx === now.getMonth() &&
                 calYear === now.getFullYear()
 
-              // Is this day the selected event's day?
               const isSelected =
                 selectedEvent &&
                 selectedEvent.event_date &&
                 selectedEvent.event_date.slice(0, 10) === dateKey
+
+              // Determine circle appearance
+              // Priority: event circle > today circle > plain
+              let circleBg     = 'transparent'
+              let circleBorder = 'none'
+              let textColor    = '#1f2937'
+              let fontWeight   = 500
+
+              if (hasEvents) {
+                const style = circleStyle(dayEvents[0])
+                circleBg     = style.bg
+                circleBorder = style.border
+                textColor    = style.color
+                fontWeight   = 700
+              } else if (isToday) {
+                circleBg     = '#ffffff'
+                circleBorder = '2px solid #1f2937'
+                textColor    = '#1f2937'
+                fontWeight   = 700
+              }
+
+              // Today with no event: white circle, black border
+              // Today with event: event style takes priority, add ring
+              const todayRing = isToday && hasEvents
+                ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937'
+                : 'none'
 
               return (
                 <div
                   key={dateKey}
                   onClick={() => handleDayPress(day)}
                   style={{
+                    aspectRatio: '1/1',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    borderRadius: '10px',
                     cursor: hasEvents ? 'pointer' : 'default',
-                    backgroundColor: isSelected ? '#fff7ed' : 'transparent',
-                    border: isSelected ? '1px solid #f97316' : '1px solid transparent',
-                    transition: 'background-color 0.15s',
                   }}
                 >
-                  {/* Day number */}
-                  <span style={{
-                    fontFamily: '"Handjet", system-ui, sans-serif',
-                    fontSize: `calc(${W} * 0.038)`,
-                    fontWeight: isToday ? 800 : 500,
-                    color: isToday ? '#f97316' : '#1f2937',
-                    lineHeight: 1,
-                  }}>
-                    {day}
-                  </span>
-
-                  {/* Event dots */}
-                  {hasEvents && (
-                    <div style={{
+                  <div
+                    style={{
+                      width: '85%',
+                      aspectRatio: '1/1',
+                      borderRadius: '50%',
+                      backgroundColor: circleBg,
+                      border: circleBorder,
+                      boxShadow: todayRing,
                       display: 'flex',
-                      gap: '2px',
-                      marginTop: '3px',
-                      flexWrap: 'wrap',
+                      alignItems: 'center',
                       justifyContent: 'center',
-                      maxWidth: '24px',
+                      // Highlight selected day with a subtle orange ring
+                      outline: isSelected && hasEvents ? '2px solid #f97316' : 'none',
+                      outlineOffset: '2px',
+                      transition: 'background-color 0.15s',
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontSize: `calc(${W} * 0.036)`,
+                      fontWeight,
+                      color: textColor,
+                      lineHeight: 1,
+                      userSelect: 'none',
                     }}>
-                      {dayEvents.slice(0, 3).map((ev) => (
-                        <div
-                          key={ev.id}
-                          style={{
-                            width: 5,
-                            height: 5,
-                            borderRadius: '50%',
-                            backgroundColor: dotColor(ev),
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
+                      {day}
+                    </span>
+                  </div>
                 </div>
               )
             })}
@@ -1719,25 +1671,27 @@ function EventsTab({ events }) {
 
           {/* Legend */}
           <div style={{
-            display: 'flex',
-            gap: '16px',
-            marginTop: '12px',
-            paddingTop: '10px',
-            borderTop: '1px solid #f3f4f6',
+            display: 'flex', gap: '16px', marginTop: '12px',
+            paddingTop: '10px', borderTop: '1px solid #f3f4f6',
             justifyContent: 'center',
           }}>
             {[
-              { color: '#f97316', label: 'Next up' },
-              { color: '#1f2937', label: 'Upcoming' },
-              { color: '#d1d5db', label: 'Past' },
-            ].map(({ color, label }) => (
+              { bg: '#f97316', border: 'none',              label: 'Next up'  },
+              { bg: '#1f2937', border: 'none',              label: 'Upcoming' },
+              { bg: '#f3f4f6', border: 'none',              label: 'Past'     },
+              { bg: '#ffffff', border: '2px solid #1f2937', label: 'Today'    },
+            ].map(({ bg, border, label }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: color }} />
+                <div style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  backgroundColor: bg,
+                  border,
+                  boxSizing: 'border-box',
+                }} />
                 <span style={{
                   fontFamily: '"Handjet", system-ui, sans-serif',
                   fontSize: `calc(${W} * 0.03)`,
-                  color: '#6b7280',
-                  fontWeight: 500,
+                  color: '#6b7280', fontWeight: 500,
                 }}>
                   {label}
                 </span>
@@ -1754,8 +1708,7 @@ function EventsTab({ events }) {
               const blocks = []
               otherUpcomingEvents.forEach((ev) => {
                 const label = ev.event_date
-                  ? `${new Date(ev.event_date).getMonth() + 1}월`
-                  : '날짜 미정'
+                  ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
                 if (label !== currentMonth) {
                   currentMonth = label
                   blocks.push(
@@ -1793,8 +1746,7 @@ function EventsTab({ events }) {
                   const blocks = []
                   pastEvents.forEach((ev) => {
                     const label = ev.event_date
-                      ? `${new Date(ev.event_date).getMonth() + 1}월`
-                      : '날짜 미정'
+                      ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
                     if (label !== currentMonth) {
                       currentMonth = label
                       blocks.push(
