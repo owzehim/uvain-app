@@ -2,48 +2,19 @@ import { useEffect, useRef } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 
 const QR_BOX_SIZE = 220
-const SCANNER_ID = 'qr-scanner-container'
-
-function forceStopCamera() {
-  // 1. Stop tracks on any video element inside the container
-  const container = document.getElementById(SCANNER_ID)
-  if (container) {
-    container.querySelectorAll('video').forEach((v) => {
-      if (v.srcObject) {
-        v.srcObject.getTracks().forEach((t) => t.stop())
-        v.srcObject = null
-      }
-      v.pause()
-    })
-    // 2. Wipe the container so html5-qrcode starts clean on next mount
-    container.innerHTML = ''
-  }
-
-  // 3. Belt-and-suspenders: stop every video on the entire page
-  document.querySelectorAll('video').forEach((v) => {
-    if (v.srcObject) {
-      v.srcObject.getTracks().forEach((t) => t.stop())
-      v.srcObject = null
-    }
-    v.pause()
-  })
-}
 
 export default function QRScanner({ onScan }) {
   const scannerRef = useRef(null)
   const scannedRef = useRef(false)
 
   useEffect(() => {
+    const scannerId = 'qr-scanner-container'
     let isMounted = true
 
     async function startScanner() {
-      // Always wipe the container before initialising — handles the re-entry blank screen
-      forceStopCamera()
-
       try {
-        const scanner = new Html5Qrcode(SCANNER_ID, { verbose: false })
+        const scanner = new Html5Qrcode(scannerId, { verbose: false })
         scannerRef.current = scanner
-
         await scanner.start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1.0 },
@@ -65,15 +36,13 @@ export default function QRScanner({ onScan }) {
     return () => {
       isMounted = false
       const scanner = scannerRef.current
-      scannerRef.current = null
-
       if (scanner) {
-        scanner
-          .stop()
-          .catch((err) => console.warn('QR scanner stop error:', err?.message))
-          .finally(() => forceStopCamera())
-      } else {
-        forceStopCamera()
+        try {
+          const stopResult = scanner.stop()
+          if (stopResult?.catch) stopResult.catch((err) => console.warn('QR scanner stop error:', err?.message))
+        } catch (err) {
+          console.warn('QR scanner stop threw:', err?.message)
+        }
       }
     }
   }, [onScan])
@@ -81,20 +50,22 @@ export default function QRScanner({ onScan }) {
   return (
     <div className="flex flex-col items-center gap-3 w-full">
       <style>{`
-        #${SCANNER_ID} #qr-shaded-region {
+        #qr-scanner-container #qr-shaded-region {
           border-width: 0 !important;
         }
-        #${SCANNER_ID} video {
+        #qr-scanner-container video {
           border-radius: 12px;
         }
-        #${SCANNER_ID} #qr-shaded-region + div,
-        #${SCANNER_ID} [id^="qr-code-full-region"] > div:last-child {
+        #qr-scanner-container #qr-shaded-region + div,
+        #qr-scanner-container [id^="qr-code-full-region"] > div:last-child {
           border: none !important;
         }
+        /* Overlay: card background color */
         #qr-shaded-region {
           border: none !important;
           box-shadow: 0 0 0 9999px rgba(246, 244, 241, 0.75) !important;
         }
+        /* Scan box inner border: white */
         #qr-shaded-region::before {
           content: '';
           position: absolute;
@@ -106,9 +77,9 @@ export default function QRScanner({ onScan }) {
       `}</style>
 
       <div className="relative w-full max-w-xs" style={{ aspectRatio: '1' }}>
-        <div id={SCANNER_ID} className="w-full h-full rounded-2xl overflow-hidden" />
+        <div id="qr-scanner-container" className="w-full h-full rounded-2xl overflow-hidden" />
 
-        {/* Corner brackets */}
+        {/* Corner brackets — warm charcoal */}
         <div
           className="absolute pointer-events-none"
           style={{ top: '50%', left: '50%', width: QR_BOX_SIZE, height: QR_BOX_SIZE, transform: 'translate(-50%, -50%)' }}
