@@ -1582,76 +1582,73 @@ function EventsTab({ events }) {
             </div>
           )}
 
-          {/* RIGHT: wide box stretching to screen edge */}
-          <div
-            className="flex-1 flex items-stretch"
-            style={{ paddingLeft: '16px', paddingRight: '4px' }}
-          >
-            <div
-              style={{
-                borderRadius: '12px',
-                border: '1px solid #e5e7eb',
-                backgroundColor: '#ffffff',
-                padding: '12px 14px',
-                boxSizing: 'border-box',
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-              }}
-            >
-              {/* 1) Time */}
-              {nextEvent.event_date && (
-                <div>
-                  <span
-                    style={{
-                      fontFamily: '"Handjet", system-ui, sans-serif',
-                      fontSize: `calc(${W} * 0.04)`,
-                      fontWeight: 700,
-                      color: '#111827',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
-                    {formatTopTime(nextEvent.event_date)}
-                  </span>
-                </div>
-              )}
+          
+{/* RIGHT: wide box stretching to screen edge */}
+<div className="flex-1 flex items-stretch" style={{ paddingLeft: '16px', paddingRight: '4px' }}>
+  <div
+    style={{
+      borderRadius: '12px',
+      border: '1px solid #e5e7eb',
+      backgroundColor: '#ffffff',
+      padding: '12px 14px',
+      boxSizing: 'border-box',
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    }}
+  >
+    {/* 1) Event name — biggest, orange */}
+    <div>
+      <span
+        style={{
+          fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+          fontSize: `calc(${W} * 0.052)`,   // ← increased & biggest
+          fontWeight: 700,
+          color: '#f97316',                  // ← orange
+          lineHeight: 1.2,
+        }}
+      >
+        {nextEvent.title}
+      </span>
+    </div>
 
-              {/* 2) Event name */}
-              <div style={{ marginTop: '4px' }}>
-                <span
-                  style={{
-                    fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                    fontSize: `calc(${W} * 0.036)`,
-                    fontWeight: 600,
-                    color: '#1f2937',
-                    lineHeight: 1.25,
-                  }}
-                >
-                  {nextEvent.title}
-                </span>
-              </div>
+    {/* 2) Time */}
+    {nextEvent.event_date && (
+      <div style={{ marginTop: '6px' }}>
+        <span
+          style={{
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontSize: `calc(${W} * 0.042)`,  // ← increased, medium
+            fontWeight: 700,
+            color: '#111827',
+            letterSpacing: '0.04em',
+          }}
+        >
+          {formatTopTime(nextEvent.event_date)}
+        </span>
+      </div>
+    )}
 
-              {/* 3) Location */}
-              {nextEvent.location && (
-                <div style={{ marginTop: '2px' }}>
-                  <span
-                    style={{
-                      fontFamily: '"Handjet", system-ui, sans-serif',
-                      fontSize: `calc(${W} * 0.032)`,
-                      fontWeight: 700,
-                      color: '#4b5563',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
-                    {nextEvent.location}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
+    {/* 3) Location */}
+    {nextEvent.location && (
+      <div style={{ marginTop: '4px' }}>
+        <span
+          style={{
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontSize: `calc(${W} * 0.036)`,  // ← increased, smallest of the three
+            fontWeight: 700,
+            color: '#4b5563',
+            letterSpacing: '0.04em',
+          }}
+        >
+          {nextEvent.location}
+        </span>
+      </div>
+    )}
+  </div>
+</div>
         </div>
       </div>
     </div>
