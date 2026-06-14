@@ -1164,10 +1164,18 @@ function EventsTab({ events }) {
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
-  const initialMonth = nextEvent ? new Date(nextEvent.event_date) : now
+  // Calendar month syncs with selectedEvent
+  const eventMonth = selectedEvent ? new Date(selectedEvent.event_date) : now
   const [calMonth, setCalMonth] = useState(
-    new Date(initialMonth.getFullYear(), initialMonth.getMonth(), 1)
+    new Date(eventMonth.getFullYear(), eventMonth.getMonth(), 1)
   )
+
+  // Sync calendar to selected event's month
+  useEffect(() => {
+    if (!selectedEvent || !selectedEvent.event_date) return
+    const evDate = new Date(selectedEvent.event_date)
+    setCalMonth(new Date(evDate.getFullYear(), evDate.getMonth(), 1))
+  }, [selectedEvent])
 
   const setSlide = (eventId, idx) =>
     setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
@@ -1188,6 +1196,37 @@ function EventsTab({ events }) {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [expandedId, slideIndexes, events])
+
+  // ── Drag/swipe to navigate events ────────────────────────────────────────────
+  const topSectionRef = useRef(null)
+  const dragStartY = useRef(null)
+
+  const allEvents = [...upcomingEvents, ...pastEvents]
+  const currentEventIndex = allEvents.findIndex((ev) => ev.id === selectedEvent?.id)
+
+  const handleTopSectionTouchStart = (e) => {
+    dragStartY.current = e.touches[0].clientY
+  }
+
+  const handleTopSectionTouchEnd = (e) => {
+    if (dragStartY.current == null) return
+    const dy = dragStartY.current - e.changedTouches[0].clientY
+    const SWIPE_THRESHOLD = 40
+
+    if (dy > SWIPE_THRESHOLD) {
+      // Swiped up → next event
+      if (currentEventIndex < allEvents.length - 1) {
+        setSelectedEvent(allEvents[currentEventIndex + 1])
+      }
+    } else if (dy < -SWIPE_THRESHOLD) {
+      // Swiped down → prev event
+      if (currentEventIndex > 0) {
+        setSelectedEvent(allEvents[currentEventIndex - 1])
+      }
+    }
+
+    dragStartY.current = null
+  }
 
   // ── Formatters ──────────────────────────────────────────────────────────────
   const formatTopDate = (dateStr) => {
@@ -1256,7 +1295,7 @@ function EventsTab({ events }) {
       return { bg: '#f97316', border: 'none', color: '#ffffff' }        // orange filled
     if (new Date(ev.event_date) >= now)
       return { bg: '#1f2937', border: 'none', color: '#ffffff' }        // black filled
-    return { bg: '#f3f4f6', border: 'none', color: '#9ca3af' }          // grey filled, muted text
+    return { bg: '#6b7280', border: 'none', color: '#ffffff' }          // darker grey filled
   }
 
   const calYear     = calMonth.getFullYear()
@@ -1419,359 +1458,370 @@ function EventsTab({ events }) {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="px-4 py-6 max-w-md mx-auto">
-
-        {/* ── TOP: most-upcoming / selected event ── */}
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      
+      {/* ── TOP SECTION: swipe to navigate events (NOT scrollable) ── */}
+      <div
+        ref={topSectionRef}
+        onTouchStart={handleTopSectionTouchStart}
+        onTouchEnd={handleTopSectionTouchEnd}
+        style={{
+          flex: '0 0 auto',
+          padding: '16px',
+          paddingTop: '24px',
+          backgroundColor: '#ffffff',
+          borderBottom: '1px solid #f3f4f6',
+          touchAction: 'none',
+          userSelect: 'none',
+        }}
+      >
         {displayEvent && (
-          <div className="mb-4 pb-2">
-            <div className="px-2">
-              <div className="flex flex-col">
+          <div className="px-2 max-w-md mx-auto">
+            <div className="flex flex-col">
+              {formatTopDate(displayEvent.event_date) && (
+                <span style={{
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
+                  letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
+                }}>
+                  {formatTopDate(displayEvent.event_date).dayName}
+                </span>
+              )}
+
+              <div className="flex items-stretch mt-2">
                 {formatTopDate(displayEvent.event_date) && (
-                  <span style={{
-                    fontFamily: '"Handjet", system-ui, sans-serif',
-                    fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
-                    letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
-                  }}>
-                    {formatTopDate(displayEvent.event_date).dayName}
-                  </span>
+                  <div className="flex flex-col items-start justify-center">
+                    <span style={{
+                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontSize: fs.date, fontWeight: 800, color: '#1f2937',
+                      letterSpacing: '0.02em', lineHeight: 0.85,
+                    }}>
+                      {formatTopDate(displayEvent.event_date).dateNum}
+                    </span>
+                    <span style={{
+                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontSize: fs.month, fontWeight: 800, color: '#1f2937',
+                      letterSpacing: '0.04em', textTransform: 'uppercase',
+                      lineHeight: 0.85, marginTop: '2px',
+                    }}>
+                      {formatTopDate(displayEvent.event_date).monthName}
+                    </span>
+                  </div>
                 )}
 
-                <div className="flex items-stretch mt-2">
-                  {formatTopDate(displayEvent.event_date) && (
-                    <div className="flex flex-col items-start justify-center">
+                <div className="flex-1 flex items-stretch" style={{ paddingLeft: '16px', paddingRight: '4px' }}>
+                  <div style={{
+                    borderRadius: '12px', border: '1px solid #e5e7eb',
+                    backgroundColor: '#ffffff', padding: '12px 14px',
+                    boxSizing: 'border-box', width: '100%', height: '100%',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                  }}>
+                    <div>
                       <span style={{
-                        fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: fs.date, fontWeight: 800, color: '#1f2937',
-                        letterSpacing: '0.02em', lineHeight: 0.85,
+                        fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                        fontSize: `calc(${W} * 0.052)`, fontWeight: 700,
+                        color: '#f97316', lineHeight: 1.2,
                       }}>
-                        {formatTopDate(displayEvent.event_date).dateNum}
-                      </span>
-                      <span style={{
-                        fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: fs.month, fontWeight: 800, color: '#1f2937',
-                        letterSpacing: '0.04em', textTransform: 'uppercase',
-                        lineHeight: 0.85, marginTop: '2px',
-                      }}>
-                        {formatTopDate(displayEvent.event_date).monthName}
+                        {displayEvent.title}
                       </span>
                     </div>
-                  )}
-
-                  <div className="flex-1 flex items-stretch" style={{ paddingLeft: '16px', paddingRight: '4px' }}>
-                    <div style={{
-                      borderRadius: '12px', border: '1px solid #e5e7eb',
-                      backgroundColor: '#ffffff', padding: '12px 14px',
-                      boxSizing: 'border-box', width: '100%', height: '100%',
-                      display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                    }}>
-                      <div>
+                    {displayEvent.event_date && (
+                      <div style={{ marginTop: '6px' }}>
                         <span style={{
-                          fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                          fontSize: `calc(${W} * 0.052)`, fontWeight: 700,
-                          color: '#f97316', lineHeight: 1.2,
+                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontSize: `calc(${W} * 0.042)`, fontWeight: 700,
+                          color: '#111827', letterSpacing: '0.04em',
                         }}>
-                          {displayEvent.title}
+                          {formatTopTime(displayEvent.event_date)}
                         </span>
                       </div>
-                      {displayEvent.event_date && (
-                        <div style={{ marginTop: '6px' }}>
-                          <span style={{
-                            fontFamily: '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.042)`, fontWeight: 700,
-                            color: '#111827', letterSpacing: '0.04em',
-                          }}>
-                            {formatTopTime(displayEvent.event_date)}
-                          </span>
-                        </div>
-                      )}
-                      {displayEvent.location && (
-                        <div style={{ marginTop: '4px' }}>
-                          <span style={{
-                            fontFamily: '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.036)`, fontWeight: 700,
-                            color: '#4b5563', letterSpacing: '0.04em',
-                          }}>
-                            {displayEvent.location}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    )}
+                    {displayEvent.location && (
+                      <div style={{ marginTop: '4px' }}>
+                        <span style={{
+                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontSize: `calc(${W} * 0.036)`, fontWeight: 700,
+                          color: '#4b5563', letterSpacing: '0.04em',
+                        }}>
+                          {displayEvent.location}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         )}
+      </div>
 
-        {/* ── CALENDAR ── */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '16px',
-          marginBottom: '32px',
-        }}>
+      {/* ── SCROLLABLE SECTION: calendar + list ── */}
+      <div style={{ flex: '1', overflow: 'auto' }}>
+        <div className="px-4 py-6 max-w-md mx-auto">
 
-          {/* Month header */}
+          {/* ── CALENDAR ── */}
           <div style={{
-            display: 'flex', alignItems: 'center',
-            justifyContent: 'space-between', marginBottom: '12px',
+            backgroundColor: '#ffffff',
+            padding: '16px',
+            marginBottom: '32px',
           }}>
-            <button
-              onClick={prevMonth}
-              style={{
-                width: 32, height: 32, borderRadius: '50%',
-                border: 'none', background: '#f3f4f6',
-                cursor: 'pointer', display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
-                color: '#374151',
-              }}
-            >
-              {/* Phosphor CaretLeft */}
-              <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
-                <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z" />
-              </svg>
-            </button>
 
-            <span style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: `calc(${W} * 0.045)`, fontWeight: 700,
-              color: '#1f2937', letterSpacing: '0.04em', textTransform: 'uppercase',
+            {/* Month header */}
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between', marginBottom: '12px',
             }}>
-              {calMonthLabel}
-            </span>
+              <button
+                onClick={prevMonth}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  border: 'none', background: '#f3f4f6',
+                  cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  color: '#374151',
+                }}
+              >
+                {/* Phosphor CaretLeft */}
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+                  <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z" />
+                </svg>
+              </button>
 
-            <button
-              onClick={nextMonth}
-              style={{
-                width: 32, height: 32, borderRadius: '50%',
-                border: 'none', background: '#f3f4f6',
-                cursor: 'pointer', display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
-                color: '#374151',
-              }}
-            >
-              {/* Phosphor CaretRight */}
-              <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
-                <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Weekday labels */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '4px' }}>
-            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-              <div key={d} style={{
-                textAlign: 'center',
+              <span style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.032)`, fontWeight: 600,
-                color: '#9ca3af', paddingBottom: '4px',
+                fontSize: `calc(${W} * 0.045)`, fontWeight: 700,
+                color: '#1f2937', letterSpacing: '0.04em', textTransform: 'uppercase',
               }}>
-                {d}
-              </div>
-            ))}
-          </div>
+                {calMonthLabel}
+              </span>
 
-          {/* Day cells — always 42 cells (6 rows × 7) for fixed height */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
-            {cells.map((day, idx) => {
-              // Empty cell — render a transparent placeholder of the same size
-              if (!day) {
+              <button
+                onClick={nextMonth}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  border: 'none', background: '#f3f4f6',
+                  cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  color: '#374151',
+                }}
+              >
+                {/* Phosphor CaretRight */}
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+                  <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Weekday labels */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '4px' }}>
+              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                <div key={d} style={{
+                  textAlign: 'center',
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: `calc(${W} * 0.032)`, fontWeight: 600,
+                  color: '#9ca3af', paddingBottom: '4px',
+                }}>
+                  {d}
+                </div>
+              ))}
+            </div>
+
+            {/* Day cells — always 42 cells (6 rows × 7) for fixed height */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
+              {cells.map((day, idx) => {
+                if (!day) {
+                  return (
+                    <div
+                      key={`empty-${idx}`}
+                      style={{ aspectRatio: '1/1' }}
+                    />
+                  )
+                }
+
+                const dateKey = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const dayEvents  = eventsByDate[dateKey] || []
+                const hasEvents  = dayEvents.length > 0
+
+                const isToday =
+                  day === now.getDate() &&
+                  calMonthIdx === now.getMonth() &&
+                  calYear === now.getFullYear()
+
+                const isSelected =
+                  selectedEvent &&
+                  selectedEvent.event_date &&
+                  selectedEvent.event_date.slice(0, 10) === dateKey
+
+                // Determine circle appearance
+                let circleBg     = 'transparent'
+                let circleBorder = 'none'
+                let textColor    = '#1f2937'
+                let fontWeight   = 500
+
+                if (hasEvents) {
+                  const style = circleStyle(dayEvents[0])
+                  circleBg     = style.bg
+                  circleBorder = style.border
+                  textColor    = style.color
+                  fontWeight   = 700
+                } else if (isToday) {
+                  circleBg     = '#ffffff'
+                  circleBorder = '2px solid #1f2937'
+                  textColor    = '#1f2937'
+                  fontWeight   = 700
+                }
+
+                // Today with event: add ring
+                const todayRing = isToday && hasEvents
+                  ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937'
+                  : 'none'
+
                 return (
                   <div
-                    key={`empty-${idx}`}
-                    style={{ aspectRatio: '1/1' }}
-                  />
-                )
-              }
-
-              const dateKey = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-              const dayEvents  = eventsByDate[dateKey] || []
-              const hasEvents  = dayEvents.length > 0
-
-              const isToday =
-                day === now.getDate() &&
-                calMonthIdx === now.getMonth() &&
-                calYear === now.getFullYear()
-
-              const isSelected =
-                selectedEvent &&
-                selectedEvent.event_date &&
-                selectedEvent.event_date.slice(0, 10) === dateKey
-
-              // Determine circle appearance
-              // Priority: event circle > today circle > plain
-              let circleBg     = 'transparent'
-              let circleBorder = 'none'
-              let textColor    = '#1f2937'
-              let fontWeight   = 500
-
-              if (hasEvents) {
-                const style = circleStyle(dayEvents[0])
-                circleBg     = style.bg
-                circleBorder = style.border
-                textColor    = style.color
-                fontWeight   = 700
-              } else if (isToday) {
-                circleBg     = '#ffffff'
-                circleBorder = '2px solid #1f2937'
-                textColor    = '#1f2937'
-                fontWeight   = 700
-              }
-
-              // Today with no event: white circle, black border
-              // Today with event: event style takes priority, add ring
-              const todayRing = isToday && hasEvents
-                ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937'
-                : 'none'
-
-              return (
-                <div
-                  key={dateKey}
-                  onClick={() => handleDayPress(day)}
-                  style={{
-                    aspectRatio: '1/1',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: hasEvents ? 'pointer' : 'default',
-                  }}
-                >
-                  <div
+                    key={dateKey}
+                    onClick={() => handleDayPress(day)}
                     style={{
-                      width: '85%',
                       aspectRatio: '1/1',
-                      borderRadius: '50%',
-                      backgroundColor: circleBg,
-                      border: circleBorder,
-                      boxShadow: todayRing,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      // Highlight selected day with a subtle orange ring
-                      outline: isSelected && hasEvents ? '2px solid #f97316' : 'none',
-                      outlineOffset: '2px',
-                      transition: 'background-color 0.15s',
+                      cursor: hasEvents ? 'pointer' : 'default',
                     }}
                   >
-                    <span style={{
-                      fontFamily: '"Handjet", system-ui, sans-serif',
-                      fontSize: `calc(${W} * 0.036)`,
-                      fontWeight,
-                      color: textColor,
-                      lineHeight: 1,
-                      userSelect: 'none',
-                    }}>
-                      {day}
-                    </span>
+                    <div
+                      style={{
+                        width: '85%',
+                        aspectRatio: '1/1',
+                        borderRadius: '50%',
+                        backgroundColor: circleBg,
+                        border: circleBorder,
+                        boxShadow: todayRing,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'background-color 0.15s',
+                      }}
+                    >
+                      <span style={{
+                        fontFamily: '"Handjet", system-ui, sans-serif',
+                        fontSize: `calc(${W} * 0.036)`,
+                        fontWeight,
+                        color: textColor,
+                        lineHeight: 1,
+                        userSelect: 'none',
+                      }}>
+                        {day}
+                      </span>
+                    </div>
                   </div>
+                )
+              })}
+            </div>
+
+            {/* Legend */}
+            <div style={{
+              display: 'flex', gap: '16px', marginTop: '12px',
+              paddingTop: '10px', borderTop: '1px solid #f3f4f6',
+              justifyContent: 'center',
+            }}>
+              {[
+                { bg: '#f97316', border: 'none',              label: 'Next up'  },
+                { bg: '#1f2937', border: 'none',              label: 'Upcoming' },
+                { bg: '#6b7280', border: 'none',              label: 'Past'     },
+                { bg: '#ffffff', border: '2px solid #1f2937', label: 'Today'    },
+              ].map(({ bg, border, label }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <div style={{
+                    width: 10, height: 10, borderRadius: '50%',
+                    backgroundColor: bg,
+                    border,
+                    boxSizing: 'border-box',
+                  }} />
+                  <span style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: `calc(${W} * 0.03)`,
+                    color: '#6b7280', fontWeight: 500,
+                  }}>
+                    {label}
+                  </span>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
 
-          {/* Legend */}
-          <div style={{
-            display: 'flex', gap: '16px', marginTop: '12px',
-            paddingTop: '10px', borderTop: '1px solid #f3f4f6',
-            justifyContent: 'center',
-          }}>
-            {[
-              { bg: '#f97316', border: 'none',              label: 'Next up'  },
-              { bg: '#1f2937', border: 'none',              label: 'Upcoming' },
-              { bg: '#f3f4f6', border: 'none',              label: 'Past'     },
-              { bg: '#ffffff', border: '2px solid #1f2937', label: 'Today'    },
-            ].map(({ bg, border, label }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <div style={{
-                  width: 10, height: 10, borderRadius: '50%',
-                  backgroundColor: bg,
-                  border,
-                  boxSizing: 'border-box',
-                }} />
-                <span style={{
-                  fontFamily: '"Handjet", system-ui, sans-serif',
-                  fontSize: `calc(${W} * 0.03)`,
-                  color: '#6b7280', fontWeight: 500,
-                }}>
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
+          {/* ── UPCOMING LIST ── */}
+          {otherUpcomingEvents.length > 0 && (
+            <div className="mb-8">
+              {(() => {
+                let currentMonth = null
+                const blocks = []
+                otherUpcomingEvents.forEach((ev) => {
+                  const label = ev.event_date
+                    ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
+                  if (label !== currentMonth) {
+                    currentMonth = label
+                    blocks.push(
+                      <p key={`month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                        {label}
+                      </p>
+                    )
+                  }
+                  blocks.push(renderEvent(ev))
+                })
+                return blocks
+              })()}
+            </div>
+          )}
+
+          {/* ── PAST EVENTS ── */}
+          {pastEvents.length > 0 && (
+            <div className="mt-6">
+              <button
+                onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+                className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600 font-semibold">지난 이벤트</span>
+                  <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
+                    {pastEvents.length}
+                  </span>
+                </div>
+                <span className="text-gray-400 text-lg">{pastEventsExpanded ? '▲' : '▼'}</span>
+              </button>
+              {pastEventsExpanded && (
+                <div className="space-y-3 mt-3">
+                  {(() => {
+                    let currentMonth = null
+                    const blocks = []
+                    pastEvents.forEach((ev) => {
+                      const label = ev.event_date
+                        ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
+                      if (label !== currentMonth) {
+                        currentMonth = label
+                        blocks.push(
+                          <p key={`past-month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                            {label}
+                          </p>
+                        )
+                      }
+                      blocks.push(renderEvent(ev))
+                    })
+                    return blocks
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── EMPTY STATE ── */}
+          {!nextEvent && otherUpcomingEvents.length === 0 && pastEvents.length === 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <p className="text-2xl mb-2">📅</p>
+              <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
+            </div>
+          )}
+
         </div>
-
-        {/* ── UPCOMING LIST ── */}
-        {otherUpcomingEvents.length > 0 && (
-          <div className="mb-8">
-            {(() => {
-              let currentMonth = null
-              const blocks = []
-              otherUpcomingEvents.forEach((ev) => {
-                const label = ev.event_date
-                  ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
-                if (label !== currentMonth) {
-                  currentMonth = label
-                  blocks.push(
-                    <p key={`month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
-                      {label}
-                    </p>
-                  )
-                }
-                blocks.push(renderEvent(ev))
-              })
-              return blocks
-            })()}
-          </div>
-        )}
-
-        {/* ── PAST EVENTS ── */}
-        {pastEvents.length > 0 && (
-          <div className="mt-6">
-            <button
-              onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
-              className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 font-semibold">지난 이벤트</span>
-                <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
-                  {pastEvents.length}
-                </span>
-              </div>
-              <span className="text-gray-400 text-lg">{pastEventsExpanded ? '▲' : '▼'}</span>
-            </button>
-            {pastEventsExpanded && (
-              <div className="space-y-3 mt-3">
-                {(() => {
-                  let currentMonth = null
-                  const blocks = []
-                  pastEvents.forEach((ev) => {
-                    const label = ev.event_date
-                      ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
-                    if (label !== currentMonth) {
-                      currentMonth = label
-                      blocks.push(
-                        <p key={`past-month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
-                          {label}
-                        </p>
-                      )
-                    }
-                    blocks.push(renderEvent(ev))
-                  })
-                  return blocks
-                })()}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── EMPTY STATE ── */}
-        {!nextEvent && otherUpcomingEvents.length === 0 && pastEvents.length === 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-            <p className="text-2xl mb-2">📅</p>
-            <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
-          </div>
-        )}
-
       </div>
     </div>
   )
