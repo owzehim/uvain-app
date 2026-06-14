@@ -1142,7 +1142,17 @@ function NavBtn({ onClick, children, style = {} }) {
   )
 }
 
+
 // ─── Events Tab ──────────────────────────────────────────────────────────────
+// Drop-in replacement for the EventsTab function in MemberPage.jsx
+// Features:
+// - Drag anywhere on screen (except bottom tab) to scroll through events
+// - Smooth continuous scrolling as you drag
+// - Calendar auto-updates to show that month
+// - Fixed 6-row calendar height
+// - Circle dates with event colours
+// - Darker grey for past events
+
 function EventsTab({ events }) {
   const now = new Date()
 
@@ -1197,35 +1207,55 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', handler)
   }, [expandedId, slideIndexes, events])
 
-  // ── Drag/swipe to navigate events ────────────────────────────────────────────
-  const topSectionRef = useRef(null)
+  // ── Drag to navigate events (anywhere except bottom tab bar) ─────────────────
   const dragStartY = useRef(null)
+  const dragAccumulator = useRef(0)
+  const containerRef = useRef(null)
 
   const allEvents = [...upcomingEvents, ...pastEvents]
   const currentEventIndex = allEvents.findIndex((ev) => ev.id === selectedEvent?.id)
 
-  const handleTopSectionTouchStart = (e) => {
-    dragStartY.current = e.touches[0].clientY
+  const handleContainerTouchStart = (e) => {
+    // Don't start drag if touching the bottom tab bar
+    const touch = e.touches[0]
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (rect && touch.clientY > rect.bottom - 60) return
+
+    dragStartY.current = touch.clientY
+    dragAccumulator.current = 0
   }
 
-  const handleTopSectionTouchEnd = (e) => {
+  const handleContainerTouchMove = (e) => {
     if (dragStartY.current == null) return
-    const dy = dragStartY.current - e.changedTouches[0].clientY
-    const SWIPE_THRESHOLD = 40
+    
+    const touch = e.touches[0]
+    const dy = dragStartY.current - touch.clientY
+    dragAccumulator.current = dy
+  }
 
-    if (dy > SWIPE_THRESHOLD) {
-      // Swiped up → next event
-      if (currentEventIndex < allEvents.length - 1) {
-        setSelectedEvent(allEvents[currentEventIndex + 1])
-      }
-    } else if (dy < -SWIPE_THRESHOLD) {
-      // Swiped down → prev event
-      if (currentEventIndex > 0) {
-        setSelectedEvent(allEvents[currentEventIndex - 1])
+  const handleContainerTouchEnd = (e) => {
+    if (dragStartY.current == null) return
+    
+    const dy = dragAccumulator.current
+    const DRAG_THRESHOLD = 30
+    let eventIndexDelta = 0
+
+    // Every 60px of drag = 1 event
+    if (dy > 0) {
+      eventIndexDelta = Math.floor(dy / 60)
+    } else if (dy < 0) {
+      eventIndexDelta = Math.ceil(dy / 60)
+    }
+
+    if (eventIndexDelta !== 0) {
+      const newIndex = Math.max(0, Math.min(currentEventIndex + eventIndexDelta, allEvents.length - 1))
+      if (newIndex !== currentEventIndex) {
+        setSelectedEvent(allEvents[newIndex])
       }
     }
 
     dragStartY.current = null
+    dragAccumulator.current = 0
   }
 
   // ── Formatters ──────────────────────────────────────────────────────────────
@@ -1458,21 +1488,29 @@ function EventsTab({ events }) {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div
+      ref={containerRef}
+      onTouchStart={handleContainerTouchStart}
+      onTouchMove={handleContainerTouchMove}
+      onTouchEnd={handleContainerTouchEnd}
+      style={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+    >
       
-      {/* ── TOP SECTION: swipe to navigate events (NOT scrollable) ── */}
+      {/* ── TOP SECTION: displays current event ── */}
       <div
-        ref={topSectionRef}
-        onTouchStart={handleTopSectionTouchStart}
-        onTouchEnd={handleTopSectionTouchEnd}
         style={{
           flex: '0 0 auto',
           padding: '16px',
           paddingTop: '24px',
           backgroundColor: '#ffffff',
           borderBottom: '1px solid #f3f4f6',
-          touchAction: 'none',
-          userSelect: 'none',
         }}
       >
         {displayEvent && (
