@@ -655,41 +655,18 @@ function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
 
   const [lifted, setLifted] = useState(false)
-  const [cardFlipped, setCardFlipped] = useState(false)
+  const [cardFlipped, setCardFlipped] = useState(false) // NEW
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
   const touchStartY = useRef(null)
   const liftedRef = useRef(false)
-
+  
   const [state, setState] = useState('scanning')
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [checkinMember, setCheckinMember] = useState(null)
   const [scanTime, setScanTime] = useState(null)
   const handlingRef = useRef(false)
-
-  // NEW: 플랫폼 감지 (ios / android / other)
-  const [platform, setPlatform] = useState('other')
-
-  useEffect(() => {
-    try {
-      const ua =
-        navigator.userAgent || navigator.vendor || window.opera || ''
-
-      if (/android/i.test(ua)) {
-        setPlatform('android')
-      } else if (
-        /iPad|iPhone|iPod/.test(ua) ||
-        (ua.includes('Mac') && 'ontouchend' in window)
-      ) {
-        setPlatform('ios')
-      } else {
-        setPlatform('other')
-      }
-    } catch {
-      setPlatform('other')
-    }
-  }, [])
 
   const getMaxLift = () => activityRef.current?.offsetHeight ?? 260
 
@@ -699,54 +676,54 @@ function QRTab({ member, isValid, onLiftChange }) {
     }
   }
 
-  const handleTouchStart = (e) => {
-    if (cardFlipped) return
-    touchStartY.current = e.touches[0].clientY
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'none'
-    }
+const handleTouchStart = (e) => {
+  if (cardFlipped) return
+  touchStartY.current = e.touches[0].clientY
+  if (cardLayerRef.current) {
+    cardLayerRef.current.style.transition = 'none'
+  }
+}
+
+const handleTouchMove = (e) => {
+  if (cardFlipped) return
+  if (touchStartY.current == null) return
+  const dy = touchStartY.current - e.touches[0].clientY
+
+  // Prevent scroll when clearly vertical swipe
+  if (Math.abs(dy) > 10) {
+    e.preventDefault()
+  }
+}
+
+const handleTouchEnd = (e) => {
+  if (cardFlipped) return
+  if (touchStartY.current == null) return
+
+  const dy = touchStartY.current - e.changedTouches[0].clientY
+  const max = getMaxLift()
+  const SWIPE_THRESHOLD = 40
+
+  let nextLifted = liftedRef.current
+
+  // swipe up → lift
+  if (dy > SWIPE_THRESHOLD) {
+    nextLifted = true
+  }
+  // swipe down → lower
+  else if (dy < -SWIPE_THRESHOLD) {
+    nextLifted = false
   }
 
-  const handleTouchMove = (e) => {
-    if (cardFlipped) return
-    if (touchStartY.current == null) return
-    const dy = touchStartY.current - e.touches[0].clientY
-
-    // Prevent scroll when clearly vertical swipe
-    if (Math.abs(dy) > 10) {
-      e.preventDefault()
-    }
+  if (cardLayerRef.current) {
+    cardLayerRef.current.style.transition =
+      'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
   }
 
-  const handleTouchEnd = (e) => {
-    if (cardFlipped) return
-    if (touchStartY.current == null) return
-
-    const dy = touchStartY.current - e.changedTouches[0].clientY
-    const max = getMaxLift()
-    const SWIPE_THRESHOLD = 40
-
-    let nextLifted = liftedRef.current
-
-    // swipe up → lift
-    if (dy > SWIPE_THRESHOLD) {
-      nextLifted = true
-    }
-    // swipe down → lower
-    else if (dy < -SWIPE_THRESHOLD) {
-      nextLifted = false
-    }
-
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition =
-        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
-    }
-
-    setTranslate(nextLifted ? max : 0)
-    liftedRef.current = nextLifted
-    setLifted(nextLifted)
-    touchStartY.current = null
-  }
+  setTranslate(nextLifted ? max : 0)
+  liftedRef.current = nextLifted
+  setLifted(nextLifted)
+  touchStartY.current = null
+}
 
   // Sync lifted state with DOM and parent
   useEffect(() => {
@@ -779,9 +756,7 @@ function QRTab({ member, isValid, onLiftChange }) {
   }
 
   const fullName = checkinMember
-    ? `${checkinMember.first_name || ''} ${
-        checkinMember.last_name || ''
-      }`.trim()
+    ? `${checkinMember.first_name || ''} ${checkinMember.last_name || ''}`.trim()
     : ''
 
   const reset = () => {
@@ -855,8 +830,7 @@ function QRTab({ member, isValid, onLiftChange }) {
       } else {
         setState('error')
         setErrorMsg(
-          result.message ||
-            'Check-In을 기록할 수 없습니다. 다시 시도해주세요.',
+          result.message || 'Check-In을 기록할 수 없습니다. 다시 시도해주세요.',
         )
       }
     } catch (err) {
@@ -940,33 +914,25 @@ function QRTab({ member, isValid, onLiftChange }) {
 
           <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">
-                Scan Time
-              </span>
+              <span className="text-xs font-medium text-gray-500">Scan Time</span>
               <span className="text-sm font-semibold text-gray-900">
                 {formatScanTime(scanTime)}
               </span>
             </div>
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">
-                Full Name
-              </span>
+              <span className="text-xs font-medium text-gray-500">Full Name</span>
               <span className="text-sm font-semibold text-gray-900">
                 {fullName || 'N/A'}
               </span>
             </div>
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">
-                Student ID
-              </span>
+              <span className="text-xs font-medium text-gray-500">Student ID</span>
               <span className="text-sm font-semibold text-gray-900">
                 {checkinMember?.student_number || 'N/A'}
               </span>
             </div>
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">
-                University
-              </span>
+              <span className="text-xs font-medium text-gray-500">University</span>
               <span className="text-sm font-semibold text-gray-900">
                 {checkinMember?.University || 'N/A'}
               </span>
@@ -976,9 +942,7 @@ function QRTab({ member, isValid, onLiftChange }) {
                 Membership Valid Until
               </span>
               <span className="text-sm font-semibold text-gray-900">
-                {formatMembershipDate(
-                  checkinMember?.membership_valid_until,
-                )}
+                {formatMembershipDate(checkinMember?.membership_valid_until)}
               </span>
             </div>
           </div>
@@ -1105,61 +1069,20 @@ function QRTab({ member, isValid, onLiftChange }) {
                 transition: 'color 0.25s ease',
               }}
             >
-              {lifted
-                ? '내려서 Check-IN 하기'
-                : '위로 올려서 이번 달 활동 보기'}
+              {lifted ? '내려서 Check-IN 하기' : '위로 올려서 이번 달 활동 보기'}
             </span>
           )}
 
           {cardFlipped && (
-            <>
-              <span
-                style={{
-                  fontSize: fs.guide,
-                  color: 'rgba(44,42,39,0.35)',
-                  fontWeight: 500,
-                }}
-              >
-                탭 해서 뒤돌아가기
-              </span>
-
-              {/* NEW: 플랫폼별 카메라 안내 (카드가 뒤집혀서 카메라가 켜졌을 때만) */}
-              {platform === 'ios' && (
-                <span
-                  style={{
-                    marginTop: 2,
-                    fontSize: `calc(${W} * 0.028)`,
-                    color: 'rgba(44,42,39,0.45)',
-                    fontWeight: 400,
-                    textAlign: 'right',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  iOS에서 카메라가 뜨지 않으면:{' '}
-                  <br />
-                  설정 앱 → Safari → 카메라에서 권한을 ‘허용’으로 바꾸고,
-                  앱을 완전히 종료한 뒤 다시 열어 주세요.
-                </span>
-              )}
-
-              {platform === 'android' && (
-                <span
-                  style={{
-                    marginTop: 2,
-                    fontSize: `calc(${W} * 0.028)`,
-                    color: 'rgba(44,42,39,0.45)',
-                    fontWeight: 400,
-                    textAlign: 'right',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  Android에서 카메라가 뜨지 않으면:{' '}
-                  <br />
-                  주소창 오른쪽 자물쇠/카메라 아이콘 → 권한 → 카메라
-                  ‘허용’으로 변경한 뒤, 페이지를 새로고침해 주세요.
-                </span>
-              )}
-            </>
+            <span
+              style={{
+                fontSize: fs.guide,
+                color: 'rgba(44,42,39,0.35)',
+                fontWeight: 500,
+              }}
+            >
+              탭 해서 뒤돌아가기
+            </span>
           )}
         </div>
       </div>
