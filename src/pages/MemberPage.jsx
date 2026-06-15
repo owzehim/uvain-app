@@ -1143,15 +1143,16 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 
+
 // ─── Events Tab ──────────────────────────────────────────────────────────────
 // Drop-in replacement for the EventsTab function in MemberPage.jsx
 // Features:
 // - Drag anywhere on screen (except bottom tab) to scroll through events
-// - Smooth continuous scrolling as you drag
+// - Live preview of dates as you drag
+// - Haptic vibration feedback on each event selection
 // - Calendar auto-updates to show that month
 // - Fixed 6-row calendar height
 // - Circle dates with event colours
-// - Darker grey for past events
 
 function EventsTab({ events }) {
   const now = new Date()
@@ -1173,6 +1174,8 @@ function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
+  const [previewEvent, setPreviewEvent] = useState(nextEvent)  // Live preview during drag
+  const [isDragging, setIsDragging] = useState(false)
 
   // Calendar month syncs with selectedEvent
   const eventMonth = selectedEvent ? new Date(selectedEvent.event_date) : now
@@ -1189,6 +1192,13 @@ function EventsTab({ events }) {
 
   const setSlide = (eventId, idx) =>
     setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
+
+  // ── Haptic feedback ──────────────────────────────────────────────────────────
+  const triggerHaptic = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(10)
+    }
+  }
 
   // ── Keyboard nav for image slider ───────────────────────────────────────────
   useEffect(() => {
@@ -1210,6 +1220,7 @@ function EventsTab({ events }) {
   // ── Drag to navigate events (anywhere except bottom tab bar) ─────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
+  const lastEventIndexRef = useRef(null)
   const containerRef = useRef(null)
 
   const allEvents = [...upcomingEvents, ...pastEvents]
@@ -1223,6 +1234,9 @@ function EventsTab({ events }) {
 
     dragStartY.current = touch.clientY
     dragAccumulator.current = 0
+    lastEventIndexRef.current = currentEventIndex
+    setIsDragging(true)
+    setPreviewEvent(selectedEvent)
   }
 
   const handleContainerTouchMove = (e) => {
@@ -1231,16 +1245,29 @@ function EventsTab({ events }) {
     const touch = e.touches[0]
     const dy = dragStartY.current - touch.clientY
     dragAccumulator.current = dy
+
+    // Calculate which event would be selected at this drag position
+    // Every 60px of drag = 1 event
+    let eventIndexDelta = 0
+    if (dy > 0) {
+      eventIndexDelta = Math.floor(dy / 60)
+    } else if (dy < 0) {
+      eventIndexDelta = Math.ceil(dy / 60)
+    }
+
+    const previewIndex = Math.max(0, Math.min(lastEventIndexRef.current + eventIndexDelta, allEvents.length - 1))
+    const previewEv = allEvents[previewIndex]
+    
+    // Update preview in real-time
+    setPreviewEvent(previewEv)
   }
 
   const handleContainerTouchEnd = (e) => {
     if (dragStartY.current == null) return
     
     const dy = dragAccumulator.current
-    const DRAG_THRESHOLD = 30
     let eventIndexDelta = 0
 
-    // Every 60px of drag = 1 event
     if (dy > 0) {
       eventIndexDelta = Math.floor(dy / 60)
     } else if (dy < 0) {
@@ -1251,11 +1278,15 @@ function EventsTab({ events }) {
       const newIndex = Math.max(0, Math.min(currentEventIndex + eventIndexDelta, allEvents.length - 1))
       if (newIndex !== currentEventIndex) {
         setSelectedEvent(allEvents[newIndex])
+        triggerHaptic()
       }
     }
 
     dragStartY.current = null
     dragAccumulator.current = 0
+    lastEventIndexRef.current = null
+    setIsDragging(false)
+    setPreviewEvent(selectedEvent)
   }
 
   // ── Formatters ──────────────────────────────────────────────────────────────
@@ -1353,6 +1384,7 @@ function EventsTab({ events }) {
     const dayEvents = eventsByDate[key]
     if (!dayEvents || dayEvents.length === 0) return
     setSelectedEvent(dayEvents[0])
+    triggerHaptic()
   }
 
   // ── Reusable event card renderer ────────────────────────────────────────────
@@ -1484,7 +1516,8 @@ function EventsTab({ events }) {
     )
   }
 
-  const displayEvent = selectedEvent
+  // Use preview event during drag, otherwise use selected event
+  const displayEvent = isDragging ? previewEvent : selectedEvent
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
@@ -1503,7 +1536,7 @@ function EventsTab({ events }) {
       }}
     >
       
-      {/* ── TOP SECTION: displays current event ── */}
+      {/* ── TOP SECTION: displays current/preview event ── */}
       <div
         style={{
           flex: '0 0 auto',
@@ -1511,6 +1544,8 @@ function EventsTab({ events }) {
           paddingTop: '24px',
           backgroundColor: '#ffffff',
           borderBottom: '1px solid #f3f4f6',
+          opacity: isDragging ? 0.7 : 1,
+          transition: isDragging ? 'none' : 'opacity 0.2s',
         }}
       >
         {displayEvent && (
