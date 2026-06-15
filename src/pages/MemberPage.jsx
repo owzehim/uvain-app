@@ -1497,47 +1497,45 @@ function EventsTab({ events }) {
           <div className="px-2 max-w-md mx-auto">
             <div className="flex flex-col">
               {formatTopDate(displayEvent.event_date) && (
-                <>
-                  {/* Day row */}
-                  <span
-                    style={{
-                      fontFamily: '"Handjet", system-ui, sans-serif',
-                      fontSize: fs.day,
-                      fontWeight: 500,
-                      color: '#9ca3af',
-                      letterSpacing: '0.05em',
-                      textTransform: 'uppercase',
-                      lineHeight: 0.85,
-                    }}
-                  >
-                    {formatTopDate(displayEvent.event_date).dayName}
-                  </span>
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+      marginBottom: '8px',
+    }}
+  >
+    {/* LEFT: day (THU, WED, ...) */}
+    <span
+      style={{
+        fontFamily: '"Handjet", system-ui, sans-serif',
+        fontSize: fs.day,
+        fontWeight: 500,
+        color: '#9ca3af',
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase',
+        lineHeight: 0.85,
+      }}
+    >
+      {formatTopDate(displayEvent.event_date).dayName}
+    </span>
 
-                  {/* Status label above box, right side */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      marginTop: '4px',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: fs.day,
-                        fontWeight: 500,
-                        color: '#9ca3af',
-                        letterSpacing: '0.05em',
-                        textTransform: 'uppercase',
-                        lineHeight: 0.85,
-                      }}
-                    >
-                      {getEventStatus(displayEvent)}
-                    </span>
-                  </div>
-                </>
-              )}
-
+    {/* RIGHT: status (PAST / UPCOMING) */}
+    <span
+      style={{
+        fontFamily: '"Handjet", system-ui, sans-serif',
+        fontSize: fs.day,
+        fontWeight: 500,
+        color: '#9ca3af',
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase',
+        lineHeight: 0.85,
+      }}
+    >
+      {getEventStatus(displayEvent)}
+    </span>
+  </div>
+)}
               <div className="flex items-stretch mt-2">
                 {formatTopDate(displayEvent.event_date) && (
                   <div className="flex flex-col items-start justify-center">
