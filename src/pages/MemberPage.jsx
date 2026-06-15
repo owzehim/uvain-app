@@ -1143,6 +1143,7 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 // ─── Events Tab ──────────────────────────────────────────────────────────────
+
 function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -1152,9 +1153,8 @@ function EventsTab({ events }) {
   const tbdEvents = events
     .filter((ev) => !ev.event_date)
     .sort((a, b) => {
-      if (a.created_at && b.created_at) {
+      if (a.created_at && b.created_at)
         return new Date(a.created_at) - new Date(b.created_at)
-      }
       return 0
     })
 
@@ -1169,22 +1169,27 @@ function EventsTab({ events }) {
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
 
-  // ── State ───────────────────────────────────────────────────────────────────
-  const [selectedEvent, setSelectedEvent] = React.useState(nextEvent)
-  const [expandedId, setExpandedId] = React.useState(null)
-  const [slideIndexes, setSlideIndexes] = React.useState({})
-  const [pastEventsExpanded, setPastEventsExpanded] = React.useState(false)
-  const [previewEvent, setPreviewEvent] = React.useState(nextEvent)
-  const [isDragging, setIsDragging] = React.useState(false)
+  // drag order: future → TBD → past
+  const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
 
-  // Calendar month syncs with selected event
-  const eventMonth = selectedEvent ? new Date(selectedEvent.event_date) : now
-  const [calMonth, setCalMonth] = React.useState(
+  // ── State ───────────────────────────────────────────────────────────────────
+  const [selectedEvent, setSelectedEvent] = useState(nextEvent)
+  const [expandedId, setExpandedId] = useState(null)
+  const [slideIndexes, setSlideIndexes] = useState({})
+  const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
+  const [previewEvent, setPreviewEvent] = useState(nextEvent)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const eventMonth = selectedEvent?.event_date
+    ? new Date(selectedEvent.event_date)
+    : now
+  const [calMonth, setCalMonth] = useState(
     new Date(eventMonth.getFullYear(), eventMonth.getMonth(), 1),
   )
 
-  React.useEffect(() => {
-    if (!selectedEvent || !selectedEvent.event_date) return
+  // Sync calendar month to selected event
+  useEffect(() => {
+    if (!selectedEvent?.event_date) return
     const evDate = new Date(selectedEvent.event_date)
     setCalMonth(new Date(evDate.getFullYear(), evDate.getMonth(), 1))
   }, [selectedEvent])
@@ -1193,7 +1198,7 @@ function EventsTab({ events }) {
     setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
 
   // ── Keyboard nav for image slider ───────────────────────────────────────────
-  React.useEffect(() => {
+  useEffect(() => {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
     if (!ev) return
@@ -1201,36 +1206,26 @@ function EventsTab({ events }) {
     if (imgs.length <= 1) return
     const handler = (e) => {
       if (e.key === 'ArrowRight')
-        setSlide(
-          expandedId,
-          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
-        )
+        setSlide(expandedId, Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1))
       else if (e.key === 'ArrowLeft')
-        setSlide(
-          expandedId,
-          Math.max((slideIndexes[expandedId] || 0) - 1, 0),
-        )
+        setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [expandedId, slideIndexes, events])
 
-  // ── Drag to navigate: future → TBD → past ───────────────────────────────────
-  const dragStartY = React.useRef(null)
-  const dragAccumulator = React.useRef(0)
-  const lastEventIndexRef = React.useRef(null)
-  const containerRef = React.useRef(null)
+  // ── Drag to navigate ────────────────────────────────────────────────────────
+  const dragStartY = useRef(null)
+  const dragAccumulator = useRef(0)
+  const lastEventIndexRef = useRef(null)
+  const containerRef = useRef(null)
 
-  const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
-  const currentEventIndex = allEvents.findIndex(
-    (ev) => ev.id === selectedEvent?.id,
-  )
+  const currentEventIndex = allEvents.findIndex((ev) => ev.id === selectedEvent?.id)
 
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
     if (rect && touch.clientY > rect.bottom - 60) return
-
     dragStartY.current = touch.clientY
     dragAccumulator.current = 0
     lastEventIndexRef.current = currentEventIndex
@@ -1240,42 +1235,25 @@ function EventsTab({ events }) {
 
   const handleContainerTouchMove = (e) => {
     if (dragStartY.current == null) return
-    const touch = e.touches[0]
-    const dy = dragStartY.current - touch.clientY
+    const dy = dragStartY.current - e.touches[0].clientY
     dragAccumulator.current = dy
-
-    let eventIndexDelta = 0
-    if (dy > 0) eventIndexDelta = Math.floor(dy / 60)
-    else if (dy < 0) eventIndexDelta = Math.ceil(dy / 60)
-
-    const previewIndex = Math.max(
-      0,
-      Math.min(
-        lastEventIndexRef.current + eventIndexDelta,
-        allEvents.length - 1,
-      ),
-    )
+    let delta = 0
+    if (dy > 0) delta = Math.floor(dy / 60)
+    else if (dy < 0) delta = Math.ceil(dy / 60)
+    const previewIndex = Math.max(0, Math.min(lastEventIndexRef.current + delta, allEvents.length - 1))
     setPreviewEvent(allEvents[previewIndex])
   }
 
   const handleContainerTouchEnd = () => {
     if (dragStartY.current == null) return
-
     const dy = dragAccumulator.current
-    let eventIndexDelta = 0
-    if (dy > 0) eventIndexDelta = Math.floor(dy / 60)
-    else if (dy < 0) eventIndexDelta = Math.ceil(dy / 60)
-
-    if (eventIndexDelta !== 0) {
-      const newIndex = Math.max(
-        0,
-        Math.min(currentEventIndex + eventIndexDelta, allEvents.length - 1),
-      )
-      if (newIndex !== currentEventIndex) {
-        setSelectedEvent(allEvents[newIndex])
-      }
+    let delta = 0
+    if (dy > 0) delta = Math.floor(dy / 60)
+    else if (dy < 0) delta = Math.ceil(dy / 60)
+    if (delta !== 0) {
+      const newIndex = Math.max(0, Math.min(currentEventIndex + delta, allEvents.length - 1))
+      if (newIndex !== currentEventIndex) setSelectedEvent(allEvents[newIndex])
     }
-
     dragStartY.current = null
     dragAccumulator.current = 0
     lastEventIndexRef.current = null
@@ -1287,23 +1265,16 @@ function EventsTab({ events }) {
   const getDayDiff = (evDateStr) => {
     const d = new Date(evDateStr)
     const evStart = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-    const diffMs = evStart - todayStart
-    return Math.round(diffMs / (1000 * 60 * 60 * 24))
+    return Math.round((evStart - todayStart) / (1000 * 60 * 60 * 24))
   }
 
   const formatTopDate = (dateStr) => {
     if (!dateStr) return null
     const date = new Date(dateStr)
     return {
-      dayName: date
-        .toLocaleDateString('en-US', { weekday: 'short' })
-        .toUpperCase(),
-      dateNum: `${String(date.getDate()).padStart(2, '0')}.${String(
-        date.getMonth() + 1,
-      ).padStart(2, '0')}`,
-      monthName: date
-        .toLocaleDateString('en-US', { month: 'short' })
-        .toUpperCase(),
+      dayName: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+      dateNum: `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`,
+      monthName: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
     }
   }
 
@@ -1320,15 +1291,11 @@ function EventsTab({ events }) {
   const getEventStatus = (ev) => {
     if (!ev) return ''
     if (!ev.event_date) return 'TBD'
-
     const days = getDayDiff(ev.event_date)
     if (days < 0) return 'PAST'
-
     if (nextEvent && ev.id === nextEvent.id) {
-      if (days === 0) return 'TODAY'
-      return `D-${days}`
+      return days === 0 ? 'TODAY' : `D-${days}`
     }
-
     return 'UPCOMING'
   }
 
@@ -1338,24 +1305,14 @@ function EventsTab({ events }) {
     const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
     const pad = (n) => String(n).padStart(2, '0')
     const fmt = (d) =>
-      d.getUTCFullYear() +
-      pad(d.getUTCMonth() + 1) +
-      pad(d.getUTCDate()) +
-      'T' +
-      pad(d.getUTCHours()) +
-      pad(d.getUTCMinutes()) +
-      '00Z'
+      d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) +
+      'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + '00Z'
     const ics =
-      'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' +
-      fmt(start) +
-      '\nDTEND:' +
-      fmt(end) +
-      '\nSUMMARY:' +
-      ev.title +
-      '\nLOCATION:' +
-      (ev.location || '') +
-      '\nDESCRIPTION:' +
-      (ev.description || '') +
+      'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:' + fmt(start) +
+      '\nDTEND:' + fmt(end) +
+      '\nSUMMARY:' + ev.title +
+      '\nLOCATION:' + (ev.location || '') +
+      '\nDESCRIPTION:' + (ev.description || '') +
       '\nEND:VEVENT\nEND:VCALENDAR'
     const blob = new Blob([ics], { type: 'text/calendar' })
     const url = URL.createObjectURL(blob)
@@ -1366,6 +1323,7 @@ function EventsTab({ events }) {
     URL.revokeObjectURL(url)
   }
 
+  // ── Sizing ──────────────────────────────────────────────────────────────────
   const W = 'calc(100vw - 32px)'
   const fs = {
     day: `calc(${W} * 0.06)`,
@@ -1402,10 +1360,7 @@ function EventsTab({ events }) {
 
   const handleDayPress = (day) => {
     if (!day) return
-    const key = `${calYear}-${String(calMonthIdx + 1).padStart(
-      2,
-      '0',
-    )}-${String(day).padStart(2, '0')}`
+    const key = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const dayEvents = eventsByDate[key]
     if (!dayEvents || dayEvents.length === 0) return
     setSelectedEvent(dayEvents[0])
@@ -1419,31 +1374,22 @@ function EventsTab({ events }) {
     const currentSlide = slideIndexes[ev.id] || 0
 
     return (
-      <div
-        key={ev.id}
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-      >
+      <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <button
           onClick={() => setExpandedId(isExpanded ? null : ev.id)}
           className="w-full text-left p-5"
         >
           <div className="flex items-center justify-between">
             <p className="font-semibold text-gray-900">{ev.title}</p>
-            <span className="text-gray-400 text-sm ml-2">
-              {isExpanded ? '▲' : '▼'}
-            </span>
+            <span className="text-gray-400 text-sm ml-2">{isExpanded ? '▲' : '▼'}</span>
           </div>
           {ev.event_date && (
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
               <Calendar size={14} weight="fill" />
               <span>
                 {new Date(ev.event_date).toLocaleString('ko-KR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true,
+                  year: 'numeric', month: 'long', day: 'numeric',
+                  hour: '2-digit', minute: '2-digit', hour12: true,
                 })}
               </span>
             </div>
@@ -1463,63 +1409,29 @@ function EventsTab({ events }) {
                 {/* Mobile swipe slider */}
                 <div
                   className="md:hidden"
-                  onTouchStart={(e) => {
-                    e.currentTarget._swipeStartX = e.touches[0].clientX
-                  }}
+                  onTouchStart={(e) => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
                   onTouchEnd={(e) => {
                     const start = e.currentTarget._swipeStartX
                     if (start == null) return
                     const dx = e.changedTouches[0].clientX - start
                     e.currentTarget._swipeStartX = null
-                    if (dx < -40 && currentSlide < imgs.length - 1)
-                      setSlide(ev.id, currentSlide + 1)
-                    else if (dx > 40 && currentSlide > 0)
-                      setSlide(ev.id, currentSlide - 1)
+                    if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
+                    else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
                   }}
                 >
-                  <div
-                    className="relative rounded-2xl overflow-hidden bg-gray-100"
-                    style={{ aspectRatio: '1/1' }}
-                  >
-                    <div
-                      className="flex h-full"
-                      style={{
-                        transform: `translateX(-${currentSlide * 100}%)`,
-                        transition: 'transform 0.3s ease',
-                      }}
-                    >
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
+                    <div className="flex h-full" style={{ transform: `translateX(-${currentSlide * 100}%)`, transition: 'transform 0.3s ease' }}>
                       {imgs.map((url, i) => (
-                        <div
-                          key={i}
-                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
-                        >
-                          <img
-                            src={url}
-                            alt={`이미지 ${i + 1}`}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'contain',
-                              display: 'block',
-                            }}
-                            draggable={false}
-                          />
+                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
+                          <img src={url} alt={`이미지 ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
                         </div>
                       ))}
                     </div>
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
-                          <div
-                            key={i}
-                            onClick={() => setSlide(ev.id, i)}
-                            className={
-                              'rounded-full cursor-pointer transition-all ' +
-                              (i === currentSlide
-                                ? 'bg-white w-2 h-2'
-                                : 'bg-white bg-opacity-50 w-1.5 h-1.5')
-                            }
-                          />
+                          <div key={i} onClick={() => setSlide(ev.id, i)}
+                            className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
                         ))}
                       </div>
                     )}
@@ -1528,101 +1440,32 @@ function EventsTab({ events }) {
 
                 {/* Desktop slider */}
                 <div className="hidden md:block">
-                  <div
-                    className="relative rounded-2xl overflow-hidden bg-gray-100"
-                    style={{ aspectRatio: '1/1' }}
-                  >
-                    <div
-                      className="flex h-full"
-                      style={{
-                        transform: `translateX(-${currentSlide * 100}%)`,
-                        transition: 'transform 0.3s ease',
-                      }}
-                    >
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
+                    <div className="flex h-full" style={{ transform: `translateX(-${currentSlide * 100}%)`, transition: 'transform 0.3s ease' }}>
                       {imgs.map((url, i) => (
-                        <div
-                          key={i}
-                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
-                        >
-                          <img
-                            src={url}
-                            alt={`이미지 ${i + 1}`}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'contain',
-                              display: 'block',
-                            }}
-                            draggable={false}
-                          />
+                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
+                          <img src={url} alt={`이미지 ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} draggable={false} />
                         </div>
                       ))}
                     </div>
-
                     {imgs.length > 1 && (
                       <>
                         {currentSlide > 0 && (
-                          <button
-                            onClick={() =>
-                              setSlide(ev.id, currentSlide - 1)
-                            }
-                            style={{
-                              position: 'absolute',
-                              left: '10px',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              width: 32,
-                              height: 32,
-                              borderRadius: '9999px',
-                              border: 'none',
-                              backgroundColor: 'rgba(0,0,0,0.4)',
-                              color: '#fff',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer',
-                            }}
-                          >
+                          <button onClick={() => setSlide(ev.id, currentSlide - 1)}
+                            style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, borderRadius: '9999px', border: 'none', backgroundColor: 'rgba(0,0,0,0.4)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                             ‹
                           </button>
                         )}
                         {currentSlide < imgs.length - 1 && (
-                          <button
-                            onClick={() =>
-                              setSlide(ev.id, currentSlide + 1)
-                            }
-                            style={{
-                              position: 'absolute',
-                              right: '10px',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              width: 32,
-                              height: 32,
-                              borderRadius: '9999px',
-                              border: 'none',
-                              backgroundColor: 'rgba(0,0,0,0.4)',
-                              color: '#fff',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer',
-                            }}
-                          >
+                          <button onClick={() => setSlide(ev.id, currentSlide + 1)}
+                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, borderRadius: '9999px', border: 'none', backgroundColor: 'rgba(0,0,0,0.4)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                             ›
                           </button>
                         )}
                         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                           {imgs.map((_, i) => (
-                            <div
-                              key={i}
-                              onClick={() => setSlide(ev.id, i)}
-                              className={
-                                'rounded-full cursor-pointer transition-all ' +
-                                (i === currentSlide
-                                  ? 'bg-white w-2 h-2'
-                                  : 'bg-white bg-opacity-50 w-1.5 h-1.5')
-                              }
-                            />
+                            <div key={i} onClick={() => setSlide(ev.id, i)}
+                              className={'rounded-full cursor-pointer transition-all ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
                           ))}
                         </div>
                       </>
@@ -1634,29 +1477,21 @@ function EventsTab({ events }) {
 
             <div className="px-5 pb-5">
               {ev.description && (
-                <RichText
-                  text={ev.description}
-                  className="text-sm text-gray-600 mt-3 leading-relaxed block"
-                />
+                <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />
               )}
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
-                  <button
-                    onClick={() => addToCalendar(ev)}
-                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5"
-                  >
-                    <Calendar size={14} weight="fill" />
-                    캘린더에 추가
+                  <button onClick={() => addToCalendar(ev)}
+                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5">
+                    <Calendar size={14} weight="fill" /> 캘린더에 추가
                   </button>
                 )}
                 {instaUrl && (
-                  <a
-                    href={instaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    {/* Instagram icon omitted for brevity */}
+                  <a href={instaUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                    </svg>
                     Instagram 에서 열기
                   </a>
                 )}
@@ -1670,6 +1505,7 @@ function EventsTab({ events }) {
 
   const displayEvent = isDragging ? previewEvent : selectedEvent
 
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
       ref={containerRef}
@@ -1685,7 +1521,7 @@ function EventsTab({ events }) {
         userSelect: 'none',
       }}
     >
-      {/* TOP SECTION */}
+      {/* ── TOP SECTION ── */}
       <div
         style={{
           flex: '0 0 auto',
@@ -1699,319 +1535,168 @@ function EventsTab({ events }) {
         {displayEvent && (
           <div className="px-2 max-w-md mx-auto">
             <div className="flex flex-col">
-              {(() => {
-                const topDate = displayEvent.event_date
-                  ? formatTopDate(displayEvent.event_date)
-                  : null
-                return (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'baseline',
-                      justifyContent: 'space-between',
-                      marginBottom: '8px',
-                      paddingRight: '4px', // keep inside same padding as box
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: fs.day,
-                        fontWeight: 500,
-                        color: '#9ca3af',
-                        letterSpacing: '0.05em',
-                        textTransform: 'uppercase',
-                        lineHeight: 0.85,
-                      }}
-                    >
-                      {topDate ? topDate.dayName : ''}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: fs.day,
-                        fontWeight: 500,
-                        color: '#9ca3af',
-                        letterSpacing: '0.05em',
-                        textTransform: 'uppercase',
-                        lineHeight: 0.85,
-                      }}
-                    >
-                      {getEventStatus(displayEvent)}
-                    </span>
-                  </div>
-                )
-              })()}
 
+              {/* Day + Status on same line */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                justifyContent: 'space-between',
+                marginBottom: '8px',
+                paddingRight: '4px',
+              }}>
+                <span style={{
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
+                  letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
+                }}>
+                  {displayEvent.event_date
+                    ? formatTopDate(displayEvent.event_date)?.dayName
+                    : ''}
+                </span>
+                <span style={{
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
+                  letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
+                }}>
+                  {getEventStatus(displayEvent)}
+                </span>
+              </div>
+
+              {/* Date + Info box */}
               <div className="flex items-stretch mt-2">
-                {displayEvent.event_date && (
-                  <div className="flex flex-col items-start justify-center">
-                    {(() => {
-                      const t = formatTopDate(displayEvent.event_date)
-                      if (!t) return null
-                      return (
-                        <>
-                          <span
-                            style={{
-                              fontFamily:
-                                '"Handjet", system-ui, sans-serif',
-                              fontSize: fs.date,
-                              fontWeight: 800,
-                              color: '#1f2937',
-                              letterSpacing: '0.02em',
-                              lineHeight: 0.85,
-                            }}
-                          >
-                            {t.dateNum}
-                          </span>
-                          <span
-                            style={{
-                              fontFamily:
-                                '"Handjet", system-ui, sans-serif',
-                              fontSize: fs.month,
-                              fontWeight: 800,
-                              color: '#1f2937',
-                              letterSpacing: '0.04em',
-                              textTransform: 'uppercase',
-                              lineHeight: 0.85,
-                              marginTop: '2px',
-                            }}
-                          >
-                            {t.monthName}
-                          </span>
-                        </>
-                      )
-                    })()}
-                  </div>
-                )}
-
-                {/* Info box */}
-                <div
-                  className="flex-1 flex items-stretch"
-                  style={{ paddingLeft: '16px', paddingRight: '4px' }}
-                >
-                  <div
-                    style={{
-                      borderRadius: '12px',
-                      border: '1px solid #e5e7eb',
-                      backgroundColor: '#ffffff',
-                      padding: '12px 14px',
-                      boxSizing: 'border-box',
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-start', // top-aligned content
-                    }}
-                  >
-                    <div>
-                      <span
-                        style={{
-                          fontFamily:
-                            '"Noto Sans KR", system-ui, sans-serif',
-                          fontSize: `calc(${W} * 0.052)`,
-                          fontWeight: 700,
-                          color:
-                            nextEvent &&
-                            displayEvent &&
-                            displayEvent.id === nextEvent.id
-                              ? '#f97316'
-                              : '#1f2937',
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {displayEvent.title}
+                {displayEvent.event_date && (() => {
+                  const t = formatTopDate(displayEvent.event_date)
+                  if (!t) return null
+                  return (
+                    <div className="flex flex-col items-start justify-center">
+                      <span style={{
+                        fontFamily: '"Handjet", system-ui, sans-serif',
+                        fontSize: fs.date, fontWeight: 800, color: '#1f2937',
+                        letterSpacing: '0.02em', lineHeight: 0.85,
+                      }}>
+                        {t.dateNum}
+                      </span>
+                      <span style={{
+                        fontFamily: '"Handjet", system-ui, sans-serif',
+                        fontSize: fs.month, fontWeight: 800, color: '#1f2937',
+                        letterSpacing: '0.04em', textTransform: 'uppercase',
+                        lineHeight: 0.85, marginTop: '2px',
+                      }}>
+                        {t.monthName}
                       </span>
                     </div>
+                  )
+                })()}
+
+                <div
+                  className="flex-1 flex items-stretch"
+                  style={{ paddingLeft: displayEvent.event_date ? '16px' : '0', paddingRight: '4px' }}
+                >
+                  <div style={{
+                    borderRadius: '12px', border: '1px solid #e5e7eb',
+                    backgroundColor: '#ffffff', padding: '12px 14px',
+                    boxSizing: 'border-box', width: '100%',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+                  }}>
+                    <span style={{
+                      fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                      fontSize: `calc(${W} * 0.052)`, fontWeight: 700,
+                      color: nextEvent && displayEvent.id === nextEvent.id ? '#f97316' : '#1f2937',
+                      lineHeight: 1.2,
+                    }}>
+                      {displayEvent.title}
+                    </span>
                     {displayEvent.event_date && (
-                      <div style={{ marginTop: '6px' }}>
-                        <span
-                          style={{
-                            fontFamily:
-                              '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.042)`,
-                            fontWeight: 700,
-                            color: '#111827',
-                            letterSpacing: '0.04em',
-                          }}
-                        >
-                          {formatTopTime(displayEvent.event_date)}
-                        </span>
-                      </div>
+                      <span style={{
+                        fontFamily: '"Handjet", system-ui, sans-serif',
+                        fontSize: `calc(${W} * 0.042)`, fontWeight: 700,
+                        color: '#111827', letterSpacing: '0.04em', marginTop: '6px',
+                      }}>
+                        {formatTopTime(displayEvent.event_date)}
+                      </span>
                     )}
                     {displayEvent.location && (
-                      <div style={{ marginTop: '4px' }}>
-                        <span
-                          style={{
-                            fontFamily:
-                              '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.036)`,
-                            fontWeight: 700,
-                            color: '#4b5563',
-                            letterSpacing: '0.04em',
-                          }}
-                        >
-                          {displayEvent.location}
-                        </span>
-                      </div>
+                      <span style={{
+                        fontFamily: '"Handjet", system-ui, sans-serif',
+                        fontSize: `calc(${W} * 0.036)`, fontWeight: 700,
+                        color: '#4b5563', letterSpacing: '0.04em', marginTop: '4px',
+                      }}>
+                        {displayEvent.location}
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         )}
       </div>
 
-      {/* SCROLLABLE SECTION */}
+      {/* ── SCROLLABLE SECTION ── */}
       <div style={{ flex: '1', overflow: 'auto' }}>
         <div className="px-4 py-6 max-w-md mx-auto">
+
           {/* Calendar */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              padding: '16px',
-              marginTop: '16px',
-              marginBottom: '32px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '12px',
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: '"Handjet", system-ui, sans-serif',
-                  fontSize: `calc(${W} * 0.045)`,
-                  fontWeight: 700,
-                  color: '#1f2937',
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {calMonth.toLocaleDateString('en-US', {
-                  month: 'long',
-                  year: 'numeric',
-                })}
+          <div style={{ backgroundColor: '#ffffff', padding: '16px', marginTop: '16px', marginBottom: '32px' }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+              <span style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: `calc(${W} * 0.045)`, fontWeight: 700,
+                color: '#1f2937', letterSpacing: '0.04em', textTransform: 'uppercase',
+              }}>
+                {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </span>
             </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
-                marginBottom: '4px',
-              }}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '4px' }}>
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                <div
-                  key={d}
-                  style={{
-                    textAlign: 'center',
-                    fontFamily: '"Handjet", system-ui, sans-serif',
-                    fontSize: `calc(${W} * 0.032)`,
-                    fontWeight: 600,
-                    color: '#9ca3af',
-                    paddingBottom: '4px',
-                  }}
-                >
+                <div key={d} style={{
+                  textAlign: 'center',
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: `calc(${W} * 0.032)`, fontWeight: 600,
+                  color: '#9ca3af', paddingBottom: '4px',
+                }}>
                   {d}
                 </div>
               ))}
             </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
-                gap: '3px',
-              }}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
               {cells.map((day, idx) => {
-                if (!day) {
-                  return (
-                    <div
-                      key={`empty-${idx}`}
-                      style={{ aspectRatio: '1/1' }}
-                    />
-                  )
-                }
+                if (!day) return <div key={`empty-${idx}`} style={{ aspectRatio: '1/1' }} />
 
-                const dateKey = `${calYear}-${String(
-                  calMonthIdx + 1,
-                ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const dateKey = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                 const dayEvents = eventsByDate[dateKey] || []
                 const hasEvents = dayEvents.length > 0
+                const isToday = day === now.getDate() && calMonthIdx === now.getMonth() && calYear === now.getFullYear()
 
-                const isToday =
-                  day === now.getDate() &&
-                  calMonthIdx === now.getMonth() &&
-                  calYear === now.getFullYear()
-
-                let circleBg = 'transparent'
-                let circleBorder = 'none'
-                let textColor = '#1f2937'
-                let fontWeight = 500
+                let circleBg = 'transparent', circleBorder = 'none', textColor = '#1f2937', fontWeight = 500
 
                 if (hasEvents) {
-                  const style = circleStyle(dayEvents[0])
-                  circleBg = style.bg
-                  circleBorder = style.border
-                  textColor = style.color
-                  fontWeight = 700
+                  const s = circleStyle(dayEvents[0])
+                  circleBg = s.bg; circleBorder = s.border; textColor = s.color; fontWeight = 700
                 } else if (isToday) {
-                  circleBg = '#ffffff'
-                  circleBorder = '2px solid #1f2937'
-                  textColor = '#1f2937'
-                  fontWeight = 700
+                  circleBg = '#ffffff'; circleBorder = '2px solid #1f2937'; textColor = '#1f2937'; fontWeight = 700
                 }
 
-                const todayRing =
-                  isToday && hasEvents
-                    ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937'
-                    : 'none'
+                const todayRing = isToday && hasEvents ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937' : 'none'
 
                 return (
-                  <div
-                    key={dateKey}
-                    onClick={() => handleDayPress(day)}
-                    style={{
-                      aspectRatio: '1/1',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: hasEvents ? 'pointer' : 'default',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '85%',
-                        aspectRatio: '1/1',
-                        borderRadius: '50%',
-                        backgroundColor: circleBg,
-                        border: circleBorder,
-                        boxShadow: todayRing,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'background-color 0.15s',
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily:
-                            '"Handjet", system-ui, sans-serif',
-                          fontSize: `calc(${W} * 0.036)`,
-                          fontWeight,
-                          color: textColor,
-                          lineHeight: 1,
-                          userSelect: 'none',
-                        }}
-                      >
+                  <div key={dateKey} onClick={() => handleDayPress(day)}
+                    style={{ aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: hasEvents ? 'pointer' : 'default' }}>
+                    <div style={{
+                      width: '85%', aspectRatio: '1/1', borderRadius: '50%',
+                      backgroundColor: circleBg, border: circleBorder, boxShadow: todayRing,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background-color 0.15s',
+                    }}>
+                      <span style={{
+                        fontFamily: '"Handjet", system-ui, sans-serif',
+                        fontSize: `calc(${W} * 0.036)`, fontWeight, color: textColor,
+                        lineHeight: 1, userSelect: 'none',
+                      }}>
                         {day}
                       </span>
                     </div>
@@ -2021,26 +1706,17 @@ function EventsTab({ events }) {
             </div>
           </div>
 
-          {/* UPCOMING LIST (future dated only) */}
+          {/* Upcoming list */}
           {otherUpcomingEvents.length > 0 && (
             <div className="mb-8">
               {(() => {
                 let currentMonthLabel = null
                 const blocks = []
                 otherUpcomingEvents.forEach((ev) => {
-                  const label = ev.event_date
-                    ? `${new Date(ev.event_date).getMonth() + 1}월`
-                    : '날짜 미정'
+                  const label = `${new Date(ev.event_date).getMonth() + 1}월`
                   if (label !== currentMonthLabel) {
                     currentMonthLabel = label
-                    blocks.push(
-                      <p
-                        key={`month-${label}`}
-                        className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
-                      >
-                        {label}
-                      </p>,
-                    )
+                    blocks.push(<p key={`month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{label}</p>)
                   }
                   blocks.push(renderEvent(ev))
                 })
@@ -2049,26 +1725,18 @@ function EventsTab({ events }) {
             </div>
           )}
 
-          {/* PAST EVENTS */}
+          {/* Past events */}
           {pastEvents.length > 0 && (
             <div className="mt-6">
               <button
-                onClick={() =>
-                  setPastEventsExpanded(!pastEventsExpanded)
-                }
+                onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
                 className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-600 font-semibold">
-                    지난 이벤트
-                  </span>
-                  <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
-                    {pastEvents.length}
-                  </span>
+                  <span className="text-gray-600 font-semibold">지난 이벤트</span>
+                  <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">{pastEvents.length}</span>
                 </div>
-                <span className="text-gray-400 text-lg">
-                  {pastEventsExpanded ? '▲' : '▼'}
-                </span>
+                <span className="text-gray-400 text-lg">{pastEventsExpanded ? '▲' : '▼'}</span>
               </button>
               {pastEventsExpanded && (
                 <div className="space-y-3 mt-3">
@@ -2076,19 +1744,10 @@ function EventsTab({ events }) {
                     let currentMonthLabel = null
                     const blocks = []
                     pastEvents.forEach((ev) => {
-                      const label = ev.event_date
-                        ? `${new Date(ev.event_date).getMonth() + 1}월`
-                        : '날짜 미정'
+                      const label = `${new Date(ev.event_date).getMonth() + 1}월`
                       if (label !== currentMonthLabel) {
                         currentMonthLabel = label
-                        blocks.push(
-                          <p
-                            key={`past-month-${label}`}
-                            className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
-                          >
-                            {label}
-                          </p>,
-                        )
+                        blocks.push(<p key={`past-month-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{label}</p>)
                       }
                       blocks.push(renderEvent(ev))
                     })
@@ -2099,22 +1758,20 @@ function EventsTab({ events }) {
             </div>
           )}
 
-          {/* EMPTY STATE */}
-          {!nextEvent &&
-            otherUpcomingEvents.length === 0 &&
-            pastEvents.length === 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <p className="text-2xl mb-2">📅</p>
-                <p className="text-gray-500 text-sm">
-                  예정된 이벤트가 없어요
-                </p>
-              </div>
-            )}
+          {/* Empty state */}
+          {!nextEvent && otherUpcomingEvents.length === 0 && pastEvents.length === 0 && tbdEvents.length === 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <p className="text-2xl mb-2">📅</p>
+              <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
   )
 }
+
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
 function MapTab({ restaurants }) {
