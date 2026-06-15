@@ -1169,7 +1169,7 @@ function EventsTab({ events }) {
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
 
-  // Drag order: future dated → TBD → past
+  // Drag order: future → TBD → past
   const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
 
   // ── State ───────────────────────────────────────────────────────────────────
@@ -1179,7 +1179,6 @@ function EventsTab({ events }) {
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
-  const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -1209,7 +1208,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', handler)
   }, [expandedId, slideIndexes, events])
 
-  // ── Drag to navigate (future → TBD → past) ──────────────────────────────────
+  // ── Drag to navigate events (future → TBD → past) ───────────────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastEventIndexRef = useRef(null)
@@ -1222,7 +1221,7 @@ function EventsTab({ events }) {
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
-    if (rect && touch.clientY > rect.bottom - 60) return
+    if (rect && touch.clientY > rect.bottom - 60) return // ignore bottom tab
 
     dragStartY.current = touch.clientY
     dragAccumulator.current = 0
@@ -1259,9 +1258,7 @@ function EventsTab({ events }) {
         0,
         Math.min(currentEventIndex + delta, allEvents.length - 1),
       )
-      if (newIndex !== currentEventIndex) {
-        setSelectedEvent(allEvents[newIndex])
-      }
+      if (newIndex !== currentEventIndex) setSelectedEvent(allEvents[newIndex])
     }
 
     dragStartY.current = null
@@ -1271,7 +1268,7 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
+  // ── Status / format helpers ─────────────────────────────────────────────────
   const getDayDiff = (evDateStr) => {
     const d = new Date(evDateStr)
     const evStart = new Date(d.getFullYear(), d.getMonth(), d.getDate())
@@ -1356,7 +1353,7 @@ function EventsTab({ events }) {
     month: `calc(${W} * 0.24)`,
   }
 
-  // ── Event card renderer (list) ──────────────────────────────────────────────
+  // ── List card renderer ──────────────────────────────────────────────────────
   const renderEvent = (ev) => {
     const isExpanded = expandedId === ev.id
     const imgs = ev.image_urls || []
@@ -1403,10 +1400,9 @@ function EventsTab({ events }) {
 
         {isExpanded && (
           <div>
-            {/* Image slider inside list card (unchanged) */}
+            {/* Card image slider (unchanged) */}
             {imgs.length > 0 && (
               <div className="px-4">
-                {/* Mobile swipe */}
                 <div
                   className="md:hidden"
                   onTouchStart={(e) => {
@@ -1472,7 +1468,6 @@ function EventsTab({ events }) {
                   </div>
                 </div>
 
-                {/* Desktop slider */}
                 <div className="hidden md:block">
                   <div
                     className="relative rounded-2xl overflow-hidden bg-gray-100"
@@ -1508,7 +1503,9 @@ function EventsTab({ events }) {
                       <>
                         {currentSlide > 0 && (
                           <button
-                            onClick={() => setSlide(ev.id, currentSlide - 1)}
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide - 1)
+                            }
                             style={{
                               position: 'absolute',
                               left: '10px',
@@ -1531,7 +1528,9 @@ function EventsTab({ events }) {
                         )}
                         {currentSlide < imgs.length - 1 && (
                           <button
-                            onClick={() => setSlide(ev.id, currentSlide + 1)}
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide + 1)
+                            }
                             style={{
                               position: 'absolute',
                               right: '10px',
@@ -1597,7 +1596,6 @@ function EventsTab({ events }) {
                     rel="noopener noreferrer"
                     className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    {/* Instagram icon omitted for brevity */}
                     Instagram 에서 열기
                   </a>
                 )}
@@ -1612,6 +1610,28 @@ function EventsTab({ events }) {
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const heroSlideIndex = displayEvent ? slideIndexes[displayEvent.id] || 0 : 0
+
+  // hero swipe handlers
+  const heroSwipeStartX = useRef(null)
+  const handleHeroTouchStart = (e) => {
+    heroSwipeStartX.current = e.touches[0].clientX
+    e.stopPropagation()
+  }
+  const handleHeroTouchEnd = (e) => {
+    if (heroSwipeStartX.current == null) return
+    const dx = e.changedTouches[0].clientX - heroSwipeStartX.current
+    heroSwipeStartX.current = null
+    if (!displayEvent || displayImages.length <= 1) {
+      e.stopPropagation()
+      return
+    }
+    if (dx < -40 && heroSlideIndex < displayImages.length - 1) {
+      setSlide(displayEvent.id, heroSlideIndex + 1)
+    } else if (dx > 40 && heroSlideIndex > 0) {
+      setSlide(displayEvent.id, heroSlideIndex - 1)
+    }
+    e.stopPropagation()
+  }
 
   return (
     <div
@@ -1682,7 +1702,7 @@ function EventsTab({ events }) {
                 </span>
               </div>
 
-              {/* Date + info box */}
+              {/* Date + Info box */}
               <div className="flex items-stretch mt-2">
                 {displayEvent.event_date && (() => {
                   const t = formatTopDate(displayEvent.event_date)
@@ -1792,12 +1812,18 @@ function EventsTab({ events }) {
       {/* SCROLLABLE SECTION */}
       <div style={{ flex: 1, overflow: 'auto' }}>
         <div className="px-4 py-6 max-w-md mx-auto">
-          {/* HERO IMAGE BOX (1:1) */}
+          {/* HERO IMAGE BOX (1:1, smaller, swipable) */}
           {displayEvent && displayImages.length > 0 && (
             <div className="mb-8">
               <div
                 className="relative rounded-2xl overflow-hidden bg-gray-100"
-                style={{ aspectRatio: '1/1' }}
+                style={{
+                  aspectRatio: '1/1',
+                  width: '90%',
+                  margin: '0 auto',
+                }}
+                onTouchStart={handleHeroTouchStart}
+                onTouchEnd={handleHeroTouchEnd}
               >
                 <div
                   className="flex h-full"
@@ -1830,9 +1856,10 @@ function EventsTab({ events }) {
                     {displayImages.map((_, i) => (
                       <div
                         key={i}
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setSlide(displayEvent.id, i)
-                        }
+                        }}
                         className={
                           'rounded-full cursor-pointer transition-all ' +
                           (i === heroSlideIndex
@@ -1847,7 +1874,7 @@ function EventsTab({ events }) {
             </div>
           )}
 
-          {/* UPCOMING LIST (other future events) */}
+          {/* UPCOMING LIST (future events after hero) */}
           {otherUpcomingEvents.length > 0 && (
             <div className="mb-8">
               {(() => {
@@ -1870,52 +1897,6 @@ function EventsTab({ events }) {
                 })
                 return blocks
               })()}
-            </div>
-          )}
-
-          {/* PAST EVENTS */}
-          {pastEvents.length > 0 && (
-            <div className="mt-6">
-              <button
-                onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
-                className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600 font-semibold">
-                    지난 이벤트
-                  </span>
-                  <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
-                    {pastEvents.length}
-                  </span>
-                </div>
-                <span className="text-gray-400 text-lg">
-                  {pastEventsExpanded ? '▲' : '▼'}
-                </span>
-              </button>
-              {pastEventsExpanded && (
-                <div className="space-y-3 mt-3">
-                  {(() => {
-                    let currentMonthLabel = null
-                    const blocks = []
-                    pastEvents.forEach((ev) => {
-                      const label = `${new Date(ev.event_date).getMonth() + 1}월`
-                      if (label !== currentMonthLabel) {
-                        currentMonthLabel = label
-                        blocks.push(
-                          <p
-                            key={`past-month-${label}`}
-                            className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
-                          >
-                            {label}
-                          </p>,
-                        )
-                      }
-                      blocks.push(renderEvent(ev))
-                    })
-                    return blocks
-                  })()}
-                </div>
-              )}
             </div>
           )}
 
