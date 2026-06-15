@@ -1221,7 +1221,7 @@ function EventsTab({ events }) {
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
-    if (rect && touch.clientY > rect.bottom - 60) return // ignore bottom tab
+    if (rect && touch.clientY > rect.bottom - 60) return // ignore bottom tab area
 
     dragStartY.current = touch.clientY
     dragAccumulator.current = 0
@@ -1503,9 +1503,7 @@ function EventsTab({ events }) {
                       <>
                         {currentSlide > 0 && (
                           <button
-                            onClick={() =>
-                              setSlide(ev.id, currentSlide - 1)
-                            }
+                            onClick={() => setSlide(ev.id, currentSlide - 1)}
                             style={{
                               position: 'absolute',
                               left: '10px',
@@ -1528,9 +1526,7 @@ function EventsTab({ events }) {
                         )}
                         {currentSlide < imgs.length - 1 && (
                           <button
-                            onClick={() =>
-                              setSlide(ev.id, currentSlide + 1)
-                            }
+                            onClick={() => setSlide(ev.id, currentSlide + 1)}
                             style={{
                               position: 'absolute',
                               right: '10px',
@@ -1611,26 +1607,33 @@ function EventsTab({ events }) {
   const displayImages = displayEvent?.image_urls || []
   const heroSlideIndex = displayEvent ? slideIndexes[displayEvent.id] || 0 : 0
 
-  // hero swipe handlers
+  // hero swipe handlers (horizontal only, don't block vertical drag)
   const heroSwipeStartX = useRef(null)
+  const heroSwipeStartY = useRef(null)
+
   const handleHeroTouchStart = (e) => {
-    heroSwipeStartX.current = e.touches[0].clientX
-    e.stopPropagation()
+    const touch = e.touches[0]
+    heroSwipeStartX.current = touch.clientX
+    heroSwipeStartY.current = touch.clientY
   }
+
   const handleHeroTouchEnd = (e) => {
-    if (heroSwipeStartX.current == null) return
-    const dx = e.changedTouches[0].clientX - heroSwipeStartX.current
+    if (heroSwipeStartX.current == null || !displayEvent) return
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - heroSwipeStartX.current
+    const dy = touch.clientY - heroSwipeStartY.current
     heroSwipeStartX.current = null
-    if (!displayEvent || displayImages.length <= 1) {
-      e.stopPropagation()
-      return
-    }
-    if (dx < -40 && heroSlideIndex < displayImages.length - 1) {
+    heroSwipeStartY.current = null
+
+    // treat as horizontal swipe only if x movement dominates
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return
+    if (displayImages.length <= 1) return
+
+    if (dx < 0 && heroSlideIndex < displayImages.length - 1) {
       setSlide(displayEvent.id, heroSlideIndex + 1)
-    } else if (dx > 40 && heroSlideIndex > 0) {
+    } else if (dx > 0 && heroSlideIndex > 0) {
       setSlide(displayEvent.id, heroSlideIndex - 1)
     }
-    e.stopPropagation()
   }
 
   return (
@@ -1702,7 +1705,7 @@ function EventsTab({ events }) {
                 </span>
               </div>
 
-              {/* Date + Info box */}
+              {/* Date + info box */}
               <div className="flex items-stretch mt-2">
                 {displayEvent.event_date && (() => {
                   const t = formatTopDate(displayEvent.event_date)
@@ -1811,64 +1814,68 @@ function EventsTab({ events }) {
 
       {/* SCROLLABLE SECTION */}
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <div className="px-4 py-6 max-w-md mx-auto">
-          {/* HERO IMAGE BOX (1:1, smaller, swipable) */}
-          {displayEvent && displayImages.length > 0 && (
-            <div className="mb-8">
+        <div className="py-6 max-w-md mx-auto">
+          {/* HERO IMAGE BOX (always, 1:1, smaller, swipable if images) */}
+          {displayEvent && (
+            <div className="px-2 mb-8 mt-2">
               <div
-                className="relative rounded-2xl overflow-hidden bg-gray-100"
+                className="relative rounded-2xl overflow-hidden"
                 style={{
                   aspectRatio: '1/1',
-                  width: '90%',
+                  width: '100%', // matches top px-2 container
                   margin: '0 auto',
+                  border: displayImages.length === 0 ? '1px solid #e5e7eb' : 'none',
+                  backgroundColor:
+                    displayImages.length === 0 ? '#ffffff' : '#f3f4f6',
                 }}
                 onTouchStart={handleHeroTouchStart}
                 onTouchEnd={handleHeroTouchEnd}
               >
-                <div
-                  className="flex h-full"
-                  style={{
-                    transform: `translateX(-${heroSlideIndex * 100}%)`,
-                    transition: 'transform 0.3s ease',
-                  }}
-                >
-                  {displayImages.map((url, i) => (
+                {displayImages.length > 0 && (
+                  <>
                     <div
-                      key={i}
-                      className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                      className="flex h-full"
+                      style={{
+                        transform: `translateX(-${heroSlideIndex * 100}%)`,
+                        transition: 'transform 0.3s ease',
+                      }}
                     >
-                      <img
-                        src={url}
-                        alt={`이미지 ${i + 1}`}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain',
-                          display: 'block',
-                        }}
-                        draggable={false}
-                      />
+                      {displayImages.map((url, i) => (
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt={`이미지 ${i + 1}`}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              display: 'block',
+                            }}
+                            draggable={false}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                {displayImages.length > 1 && (
-                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-                    {displayImages.map((_, i) => (
-                      <div
-                        key={i}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSlide(displayEvent.id, i)
-                        }}
-                        className={
-                          'rounded-full cursor-pointer transition-all ' +
-                          (i === heroSlideIndex
-                            ? 'bg-white w-2 h-2'
-                            : 'bg-white bg-opacity-50 w-1.5 h-1.5')
-                        }
-                      />
-                    ))}
-                  </div>
+                    {displayImages.length > 1 && (
+                      <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                        {displayImages.map((_, i) => (
+                          <div
+                            key={i}
+                            onClick={() => setSlide(displayEvent.id, i)}
+                            className={
+                              'rounded-full cursor-pointer transition-all ' +
+                              (i === heroSlideIndex
+                                ? 'bg-white w-2 h-2'
+                                : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                            }
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -1876,7 +1883,7 @@ function EventsTab({ events }) {
 
           {/* UPCOMING LIST (future events after hero) */}
           {otherUpcomingEvents.length > 0 && (
-            <div className="mb-8">
+            <div className="px-4 mb-8">
               {(() => {
                 let currentMonthLabel = null
                 const blocks = []
@@ -1902,7 +1909,7 @@ function EventsTab({ events }) {
 
           {/* EMPTY STATE */}
           {allEvents.length === 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+            <div className="px-4 bg-white rounded-2xl border border-gray-100 p-8 text-center">
               <p className="text-2xl mb-2">📅</p>
               <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
             </div>
