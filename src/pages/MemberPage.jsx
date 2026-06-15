@@ -1142,17 +1142,15 @@ function NavBtn({ onClick, children, style = {} }) {
   )
 }
 
-
-
 // ─── Events Tab ──────────────────────────────────────────────────────────────
 // Drop-in replacement for the EventsTab function in MemberPage.jsx
 // Features:
 // - Drag anywhere on screen (except bottom tab) to scroll through events
 // - Live preview of dates as you drag
-// - Haptic vibration feedback on each event selection
-// - Calendar auto-updates to show that month
-// - Fixed 6-row calendar height
-// - Circle dates with event colours
+// - Status label (Past/Upcoming/Future) above event info
+// - Event title orange only for most upcoming event
+// - No month navigation buttons
+// - No calendar legend
 
 function EventsTab({ events }) {
   const now = new Date()
@@ -1174,7 +1172,7 @@ function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
-  const [previewEvent, setPreviewEvent] = useState(nextEvent)  // Live preview during drag
+  const [previewEvent, setPreviewEvent] = useState(nextEvent)
   const [isDragging, setIsDragging] = useState(false)
 
   // Calendar month syncs with selectedEvent
@@ -1193,13 +1191,6 @@ function EventsTab({ events }) {
   const setSlide = (eventId, idx) =>
     setSlideIndexes((prev) => ({ ...prev, [eventId]: idx }))
 
-  // ── Haptic feedback ──────────────────────────────────────────────────────────
-  const triggerHaptic = () => {
-    if (navigator.vibrate) {
-      navigator.vibrate(10)
-    }
-  }
-
   // ── Keyboard nav for image slider ───────────────────────────────────────────
   useEffect(() => {
     if (!expandedId) return
@@ -1217,7 +1208,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', handler)
   }, [expandedId, slideIndexes, events])
 
-  // ── Drag to navigate events (anywhere except bottom tab bar) ─────────────────
+  // ── Drag to navigate events ────────────────────────────────────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastEventIndexRef = useRef(null)
@@ -1227,7 +1218,6 @@ function EventsTab({ events }) {
   const currentEventIndex = allEvents.findIndex((ev) => ev.id === selectedEvent?.id)
 
   const handleContainerTouchStart = (e) => {
-    // Don't start drag if touching the bottom tab bar
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
     if (rect && touch.clientY > rect.bottom - 60) return
@@ -1246,8 +1236,6 @@ function EventsTab({ events }) {
     const dy = dragStartY.current - touch.clientY
     dragAccumulator.current = dy
 
-    // Calculate which event would be selected at this drag position
-    // Every 60px of drag = 1 event
     let eventIndexDelta = 0
     if (dy > 0) {
       eventIndexDelta = Math.floor(dy / 60)
@@ -1258,7 +1246,6 @@ function EventsTab({ events }) {
     const previewIndex = Math.max(0, Math.min(lastEventIndexRef.current + eventIndexDelta, allEvents.length - 1))
     const previewEv = allEvents[previewIndex]
     
-    // Update preview in real-time
     setPreviewEvent(previewEv)
   }
 
@@ -1278,7 +1265,6 @@ function EventsTab({ events }) {
       const newIndex = Math.max(0, Math.min(currentEventIndex + eventIndexDelta, allEvents.length - 1))
       if (newIndex !== currentEventIndex) {
         setSelectedEvent(allEvents[newIndex])
-        triggerHaptic()
       }
     }
 
@@ -1308,6 +1294,14 @@ function EventsTab({ events }) {
     const ampm = hours >= 12 ? 'PM' : 'AM'
     hours = hours % 12 || 12
     return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`
+  }
+
+  const getEventStatus = (ev) => {
+    if (!ev || !ev.event_date) return 'UPCOMING'
+    const evDate = new Date(ev.event_date)
+    if (evDate < now) return 'PAST'
+    if (evDate >= now) return 'UPCOMING'
+    return 'UPCOMING'
   }
 
   const addToCalendar = (ev) => {
@@ -1353,10 +1347,10 @@ function EventsTab({ events }) {
   // Circle style per event
   const circleStyle = (ev) => {
     if (nextEvent && ev.id === nextEvent.id)
-      return { bg: '#f97316', border: 'none', color: '#ffffff' }        // orange filled
+      return { bg: '#f97316', border: 'none', color: '#ffffff' }
     if (new Date(ev.event_date) >= now)
-      return { bg: '#1f2937', border: 'none', color: '#ffffff' }        // black filled
-    return { bg: '#6b7280', border: 'none', color: '#ffffff' }          // darker grey filled
+      return { bg: '#1f2937', border: 'none', color: '#ffffff' }
+    return { bg: '#6b7280', border: 'none', color: '#ffffff' }
   }
 
   const calYear     = calMonth.getFullYear()
@@ -1364,19 +1358,11 @@ function EventsTab({ events }) {
   const firstDayOfMonth = new Date(calYear, calMonthIdx, 1).getDay()
   const daysInMonth     = new Date(calYear, calMonthIdx + 1, 0).getDate()
 
-  // Always render exactly 6 rows (42 cells) so the calendar height never changes
   const cells = [
     ...Array(firstDayOfMonth).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ]
   while (cells.length < 42) cells.push(null)
-
-  const calMonthLabel = calMonth.toLocaleDateString('en-US', {
-    month: 'long', year: 'numeric',
-  })
-
-  const prevMonth = () => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))
-  const nextMonth = () => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))
 
   const handleDayPress = (day) => {
     if (!day) return
@@ -1384,7 +1370,6 @@ function EventsTab({ events }) {
     const dayEvents = eventsByDate[key]
     if (!dayEvents || dayEvents.length === 0) return
     setSelectedEvent(dayEvents[0])
-    triggerHaptic()
   }
 
   // ── Reusable event card renderer ────────────────────────────────────────────
@@ -1516,7 +1501,6 @@ function EventsTab({ events }) {
     )
   }
 
-  // Use preview event during drag, otherwise use selected event
   const displayEvent = isDragging ? previewEvent : selectedEvent
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -1552,13 +1536,27 @@ function EventsTab({ events }) {
           <div className="px-2 max-w-md mx-auto">
             <div className="flex flex-col">
               {formatTopDate(displayEvent.event_date) && (
-                <span style={{
-                  fontFamily: '"Handjet", system-ui, sans-serif',
-                  fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
-                  letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '8px',
                 }}>
-                  {formatTopDate(displayEvent.event_date).dayName}
-                </span>
+                  <span style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
+                    letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
+                  }}>
+                    {formatTopDate(displayEvent.event_date).dayName}
+                  </span>
+                  <span style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: fs.day, fontWeight: 500, color: '#9ca3af',
+                    letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85,
+                  }}>
+                    {getEventStatus(displayEvent)}
+                  </span>
+                </div>
               )}
 
               <div className="flex items-stretch mt-2">
@@ -1593,7 +1591,8 @@ function EventsTab({ events }) {
                       <span style={{
                         fontFamily: '"Noto Sans KR", system-ui, sans-serif',
                         fontSize: `calc(${W} * 0.052)`, fontWeight: 700,
-                        color: '#f97316', lineHeight: 1.2,
+                        color: nextEvent && displayEvent.id === nextEvent.id ? '#f97316' : '#1f2937',
+                        lineHeight: 1.2,
                       }}>
                         {displayEvent.title}
                       </span>
@@ -1642,47 +1641,17 @@ function EventsTab({ events }) {
             {/* Month header */}
             <div style={{
               display: 'flex', alignItems: 'center',
-              justifyContent: 'space-between', marginBottom: '12px',
+              justifyContent: 'center', marginBottom: '12px',
             }}>
-              <button
-                onClick={prevMonth}
-                style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  border: 'none', background: '#f3f4f6',
-                  cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  color: '#374151',
-                }}
-              >
-                {/* Phosphor CaretLeft */}
-                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
-                  <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z" />
-                </svg>
-              </button>
-
               <span style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
                 fontSize: `calc(${W} * 0.045)`, fontWeight: 700,
                 color: '#1f2937', letterSpacing: '0.04em', textTransform: 'uppercase',
               }}>
-                {calMonthLabel}
+                {new Date(calMonth).toLocaleDateString('en-US', {
+                  month: 'long', year: 'numeric',
+                })}
               </span>
-
-              <button
-                onClick={nextMonth}
-                style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  border: 'none', background: '#f3f4f6',
-                  cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  color: '#374151',
-                }}
-              >
-                {/* Phosphor CaretRight */}
-                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
-                  <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
-                </svg>
-              </button>
             </div>
 
             {/* Weekday labels */}
@@ -1720,11 +1689,6 @@ function EventsTab({ events }) {
                   calMonthIdx === now.getMonth() &&
                   calYear === now.getFullYear()
 
-                const isSelected =
-                  selectedEvent &&
-                  selectedEvent.event_date &&
-                  selectedEvent.event_date.slice(0, 10) === dateKey
-
                 // Determine circle appearance
                 let circleBg     = 'transparent'
                 let circleBorder = 'none'
@@ -1744,7 +1708,6 @@ function EventsTab({ events }) {
                   fontWeight   = 700
                 }
 
-                // Today with event: add ring
                 const todayRing = isToday && hasEvents
                   ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937'
                   : 'none'
@@ -1789,36 +1752,6 @@ function EventsTab({ events }) {
                   </div>
                 )
               })}
-            </div>
-
-            {/* Legend */}
-            <div style={{
-              display: 'flex', gap: '16px', marginTop: '12px',
-              paddingTop: '10px', borderTop: '1px solid #f3f4f6',
-              justifyContent: 'center',
-            }}>
-              {[
-                { bg: '#f97316', border: 'none',              label: 'Next up'  },
-                { bg: '#1f2937', border: 'none',              label: 'Upcoming' },
-                { bg: '#6b7280', border: 'none',              label: 'Past'     },
-                { bg: '#ffffff', border: '2px solid #1f2937', label: 'Today'    },
-              ].map(({ bg, border, label }) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <div style={{
-                    width: 10, height: 10, borderRadius: '50%',
-                    backgroundColor: bg,
-                    border,
-                    boxSizing: 'border-box',
-                  }} />
-                  <span style={{
-                    fontFamily: '"Handjet", system-ui, sans-serif',
-                    fontSize: `calc(${W} * 0.03)`,
-                    color: '#6b7280', fontWeight: 500,
-                  }}>
-                    {label}
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
 
