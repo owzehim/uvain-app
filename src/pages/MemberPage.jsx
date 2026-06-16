@@ -1855,156 +1855,151 @@ function EventsTab({ events }) {
 
                   {/* Front card with GAUSSIAN BLUR overlay instead of fade */}
                   {hasImages &&
-                    (() => {
-                      const ratio = displayImageRatios[0] || 1
-                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                      return (
-                        <div
-                          onClick={() => {
-                            if (hasImages) {
-                              setLightboxIndex(0)
-                              setLightboxOpen(true)
-                            }
-                          }}
-                          style={{
-                            position: 'relative',
-                            zIndex: 3,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            aspectRatio,
-                            width: '100%',
-                            backgroundColor: '#f3f4f6',
-                            border: 'none',
-                            cursor: hasImages ? 'pointer' : 'default',
-                          }}
-                        >
-                          {displayImages[0] && (
-                            <img
-                              src={displayImages[0]}
-                              alt=""
-                              style={{
-                                position: 'absolute',
-                                inset: 0,
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                              }}
-                              draggable={false}
-                            />
-                          )}
+  (() => {
+    const ratio = displayImageRatios[0] || 1
+    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+    return (
+      <div
+        onClick={() => {
+          if (hasImages) {
+            setLightboxIndex(0)
+            setLightboxOpen(true)
+          }
+        }}
+        style={{
+          position: 'relative',
+          zIndex: 3,
+          borderRadius: '12px',
+          overflow: 'hidden',
+          aspectRatio,
+          width: '100%',
+          backgroundColor: '#f3f4f6',
+          border: 'none',
+          cursor: hasImages ? 'pointer' : 'default',
+        }}
+      >
+        {/* Base image */}
+        {displayImages[0] && (
+          <img
+            src={displayImages[0]}
+            alt=""
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+            draggable={false}
+          />
+        )}
 
-                          {/* Blur overlay panel behind text */}
-                          <div
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              padding: '10px 14px 22px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              justifyContent: 'flex-start',
-                              gap: '4px',
-                              backgroundColor: hasImages
-                                ? 'rgba(0,0,0,0.35)'
-                                : 'transparent',
-                              backdropFilter: hasImages ? 'blur(10px)' : 'none',
-                              WebkitBackdropFilter: hasImages
-                                ? 'blur(10px)'
-                                : 'none',
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontFamily:
-                                  '"Noto Sans KR", system-ui, sans-serif',
-                                fontSize: `calc(${W} * 0.052)`,
-                                fontWeight: 700,
-                                color: hasImages
-                                  ? '#ffffff'
-                                  : nextEvent &&
-                                    displayEvent.id === nextEvent.id
-                                  ? '#f97316'
-                                  : '#1f2937',
-                                lineHeight: 1.2,
-                              }}
-                            >
-                              {displayEvent.title}
-                            </span>
-                            {displayEvent.event_date && (
-                              <span
-                                style={{
-                                  fontFamily:
-                                    '"Handjet", system-ui, sans-serif',
-                                  fontSize: `calc(${W} * 0.042)`,
-                                  fontWeight: 700,
-                                  color: hasImages
-                                    ? 'rgba(255,255,255,0.9)'
-                                    : '#111827',
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {formatTopTime(displayEvent.event_date)}
-                              </span>
-                            )}
-                            {displayEvent.location && (
-                              <span
-                                style={{
-                                  fontFamily:
-                                    '"Handjet", system-ui, sans-serif',
-                                  fontSize: `calc(${W} * 0.036)`,
-                                  fontWeight: 700,
-                                  color: hasImages
-                                    ? 'rgba(255,255,255,0.8)'
-                                    : '#4b5563',
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {displayEvent.location}
-                              </span>
-                            )}
-                          </div>
+        {/* FULL-PANEL WHITE GAUSSIAN BLUR OVERLAY */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: 'rgba(255,255,255,0.75)', // white tint
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+          }}
+        />
 
-                          {/* Photo count badge */}
-                          {displayImages.length > 1 && (
-                            <div
-                              style={{
-                                position: 'absolute',
-                                bottom: '8px',
-                                right: '10px',
-                                backgroundColor: 'rgba(0,0,0,0.45)',
-                                borderRadius: '999px',
-                                padding: '2px 8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                              }}
-                            >
-                              <svg
-                                width="11"
-                                height="11"
-                                viewBox="0 0 24 24"
-                                fill="white"
-                              >
-                                <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
-                              </svg>
-                              <span
-                                style={{
-                                  fontFamily:
-                                    '"Handjet", system-ui, sans-serif',
-                                  fontSize: 12,
-                                  color: '#fff',
-                                  fontWeight: 600,
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {displayImages.length}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })()}
+        {/* Content on top of white blur */}
+        <div
+          style={{
+            position: 'relative',
+            height: '100%',
+            padding: '12px 14px 28px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            gap: '4px',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+              fontSize: `calc(${W} * 0.052)`,
+              fontWeight: 700,
+              color:
+                nextEvent && displayEvent.id === nextEvent.id
+                  ? '#f97316'
+                  : '#111827',
+              lineHeight: 1.2,
+            }}
+          >
+            {displayEvent.title}
+          </span>
+
+          {displayEvent.event_date && (
+            <span
+              style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: `calc(${W} * 0.042)`,
+                fontWeight: 700,
+                color: '#111827',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {formatTopTime(displayEvent.event_date)}
+            </span>
+          )}
+
+          {displayEvent.location && (
+            <span
+              style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: `calc(${W} * 0.036)`,
+                fontWeight: 700,
+                color: '#4b5563',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {displayEvent.location}
+            </span>
+          )}
+        </div>
+
+        {/* Photo count badge */}
+        {displayImages.length > 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '10px',
+              backgroundColor: 'rgba(0,0,0,0.45)',
+              borderRadius: '999px',
+              padding: '2px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="white"
+            >
+              <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
+            </svg>
+            <span
+              style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: 12,
+                color: '#fff',
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+              }}
+            >
+              {displayImages.length}
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  })()}
 
                   {/* No images placeholder */}
                   {!hasImages && (
