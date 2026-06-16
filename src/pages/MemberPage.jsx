@@ -3,12 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import {
-  MAP_CATEGORIES,
-  CATEGORY_ICONS_WHITE,
-  CATEGORY_ICONS_ORANGE,
-} from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear, UserCircle } from '@phosphor-icons/react'
+import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import { QrCode, Calendar, MapPin, Gear, UserCircle, ArrowsVertical } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -1151,7 +1147,11 @@ function EventsTab({ events }) {
   const datedEvents = events.filter((ev) => ev.event_date)
   const tbdEvents = events
     .filter((ev) => !ev.event_date)
-    .sort((a, b) => (a.created_at && b.created_at ? new Date(a.created_at) - new Date(b.created_at) : 0))
+    .sort((a, b) =>
+      a.created_at && b.created_at
+        ? new Date(a.created_at) - new Date(b.created_at)
+        : 0,
+    )
   const futureEvents = datedEvents
     .filter((ev) => new Date(ev.event_date) >= now)
     .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
@@ -1172,7 +1172,7 @@ function EventsTab({ events }) {
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
-  const [lbSlideDir, setLbSlideDir] = useState(0)
+  const [lbSlideDir, setLbSlideDir] = useState(0) // -1 = next (left swipe), 1 = prev (right swipe)
   const [imageAspectRatios, setImageAspectRatios] = useState({})
 
   const [calMonth, setCalMonth] = useState(() => {
@@ -1186,12 +1186,13 @@ function EventsTab({ events }) {
     setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1))
   }, [selectedEvent])
 
-  const setSlide = (id, idx) => setSlideIndexes((p) => ({ ...p, [id]: idx }))
+  const setSlide = (id, idx) =>
+    setSlideIndexes((p) => ({ ...p, [id]: idx }))
 
-  // ── Load image dimensions to detect aspect ratio ──────────────────────────────
+  // ── Load image dimensions to detect aspect ratio ─────────────────────────────
   useEffect(() => {
-    const loadImageDimensions = (url) => {
-      return new Promise((resolve) => {
+    const loadImageDimensions = (url) =>
+      new Promise((resolve) => {
         const img = new Image()
         img.onload = () => {
           const ratio = img.width / img.height
@@ -1200,7 +1201,6 @@ function EventsTab({ events }) {
         img.onerror = () => resolve(1)
         img.src = url
       })
-    }
 
     const loadAllRatios = async () => {
       const ratios = {}
@@ -1219,22 +1219,32 @@ function EventsTab({ events }) {
     loadAllRatios()
   }, [events])
 
-  // ── Helper: determine if image is 4:5 (portrait) ─────────────────────────────
-  const isPortrait = (aspectRatio) => {
-    return aspectRatio >= 0.75 && aspectRatio <= 0.85
-  }
+  // Helper: determine if image is 4:5 (portrait-ish)
+  const isPortrait = (aspectRatio) =>
+    aspectRatio >= 0.75 && aspectRatio <= 0.85
 
-  // ── Keyboard nav for image slider ───────────────────────────────────────────
+  // ── Keyboard nav for image slider in expanded cards ─────────────────────────
   useEffect(() => {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
     if (!ev) return
     const imgs = ev.image_urls || []
     if (imgs.length <= 1) return
+
     const h = (e) => {
-      if (e.key === 'ArrowRight') setSlide(expandedId, Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1))
-      else if (e.key === 'ArrowLeft') setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
+      if (e.key === 'ArrowRight') {
+        setSlide(
+          expandedId,
+          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
+        )
+      } else if (e.key === 'ArrowLeft') {
+        setSlide(
+          expandedId,
+          Math.max((slideIndexes[expandedId] || 0) - 1, 0),
+        )
+      }
     }
+
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
@@ -1243,20 +1253,31 @@ function EventsTab({ events }) {
   useEffect(() => {
     if (!lightboxOpen) return
     const imgs = (isDragging ? previewEvent : selectedEvent)?.image_urls || []
+
     const h = (e) => {
-      if (e.key === 'ArrowRight') setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
-      else if (e.key === 'ArrowLeft') setLightboxIndex((i) => Math.max(i - 1, 0))
-      else if (e.key === 'Escape') setLightboxOpen(false)
+      if (e.key === 'ArrowRight') {
+        setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
+        setLbSlideDir(-1)
+      } else if (e.key === 'ArrowLeft') {
+        setLightboxIndex((i) => Math.max(i - 1, 0))
+        setLbSlideDir(1)
+      } else if (e.key === 'Escape') {
+        setLightboxOpen(false)
+      }
     }
+
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
   }, [lightboxOpen, selectedEvent, previewEvent, isDragging])
 
+  // ── Vertical drag between events in header ───────────────────────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
   const containerRef = useRef(null)
-  const currentEventIndex = allEvents.findIndex((ev) => ev.id === selectedEvent?.id)
+  const currentEventIndex = allEvents.findIndex(
+    (ev) => ev.id === selectedEvent?.id,
+  )
 
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
@@ -1268,22 +1289,36 @@ function EventsTab({ events }) {
     setIsDragging(true)
     setPreviewEvent(selectedEvent)
   }
+
   const handleContainerTouchMove = (e) => {
     if (dragStartY.current == null) return
     const dy = dragStartY.current - e.touches[0].clientY
     dragAccumulator.current = dy
-    let delta = dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
-    const idx = Math.max(0, Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1))
+    const delta =
+      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+    const idx = Math.max(
+      0,
+      Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
+    )
     setPreviewEvent(allEvents[idx])
   }
+
   const handleContainerTouchEnd = () => {
     if (dragStartY.current == null) return
     const dy = dragAccumulator.current
-    let delta = dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+    const delta =
+      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+
     if (delta !== 0) {
-      const newIdx = Math.max(0, Math.min((currentEventIndex ?? 0) + delta, allEvents.length - 1))
-      if (newIdx !== currentEventIndex) setSelectedEvent(allEvents[newIdx])
+      const newIdx = Math.max(
+        0,
+        Math.min((currentEventIndex ?? 0) + delta, allEvents.length - 1),
+      )
+      if (newIdx !== currentEventIndex) {
+        setSelectedEvent(allEvents[newIdx])
+      }
     }
+
     dragStartY.current = null
     dragAccumulator.current = 0
     lastIdxRef.current = null
@@ -1291,7 +1326,7 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
-  // ── LIGHTBOX TOUCH HANDLERS ─────────────────────────────────────────────────
+  // ── LIGHTBOX TOUCH HANDLERS (swipe left/right, swipe up/down to close) ──────
   const lbSwipeX = useRef(null)
   const lbSwipeY = useRef(null)
 
@@ -1307,7 +1342,7 @@ function EventsTab({ events }) {
     lbSwipeX.current = null
     lbSwipeY.current = null
 
-    // Close on swipe up or down
+    // Close on vertical swipe
     if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) {
       setLightboxOpen(false)
       return
@@ -1323,19 +1358,31 @@ function EventsTab({ events }) {
     }
   }
 
+  // ── Formatting helpers ──────────────────────────────────────────────────────
   const getDayDiff = (s) => {
     const d = new Date(s)
-    return Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - todayStart) / 86400000)
+    return Math.round(
+      (new Date(d.getFullYear(), d.getMonth(), d.getDate()) - todayStart) /
+        86400000,
+    )
   }
+
   const formatTopDate = (dateStr) => {
     if (!dateStr) return null
     const date = new Date(dateStr)
     return {
-      dayName: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-      dateNum: `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`,
-      monthName: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      dayName: date
+        .toLocaleDateString('en-US', { weekday: 'short' })
+        .toUpperCase(),
+      dateNum: `${String(date.getDate()).padStart(2, '0')}.${String(
+        date.getMonth() + 1,
+      ).padStart(2, '0')}`,
+      monthName: date
+        .toLocaleDateString('en-US', { month: 'short' })
+        .toUpperCase(),
     }
   }
+
   const formatTopTime = (dateStr) => {
     if (!dateStr) return ''
     const d = new Date(dateStr)
@@ -1345,21 +1392,37 @@ function EventsTab({ events }) {
     h = h % 12 || 12
     return `${String(h).padStart(2, '0')}:${m} ${ampm}`
   }
+
   const getEventStatus = (ev) => {
     if (!ev) return ''
     if (!ev.event_date) return 'TBD'
     const days = getDayDiff(ev.event_date)
     if (days < 0) return 'PAST'
-    if (nextEvent && ev.id === nextEvent.id) return days === 0 ? 'TODAY' : `D-${days}`
+    if (nextEvent && ev.id === nextEvent.id)
+      return days === 0 ? 'TODAY' : `D-${days}`
     return 'UPCOMING'
   }
+
   const addToCalendar = (ev) => {
     if (!ev?.event_date) return
     const start = new Date(ev.event_date)
     const end = new Date(start.getTime() + 7200000)
     const pad = (n) => String(n).padStart(2, '0')
-    const fmt = (d) => d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + '00Z'
-    const ics = `BEGIN:VCALENDAR\\nVERSION:2.0\\nBEGIN:VEVENT\\nDTSTART:${fmt(start)}\\nDTEND:${fmt(end)}\\nSUMMARY:${ev.title}\\nLOCATION:${ev.location || ''}\\nDESCRIPTION:${ev.description || ''}\\nEND:VEVENT\\nEND:VCALENDAR`
+    const fmt = (d) =>
+      d.getUTCFullYear() +
+      pad(d.getUTCMonth() + 1) +
+      pad(d.getUTCDate()) +
+      'T' +
+      pad(d.getUTCHours()) +
+      pad(d.getUTCMinutes()) +
+      '00Z'
+
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${fmt(
+      start,
+    )}\nDTEND:${fmt(end)}\nSUMMARY:${ev.title}\nLOCATION:${
+      ev.location || ''
+    }\nDESCRIPTION:${ev.description || ''}\nEND:VEVENT\nEND:VCALENDAR`
+
     const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
     const a = document.createElement('a')
     a.href = url
@@ -1369,7 +1432,11 @@ function EventsTab({ events }) {
   }
 
   const W = 'calc(100vw - 32px)'
-  const fs = { day: `calc(${W} * 0.06)`, date: `calc(${W} * 0.24)`, month: `calc(${W} * 0.24)` }
+  const fs = {
+    day: `calc(${W} * 0.06)`,
+    date: `calc(${W} * 0.24)`,
+    month: `calc(${W} * 0.24)`,
+  }
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
@@ -1377,22 +1444,31 @@ function EventsTab({ events }) {
     if (!eventsByDate[key]) eventsByDate[key] = []
     eventsByDate[key].push(ev)
   })
+
   const circleStyle = (ev) => {
-    if (nextEvent && ev.id === nextEvent.id) return { bg: '#f97316', color: '#fff' }
+    if (nextEvent && ev.id === nextEvent.id)
+      return { bg: '#f97316', color: '#fff' }
     if (new Date(ev.event_date) >= now) return { bg: '#1f2937', color: '#fff' }
     return { bg: '#6b7280', color: '#fff' }
   }
+
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
   const cells = [
     ...Array(new Date(calYear, calMonthIdx, 1).getDay()).fill(null),
-    ...Array.from({ length: new Date(calYear, calMonthIdx + 1, 0).getDate() }, (_, i) => i + 1),
+    ...Array.from(
+      { length: new Date(calYear, calMonthIdx + 1, 0).getDate() },
+      (_, i) => i + 1,
+    ),
   ]
   while (cells.length < 42) cells.push(null)
 
   const handleDayPress = (day) => {
     if (!day) return
-    const key = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const key = `${calYear}-${String(calMonthIdx + 1).padStart(
+      2,
+      '0',
+    )}-${String(day).padStart(2, '0')}`
     const dayEvents = eventsByDate[key]
     if (!dayEvents?.length) return
     setSelectedEvent(dayEvents[0])
@@ -1404,49 +1480,106 @@ function EventsTab({ events }) {
     const imgs = ev.image_urls || []
     const instaUrl = ev.instagram_url
     const currentSlide = slideIndexes[ev.id] || 0
+
     return (
-      <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <button onClick={() => setExpandedId(isExpanded ? null : ev.id)} className="w-full text-left p-5">
+      <div
+        key={ev.id}
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      >
+        <button
+          onClick={() => setExpandedId(isExpanded ? null : ev.id)}
+          className="w-full text-left p-5"
+        >
           <div className="flex items-center justify-between">
             <p className="font-semibold text-gray-900">{ev.title}</p>
-            <span className="text-gray-400 text-sm ml-2">{isExpanded ? '▲' : '▼'}</span>
+            <span className="text-gray-400 text-sm ml-2">
+              {isExpanded ? '▲' : '▼'}
+            </span>
           </div>
           {ev.event_date && (
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
               <Calendar size={14} weight="fill" />
-              <span>{new Date(ev.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+              <span>
+                {new Date(ev.event_date).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
+              </span>
             </div>
           )}
           {ev.location && (
             <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
-              <MapPin size={14} weight="fill" /><span>{ev.location}</span>
+              <MapPin size={14} weight="fill" />
+              <span>{ev.location}</span>
             </div>
           )}
         </button>
+
         {isExpanded && (
           <div>
             {imgs.length > 0 && (
               <div className="px-4">
-                <div className="md:hidden"
-                  onTouchStart={(e) => { e.currentTarget._sx = e.touches[0].clientX }}
+                <div
+                  className="md:hidden"
+                  onTouchStart={(e) => {
+                    e.currentTarget._sx = e.touches[0].clientX
+                  }}
                   onTouchEnd={(e) => {
-                    const dx = e.changedTouches[0].clientX - e.currentTarget._sx
-                    if (dx < -40 && currentSlide < imgs.length - 1) setSlide(ev.id, currentSlide + 1)
-                    else if (dx > 40 && currentSlide > 0) setSlide(ev.id, currentSlide - 1)
-                  }}>
-                  <div className="relative rounded-2xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1/1' }}>
-                    <div className="flex h-full" style={{ transform: `translateX(-${currentSlide * 100}%)`, transition: 'transform 0.3s ease' }}>
+                    const dx =
+                      e.changedTouches[0].clientX - e.currentTarget._sx
+                    if (dx < -40 && currentSlide < imgs.length - 1)
+                      setSlide(ev.id, currentSlide + 1)
+                    else if (dx > 40 && currentSlide > 0)
+                      setSlide(ev.id, currentSlide - 1)
+                  }}
+                >
+                  <div
+                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    style={{ aspectRatio: '1/1' }}
+                  >
+                    <div
+                      className="flex h-full"
+                      style={{
+                        transform: `translateX(-${currentSlide * 100}%)`,
+                        transition: 'transform 0.3s ease',
+                      }}
+                    >
                       {imgs.map((url, i) => (
-                        <div key={i} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100">
-                          <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} draggable={false} />
+                        <div
+                          key={i}
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt=""
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                            }}
+                            draggable={false}
+                          />
                         </div>
                       ))}
                     </div>
+
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
-                          <div key={i} onClick={() => setSlide(ev.id, i)}
-                            className={'rounded-full cursor-pointer ' + (i === currentSlide ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5')} />
+                          <div
+                            key={i}
+                            onClick={() => setSlide(ev.id, i)}
+                            className={
+                              'rounded-full cursor-pointer ' +
+                              (i === currentSlide
+                                ? 'bg-white w-2 h-2'
+                                : 'bg-white bg-opacity-50 w-1.5 h-1.5')
+                            }
+                          />
                         ))}
                       </div>
                     )}
@@ -1454,20 +1587,38 @@ function EventsTab({ events }) {
                 </div>
               </div>
             )}
+
             <div className="px-5 pb-5">
               {ev.description && (
-                <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />
+                <RichText
+                  text={ev.description}
+                  className="text-sm text-gray-600 mt-3 leading-relaxed block"
+                />
               )}
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
-                  <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5">
+                  <button
+                    onClick={() => addToCalendar(ev)}
+                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5"
+                  >
                     <Calendar size={14} weight="fill" /> 캘린더에 추가
                   </button>
                 )}
                 {instaUrl && (
-                  <a href={instaUrl} target="_blank" rel="noopener noreferrer"
-                    className="flex-1 text-xs bg-orange-500 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" /></svg>
+                  <a
+                    href={instaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-xs bg-orange-500 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                    </svg>
                     Instagram 에서 열기
                   </a>
                 )}
@@ -1508,8 +1659,12 @@ function EventsTab({ events }) {
           from { opacity: 0; transform: translateX(-60px); }
           to   { opacity: 1; transform: translateX(0); }
         }
-        .lb-slide-left  { animation: slideInFromRight 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-        .lb-slide-right { animation: slideInFromLeft  0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .lb-slide-left  {
+          animation: slideInFromRight 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .lb-slide-right {
+          animation: slideInFromLeft  0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
       `}</style>
 
       <div
@@ -1517,18 +1672,64 @@ function EventsTab({ events }) {
         onTouchStart={handleContainerTouchStart}
         onTouchMove={handleContainerTouchMove}
         onTouchEnd={handleContainerTouchEnd}
-        style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', touchAction: 'none', userSelect: 'none' }}
+        style={{
+          height: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          touchAction: 'none',
+          userSelect: 'none',
+        }}
       >
         {/* TOP SECTION */}
-        <div style={{ flex: '0 0 auto', padding: '16px', paddingTop: '24px', backgroundColor: '#ffffff', opacity: isDragging ? 0.7 : 1, transition: isDragging ? 'none' : 'opacity 0.2s' }}>
+        <div
+          style={{
+            flex: '0 0 auto',
+            padding: '16px',
+            paddingTop: '24px',
+            backgroundColor: '#ffffff',
+            opacity: isDragging ? 0.7 : 1,
+            transition: isDragging ? 'none' : 'opacity 0.2s',
+          }}
+        >
           {displayEvent && (
             <div className="px-2 max-w-md mx-auto">
               {/* Day + Status */}
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '8px', paddingRight: '4px' }}>
-                <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.day, fontWeight: 500, color: '#9ca3af', letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85 }}>
-                  {displayEvent.event_date ? formatTopDate(displayEvent.event_date)?.dayName : ''}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                  marginBottom: '8px',
+                  paddingRight: '4px',
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: fs.day,
+                    fontWeight: 500,
+                    color: '#9ca3af',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    lineHeight: 0.85,
+                  }}
+                >
+                  {displayEvent.event_date
+                    ? formatTopDate(displayEvent.event_date)?.dayName
+                    : ''}
                 </span>
-                <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.day, fontWeight: 500, color: '#9ca3af', letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 0.85 }}>
+                <span
+                  style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: fs.day,
+                    fontWeight: 500,
+                    color: '#9ca3af',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    lineHeight: 0.85,
+                  }}
+                >
                   {getEventStatus(displayEvent)}
                 </span>
               </div>
@@ -1536,105 +1737,345 @@ function EventsTab({ events }) {
               {/* Date + Photo Pile */}
               <div className="flex items-stretch mt-2">
                 {/* Left: date */}
-                {displayEvent.event_date && (() => {
-                  const t = formatTopDate(displayEvent.event_date)
-                  if (!t) return null
-                  return (
-                    <div className="flex flex-col items-start justify-center" style={{ flexShrink: 0 }}>
-                      <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.date, fontWeight: 800, color: '#1f2937', letterSpacing: '0.02em', lineHeight: 0.85 }}>{t.dateNum}</span>
-                      <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.month, fontWeight: 800, color: '#1f2937', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 0.85, marginTop: '2px' }}>{t.monthName}</span>
-                    </div>
-                  )
-                })()}
-
-                {/* Right: photo pile with dynamic aspect ratios */}
-                <div className="flex-1" style={{ paddingLeft: displayEvent.event_date ? '16px' : '0', paddingRight: '4px', position: 'relative' }}>
-                  {/* Back card 2 — only if 3+ images */}
-                  {hasImages && displayImages.length >= 3 && (() => {
-                    const ratio = displayImageRatios[2] || 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                    return (
-                      <div style={{ position: 'absolute', inset: 0, aspectRatio, borderRadius: '12px', overflow: 'hidden', backgroundColor: '#d1d5db', transform: 'rotate(3deg) translate(7px, 7px)', zIndex: 1 }}>
-                        {displayImages[2] && <img src={displayImages[2]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
-                      </div>
-                    )
-                  })()}
-
-                  {/* Back card 1 — only if 2+ images */}
-                  {hasImages && displayImages.length >= 2 && (() => {
-                    const ratio = displayImageRatios[1] || 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                    return (
-                      <div style={{ position: 'absolute', inset: 0, aspectRatio, borderRadius: '12px', overflow: 'hidden', backgroundColor: '#e5e7eb', transform: 'rotate(1.5deg) translate(3.5px, 3.5px)', zIndex: 2 }}>
-                        {displayImages[1] && <img src={displayImages[1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
-                      </div>
-                    )
-                  })()}
-
-                  {/* Front card */}
-                  {hasImages && (() => {
-                    const ratio = displayImageRatios[0] || 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                {displayEvent.event_date &&
+                  (() => {
+                    const t = formatTopDate(displayEvent.event_date)
+                    if (!t) return null
                     return (
                       <div
-                        onClick={() => { if (hasImages) { setLightboxIndex(0); setLightboxOpen(true) } }}
-                        style={{ position: 'relative', zIndex: 3, borderRadius: '12px', overflow: 'hidden', aspectRatio, width: '100%', backgroundColor: '#f3f4f6', border: 'none', cursor: hasImages ? 'pointer' : 'default' }}
+                        className="flex flex-col items-start justify-center"
+                        style={{ flexShrink: 0 }}
                       >
-                        {displayImages[0] && (
-                          <img src={displayImages[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                        )}
-
-                        {/* Info overlay — complete fade to transparent */}
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          background: hasImages ? 'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)' : 'transparent',
-                          padding: '12px 14px 28px',
-                          display: 'flex', flexDirection: 'column',
-                        }}>
-                          <span style={{ fontFamily: '"Noto Sans KR", system-ui, sans-serif', fontSize: `calc(${W} * 0.052)`, fontWeight: 700, color: hasImages ? '#ffffff' : (nextEvent && displayEvent.id === nextEvent.id ? '#f97316' : '#1f2937'), lineHeight: 1.2 }}>
-                            {displayEvent.title}
-                          </span>
-                          {displayEvent.event_date && (
-                            <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.042)`, fontWeight: 700, color: hasImages ? 'rgba(255,255,255,0.85)' : '#111827', letterSpacing: '0.04em', marginTop: '4px' }}>
-                              {formatTopTime(displayEvent.event_date)}
-                            </span>
-                          )}
-                          {displayEvent.location && (
-                            <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: 700, color: hasImages ? 'rgba(255,255,255,0.7)' : '#4b5563', letterSpacing: '0.04em', marginTop: '2px' }}>
-                              {displayEvent.location}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Photo count badge */}
-                        {displayImages.length > 1 && (
-                          <div style={{ position: 'absolute', bottom: '8px', right: '10px', backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: '999px', padding: '2px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" /></svg>
-                            <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.04em' }}>{displayImages.length}</span>
-                          </div>
-                        )}
+                        <span
+                          style={{
+                            fontFamily: '"Handjet", system-ui, sans-serif',
+                            fontSize: fs.date,
+                            fontWeight: 800,
+                            color: '#1f2937',
+                            letterSpacing: '0.02em',
+                            lineHeight: 0.85,
+                          }}
+                        >
+                          {t.dateNum}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: '"Handjet", system-ui, sans-serif',
+                            fontSize: fs.month,
+                            fontWeight: 800,
+                            color: '#1f2937',
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            lineHeight: 0.85,
+                            marginTop: '2px',
+                          }}
+                        >
+                          {t.monthName}
+                        </span>
                       </div>
                     )
                   })()}
+
+                {/* Right: photo pile with dynamic aspect ratios */}
+                <div
+                  className="flex-1"
+                  style={{
+                    paddingLeft: displayEvent.event_date ? '16px' : '0',
+                    paddingRight: '4px',
+                    position: 'relative',
+                  }}
+                >
+                  {/* Back card 2 — only if 3+ images */}
+                  {hasImages && displayImages.length >= 3 &&
+                    (() => {
+                      const ratio = displayImageRatios[2] || 1
+                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#d1d5db',
+                            transform: 'rotate(3deg) translate(7px, 7px)',
+                            zIndex: 1,
+                          }}
+                        >
+                          {displayImages[2] && (
+                            <img
+                              src={displayImages[2]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
+
+                  {/* Back card 1 — only if 2+ images */}
+                  {hasImages && displayImages.length >= 2 &&
+                    (() => {
+                      const ratio = displayImageRatios[1] || 1
+                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#e5e7eb',
+                            transform: 'rotate(1.5deg) translate(3.5px, 3.5px)',
+                            zIndex: 2,
+                          }}
+                        >
+                          {displayImages[1] && (
+                            <img
+                              src={displayImages[1]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
+
+                  {/* Front card with GAUSSIAN BLUR overlay instead of fade */}
+                  {hasImages &&
+                    (() => {
+                      const ratio = displayImageRatios[0] || 1
+                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                      return (
+                        <div
+                          onClick={() => {
+                            if (hasImages) {
+                              setLightboxIndex(0)
+                              setLightboxOpen(true)
+                            }
+                          }}
+                          style={{
+                            position: 'relative',
+                            zIndex: 3,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            aspectRatio,
+                            width: '100%',
+                            backgroundColor: '#f3f4f6',
+                            border: 'none',
+                            cursor: hasImages ? 'pointer' : 'default',
+                          }}
+                        >
+                          {displayImages[0] && (
+                            <img
+                              src={displayImages[0]}
+                              alt=""
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+
+                          {/* Blur overlay panel behind text */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              padding: '10px 14px 22px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'flex-start',
+                              gap: '4px',
+                              backgroundColor: hasImages
+                                ? 'rgba(0,0,0,0.35)'
+                                : 'transparent',
+                              backdropFilter: hasImages ? 'blur(10px)' : 'none',
+                              WebkitBackdropFilter: hasImages
+                                ? 'blur(10px)'
+                                : 'none',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontFamily:
+                                  '"Noto Sans KR", system-ui, sans-serif',
+                                fontSize: `calc(${W} * 0.052)`,
+                                fontWeight: 700,
+                                color: hasImages
+                                  ? '#ffffff'
+                                  : nextEvent &&
+                                    displayEvent.id === nextEvent.id
+                                  ? '#f97316'
+                                  : '#1f2937',
+                                lineHeight: 1.2,
+                              }}
+                            >
+                              {displayEvent.title}
+                            </span>
+                            {displayEvent.event_date && (
+                              <span
+                                style={{
+                                  fontFamily:
+                                    '"Handjet", system-ui, sans-serif',
+                                  fontSize: `calc(${W} * 0.042)`,
+                                  fontWeight: 700,
+                                  color: hasImages
+                                    ? 'rgba(255,255,255,0.9)'
+                                    : '#111827',
+                                  letterSpacing: '0.04em',
+                                }}
+                              >
+                                {formatTopTime(displayEvent.event_date)}
+                              </span>
+                            )}
+                            {displayEvent.location && (
+                              <span
+                                style={{
+                                  fontFamily:
+                                    '"Handjet", system-ui, sans-serif',
+                                  fontSize: `calc(${W} * 0.036)`,
+                                  fontWeight: 700,
+                                  color: hasImages
+                                    ? 'rgba(255,255,255,0.8)'
+                                    : '#4b5563',
+                                  letterSpacing: '0.04em',
+                                }}
+                              >
+                                {displayEvent.location}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Photo count badge */}
+                          {displayImages.length > 1 && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                bottom: '8px',
+                                right: '10px',
+                                backgroundColor: 'rgba(0,0,0,0.45)',
+                                borderRadius: '999px',
+                                padding: '2px 8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                              }}
+                            >
+                              <svg
+                                width="11"
+                                height="11"
+                                viewBox="0 0 24 24"
+                                fill="white"
+                              >
+                                <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
+                              </svg>
+                              <span
+                                style={{
+                                  fontFamily:
+                                    '"Handjet", system-ui, sans-serif',
+                                  fontSize: 12,
+                                  color: '#fff',
+                                  fontWeight: 600,
+                                  letterSpacing: '0.04em',
+                                }}
+                              >
+                                {displayImages.length}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
 
                   {/* No images placeholder */}
                   {!hasImages && (
-                    <div style={{ position: 'relative', zIndex: 3, borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1', width: '100%', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', cursor: 'default' }}>
-                      <div style={{
-                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                        padding: '12px 14px 28px',
-                        display: 'flex', flexDirection: 'column',
-                      }}>
-                        <span style={{ fontFamily: '"Noto Sans KR", system-ui, sans-serif', fontSize: `calc(${W} * 0.052)`, fontWeight: 700, color: nextEvent && displayEvent.id === nextEvent.id ? '#f97316' : '#1f2937', lineHeight: 1.2 }}>
+                    <div
+                      style={{
+                        position: 'relative',
+                        zIndex: 3,
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        aspectRatio: '1/1',
+                        width: '100%',
+                        backgroundColor: '#f9fafb',
+                        border: '1px solid #e5e7eb',
+                        cursor: 'default',
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          padding: '12px 14px 28px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily:
+                              '"Noto Sans KR", system-ui, sans-serif',
+                            fontSize: `calc(${W} * 0.052)`,
+                            fontWeight: 700,
+                            color:
+                              nextEvent &&
+                              displayEvent.id === nextEvent.id
+                                ? '#f97316'
+                                : '#1f2937',
+                            lineHeight: 1.2,
+                          }}
+                        >
                           {displayEvent.title}
                         </span>
                         {displayEvent.event_date && (
-                          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.042)`, fontWeight: 700, color: '#111827', letterSpacing: '0.04em', marginTop: '4px' }}>
+                          <span
+                            style={{
+                              fontFamily:
+                                '"Handjet", system-ui, sans-serif',
+                              fontSize: `calc(${W} * 0.042)`,
+                              fontWeight: 700,
+                              color: '#111827',
+                              letterSpacing: '0.04em',
+                              marginTop: '4px',
+                            }}
+                          >
                             {formatTopTime(displayEvent.event_date)}
                           </span>
                         )}
                         {displayEvent.location && (
-                          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: 700, color: '#4b5563', letterSpacing: '0.04em', marginTop: '2px' }}>
+                          <span
+                            style={{
+                              fontFamily:
+                                '"Handjet", system-ui, sans-serif',
+                              fontSize: `calc(${W} * 0.036)`,
+                              fontWeight: 700,
+                              color: '#4b5563',
+                              letterSpacing: '0.04em',
+                              marginTop: '2px',
+                            }}
+                          >
                             {displayEvent.location}
                           </span>
                         )}
@@ -1650,29 +2091,89 @@ function EventsTab({ events }) {
         {/* SCROLLABLE SECTION */}
         <div style={{ flex: 1, overflow: 'auto' }}>
           <div className="px-4 py-6 max-w-md mx-auto">
-
             {/* CALENDAR */}
-            <div style={{ backgroundColor: '#ffffff', padding: '16px', marginTop: '8px', marginBottom: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.045)`, fontWeight: 700, color: '#1f2937', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            <div
+              style={{
+                backgroundColor: '#ffffff',
+                padding: '16px',
+                marginTop: '8px',
+                marginBottom: '32px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '12px',
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: `calc(${W} * 0.045)`,
+                    fontWeight: 700,
+                    color: '#1f2937',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {calMonth.toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric',
+                  })}
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '4px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  marginBottom: '4px',
+                }}
+              >
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                  <div key={d} style={{ textAlign: 'center', fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.032)`, fontWeight: 600, color: '#9ca3af', paddingBottom: '4px' }}>
+                  <div
+                    key={d}
+                    style={{
+                      textAlign: 'center',
+                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontSize: `calc(${W} * 0.032)`,
+                      fontWeight: 600,
+                      color: '#9ca3af',
+                      paddingBottom: '4px',
+                    }}
+                  >
                     {d}
                   </div>
                 ))}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gap: '3px',
+                }}
+              >
                 {cells.map((day, idx) => {
-                  if (!day) return <div key={`e-${idx}`} style={{ aspectRatio: '1/1' }} />
-                  const dateKey = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                  if (!day)
+                    return (
+                      <div key={`e-${idx}`} style={{ aspectRatio: '1/1' }} />
+                    )
+                  const dateKey = `${calYear}-${String(
+                    calMonthIdx + 1,
+                  ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   const dayEvents = eventsByDate[dateKey] || []
                   const hasEvt = dayEvents.length > 0
-                  const isToday = day === now.getDate() && calMonthIdx === now.getMonth() && calYear === now.getFullYear()
-                  let bg = 'transparent', border = 'none', color = '#1f2937', fw = 500
+                  const isToday =
+                    day === now.getDate() &&
+                    calMonthIdx === now.getMonth() &&
+                    calYear === now.getFullYear()
+
+                  let bg = 'transparent'
+                  let border = 'none'
+                  let color = '#1f2937'
+                  let fw = 500
+
                   if (hasEvt) {
                     const s = circleStyle(dayEvents[0])
                     bg = s.bg
@@ -1683,11 +2184,48 @@ function EventsTab({ events }) {
                     border = '2px solid #1f2937'
                     fw = 700
                   }
-                  const ring = isToday && hasEvt ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937' : 'none'
+
+                  const ring =
+                    isToday && hasEvt
+                      ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937'
+                      : 'none'
+
                   return (
-                    <div key={dateKey} onClick={() => handleDayPress(day)} style={{ aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: hasEvt ? 'pointer' : 'default' }}>
-                      <div style={{ width: '85%', aspectRatio: '1/1', borderRadius: '50%', backgroundColor: bg, border, boxShadow: ring, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background-color 0.15s' }}>
-                        <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: fw, color, lineHeight: 1, userSelect: 'none' }}>
+                    <div
+                      key={dateKey}
+                      onClick={() => handleDayPress(day)}
+                      style={{
+                        aspectRatio: '1/1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: hasEvt ? 'pointer' : 'default',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '85%',
+                          aspectRatio: '1/1',
+                          borderRadius: '50%',
+                          backgroundColor: bg,
+                          border,
+                          boxShadow: ring,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'background-color 0.15s',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: '"Handjet", system-ui, sans-serif',
+                            fontSize: `calc(${W} * 0.036)`,
+                            fontWeight: fw,
+                            color,
+                            lineHeight: 1,
+                            userSelect: 'none',
+                          }}
+                        >
                           {day}
                         </span>
                       </div>
@@ -1708,7 +2246,10 @@ function EventsTab({ events }) {
                     if (label !== curMonth) {
                       curMonth = label
                       blocks.push(
-                        <p key={`m-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                        <p
+                          key={`m-${label}`}
+                          className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                        >
                           {label}
                         </p>,
                       )
@@ -1723,7 +2264,9 @@ function EventsTab({ events }) {
             {/* TBD EVENTS */}
             {tbdEvents.length > 0 && (
               <div className="mb-8 space-y-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">TBD</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  TBD
+                </p>
                 {tbdEvents.map((ev) => renderEvent(ev))}
               </div>
             )}
@@ -1732,11 +2275,15 @@ function EventsTab({ events }) {
             {pastEvents.length > 0 && (
               <div className="mt-6">
                 <button
-                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+                  onClick={() =>
+                    setPastEventsExpanded(!pastEventsExpanded)
+                  }
                   className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-semibold">지난 이벤트</span>
+                    <span className="text-gray-600 font-semibold">
+                      지난 이벤트
+                    </span>
                     <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
                       {pastEvents.length}
                     </span>
@@ -1776,14 +2323,16 @@ function EventsTab({ events }) {
             {allEvents.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
                 <p className="text-2xl mb-2">📅</p>
-                <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
+                <p className="text-gray-500 text-sm">
+                  예정된 이벤트가 없어요
+                </p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* LIGHTBOX */}
+      {/* LIGHTBOX: swipe up/down to close, left/right to navigate */}
       {lightboxOpen && displayImages.length > 0 && (
         <div
           onTouchStart={handleLbTouchStart}
@@ -1800,20 +2349,29 @@ function EventsTab({ events }) {
             touchAction: 'none',
           }}
         >
-          {/* Close hint text */}
+          {/* Hint: icon + text (Handjet) */}
           <div
             style={{
               position: 'absolute',
               top: 'calc(env(safe-area-inset-top) + 16px)',
               right: 16,
               color: '#ffffff',
-              fontSize: 13,
-              fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
               pointerEvents: 'none',
             }}
           >
-            위/아래로 스와이프해서 닫기
+            <ArrowsVertical size={16} weight="bold" />
+            <span
+              style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: 12,
+                letterSpacing: '0.12em',
+              }}
+            >
+              SWIPE TO CLOSE
+            </span>
           </div>
 
           <div
@@ -1832,7 +2390,11 @@ function EventsTab({ events }) {
               alt=""
               className={
                 'lightbox-expand ' +
-                (lbSlideDir === -1 ? 'lb-slide-left' : lbSlideDir === 1 ? 'lb-slide-right' : 'lightbox-expand')
+                (lbSlideDir === -1
+                  ? 'lb-slide-left'
+                  : lbSlideDir === 1
+                  ? 'lb-slide-right'
+                  : 'lightbox-expand')
               }
               style={{
                 maxWidth: '100%',
@@ -1868,7 +2430,10 @@ function EventsTab({ events }) {
                     width: i === lightboxIndex ? 8 : 6,
                     height: i === lightboxIndex ? 8 : 6,
                     borderRadius: '50%',
-                    backgroundColor: i === lightboxIndex ? '#fff' : 'rgba(255,255,255,0.35)',
+                    backgroundColor:
+                      i === lightboxIndex
+                        ? '#fff'
+                        : 'rgba(255,255,255,0.35)',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
                   }}
