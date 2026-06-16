@@ -1172,6 +1172,7 @@ function EventsTab({ events }) {
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [lbSlideDir, setLbSlideDir] = useState(0) // NEW: -1 = left, 1 = right, 0 = none
   const [imageAspectRatios, setImageAspectRatios] = useState({})
 
   const [calMonth, setCalMonth] = useState(() => {
@@ -1291,15 +1292,36 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
+  // ── LIGHTBOX TOUCH HANDLERS (NEW) ───────────────────────────────────────────
   const lbSwipeX = useRef(null)
-  const handleLbTouchStart = (e) => { lbSwipeX.current = e.touches[0].clientX }
+  const lbSwipeY = useRef(null)
+
+  const handleLbTouchStart = (e) => {
+    lbSwipeX.current = e.touches[0].clientX
+    lbSwipeY.current = e.touches[0].clientY
+  }
+
   const handleLbTouchEnd = (e) => {
     if (lbSwipeX.current == null) return
     const dx = e.changedTouches[0].clientX - lbSwipeX.current
+    const dy = e.changedTouches[0].clientY - lbSwipeY.current
     lbSwipeX.current = null
+    lbSwipeY.current = null
+
+    // Close on swipe up or down
+    if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) {
+      setLightboxOpen(false)
+      return
+    }
+
     const imgs = (isDragging ? previewEvent : selectedEvent)?.image_urls || []
-    if (dx < -40) setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
-    else if (dx > 40) setLightboxIndex((i) => Math.max(i - 1, 0))
+    if (dx < -40) {
+      setLbSlideDir(-1)
+      setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
+    } else if (dx > 40) {
+      setLbSlideDir(1)
+      setLightboxIndex((i) => Math.max(i - 1, 0))
+    }
   }
 
   const getDayDiff = (s) => {
@@ -1338,7 +1360,7 @@ function EventsTab({ events }) {
     const end = new Date(start.getTime() + 7200000)
     const pad = (n) => String(n).padStart(2, '0')
     const fmt = (d) => d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + '00Z'
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${fmt(start)}\nDTEND:${fmt(end)}\nSUMMARY:${ev.title}\nLOCATION:${ev.location || ''}\nDESCRIPTION:${ev.description || ''}\nEND:VEVENT\nEND:VCALENDAR`
+    const ics = `BEGIN:VCALENDAR\\nVERSION:2.0\\nBEGIN:VEVENT\\nDTSTART:${fmt(start)}\\nDTEND:${fmt(end)}\\nSUMMARY:${ev.title}\\nLOCATION:${ev.location || ''}\\nDESCRIPTION:${ev.description || ''}\\nEND:VEVENT\\nEND:VCALENDAR`
     const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
     const a = document.createElement('a')
     a.href = url
@@ -1479,6 +1501,16 @@ function EventsTab({ events }) {
         .lightbox-expand {
           animation: expandFromBox 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        @keyframes slideInFromRight {
+          from { opacity: 0; transform: translateX(60px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInFromLeft {
+          from { opacity: 0; transform: translateX(-60px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .lb-slide-left  { animation: slideInFromRight 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .lb-slide-right { animation: slideInFromLeft  0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
       `}</style>
 
       <div
@@ -1663,7 +1695,7 @@ function EventsTab({ events }) {
                     </div>
                   )
                 })}
-            </div>
+              </div>
             </div>
 
             {/* UPCOMING LIST */}
@@ -1738,7 +1770,7 @@ function EventsTab({ events }) {
                     })()}
                   </div>
                 )}
-            </div>
+              </div>
             )}
 
             {/* EMPTY STATE */}
@@ -1752,14 +1784,11 @@ function EventsTab({ events }) {
         </div>
       </div>
 
-      {/* LIGHTBOX — tap background to close, no X button */}
+      {/* LIGHTBOX — tap background or swipe up/down to close, swipe left/right to navigate */}
       {lightboxOpen && displayImages.length > 0 && (
         <div
           onClick={(e) => {
-            // Close only if clicking the background (not the image)
-            if (e.target === e.currentTarget) {
-              setLightboxOpen(false)
-            }
+            if (e.target === e.currentTarget) setLightboxOpen(false)
           }}
           onTouchStart={handleLbTouchStart}
           onTouchEnd={handleLbTouchEnd}
@@ -1767,7 +1796,7 @@ function EventsTab({ events }) {
             position: 'fixed',
             inset: 0,
             zIndex: 9999,
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(0,0,0,0.85)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -1775,11 +1804,41 @@ function EventsTab({ events }) {
             touchAction: 'none',
           }}
         >
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 16px' }}>
+          {/* Tap-to-close hint */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 'calc(env(safe-area-inset-top) + 16px)',
+              right: 16,
+              color: 'rgba(255,255,255,0.5)',
+              fontSize: 12,
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              letterSpacing: '0.05em',
+              pointerEvents: 'none',
+            }}
+          >
+            TAP BG OR SWIPE ↕ TO CLOSE
+          </div>
+
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '64px 16px',
+            }}
+          >
+            {/* key={lightboxIndex} forces remount → re-triggers animation */}
             <img
+              key={lightboxIndex}
               src={displayImages[lightboxIndex]}
               alt=""
-              className="lightbox-expand"
+              className={
+                'lightbox-expand ' +
+                (lbSlideDir === -1 ? 'lb-slide-left' : lbSlideDir === 1 ? 'lb-slide-right' : 'lightbox-expand')
+              }
               style={{
                 maxWidth: '100%',
                 maxHeight: '100%',
@@ -1789,6 +1848,8 @@ function EventsTab({ events }) {
               draggable={false}
             />
           </div>
+
+          {/* Dot indicators */}
           {displayImages.length > 1 && (
             <div
               style={{
@@ -1804,7 +1865,10 @@ function EventsTab({ events }) {
               {displayImages.map((_, i) => (
                 <div
                   key={i}
-                  onClick={() => setLightboxIndex(i)}
+                  onClick={() => {
+                    setLbSlideDir(i > lightboxIndex ? -1 : 1)
+                    setLightboxIndex(i)
+                  }}
                   style={{
                     width: i === lightboxIndex ? 8 : 6,
                     height: i === lightboxIndex ? 8 : 6,
