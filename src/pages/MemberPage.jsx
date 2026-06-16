@@ -1147,6 +1147,7 @@ function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
+  // ── Split & sort ────────────────────────────────────────────────────────────
   const datedEvents = events.filter((ev) => ev.event_date)
   const tbdEvents = events
     .filter((ev) => !ev.event_date)
@@ -1171,6 +1172,7 @@ function EventsTab({ events }) {
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [imageAspectRatios, setImageAspectRatios] = useState({})
 
   const [calMonth, setCalMonth] = useState(() => {
     const base = initialEvent?.event_date ? new Date(initialEvent.event_date) : now
@@ -1185,6 +1187,44 @@ function EventsTab({ events }) {
 
   const setSlide = (id, idx) => setSlideIndexes((p) => ({ ...p, [id]: idx }))
 
+  // ── Load image dimensions to detect aspect ratio ──────────────────────────────
+  useEffect(() => {
+    const loadImageDimensions = (url) => {
+      return new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => {
+          const ratio = img.width / img.height
+          resolve(ratio)
+        }
+        img.onerror = () => resolve(1) // default to 1:1 on error
+        img.src = url
+      })
+    }
+
+    const loadAllRatios = async () => {
+      const ratios = {}
+      for (const ev of events) {
+        const imgs = ev.image_urls || []
+        const evRatios = []
+        for (const url of imgs) {
+          const ratio = await loadImageDimensions(url)
+          evRatios.push(ratio)
+        }
+        ratios[ev.id] = evRatios
+      }
+      setImageAspectRatios(ratios)
+    }
+
+    loadAllRatios()
+  }, [events])
+
+  // ── Helper: determine if image is 4:5 (portrait) ─────────────────────────────
+  const isPortrait = (aspectRatio) => {
+    // 4:5 = 0.8, with some tolerance
+    return aspectRatio >= 0.75 && aspectRatio <= 0.85
+  }
+
+  // ── Keyboard nav for image slider ───────────────────────────────────────────
   useEffect(() => {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
@@ -1199,6 +1239,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
 
+  // ── Lightbox keyboard nav ───────────────────────────────────────────────────
   useEffect(() => {
     if (!lightboxOpen) return
     const imgs = (isDragging ? previewEvent : selectedEvent)?.image_urls || []
@@ -1393,7 +1434,9 @@ function EventsTab({ events }) {
               </div>
             )}
             <div className="px-5 pb-5">
-              {ev.description && <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />}
+              {ev.description && (
+                <RichText text={ev.description} className="text-sm text-gray-600 mt-3 leading-relaxed block" />
+              )}
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
                   <button onClick={() => addToCalendar(ev)} className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5">
@@ -1418,6 +1461,7 @@ function EventsTab({ events }) {
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
+  const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
 
   return (
     <>
@@ -1472,62 +1516,100 @@ function EventsTab({ events }) {
                   )
                 })()}
 
-                {/* Right: photo pile */}
+                {/* Right: photo pile with dynamic aspect ratios */}
                 <div className="flex-1" style={{ paddingLeft: displayEvent.event_date ? '16px' : '0', paddingRight: '4px', position: 'relative' }}>
                   {/* Back card 2 — only if 3+ images */}
-                  {hasImages && displayImages.length >= 3 && (
-                    <div style={{ position: 'absolute', inset: 0, aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#d1d5db', transform: 'rotate(3deg) translate(7px, 7px)', zIndex: 1 }}>
-                      {displayImages[2] && <img src={displayImages[2]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
-                    </div>
-                  )}
+                  {hasImages && displayImages.length >= 3 && (() => {
+                    const ratio = displayImageRatios[2] || 1
+                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                    return (
+                      <div style={{ position: 'absolute', inset: 0, aspectRatio, borderRadius: '12px', overflow: 'hidden', backgroundColor: '#d1d5db', transform: 'rotate(3deg) translate(7px, 7px)', zIndex: 1 }}>
+                        {displayImages[2] && <img src={displayImages[2]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
+                      </div>
+                    )
+                  })()}
 
                   {/* Back card 1 — only if 2+ images */}
-                  {hasImages && displayImages.length >= 2 && (
-                    <div style={{ position: 'absolute', inset: 0, aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#e5e7eb', transform: 'rotate(1.5deg) translate(3.5px, 3.5px)', zIndex: 2 }}>
-                      {displayImages[1] && <img src={displayImages[1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
-                    </div>
-                  )}
+                  {hasImages && displayImages.length >= 2 && (() => {
+                    const ratio = displayImageRatios[1] || 1
+                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                    return (
+                      <div style={{ position: 'absolute', inset: 0, aspectRatio, borderRadius: '12px', overflow: 'hidden', backgroundColor: '#e5e7eb', transform: 'rotate(1.5deg) translate(3.5px, 3.5px)', zIndex: 2 }}>
+                        {displayImages[1] && <img src={displayImages[1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
+                      </div>
+                    )
+                  })()}
 
                   {/* Front card */}
-                  <div
-                    onClick={() => { if (hasImages) { setLightboxIndex(0); setLightboxOpen(true) } }}
-                    style={{ position: 'relative', zIndex: 3, borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1', width: '100%', backgroundColor: hasImages ? '#f3f4f6' : '#f9fafb', border: hasImages ? 'none' : '1px solid #e5e7eb', cursor: hasImages ? 'pointer' : 'default' }}
-                  >
-                    {/* Photo — adjusted to fit 1:1 box */}
-                    {hasImages && (
-                      <img src={displayImages[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                    )}
+                  {hasImages && (() => {
+                    const ratio = displayImageRatios[0] || 1
+                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                    return (
+                      <div
+                        onClick={() => { if (hasImages) { setLightboxIndex(0); setLightboxOpen(true) } }}
+                        style={{ position: 'relative', zIndex: 3, borderRadius: '12px', overflow: 'hidden', aspectRatio, width: '100%', backgroundColor: '#f3f4f6', border: 'none', cursor: hasImages ? 'pointer' : 'default' }}
+                      >
+                        {displayImages[0] && (
+                          <img src={displayImages[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                        )}
 
-                    {/* Info overlay — complete fade to transparent */}
-                    <div style={{
-                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                      background: hasImages ? 'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)' : 'transparent',
-                      padding: '12px 14px 28px',
-                      display: 'flex', flexDirection: 'column',
-                    }}>
-                      <span style={{ fontFamily: '"Noto Sans KR", system-ui, sans-serif', fontSize: `calc(${W} * 0.052)`, fontWeight: 700, color: hasImages ? '#ffffff' : (nextEvent && displayEvent.id === nextEvent.id ? '#f97316' : '#1f2937'), lineHeight: 1.2 }}>
-                        {displayEvent.title}
-                      </span>
-                      {displayEvent.event_date && (
-                        <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.042)`, fontWeight: 700, color: hasImages ? 'rgba(255,255,255,0.85)' : '#111827', letterSpacing: '0.04em', marginTop: '4px' }}>
-                          {formatTopTime(displayEvent.event_date)}
-                        </span>
-                      )}
-                      {displayEvent.location && (
-                        <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: 700, color: hasImages ? 'rgba(255,255,255,0.7)' : '#4b5563', letterSpacing: '0.04em', marginTop: '2px' }}>
-                          {displayEvent.location}
-                        </span>
-                      )}
-                    </div>
+                        {/* Info overlay — complete fade to transparent */}
+                        <div style={{
+                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                          background: hasImages ? 'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)' : 'transparent',
+                          padding: '12px 14px 28px',
+                          display: 'flex', flexDirection: 'column',
+                        }}>
+                          <span style={{ fontFamily: '"Noto Sans KR", system-ui, sans-serif', fontSize: `calc(${W} * 0.052)`, fontWeight: 700, color: hasImages ? '#ffffff' : (nextEvent && displayEvent.id === nextEvent.id ? '#f97316' : '#1f2937'), lineHeight: 1.2 }}>
+                            {displayEvent.title}
+                          </span>
+                          {displayEvent.event_date && (
+                            <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.042)`, fontWeight: 700, color: hasImages ? 'rgba(255,255,255,0.85)' : '#111827', letterSpacing: '0.04em', marginTop: '4px' }}>
+                              {formatTopTime(displayEvent.event_date)}
+                            </span>
+                          )}
+                          {displayEvent.location && (
+                            <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: 700, color: hasImages ? 'rgba(255,255,255,0.7)' : '#4b5563', letterSpacing: '0.04em', marginTop: '2px' }}>
+                              {displayEvent.location}
+                            </span>
+                          )}
+                        </div>
 
-                    {/* Photo count badge */}
-                    {displayImages.length > 1 && (
-                      <div style={{ position: 'absolute', bottom: '8px', right: '10px', backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: '999px', padding: '2px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" /></svg>
-                        <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.04em' }}>{displayImages.length}</span>
+                        {/* Photo count badge */}
+                        {displayImages.length > 1 && (
+                          <div style={{ position: 'absolute', bottom: '8px', right: '10px', backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: '999px', padding: '2px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" /></svg>
+                            <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.04em' }}>{displayImages.length}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    )
+                  })()}
+
+                  {/* No images placeholder */}
+                  {!hasImages && (
+                    <div style={{ position: 'relative', zIndex: 3, borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1', width: '100%', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', cursor: 'default' }}>
+                      <div style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                        padding: '12px 14px 28px',
+                        display: 'flex', flexDirection: 'column',
+                      }}>
+                        <span style={{ fontFamily: '"Noto Sans KR", system-ui, sans-serif', fontSize: `calc(${W} * 0.052)`, fontWeight: 700, color: nextEvent && displayEvent.id === nextEvent.id ? '#f97316' : '#1f2937', lineHeight: 1.2 }}>
+                          {displayEvent.title}
+                        </span>
+                        {displayEvent.event_date && (
+                          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.042)`, fontWeight: 700, color: '#111827', letterSpacing: '0.04em', marginTop: '4px' }}>
+                            {formatTopTime(displayEvent.event_date)}
+                          </span>
+                        )}
+                        {displayEvent.location && (
+                          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: 700, color: '#4b5563', letterSpacing: '0.04em', marginTop: '2px' }}>
+                            {displayEvent.location}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1547,7 +1629,9 @@ function EventsTab({ events }) {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '4px' }}>
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                  <div key={d} style={{ textAlign: 'center', fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.032)`, fontWeight: 600, color: '#9ca3af', paddingBottom: '4px' }}>{d}</div>
+                  <div key={d} style={{ textAlign: 'center', fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.032)`, fontWeight: 600, color: '#9ca3af', paddingBottom: '4px' }}>
+                    {d}
+                  </div>
                 ))}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
@@ -1558,18 +1642,28 @@ function EventsTab({ events }) {
                   const hasEvt = dayEvents.length > 0
                   const isToday = day === now.getDate() && calMonthIdx === now.getMonth() && calYear === now.getFullYear()
                   let bg = 'transparent', border = 'none', color = '#1f2937', fw = 500
-                  if (hasEvt) { const s = circleStyle(dayEvents[0]); bg = s.bg; color = s.color; fw = 700 }
-                  else if (isToday) { bg = '#fff'; border = '2px solid #1f2937'; fw = 700 }
-                  const ring = isToday && hasEvt ? '0 0 0 2px #fff, 0 0 0 3.5px #1f2937' : 'none'
+                  if (hasEvt) {
+                    const s = circleStyle(dayEvents[0])
+                    bg = s.bg
+                    color = s.color
+                    fw = 700
+                  } else if (isToday) {
+                    bg = '#ffffff'
+                    border = '2px solid #1f2937'
+                    fw = 700
+                  }
+                  const ring = isToday && hasEvt ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937' : 'none'
                   return (
                     <div key={dateKey} onClick={() => handleDayPress(day)} style={{ aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: hasEvt ? 'pointer' : 'default' }}>
                       <div style={{ width: '85%', aspectRatio: '1/1', borderRadius: '50%', backgroundColor: bg, border, boxShadow: ring, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background-color 0.15s' }}>
-                        <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: fw, color, lineHeight: 1, userSelect: 'none' }}>{day}</span>
+                        <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.036)`, fontWeight: fw, color, lineHeight: 1, userSelect: 'none' }}>
+                          {day}
+                        </span>
                       </div>
                     </div>
                   )
                 })}
-              </div>
+            </div>
             </div>
 
             {/* UPCOMING LIST */}
@@ -1580,7 +1674,14 @@ function EventsTab({ events }) {
                   const blocks = []
                   otherUpcomingEvents.forEach((ev) => {
                     const label = `${new Date(ev.event_date).getMonth() + 1}월`
-                    if (label !== curMonth) { curMonth = label; blocks.push(<p key={`m-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{label}</p>) }
+                    if (label !== curMonth) {
+                      curMonth = label
+                      blocks.push(
+                        <p key={`m-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                          {label}
+                        </p>,
+                      )
+                    }
                     blocks.push(renderEvent(ev))
                   })
                   return blocks
@@ -1588,15 +1689,30 @@ function EventsTab({ events }) {
               </div>
             )}
 
+            {/* TBD EVENTS */}
+            {tbdEvents.length > 0 && (
+              <div className="mb-8 space-y-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">TBD</p>
+                {tbdEvents.map((ev) => renderEvent(ev))}
+              </div>
+            )}
+
             {/* PAST EVENTS */}
             {pastEvents.length > 0 && (
               <div className="mt-6">
-                <button onClick={() => setPastEventsExpanded(!pastEventsExpanded)} className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors">
+                <button
+                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+                  className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-gray-600 font-semibold">지난 이벤트</span>
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">{pastEvents.length}</span>
+                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
+                      {pastEvents.length}
+                    </span>
                   </div>
-                  <span className="text-gray-400 text-lg">{pastEventsExpanded ? '▲' : '▼'}</span>
+                  <span className="text-gray-400 text-lg">
+                    {pastEventsExpanded ? '▲' : '▼'}
+                  </span>
                 </button>
                 {pastEventsExpanded && (
                   <div className="space-y-3 mt-3">
@@ -1605,16 +1721,27 @@ function EventsTab({ events }) {
                       const blocks = []
                       pastEvents.forEach((ev) => {
                         const label = `${new Date(ev.event_date).getMonth() + 1}월`
-                        if (label !== curMonth) { curMonth = label; blocks.push(<p key={`pm-${label}`} className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{label}</p>) }
+                        if (label !== curMonth) {
+                          curMonth = label
+                          blocks.push(
+                            <p
+                              key={`pm-${label}`}
+                              className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                            >
+                              {label}
+                            </p>,
+                          )
+                        }
                         blocks.push(renderEvent(ev))
                       })
                       return blocks
                     })()}
                   </div>
                 )}
-              </div>
+            </div>
             )}
 
+            {/* EMPTY STATE */}
             {allEvents.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
                 <p className="text-2xl mb-2">📅</p>
@@ -1625,24 +1752,68 @@ function EventsTab({ events }) {
         </div>
       </div>
 
-      {/* LIGHTBOX */}
+      {/* LIGHTBOX — tap background to close, no X button */}
       {lightboxOpen && displayImages.length > 0 && (
         <div
+          onClick={(e) => {
+            // Close only if clicking the background (not the image)
+            if (e.target === e.currentTarget) {
+              setLightboxOpen(false)
+            }
+          }}
           onTouchStart={handleLbTouchStart}
           onTouchEnd={handleLbTouchEnd}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', touchAction: 'none' }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            touchAction: 'none',
+          }}
         >
-          <button onClick={() => setLightboxOpen(false)} style={{ position: 'absolute', top: '20px', right: '20px', width: 36, height: 36, borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>✕</button>
-          <div style={{ position: 'absolute', top: '24px', left: '50%', transform: 'translateX(-50%)', fontFamily: '"Handjet", system-ui, sans-serif', fontSize: '16px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.1em' }}>
-            {lightboxIndex + 1} / {displayImages.length}
-          </div>
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 16px' }}>
-            <img src={displayImages[lightboxIndex]} alt="" className="lightbox-expand" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} draggable={false} />
+            <img
+              src={displayImages[lightboxIndex]}
+              alt=""
+              className="lightbox-expand"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                borderRadius: '8px',
+              }}
+              draggable={false}
+            />
           </div>
           {displayImages.length > 1 && (
-            <div style={{ position: 'absolute', bottom: '28px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '28px',
+                left: 0,
+                right: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '6px',
+              }}
+            >
               {displayImages.map((_, i) => (
-                <div key={i} onClick={() => setLightboxIndex(i)} style={{ width: i === lightboxIndex ? 8 : 6, height: i === lightboxIndex ? 8 : 6, borderRadius: '50%', backgroundColor: i === lightboxIndex ? '#fff' : 'rgba(255,255,255,0.35)', cursor: 'pointer', transition: 'all 0.15s' }} />
+                <div
+                  key={i}
+                  onClick={() => setLightboxIndex(i)}
+                  style={{
+                    width: i === lightboxIndex ? 8 : 6,
+                    height: i === lightboxIndex ? 8 : 6,
+                    borderRadius: '50%',
+                    backgroundColor: i === lightboxIndex ? '#fff' : 'rgba(255,255,255,0.35)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                />
               ))}
             </div>
           )}
