@@ -1422,18 +1422,18 @@ function EventsTab({ events }) {
   return (
     <>
       <style>{`
-        @keyframes zoomIn {
+        @keyframes expandFromBox {
           from {
             opacity: 0;
-            transform: scale(0.5);
+            transform: scale(0.3) translateY(100px);
           }
           to {
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1) translateY(0);
           }
         }
-        .lightbox-zoom-in {
-          animation: zoomIn 0.4s ease-out;
+        .lightbox-expand {
+          animation: expandFromBox 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
       `}</style>
 
@@ -1493,7 +1493,7 @@ function EventsTab({ events }) {
                     onClick={() => { if (hasImages) { setLightboxIndex(0); setLightboxOpen(true) } }}
                     style={{ position: 'relative', zIndex: 3, borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1', width: '100%', backgroundColor: hasImages ? '#f3f4f6' : '#f9fafb', border: hasImages ? 'none' : '1px solid #e5e7eb', cursor: hasImages ? 'pointer' : 'default' }}
                   >
-                    {/* Photo */}
+                    {/* Photo — adjusted to fit 1:1 box */}
                     {hasImages && (
                       <img src={displayImages[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
                     )}
@@ -1637,7 +1637,7 @@ function EventsTab({ events }) {
             {lightboxIndex + 1} / {displayImages.length}
           </div>
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 16px' }}>
-            <img src={displayImages[lightboxIndex]} alt="" className="lightbox-zoom-in" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} draggable={false} />
+            <img src={displayImages[lightboxIndex]} alt="" className="lightbox-expand" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} draggable={false} />
           </div>
           {displayImages.length > 1 && (
             <div style={{ position: 'absolute', bottom: '28px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
