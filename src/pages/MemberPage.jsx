@@ -1786,9 +1786,6 @@ function EventsTab({ events }) {
       {/* LIGHTBOX */}
       {lightboxOpen && displayImages.length > 0 && (
         <div
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setLightboxOpen(false)
-          }}
           onTouchStart={handleLbTouchStart}
           onTouchEnd={handleLbTouchEnd}
           style={{
@@ -1803,6 +1800,22 @@ function EventsTab({ events }) {
             touchAction: 'none',
           }}
         >
+          {/* Close hint text */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 'calc(env(safe-area-inset-top) + 16px)',
+              right: 16,
+              color: '#ffffff',
+              fontSize: 13,
+              fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+              fontWeight: 500,
+              pointerEvents: 'none',
+            }}
+          >
+            위/아래로 스와이프해서 닫기
+          </div>
+
           <div
             style={{
               width: '100%',
