@@ -1421,6 +1421,22 @@ function EventsTab({ events }) {
 
   return (
     <>
+      <style>{`
+        @keyframes zoomIn {
+          from {
+            opacity: 0;
+            transform: scale(0.5);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .lightbox-zoom-in {
+          animation: zoomIn 0.4s ease-out;
+        }
+      `}</style>
+
       <div
         ref={containerRef}
         onTouchStart={handleContainerTouchStart}
@@ -1458,15 +1474,15 @@ function EventsTab({ events }) {
 
                 {/* Right: photo pile */}
                 <div className="flex-1" style={{ paddingLeft: displayEvent.event_date ? '16px' : '0', paddingRight: '4px', position: 'relative' }}>
-                  {/* Back card 2 */}
-                  {hasImages && (
+                  {/* Back card 2 — only if 3+ images */}
+                  {hasImages && displayImages.length >= 3 && (
                     <div style={{ position: 'absolute', inset: 0, aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#d1d5db', transform: 'rotate(3deg) translate(7px, 7px)', zIndex: 1 }}>
                       {displayImages[2] && <img src={displayImages[2]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
                     </div>
                   )}
 
-                  {/* Back card 1 */}
-                  {hasImages && (
+                  {/* Back card 1 — only if 2+ images */}
+                  {hasImages && displayImages.length >= 2 && (
                     <div style={{ position: 'absolute', inset: 0, aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#e5e7eb', transform: 'rotate(1.5deg) translate(3.5px, 3.5px)', zIndex: 2 }}>
                       {displayImages[1] && <img src={displayImages[1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />}
                     </div>
@@ -1482,10 +1498,10 @@ function EventsTab({ events }) {
                       <img src={displayImages[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
                     )}
 
-                    {/* Info overlay — top */}
+                    {/* Info overlay — complete fade to transparent */}
                     <div style={{
-                      position: 'absolute', top: 0, left: 0, right: 0,
-                      background: hasImages ? 'linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0) 100%)' : 'transparent',
+                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                      background: hasImages ? 'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)' : 'transparent',
                       padding: '12px 14px 28px',
                       display: 'flex', flexDirection: 'column',
                     }}>
@@ -1614,14 +1630,14 @@ function EventsTab({ events }) {
         <div
           onTouchStart={handleLbTouchStart}
           onTouchEnd={handleLbTouchEnd}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', touchAction: 'none' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', touchAction: 'none' }}
         >
           <button onClick={() => setLightboxOpen(false)} style={{ position: 'absolute', top: '20px', right: '20px', width: 36, height: 36, borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>✕</button>
           <div style={{ position: 'absolute', top: '24px', left: '50%', transform: 'translateX(-50%)', fontFamily: '"Handjet", system-ui, sans-serif', fontSize: '16px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.1em' }}>
             {lightboxIndex + 1} / {displayImages.length}
           </div>
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 16px' }}>
-            <img src={displayImages[lightboxIndex]} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} draggable={false} />
+            <img src={displayImages[lightboxIndex]} alt="" className="lightbox-zoom-in" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} draggable={false} />
           </div>
           {displayImages.length > 1 && (
             <div style={{ position: 'absolute', bottom: '28px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
