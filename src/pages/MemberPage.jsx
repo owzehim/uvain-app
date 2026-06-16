@@ -1172,7 +1172,7 @@ function EventsTab({ events }) {
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
-  const [lbSlideDir, setLbSlideDir] = useState(0) // NEW: -1 = left, 1 = right, 0 = none
+  const [lbSlideDir, setLbSlideDir] = useState(0)
   const [imageAspectRatios, setImageAspectRatios] = useState({})
 
   const [calMonth, setCalMonth] = useState(() => {
@@ -1197,7 +1197,7 @@ function EventsTab({ events }) {
           const ratio = img.width / img.height
           resolve(ratio)
         }
-        img.onerror = () => resolve(1) // default to 1:1 on error
+        img.onerror = () => resolve(1)
         img.src = url
       })
     }
@@ -1221,7 +1221,6 @@ function EventsTab({ events }) {
 
   // ── Helper: determine if image is 4:5 (portrait) ─────────────────────────────
   const isPortrait = (aspectRatio) => {
-    // 4:5 = 0.8, with some tolerance
     return aspectRatio >= 0.75 && aspectRatio <= 0.85
   }
 
@@ -1292,7 +1291,7 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
-  // ── LIGHTBOX TOUCH HANDLERS (NEW) ───────────────────────────────────────────
+  // ── LIGHTBOX TOUCH HANDLERS ─────────────────────────────────────────────────
   const lbSwipeX = useRef(null)
   const lbSwipeY = useRef(null)
 
@@ -1784,7 +1783,7 @@ function EventsTab({ events }) {
         </div>
       </div>
 
-      {/* LIGHTBOX — tap background or swipe up/down to close, swipe left/right to navigate */}
+      {/* LIGHTBOX */}
       {lightboxOpen && displayImages.length > 0 && (
         <div
           onClick={(e) => {
@@ -1804,22 +1803,6 @@ function EventsTab({ events }) {
             touchAction: 'none',
           }}
         >
-          {/* Tap-to-close hint */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 'calc(env(safe-area-inset-top) + 16px)',
-              right: 16,
-              color: 'rgba(255,255,255,0.5)',
-              fontSize: 12,
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              letterSpacing: '0.05em',
-              pointerEvents: 'none',
-            }}
-          >
-            TAP BG OR SWIPE ↕ TO CLOSE
-          </div>
-
           <div
             style={{
               width: '100%',
@@ -1830,7 +1813,6 @@ function EventsTab({ events }) {
               padding: '64px 16px',
             }}
           >
-            {/* key={lightboxIndex} forces remount → re-triggers animation */}
             <img
               key={lightboxIndex}
               src={displayImages[lightboxIndex]}
