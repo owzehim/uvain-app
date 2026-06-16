@@ -1170,9 +1170,12 @@ function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
+
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxClosing, setLightboxClosing] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
-  const [lbSlideDir, setLbSlideDir] = useState(0) // -1 = next (left swipe), 1 = prev (right swipe)
+  const [lbSlideDir, setLbSlideDir] = useState(0) // -1 = next, 1 = prev
+
   const [imageAspectRatios, setImageAspectRatios] = useState({})
 
   const [calMonth, setCalMonth] = useState(() => {
@@ -1189,7 +1192,7 @@ function EventsTab({ events }) {
   const setSlide = (id, idx) =>
     setSlideIndexes((p) => ({ ...p, [id]: idx }))
 
-  // ── Load image dimensions to detect aspect ratio ─────────────────────────────
+  // ── Load image dimensions for aspect ratio ───────────────────────────────────
   useEffect(() => {
     const loadImageDimensions = (url) =>
       new Promise((resolve) => {
@@ -1219,7 +1222,6 @@ function EventsTab({ events }) {
     loadAllRatios()
   }, [events])
 
-  // Helper: determine if image is 4:5 (portrait-ish)
   const isPortrait = (aspectRatio) =>
     aspectRatio >= 0.75 && aspectRatio <= 0.85
 
@@ -1252,7 +1254,7 @@ function EventsTab({ events }) {
   // ── Lightbox keyboard nav ───────────────────────────────────────────────────
   useEffect(() => {
     if (!lightboxOpen) return
-    const imgs = (isDragging ? previewEvent : selectedEvent)?.image_urls || []
+    const imgs = selectedEvent?.image_urls || []
 
     const h = (e) => {
       if (e.key === 'ArrowRight') {
@@ -1262,13 +1264,30 @@ function EventsTab({ events }) {
         setLightboxIndex((i) => Math.max(i - 1, 0))
         setLbSlideDir(1)
       } else if (e.key === 'Escape') {
-        setLightboxOpen(false)
+        startLightboxClose()
       }
     }
 
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [lightboxOpen, selectedEvent, previewEvent, isDragging])
+  }, [lightboxOpen, selectedEvent])
+
+  // ── Helper to open/close lightbox with animations ───────────────────────────
+  const openLightboxAt = (index) => {
+    setLightboxIndex(index)
+    setLbSlideDir(0)
+    setLightboxClosing(false)
+    setLightboxOpen(true)
+  }
+
+  const startLightboxClose = () => {
+    setLightboxClosing(true)
+    setTimeout(() => {
+      setLightboxOpen(false)
+      setLightboxClosing(false)
+      setLbSlideDir(0)
+    }, 200) // match CSS exit animation
+  }
 
   // ── Vertical drag between events in header ───────────────────────────────────
   const dragStartY = useRef(null)
@@ -1326,7 +1345,7 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
-  // ── LIGHTBOX TOUCH HANDLERS (swipe left/right, swipe up/down to close) ──────
+  // ── LIGHTBOX TOUCH HANDLERS ─────────────────────────────────────────────────
   const lbSwipeX = useRef(null)
   const lbSwipeY = useRef(null)
 
@@ -1344,11 +1363,11 @@ function EventsTab({ events }) {
 
     // Close on vertical swipe
     if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) {
-      setLightboxOpen(false)
+      startLightboxClose()
       return
     }
 
-    const imgs = (isDragging ? previewEvent : selectedEvent)?.image_urls || []
+    const imgs = selectedEvent?.image_urls || []
     if (dx < -40) {
       setLbSlideDir(-1)
       setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
@@ -1648,8 +1667,21 @@ function EventsTab({ events }) {
             transform: scale(1) translateY(0);
           }
         }
+        @keyframes shrinkToBox {
+          from {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: scale(0.85) translateY(40px);
+          }
+        }
         .lightbox-expand {
           animation: expandFromBox 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .lightbox-exit {
+          animation: shrinkToBox 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         @keyframes slideInFromRight {
           from { opacity: 0; transform: translateX(60px); }
@@ -1776,7 +1808,10 @@ function EventsTab({ events }) {
                     )
                   })()}
 
-                {/* Right: photo pile with dynamic aspect ratios */}
+                {/* Right: photo pile:
+                    - Back card 2: second image (index 1) if exists
+                    - Back card 1: first image (index 0)
+                    - Front: white Gaussian blur panel (no image) */}
                 <div
                   className="flex-1"
                   style={{
@@ -1785,41 +1820,7 @@ function EventsTab({ events }) {
                     position: 'relative',
                   }}
                 >
-                  {/* Back card 2 — only if 3+ images */}
-                  {hasImages && displayImages.length >= 3 &&
-                    (() => {
-                      const ratio = displayImageRatios[2] || 1
-                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                      return (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            aspectRatio,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            backgroundColor: '#d1d5db',
-                            transform: 'rotate(3deg) translate(7px, 7px)',
-                            zIndex: 1,
-                          }}
-                        >
-                          {displayImages[2] && (
-                            <img
-                              src={displayImages[2]}
-                              alt=""
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                              }}
-                              draggable={false}
-                            />
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                  {/* Back card 1 — only if 2+ images */}
+                  {/* Back card 2 — uses image[1] */}
                   {hasImages && displayImages.length >= 2 &&
                     (() => {
                       const ratio = displayImageRatios[1] || 1
@@ -1832,9 +1833,9 @@ function EventsTab({ events }) {
                             aspectRatio,
                             borderRadius: '12px',
                             overflow: 'hidden',
-                            backgroundColor: '#e5e7eb',
-                            transform: 'rotate(1.5deg) translate(3.5px, 3.5px)',
-                            zIndex: 2,
+                            backgroundColor: '#d1d5db',
+                            transform: 'rotate(3deg) translate(7px, 7px)',
+                            zIndex: 1,
                           }}
                         >
                           {displayImages[1] && (
@@ -1853,153 +1854,170 @@ function EventsTab({ events }) {
                       )
                     })()}
 
-                  {/* Front card with GAUSSIAN BLUR overlay instead of fade */}
+                  {/* Back card 1 — uses image[0] */}
                   {hasImages &&
-  (() => {
-    const ratio = displayImageRatios[0] || 1
-    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-    return (
-      <div
-        onClick={() => {
-          if (hasImages) {
-            setLightboxIndex(0)
-            setLightboxOpen(true)
-          }
-        }}
-        style={{
-          position: 'relative',
-          zIndex: 3,
-          borderRadius: '12px',
-          overflow: 'hidden',
-          aspectRatio,
-          width: '100%',
-          backgroundColor: '#f3f4f6',
-          border: 'none',
-          cursor: hasImages ? 'pointer' : 'default',
-        }}
-      >
-        {/* Base image */}
-        {displayImages[0] && (
-          <img
-            src={displayImages[0]}
-            alt=""
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
-            draggable={false}
-          />
-        )}
+                    (() => {
+                      const ratio = displayImageRatios[0] || 1
+                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#e5e7eb',
+                            transform: 'rotate(1.5deg) translate(3.5px, 3.5px)',
+                            zIndex: 2,
+                          }}
+                        >
+                          {displayImages[0] && (
+                            <img
+                              src={displayImages[0]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
 
-        {/* FULL-PANEL WHITE GAUSSIAN BLUR OVERLAY */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: 'rgba(255,255,255,0.75)', // white tint
-            backdropFilter: 'blur(18px)',
-            WebkitBackdropFilter: 'blur(18px)',
-          }}
-        />
+                  {/* Front card — white Gaussian blur panel only (thumbnail) */}
+                  {hasImages &&
+                    (() => {
+                      // use first image ratio for card shape
+                      const ratio = displayImageRatios[0] || 1
+                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                      return (
+                        <div
+                          onClick={() => openLightboxAt(0)}
+                          style={{
+                            position: 'relative',
+                            zIndex: 3,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            aspectRatio,
+                            width: '100%',
+                            backgroundColor: '#f3f4f6',
+                            border: 'none',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {/* Full-panel white blur over pile */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              backgroundColor: 'rgba(255,255,255,0.85)',
+                              backdropFilter: 'blur(10px)',
+                              WebkitBackdropFilter: 'blur(10px)',
+                            }}
+                          />
 
-        {/* Content on top of white blur */}
-        <div
-          style={{
-            position: 'relative',
-            height: '100%',
-            padding: '12px 14px 28px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            gap: '4px',
-          }}
-        >
-          <span
-            style={{
-              fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-              fontSize: `calc(${W} * 0.052)`,
-              fontWeight: 700,
-              color:
-                nextEvent && displayEvent.id === nextEvent.id
-                  ? '#f97316'
-                  : '#111827',
-              lineHeight: 1.2,
-            }}
-          >
-            {displayEvent.title}
-          </span>
+                          {/* Content on blur */}
+                          <div
+                            style={{
+                              position: 'relative',
+                              height: '100%',
+                              padding: '12px 14px 28px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'flex-start',
+                              gap: '4px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontFamily:
+                                  '"Noto Sans KR", system-ui, sans-serif',
+                                fontSize: `calc(${W} * 0.052)`,
+                                fontWeight: 700,
+                                color:
+                                  nextEvent &&
+                                  displayEvent.id === nextEvent.id
+                                    ? '#f97316'
+                                    : '#111827',
+                                lineHeight: 1.2,
+                              }}
+                            >
+                              {displayEvent.title}
+                            </span>
+                            {displayEvent.event_date && (
+                              <span
+                                style={{
+                                  fontFamily:
+                                    '"Handjet", system-ui, sans-serif',
+                                  fontSize: `calc(${W} * 0.042)`,
+                                  fontWeight: 700,
+                                  color: '#111827',
+                                  letterSpacing: '0.04em',
+                                }}
+                              >
+                                {formatTopTime(displayEvent.event_date)}
+                              </span>
+                            )}
+                            {displayEvent.location && (
+                              <span
+                                style={{
+                                  fontFamily:
+                                    '"Handjet", system-ui, sans-serif',
+                                  fontSize: `calc(${W} * 0.036)`,
+                                  fontWeight: 700,
+                                  color: '#4b5563',
+                                  letterSpacing: '0.04em',
+                                }}
+                              >
+                                {displayEvent.location}
+                              </span>
+                            )}
+                          </div>
 
-          {displayEvent.event_date && (
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.042)`,
-                fontWeight: 700,
-                color: '#111827',
-                letterSpacing: '0.04em',
-              }}
-            >
-              {formatTopTime(displayEvent.event_date)}
-            </span>
-          )}
-
-          {displayEvent.location && (
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.036)`,
-                fontWeight: 700,
-                color: '#4b5563',
-                letterSpacing: '0.04em',
-              }}
-            >
-              {displayEvent.location}
-            </span>
-          )}
-        </div>
-
-        {/* Photo count badge */}
-        {displayImages.length > 1 && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '8px',
-              right: '10px',
-              backgroundColor: 'rgba(0,0,0,0.45)',
-              borderRadius: '999px',
-              padding: '2px 8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="white"
-            >
-              <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
-            </svg>
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: 12,
-                color: '#fff',
-                fontWeight: 600,
-                letterSpacing: '0.04em',
-              }}
-            >
-              {displayImages.length}
-            </span>
-          </div>
-        )}
-      </div>
-    )
-  })()}
+                          {/* Photo count badge */}
+                          {displayImages.length > 1 && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                bottom: '8px',
+                                right: '10px',
+                                backgroundColor: 'rgba(0,0,0,0.45)',
+                                borderRadius: '999px',
+                                padding: '2px 8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                              }}
+                            >
+                              <svg
+                                width="11"
+                                height="11"
+                                viewBox="0 0 24 24"
+                                fill="white"
+                              >
+                                <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
+                              </svg>
+                              <span
+                                style={{
+                                  fontFamily:
+                                    '"Handjet", system-ui, sans-serif',
+                                  fontSize: 12,
+                                  color: '#fff',
+                                  fontWeight: 600,
+                                  letterSpacing: '0.04em',
+                                }}
+                              >
+                                {displayImages.length}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
 
                   {/* No images placeholder */}
                   {!hasImages && (
@@ -2083,7 +2101,7 @@ function EventsTab({ events }) {
           )}
         </div>
 
-        {/* SCROLLABLE SECTION */}
+        {/* SCROLLABLE SECTION (calendar + lists) — unchanged */}
         <div style={{ flex: 1, overflow: 'auto' }}>
           <div className="px-4 py-6 max-w-md mx-auto">
             {/* CALENDAR */}
@@ -2230,7 +2248,7 @@ function EventsTab({ events }) {
               </div>
             </div>
 
-            {/* UPCOMING LIST */}
+            {/* UPCOMING, TBD, PAST, EMPTY — same as before */}
             {otherUpcomingEvents.length > 0 && (
               <div className="mb-8 space-y-3">
                 {(() => {
@@ -2256,7 +2274,6 @@ function EventsTab({ events }) {
               </div>
             )}
 
-            {/* TBD EVENTS */}
             {tbdEvents.length > 0 && (
               <div className="mb-8 space-y-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
@@ -2266,7 +2283,6 @@ function EventsTab({ events }) {
               </div>
             )}
 
-            {/* PAST EVENTS */}
             {pastEvents.length > 0 && (
               <div className="mt-6">
                 <button
@@ -2314,13 +2330,10 @@ function EventsTab({ events }) {
               </div>
             )}
 
-            {/* EMPTY STATE */}
             {allEvents.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
                 <p className="text-2xl mb-2">📅</p>
-                <p className="text-gray-500 text-sm">
-                  예정된 이벤트가 없어요
-                </p>
+                <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
               </div>
             )}
           </div>
@@ -2328,7 +2341,7 @@ function EventsTab({ events }) {
       </div>
 
       {/* LIGHTBOX: swipe up/down to close, left/right to navigate */}
-      {lightboxOpen && displayImages.length > 0 && (
+      {(lightboxOpen || lightboxClosing) && displayImages.length > 0 && (
         <div
           onTouchStart={handleLbTouchStart}
           onTouchEnd={handleLbTouchEnd}
@@ -2384,12 +2397,14 @@ function EventsTab({ events }) {
               src={displayImages[lightboxIndex]}
               alt=""
               className={
-                'lightbox-expand ' +
-                (lbSlideDir === -1
-                  ? 'lb-slide-left'
-                  : lbSlideDir === 1
-                  ? 'lb-slide-right'
-                  : 'lightbox-expand')
+                lightboxClosing
+                  ? 'lightbox-exit'
+                  : 'lightbox-expand ' +
+                    (lbSlideDir === -1
+                      ? 'lb-slide-left'
+                      : lbSlideDir === 1
+                      ? 'lb-slide-right'
+                      : '')
               }
               style={{
                 maxWidth: '100%',
