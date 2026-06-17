@@ -633,12 +633,24 @@ function MembershipCard({
       <stop offset="50%"  stopColor="#dedad4" />
       <stop offset="100%" stopColor="#c0bcb4" />
     </linearGradient>
+    <linearGradient id="gripGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stopColor="#b8b4ac" />
+      <stop offset="40%"  stopColor="#dedad4" />
+      <stop offset="100%" stopColor="#c8c4bc" />
+    </linearGradient>
+    <linearGradient id="gripGradR" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stopColor="#c8c4bc" />
+      <stop offset="60%"  stopColor="#dedad4" />
+      <stop offset="100%" stopColor="#b8b4ac" />
+    </linearGradient>
     <clipPath id="bottomGap">
       <rect x="0"  y="0"   width="106" height="158" />
       <rect x="0"  y="158" width="24"  height="20"  />
       <rect x="82" y="158" width="24"  height="20"  />
     </clipPath>
   </defs>
+
+  {/* Main frame outline */}
   <rect
     x="3"
     y="3"
@@ -650,6 +662,28 @@ function MembershipCard({
     stroke="url(#metalGrad)"
     strokeWidth="6"
     clipPath="url(#bottomGap)"
+  />
+
+  {/* Left side grip — sits outside the card left edge, vertically centered */}
+  <rect
+    x="-5"
+    y="55"
+    width="8"
+    height="55"
+    rx="3"
+    ry="2"
+    fill="url(#gripGrad)"
+  />
+
+  {/* Right side grip */}
+  <rect
+    x="103"
+    y="55"
+    width="8"
+    height="55"
+    rx="3"
+    ry="2"
+    fill="url(#gripGradR)"
   />
 </svg>
 
