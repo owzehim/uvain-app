@@ -615,69 +615,63 @@ function MembershipCard({
       >
         {/* ── Brushed-metal open-bottom outline (SVG, rotates with card) ── */}
         <svg
-  style={{
+style={{
     position: 'absolute',
-    inset: '-4px',
-    width: 'calc(100% + 8px)',
-    height: 'calc(100% + 8px)',
+    inset: '-3px',
+    width: 'calc(100% + 6px)',
+    height: 'calc(100% + 6px)',
     overflow: 'visible',
     zIndex: 0,
     pointerEvents: 'none',
   }}
-  viewBox="0 0 100 158.6"
+  viewBox="0 0 106 174.1"
+  preserveAspectRatio="none"
 >
   <defs>
+    {/* Simple 3-stop muted silver — no bright whites */}
     <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stopColor="#d8d4cc" />
-      <stop offset="30%"  stopColor="#eae6de" />
-      <stop offset="50%"  stopColor="#c8c4bc" />
-      <stop offset="70%"  stopColor="#e2ddd5" />
-      <stop offset="100%" stopColor="#ccc8c0" />
+      <stop offset="0%"   stopColor="#c8c4bc" />
+      <stop offset="50%"  stopColor="#dedad4" />
+      <stop offset="100%" stopColor="#c0bcb4" />
     </linearGradient>
 
     {/*
-      clipPath erases the bottom-center of the stroke.
-      Three rects together cover everything EXCEPT the gap between x=20..80
-      below y=143 — that gap disappears, leaving two corner feet.
+      clipPath: keep everything EXCEPT the bottom-center gap.
+      - Full coverage above y=158 (above where bottom straight begins curving)
+      - Left foot strip: x 0..24
+      - Right foot strip: x 82..106
+      Gap = x 24..82, y 158..180  →  this section is invisible
     */}
     <clipPath id="bottomGap">
-      <rect x="0"   y="0" width="100" height="143" />  {/* top bulk */}
-      <rect x="0"   y="0" width="20"  height="162" />  {/* left foot */}
-      <rect x="80"  y="0" width="20"  height="162" />  {/* right foot */}
+      <rect x="0"  y="0"   width="106" height="158" />
+      <rect x="0"  y="158" width="24"  height="20"  />
+      <rect x="82" y="158" width="24"  height="20"  />
     </clipPath>
   </defs>
 
   {/*
-    The rect spans nearly the full viewBox.
-    A small inset (1.5 units) so the stroke doesn't get clipped at the SVG edge.
-    rx matches the card's borderRadius: 16px.
-    Card occupies ~92% of the SVG width (4px margin each side out of ~cardWidth).
-    So rx in viewBox units ≈ 16 / cardWidth * 100 ≈ 16.5 — use 16.
-  */}
+    viewBox: 106 × 174.1
+      - card aspect ratio = 1 : 1.586, so height = 106 * 1.586 = 168.1
+      - 3px overhang each side → total = 106 wide, 168.1 + 6 = 174.1 tall
+      - card occupies x: 3..103, y: 3..171.1
+      - rect drawn at x=3, y=3 to match card edges exactly
+      - rx: card has borderRadius 16px; card width in viewBox = 100 units
+        so rx = 16/100 * 100 = 16 viewBox units. With preserveAspectRatio=none
+        we need separate rx/ry to compensate for the stretch:
+        rx = 16, ry = 16 * (174.1/106) / (168.1/100) = ~15.6 → use 16
+      - strokeWidth 6 → half (3) extends inward, half outward from the rect edge
+        rect is at card edge, so 3 units outward = visible outside card ✓
+  *)
   <rect
-    x="1.5"
-    y="1.5"
-    width="97"
-    height="155.6"
+    x="3"
+    y="3"
+    width="100"
+    height="168.1"
     rx="16"
     ry="16"
     fill="none"
     stroke="url(#metalGrad)"
-    strokeWidth="4.5"
-    clipPath="url(#bottomGap)"
-  />
-
-  {/* Bright highlight line */}
-  <rect
-    x="1.5"
-    y="1.5"
-    width="97"
-    height="155.6"
-    rx="16"
-    ry="16"
-    fill="none"
-    stroke="rgba(255,255,255,0.6)"
-    strokeWidth="1.2"
+    strokeWidth="6"
     clipPath="url(#bottomGap)"
   />
 </svg>
