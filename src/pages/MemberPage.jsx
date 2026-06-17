@@ -1138,13 +1138,13 @@ function NavBtn({ onClick, children, style = {} }) {
   )
 }
 
-// ─── Events Tab ──────────────────────────────────────────────────────────────
 function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   // ── Split & sort ────────────────────────────────────────────────────────────
   const datedEvents = events.filter((ev) => ev.event_date)
+
   const tbdEvents = events
     .filter((ev) => !ev.event_date)
     .sort((a, b) =>
@@ -1152,15 +1152,18 @@ function EventsTab({ events }) {
         ? new Date(a.created_at) - new Date(b.created_at)
         : 0,
     )
+
   const futureEvents = datedEvents
     .filter((ev) => new Date(ev.event_date) >= now)
     .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+
   const pastEvents = datedEvents
     .filter((ev) => new Date(ev.event_date) < now)
     .sort((a, b) => new Date(b.event_date) - new Date(a.event_date))
 
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
+
   const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
   const initialEvent = allEvents[0] || null
 
@@ -1178,8 +1181,13 @@ function EventsTab({ events }) {
 
   const [imageAspectRatios, setImageAspectRatios] = useState({})
 
+  // NEW: dynamic text color for the first panel
+  const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
+
   const [calMonth, setCalMonth] = useState(() => {
-    const base = initialEvent?.event_date ? new Date(initialEvent.event_date) : now
+    const base = initialEvent?.event_date
+      ? new Date(initialEvent.event_date)
+      : now
     return new Date(base.getFullYear(), base.getMonth(), 1)
   })
 
@@ -1190,7 +1198,10 @@ function EventsTab({ events }) {
   }, [selectedEvent])
 
   const setSlide = (id, idx) =>
-    setSlideIndexes((p) => ({ ...p, [id]: idx }))
+    setSlideIndexes((p) => ({
+      ...p,
+      [id]: idx,
+    }))
 
   // ── Load image dimensions to detect aspect ratio ─────────────────────────────
   useEffect(() => {
@@ -1240,10 +1251,7 @@ function EventsTab({ events }) {
           Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
         )
       } else if (e.key === 'ArrowLeft') {
-        setSlide(
-          expandedId,
-          Math.max((slideIndexes[expandedId] || 0) - 1, 0),
-        )
+        setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
       }
     }
 
@@ -1294,6 +1302,7 @@ function EventsTab({ events }) {
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
   const containerRef = useRef(null)
+
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
   )
@@ -1302,6 +1311,7 @@ function EventsTab({ events }) {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
     if (rect && touch.clientY > rect.bottom - 60) return
+
     dragStartY.current = touch.clientY
     dragAccumulator.current = 0
     lastIdxRef.current = currentEventIndex
@@ -1313,6 +1323,7 @@ function EventsTab({ events }) {
     if (dragStartY.current == null) return
     const dy = dragStartY.current - e.touches[0].clientY
     dragAccumulator.current = dy
+
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
     const idx = Math.max(
@@ -1325,6 +1336,7 @@ function EventsTab({ events }) {
   const handleContainerTouchEnd = () => {
     if (dragStartY.current == null) return
     const dy = dragAccumulator.current
+
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
 
@@ -1358,6 +1370,7 @@ function EventsTab({ events }) {
     if (lbSwipeX.current == null) return
     const dx = e.changedTouches[0].clientX - lbSwipeX.current
     const dy = e.changedTouches[0].clientY - lbSwipeY.current
+
     lbSwipeX.current = null
     lbSwipeY.current = null
 
@@ -1415,6 +1428,7 @@ function EventsTab({ events }) {
   const getEventStatus = (ev) => {
     if (!ev) return ''
     if (!ev.event_date) return 'TBD'
+
     const days = getDayDiff(ev.event_date)
     if (days < 0) return 'PAST'
     if (nextEvent && ev.id === nextEvent.id)
@@ -1426,6 +1440,7 @@ function EventsTab({ events }) {
     if (!ev?.event_date) return
     const start = new Date(ev.event_date)
     const end = new Date(start.getTime() + 7200000)
+
     const pad = (n) => String(n).padStart(2, '0')
     const fmt = (d) =>
       d.getUTCFullYear() +
@@ -1436,13 +1451,18 @@ function EventsTab({ events }) {
       pad(d.getUTCMinutes()) +
       '00Z'
 
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${fmt(
-      start,
-    )}\nDTEND:${fmt(end)}\nSUMMARY:${ev.title}\nLOCATION:${
-      ev.location || ''
-    }\nDESCRIPTION:${ev.description || ''}\nEND:VEVENT\nEND:VCALENDAR`
+    const ics =
+      `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n` +
+      `DTSTART:${fmt(start)}\n` +
+      `DTEND:${fmt(end)}\n` +
+      `SUMMARY:${ev.title}\n` +
+      `LOCATION:${ev.location || ''}\n` +
+      `DESCRIPTION:${ev.description || ''}\n` +
+      `END:VEVENT\nEND:VCALENDAR`
 
-    const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
+    const url = URL.createObjectURL(
+      new Blob([ics], { type: 'text/calendar' }),
+    )
     const a = document.createElement('a')
     a.href = url
     a.download = (ev.title || 'event') + '.ics'
@@ -1465,8 +1485,7 @@ function EventsTab({ events }) {
   })
 
   const circleStyle = (ev) => {
-    if (nextEvent && ev.id === nextEvent.id)
-      return { bg: '#f97316', color: '#fff' }
+    if (nextEvent && ev.id === nextEvent.id) return { bg: '#f97316', color: '#fff' }
     if (new Date(ev.event_date) >= now) return { bg: '#1f2937', color: '#fff' }
     return { bg: '#6b7280', color: '#fff' }
   }
@@ -1585,7 +1604,6 @@ function EventsTab({ events }) {
                         </div>
                       ))}
                     </div>
-
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
@@ -1614,15 +1632,18 @@ function EventsTab({ events }) {
                   className="text-sm text-gray-600 mt-3 leading-relaxed block"
                 />
               )}
+
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
                   <button
                     onClick={() => addToCalendar(ev)}
                     className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5"
                   >
-                    <Calendar size={14} weight="fill" /> 캘린더에 추가
+                    <Calendar size={14} weight="fill" />
+                    캘린더에 추가
                   </button>
                 )}
+
                 {instaUrl && (
                   <a
                     href={instaUrl}
@@ -1649,10 +1670,57 @@ function EventsTab({ events }) {
     )
   }
 
+  // ── First-panel image + color logic ──────────────────────────────────────────
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
+
+  const getTextColorFromImage = (imageUrl) =>
+    new Promise((resolve) => {
+      const img = new Image()
+      img.crossOrigin = 'Anonymous'
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+
+        // Sample the center pixel
+        const imageData = ctx.getImageData(
+          Math.floor(img.width / 2),
+          Math.floor(img.height / 2),
+          1,
+          1,
+        )
+        const [r, g, b] = imageData.data
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+        resolve(luminance > 0.5 ? '#111827' : '#ffffff') // light → dark text, dark → white
+      }
+      img.onerror = () => resolve('#111827') // fallback: dark
+      img.src = imageUrl
+    })
+
+  // Update text color when the leading image changes
+  useEffect(() => {
+    let cancelled = false
+
+    const update = async () => {
+      if (displayImages.length > 0) {
+        const color = await getTextColorFromImage(displayImages[0])
+        if (!cancelled) setFrontPanelTextColor(color)
+      } else {
+        if (!cancelled) setFrontPanelTextColor('#111827')
+      }
+    }
+
+    update()
+    return () => {
+      cancelled = true
+    }
+  }, [displayImages])
 
   return (
     <>
@@ -1666,12 +1734,9 @@ function EventsTab({ events }) {
           from { opacity: 1; }
           to   { opacity: 0; }
         }
-        .lb-open {
-          animation: lbFadeIn 0.15s ease-out;
-        }
-        .lb-close {
-          animation: lbFadeOut 0.15s ease-in;
-        }
+        .lb-open  { animation: lbFadeIn 0.15s ease-out; }
+        .lb-close { animation: lbFadeOut 0.15s ease-in; }
+
         /* Slide in for image when changing index */
         @keyframes slideInFromRight {
           from { opacity: 0; transform: translateX(40px); }
@@ -1681,12 +1746,8 @@ function EventsTab({ events }) {
           from { opacity: 0; transform: translateX(-40px); }
           to   { opacity: 1; transform: translateX(0); }
         }
-        .lb-slide-left  {
-          animation: slideInFromRight 0.18s ease-out;
-        }
-        .lb-slide-right {
-          animation: slideInFromLeft  0.18s ease-out;
-        }
+        .lb-slide-left  { animation: slideInFromRight 0.18s ease-out; }
+        .lb-slide-right { animation: slideInFromLeft 0.18s ease-out; }
       `}</style>
 
       <div
@@ -1756,49 +1817,48 @@ function EventsTab({ events }) {
                 </span>
               </div>
 
-              {/* Date + blur thumbnail + pile */}
+              {/* Date + pile + front panel */}
               <div className="flex items-stretch mt-2">
                 {/* Left: date */}
-                {displayEvent.event_date &&
-                  (() => {
-                    const t = formatTopDate(displayEvent.event_date)
-                    if (!t) return null
-                    return (
-                      <div
-                        className="flex flex-col items-start justify-center"
-                        style={{ flexShrink: 0 }}
+                {displayEvent.event_date && (() => {
+                  const t = formatTopDate(displayEvent.event_date)
+                  if (!t) return null
+                  return (
+                    <div
+                      className="flex flex-col items-start justify-center"
+                      style={{ flexShrink: 0 }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontSize: fs.date,
+                          fontWeight: 800,
+                          color: '#1f2937',
+                          letterSpacing: '0.02em',
+                          lineHeight: 0.85,
+                        }}
                       >
-                        <span
-                          style={{
-                            fontFamily: '"Handjet", system-ui, sans-serif',
-                            fontSize: fs.date,
-                            fontWeight: 800,
-                            color: '#1f2937',
-                            letterSpacing: '0.02em',
-                            lineHeight: 0.85,
-                          }}
-                        >
-                          {t.dateNum}
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: '"Handjet", system-ui, sans-serif',
-                            fontSize: fs.month,
-                            fontWeight: 800,
-                            color: '#1f2937',
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                            lineHeight: 0.85,
-                            marginTop: '2px',
-                          }}
-                        >
-                          {t.monthName}
-                        </span>
-                      </div>
-                    )
-                  })()}
+                        {t.dateNum}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontSize: fs.month,
+                          fontWeight: 800,
+                          color: '#1f2937',
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                          lineHeight: 0.85,
+                          marginTop: '2px',
+                        }}
+                      >
+                        {t.monthName}
+                      </span>
+                    </div>
+                  )
+                })()}
 
-                {/* Right: pile + blur thumbnail */}
+                {/* Right: image pile + front blur panel */}
                 <div
                   className="flex-1"
                   style={{
@@ -1808,275 +1868,194 @@ function EventsTab({ events }) {
                   }}
                 >
                   {/* Back card 2 — image[1] */}
-                  {hasImages && displayImages.length >= 2 &&
-                    (() => {
-                      const ratio = displayImageRatios[1] || 1
-                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                      return (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            aspectRatio,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            backgroundColor: '#d1d5db',
-                            transform: 'rotate(3deg) translate(7px, 7px)',
-                            zIndex: 1,
-                          }}
-                        >
-                          {displayImages[1] && (
-                            <img
-                              src={displayImages[1]}
-                              alt=""
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                              }}
-                              draggable={false}
-                            />
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                  {/* Back card 1 — image[0] */}
-                  {hasImages &&
-                    (() => {
-                      const ratio = displayImageRatios[0] || 1
-                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                      return (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            aspectRatio,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            backgroundColor: '#e5e7eb',
-                            transform: 'rotate(1.5deg) translate(3.5px, 3.5px)',
-                            zIndex: 2,
-                          }}
-                        >
-                          {displayImages[0] && (
-                            <img
-                              src={displayImages[0]}
-                              alt=""
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                              }}
-                              draggable={false}
-                            />
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                  {/* Front: white semi-transparent Gaussian blur panel */}
-                  {hasImages && (() => {
-  const ratio = displayImageRatios[0] || 1
-  const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-  return (
-    <div
-      onClick={() => openLightboxAt(0)}
-      style={{
-        position: 'relative',
-        zIndex: 3,
-        borderRadius: '12px',
-        overflow: 'hidden',
-        aspectRatio,
-        width: '100%',
-        backgroundColor: 'transparent',  // ← changed: no more opaque white
-        border: 'none',
-        cursor: 'pointer',
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: 'rgba(255,255,255,0.35)',  // ← slightly reduced opacity for more transparency
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
-        }}
-      />
-
-                          <div
-                            style={{
-                              position: 'relative',
-                              height: '100%',
-                              padding: '12px 14px 28px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              justifyContent: 'flex-start',
-                              gap: '4px',
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontFamily:
-                                  '"Noto Sans KR", system-ui, sans-serif',
-                                fontSize: `calc(${W} * 0.052)`,
-                                fontWeight: 700,
-                                color:
-                                  nextEvent &&
-                                  displayEvent.id === nextEvent.id
-                                    ? '#f97316'
-                                    : '#111827',
-                                lineHeight: 1.2,
-                              }}
-                            >
-                              {displayEvent.title}
-                            </span>
-                            {displayEvent.event_date && (
-                              <span
-                                style={{
-                                  fontFamily:
-                                    '"Handjet", system-ui, sans-serif',
-                                  fontSize: `calc(${W} * 0.042)`,
-                                  fontWeight: 700,
-                                  color: '#111827',
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {formatTopTime(displayEvent.event_date)}
-                              </span>
-                            )}
-                            {displayEvent.location && (
-                              <span
-                                style={{
-                                  fontFamily:
-                                    '"Handjet", system-ui, sans-serif',
-                                  fontSize: `calc(${W} * 0.036)`,
-                                  fontWeight: 700,
-                                  color: '#4b5563',
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {displayEvent.location}
-                              </span>
-                            )}
-                          </div>
-
-                          {displayImages.length > 1 && (
-                            <div
-                              style={{
-                                position: 'absolute',
-                                bottom: '8px',
-                                right: '10px',
-                                backgroundColor: 'rgba(0,0,0,0.45)',
-                                borderRadius: '999px',
-                                padding: '2px 8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                              }}
-                            >
-                              <svg
-                                width="11"
-                                height="11"
-                                viewBox="0 0 24 24"
-                                fill="white"
-                              >
-                                <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
-                              </svg>
-                              <span
-                                style={{
-                                  fontFamily:
-                                    '"Handjet", system-ui, sans-serif',
-                                  fontSize: 12,
-                                  color: '#fff',
-                                  fontWeight: 600,
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {displayImages.length}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                  {/* No images placeholder */}
-                  {!hasImages && (
-                    <div
-                      style={{
-                        position: 'relative',
-                        zIndex: 3,
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        aspectRatio: '1/1',
-                        width: '100%',
-                        backgroundColor: '#f9fafb',
-                        border: '1px solid #e5e7eb',
-                        cursor: 'default',
-                      }}
-                    >
+                  {hasImages && displayImages.length >= 2 && (() => {
+                    const ratio = displayImageRatios[1] || 1
+                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                    return (
                       <div
                         style={{
                           position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          padding: '12px 14px 28px',
-                          display: 'flex',
-                          flexDirection: 'column',
+                          inset: 0,
+                          aspectRatio,
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          backgroundColor: '#d1d5db',
+                          transform: 'rotate(3deg) translate(7px, 7px)',
+                          zIndex: 1,
                         }}
                       >
-                        <span
-                          style={{
-                            fontFamily:
-                              '"Noto Sans KR", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.052)`,
-                            fontWeight: 700,
-                            color:
-                              nextEvent &&
-                              displayEvent.id === nextEvent.id
-                                ? '#f97316'
-                                : '#1f2937',
-                            lineHeight: 1.2,
-                          }}
-                        >
-                          {displayEvent.title}
-                        </span>
-                        {displayEvent.event_date && (
-                          <span
+                        {displayImages[1] && (
+                          <img
+                            src={displayImages[1]}
+                            alt=""
                             style={{
-                              fontFamily:
-                                '"Handjet", system-ui, sans-serif',
-                              fontSize: `calc(${W} * 0.042)`,
-                              fontWeight: 700,
-                              color: '#111827',
-                              letterSpacing: '0.04em',
-                              marginTop: '4px',
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
                             }}
-                          >
-                            {formatTopTime(displayEvent.event_date)}
-                          </span>
-                        )}
-                        {displayEvent.location && (
-                          <span
-                            style={{
-                              fontFamily:
-                                '"Handjet", system-ui, sans-serif',
-                              fontSize: `calc(${W} * 0.036)`,
-                              fontWeight: 700,
-                              color: '#4b5563',
-                              letterSpacing: '0.04em',
-                              marginTop: '2px',
-                            }}
-                          >
-                            {displayEvent.location}
-                          </span>
+                            draggable={false}
+                          />
                         )}
                       </div>
-                    </div>
-                  )}
+                    )
+                  })()}
+
+                  {/* Back card 1 — image[0] */}
+                  {hasImages && (() => {
+                    const ratio = displayImageRatios[0] || 1
+                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                    return (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          aspectRatio,
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          backgroundColor: '#e5e7eb',
+                          transform: 'rotate(1.5deg) translate(3.5px, 3.5px)',
+                          zIndex: 2,
+                        }}
+                      >
+                        {displayImages[0] && (
+                          <img
+                            src={displayImages[0]}
+                            alt=""
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                            draggable={false}
+                          />
+                        )}
+                      </div>
+                    )
+                  })()}
+
+                  {/* Front: semi-transparent Gaussian blur panel (always rendered) */}
+                  {(() => {
+                    const ratio = hasImages ? displayImageRatios[0] || 1 : 1
+                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+
+                    return (
+                      <div
+                        onClick={() => hasImages && openLightboxAt(0)}
+                        style={{
+                          position: 'relative',
+                          zIndex: 3,
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          aspectRatio,
+                          width: '100%',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          cursor: hasImages ? 'pointer' : 'default',
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundColor: 'rgba(255,255,255,0.35)',
+                            backdropFilter: 'blur(6px)',
+                            WebkitBackdropFilter: 'blur(6px)',
+                          }}
+                        />
+
+                        <div
+                          style={{
+                            position: 'relative',
+                            height: '100%',
+                            padding: '12px 14px 28px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'flex-start',
+                            gap: '4px',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily:
+                                '"Noto Sans KR", system-ui, sans-serif',
+                              fontSize: `calc(${W} * 0.052)`,
+                              fontWeight: 700,
+                              color: frontPanelTextColor,
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {displayEvent.title}
+                          </span>
+
+                          {displayEvent.event_date && (
+                            <span
+                              style={{
+                                fontFamily:
+                                  '"Handjet", system-ui, sans-serif',
+                                fontSize: `calc(${W} * 0.042)`,
+                                fontWeight: 700,
+                                color: frontPanelTextColor,
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {formatTopTime(displayEvent.event_date)}
+                            </span>
+                          )}
+
+                          {displayEvent.location && (
+                            <span
+                              style={{
+                                fontFamily:
+                                  '"Handjet", system-ui, sans-serif',
+                                fontSize: `calc(${W} * 0.036)`,
+                                fontWeight: 700,
+                                color: frontPanelTextColor,
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {displayEvent.location}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Image count indicator – ALWAYS VISIBLE */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '8px',
+                            right: '10px',
+                            backgroundColor: 'rgba(0,0,0,0.45)',
+                            borderRadius: '999px',
+                            padding: '2px 8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 24 24"
+                            fill="white"
+                          >
+                            <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
+                          </svg>
+                          <span
+                            style={{
+                              fontFamily:
+                                '"Handjet", system-ui, sans-serif',
+                              fontSize: 12,
+                              color: '#fff',
+                              fontWeight: 600,
+                              letterSpacing: '0.04em',
+                            }}
+                          >
+                            {displayImages.length}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             </div>
@@ -2119,6 +2098,7 @@ function EventsTab({ events }) {
                   })}
                 </span>
               </div>
+
               <div
                 style={{
                   display: 'grid',
@@ -2142,6 +2122,7 @@ function EventsTab({ events }) {
                   </div>
                 ))}
               </div>
+
               <div
                 style={{
                   display: 'grid',
@@ -2152,13 +2133,18 @@ function EventsTab({ events }) {
                 {cells.map((day, idx) => {
                   if (!day)
                     return (
-                      <div key={`e-${idx}`} style={{ aspectRatio: '1/1' }} />
+                      <div
+                        key={`e-${idx}`}
+                        style={{ aspectRatio: '1/1' }}
+                      />
                     )
+
                   const dateKey = `${calYear}-${String(
                     calMonthIdx + 1,
                   ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   const dayEvents = eventsByDate[dateKey] || []
                   const hasEvt = dayEvents.length > 0
+
                   const isToday =
                     day === now.getDate() &&
                     calMonthIdx === now.getMonth() &&
@@ -2213,7 +2199,8 @@ function EventsTab({ events }) {
                       >
                         <span
                           style={{
-                            fontFamily: '"Handjet", system-ui, sans-serif',
+                            fontFamily:
+                              '"Handjet", system-ui, sans-serif',
                             fontSize: `calc(${W} * 0.036)`,
                             fontWeight: fw,
                             color,
@@ -2270,7 +2257,9 @@ function EventsTab({ events }) {
             {pastEvents.length > 0 && (
               <div className="mt-6">
                 <button
-                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+                  onClick={() =>
+                    setPastEventsExpanded(!pastEventsExpanded)
+                  }
                   className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-2">
@@ -2285,13 +2274,16 @@ function EventsTab({ events }) {
                     {pastEventsExpanded ? '▲' : '▼'}
                   </span>
                 </button>
+
                 {pastEventsExpanded && (
                   <div className="space-y-3 mt-3">
                     {(() => {
                       let curMonth = null
                       const blocks = []
                       pastEvents.forEach((ev) => {
-                        const label = `${new Date(ev.event_date).getMonth() + 1}월`
+                        const label = `${new Date(
+                          ev.event_date,
+                        ).getMonth() + 1}월`
                         if (label !== curMonth) {
                           curMonth = label
                           blocks.push(
@@ -2316,7 +2308,9 @@ function EventsTab({ events }) {
             {allEvents.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
                 <p className="text-2xl mb-2">📅</p>
-                <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
+                <p className="text-gray-500 text-sm">
+                  예정된 이벤트가 없어요
+                </p>
               </div>
             )}
           </div>
