@@ -3,14 +3,24 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear, UserCircle, ArrowsVertical } from '@phosphor-icons/react'
+import {
+  MAP_CATEGORIES,
+  CATEGORY_ICONS_WHITE,
+  CATEGORY_ICONS_ORANGE,
+} from '../lib/mapCategories'
+import {
+  QrCode,
+  Calendar,
+  MapPin,
+  Gear,
+  UserCircle,
+  ArrowsVertical,
+} from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
-import EventCard from '../components/EventCard'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -21,9 +31,10 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const [qrCardLifted, setQrCardLifted] = useState(false)
+
   const navigate = useNavigate()
 
-  // ── Review prompt hook ───────────────────────────────
+  // ── Review prompt hook ───────────────────────────────────────────────────────
   const {
     open: reviewOpen,
     storeName,
@@ -39,9 +50,8 @@ export default function MemberPage() {
     submitReview,
     skipReview,
   } = useReviewPrompt()
-  // ────────────────────────────────────────────────────
 
-  // Load user, member, events, restaurants
+  // ── Load user, member, events, restaurants ──────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
       const {
@@ -58,7 +68,7 @@ export default function MemberPage() {
       // Admin flag from user metadata (same logic as App.jsx)
       const isAdminUser = user?.user_metadata?.role === 'admin'
 
-      // Members: maybeSingle() so we don't get a 406 if the admin has no row in members
+      // Members: maybeSingle() so we don't get a 406 if the admin has no row
       const { data: memberData, error: memberError } = await supabase
         .from('members')
         .select('*')
@@ -66,7 +76,10 @@ export default function MemberPage() {
         .maybeSingle()
 
       if (memberError) {
-        console.warn('members error (can be normal if no row):', memberError.message)
+        console.warn(
+          'members error (can be normal if no row):',
+          memberError.message,
+        )
       }
 
       const { data: eventData, error: eventError } = await supabase
@@ -97,7 +110,7 @@ export default function MemberPage() {
     fetchData()
   }, [])
 
-  // Prevent iOS edge-swipe
+  // Prevent iOS edge-swipe back gesture
   useEffect(() => {
     const handler = (e) => {
       if (e.touches[0]?.clientX < 30) e.preventDefault()
@@ -155,7 +168,6 @@ export default function MemberPage() {
           className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
         >
-          {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
           <div className="w-[60px]" />
           <div className="flex gap-2 items-center">
             {isAdmin && (
@@ -181,21 +193,21 @@ export default function MemberPage() {
 
       {/* Floating settings button for MY tab (no header) */}
       {activeTab === 'qr' && (
-  <button
-    onClick={() => navigate('/settings')}
-    className={
-        'absolute right-4 rounded-full bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
-      (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
-    }
-    style={{
-      top: 'calc(env(safe-area-inset-top) + 8px)',
-      zIndex: 20,   // ensure it sits above the card layer (zIndex 10)
-    }}
-    aria-label="Settings"
-  >
-    <Gear size={20} weight="bold" />
-  </button>
-)}
+        <button
+          onClick={() => navigate('/settings')}
+          className={
+            'absolute right-4 rounded-full bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
+            (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
+          }
+          style={{
+            top: 'calc(env(safe-area-inset-top) + 8px)',
+            zIndex: 20, // above card layer
+          }}
+          aria-label="Settings"
+        >
+          <Gear size={20} weight="bold" />
+        </button>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-hidden">
@@ -223,16 +235,17 @@ export default function MemberPage() {
           { key: 'map', label: 'SPOT', icon: MapPin },
         ].map((tab) => {
           const Icon = tab.icon
+          const active = activeTab === tab.key
           return (
             <button
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
               className={
                 'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' +
-                (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
+                (active ? 'text-orange-500' : 'text-gray-400')
               }
             >
-              <Icon size={20} weight={activeTab === tab.key ? 'fill' : 'regular'} />
+              <Icon size={20} weight={active ? 'fill' : 'regular'} />
               {tab.label}
             </button>
           )
@@ -242,7 +255,8 @@ export default function MemberPage() {
   )
 }
 
-// ─── Pastel avatar colors ────────────────────────────────────────────────────
+// ─── Pastel avatar colors ─────────────────────────────────────────────────────
+
 const PASTEL_COLORS = [
   '#FFB3B3',
   '#FFD9A0',
@@ -262,6 +276,7 @@ function getPastelColor(seed) {
 }
 
 // ─── Membership Card ─────────────────────────────────────────────────────────
+
 function MembershipCard({
   member,
   isValid,
@@ -274,7 +289,6 @@ function MembershipCard({
   const W = 'calc(100vw - 32px)'
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
-
   const fs = {
     brand: `calc(${W} * 0.038)`,
     valid: `calc(${W} * 0.032)`,
@@ -286,7 +300,6 @@ function MembershipCard({
   const pastelBg = getPastelColor(avatarSeed)
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
-
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
@@ -344,7 +357,11 @@ function MembershipCard({
               }}
             />
           ) : (
-            <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
+            <UserCircle
+              size="72%"
+              weight="fill"
+              color="rgba(44,42,39,0.55)"
+            />
           )}
         </div>
 
@@ -382,9 +399,9 @@ function MembershipCard({
           >
             Valid Until{' '}
             {member?.membership_valid_until
-              ? new Date(member.membership_valid_until).toLocaleDateString(
-                  'en-CA',
-                )
+              ? new Date(
+                  member.membership_valid_until,
+                ).toLocaleDateString('en-CA')
               : 'N/A'}
           </span>
           <span
@@ -421,7 +438,7 @@ function MembershipCard({
             flexShrink: 0,
           }}
         >
-          {/* Corners */}
+          {/* Corner brackets */}
           <span
             style={{
               position: 'absolute',
@@ -560,7 +577,11 @@ function MembershipCard({
         </span>
         {member?.first_name && (
           <span
-            style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}
+            style={{
+              marginTop: '4px',
+              fontSize: fs.valid,
+              color: '#6b7280',
+            }}
           >
             {member.first_name} {member.last_name}
           </span>
@@ -647,16 +668,17 @@ function MembershipCard({
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
+
 function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
-
   const [lifted, setLifted] = useState(false)
-  const [cardFlipped, setCardFlipped] = useState(false) // NEW
+  const [cardFlipped, setCardFlipped] = useState(false)
+
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
   const touchStartY = useRef(null)
   const liftedRef = useRef(false)
-  
+
   const [state, setState] = useState('scanning')
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -672,54 +694,52 @@ function QRTab({ member, isValid, onLiftChange }) {
     }
   }
 
-const handleTouchStart = (e) => {
-  if (cardFlipped) return
-  touchStartY.current = e.touches[0].clientY
-  if (cardLayerRef.current) {
-    cardLayerRef.current.style.transition = 'none'
-  }
-}
-
-const handleTouchMove = (e) => {
-  if (cardFlipped) return
-  if (touchStartY.current == null) return
-  const dy = touchStartY.current - e.touches[0].clientY
-
-  // Prevent scroll when clearly vertical swipe
-  if (Math.abs(dy) > 10) {
-    e.preventDefault()
-  }
-}
-
-const handleTouchEnd = (e) => {
-  if (cardFlipped) return
-  if (touchStartY.current == null) return
-
-  const dy = touchStartY.current - e.changedTouches[0].clientY
-  const max = getMaxLift()
-  const SWIPE_THRESHOLD = 40
-
-  let nextLifted = liftedRef.current
-
-  // swipe up → lift
-  if (dy > SWIPE_THRESHOLD) {
-    nextLifted = true
-  }
-  // swipe down → lower
-  else if (dy < -SWIPE_THRESHOLD) {
-    nextLifted = false
+  const handleTouchStart = (e) => {
+    if (cardFlipped) return
+    touchStartY.current = e.touches[0].clientY
+    if (cardLayerRef.current) {
+      cardLayerRef.current.style.transition = 'none'
+    }
   }
 
-  if (cardLayerRef.current) {
-    cardLayerRef.current.style.transition =
-      'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+  const handleTouchMove = (e) => {
+    if (cardFlipped) return
+    if (touchStartY.current == null) return
+    const dy = touchStartY.current - e.touches[0].clientY
+    // Prevent scroll when clearly vertical swipe
+    if (Math.abs(dy) > 10) {
+      e.preventDefault()
+    }
   }
 
-  setTranslate(nextLifted ? max : 0)
-  liftedRef.current = nextLifted
-  setLifted(nextLifted)
-  touchStartY.current = null
-}
+  const handleTouchEnd = (e) => {
+    if (cardFlipped) return
+    if (touchStartY.current == null) return
+
+    const dy = touchStartY.current - e.changedTouches[0].clientY
+    const max = getMaxLift()
+    const SWIPE_THRESHOLD = 40
+
+    let nextLifted = liftedRef.current
+
+    // swipe up → lift
+    if (dy > SWIPE_THRESHOLD) {
+      nextLifted = true
+    }
+    // swipe down → lower
+    else if (dy < -SWIPE_THRESHOLD) {
+      nextLifted = false
+    }
+
+    if (cardLayerRef.current) {
+      cardLayerRef.current.style.transition =
+        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+    }
+    setTranslate(nextLifted ? max : 0)
+    liftedRef.current = nextLifted
+    setLifted(nextLifted)
+    touchStartY.current = null
+  }
 
   // Sync lifted state with DOM and parent
   useEffect(() => {
@@ -752,7 +772,9 @@ const handleTouchEnd = (e) => {
   }
 
   const fullName = checkinMember
-    ? `${checkinMember.first_name || ''} ${checkinMember.last_name || ''}`.trim()
+    ? `${checkinMember.first_name || ''} ${
+        checkinMember.last_name || ''
+      }`.trim()
     : ''
 
   const reset = () => {
@@ -769,10 +791,9 @@ const handleTouchEnd = (e) => {
   const handleQRScanned = async (rawValue) => {
     if (handlingRef.current) return
     handlingRef.current = true
-
     setErrorMsg('')
-    let storeId = null
 
+    let storeId = null
     try {
       const url = new URL(rawValue)
       storeId = url.searchParams.get('store_id')
@@ -826,13 +847,16 @@ const handleTouchEnd = (e) => {
       } else {
         setState('error')
         setErrorMsg(
-          result.message || 'Check-In을 기록할 수 없습니다. 다시 시도해주세요.',
+          result.message ||
+            'Check-In을 기록할 수 없습니다. 다시 시도해주세요.',
         )
       }
     } catch (err) {
       console.error('handleQRScanned error:', err)
       setState('error')
-      setErrorMsg('오류가 발생했습니다: ' + (err?.message || '알 수 없는 오류'))
+      setErrorMsg(
+        '오류가 발생했습니다: ' + (err?.message || '알 수 없는 오류'),
+      )
     }
 
     handlingRef.current = false
@@ -843,7 +867,7 @@ const handleTouchEnd = (e) => {
     guide: `calc(${W} * 0.032)`,
   }
 
-  // ── Different states ────────────────────────────────────────────
+  // ── Different states ────────────────────────────────────────────────────────
 
   if (!isValid) {
     if (onLiftChange) onLiftChange(false)
@@ -895,7 +919,6 @@ const handleTouchEnd = (e) => {
             />
           </div>
         </>
-
         <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
             <span className="text-green-600 text-4xl">✓</span>
@@ -910,35 +933,49 @@ const handleTouchEnd = (e) => {
 
           <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Scan Time</span>
+              <span className="text-xs font-medium text-gray-500">
+                Scan Time
+              </span>
               <span className="text-sm font-semibold text-gray-900">
                 {formatScanTime(scanTime)}
               </span>
             </div>
+
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Full Name</span>
+              <span className="text-xs font-medium text-gray-500">
+                Full Name
+              </span>
               <span className="text-sm font-semibold text-gray-900">
                 {fullName || 'N/A'}
               </span>
             </div>
+
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">Student ID</span>
+              <span className="text-xs font-medium text-gray-500">
+                Student ID
+              </span>
               <span className="text-sm font-semibold text-gray-900">
                 {checkinMember?.student_number || 'N/A'}
               </span>
             </div>
+
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-xs font-medium text-gray-500">University</span>
+              <span className="text-xs font-medium text-gray-500">
+                University
+              </span>
               <span className="text-sm font-semibold text-gray-900">
                 {checkinMember?.University || 'N/A'}
               </span>
             </div>
+
             <div className="flex justify-between items-center">
               <span className="text-xs font-medium text-gray-500">
                 Membership Valid Until
               </span>
               <span className="text-sm font-semibold text-gray-900">
-                {formatMembershipDate(checkinMember?.membership_valid_until)}
+                {formatMembershipDate(
+                  checkinMember?.membership_valid_until,
+                )}
               </span>
             </div>
           </div>
@@ -986,7 +1023,7 @@ const handleTouchEnd = (e) => {
     )
   }
 
-  // ── SCANNING STATE ──────────────────────────────────────────────
+  // ── SCANNING STATE ──────────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -1036,7 +1073,6 @@ const handleTouchEnd = (e) => {
           padding: '66px 16px 0',
         }}
       >
-        {/* Disable flipping when lifted */}
         <MembershipCard
           member={member}
           isValid={isValid}
@@ -1065,10 +1101,11 @@ const handleTouchEnd = (e) => {
                 transition: 'color 0.25s ease',
               }}
             >
-              {lifted ? '내려서 Check-IN 하기' : '위로 올려서 이번 달 활동 보기'}
+              {lifted
+                ? '내려서 Check-IN 하기'
+                : '위로 올려서 이번 달 활동 보기'}
             </span>
           )}
-
           {cardFlipped && (
             <span
               style={{
@@ -1103,7 +1140,8 @@ const handleTouchEnd = (e) => {
   )
 }
 
-// ─── Nav Button ───────────────────────────────────────────────────────────────
+// ─── Nav Button (not currently used, but kept for future) ─────────────────────
+
 function NavBtn({ onClick, children, style = {} }) {
   return (
     <button
@@ -1137,6 +1175,8 @@ function NavBtn({ onClick, children, style = {} }) {
     </button>
   )
 }
+
+// ─── Events Tab ───────────────────────────────────────────────────────────────
 
 function EventsTab({ events }) {
   const now = new Date()
@@ -1180,8 +1220,6 @@ function EventsTab({ events }) {
   const [lbSlideDir, setLbSlideDir] = useState(0) // -1 = next, 1 = prev
 
   const [imageAspectRatios, setImageAspectRatios] = useState({})
-
-  // NEW: dynamic text color for the first panel
   const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
 
   const [calMonth, setCalMonth] = useState(() => {
@@ -1190,6 +1228,8 @@ function EventsTab({ events }) {
       : now
     return new Date(base.getFullYear(), base.getMonth(), 1)
   })
+
+  const containerRef = useRef(null)
 
   useEffect(() => {
     if (!selectedEvent?.event_date) return
@@ -1203,7 +1243,7 @@ function EventsTab({ events }) {
       [id]: idx,
     }))
 
-  // ── Load image dimensions to detect aspect ratio ─────────────────────────────
+  // ── Load image dimensions to detect aspect ratio ────────────────────────────
   useEffect(() => {
     const loadImageDimensions = (url) =>
       new Promise((resolve) => {
@@ -1294,14 +1334,13 @@ function EventsTab({ events }) {
     setTimeout(() => {
       setLightboxOpen(false)
       setLightboxClosing(false)
-    }, 150) // keep in sync with CSS
+    }, 150)
   }
 
   // ── Vertical drag between events in header ───────────────────────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
-  const containerRef = useRef(null)
 
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
@@ -1310,6 +1349,7 @@ function EventsTab({ events }) {
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
+    // Avoid grabbing when finger starts too low (near calendar)
     if (rect && touch.clientY > rect.bottom - 60) return
 
     dragStartY.current = touch.clientY
@@ -1335,8 +1375,8 @@ function EventsTab({ events }) {
 
   const handleContainerTouchEnd = () => {
     if (dragStartY.current == null) return
-    const dy = dragAccumulator.current
 
+    const dy = dragAccumulator.current
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
 
@@ -1370,7 +1410,6 @@ function EventsTab({ events }) {
     if (lbSwipeX.current == null) return
     const dx = e.changedTouches[0].clientX - lbSwipeX.current
     const dy = e.changedTouches[0].clientY - lbSwipeY.current
-
     lbSwipeX.current = null
     lbSwipeY.current = null
 
@@ -1485,8 +1524,12 @@ function EventsTab({ events }) {
   })
 
   const circleStyle = (ev) => {
-    if (nextEvent && ev.id === nextEvent.id) return { bg: '#f97316', color: '#fff' }
-    if (new Date(ev.event_date) >= now) return { bg: '#1f2937', color: '#fff' }
+    if (nextEvent && ev.id === nextEvent.id) {
+      return { bg: '#f97316', color: '#fff' }
+    }
+    if (new Date(ev.event_date) >= now) {
+      return { bg: '#1f2937', color: '#fff' }
+    }
     return { bg: '#6b7280', color: '#fff' }
   }
 
@@ -1534,6 +1577,7 @@ function EventsTab({ events }) {
               {isExpanded ? '▲' : '▼'}
             </span>
           </div>
+
           {ev.event_date && (
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
               <Calendar size={14} weight="fill" />
@@ -1549,6 +1593,7 @@ function EventsTab({ events }) {
               </span>
             </div>
           )}
+
           {ev.location && (
             <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
               <MapPin size={14} weight="fill" />
@@ -1604,6 +1649,7 @@ function EventsTab({ events }) {
                         </div>
                       ))}
                     </div>
+
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
@@ -1643,7 +1689,6 @@ function EventsTab({ events }) {
                     캘린더에 추가
                   </button>
                 )}
-
                 {instaUrl && (
                   <a
                     href={instaUrl}
@@ -1670,23 +1715,21 @@ function EventsTab({ events }) {
     )
   }
 
-  // ── First-panel image + color logic ──────────────────────────────────────────
+  // ── First-panel image + color logic ─────────────────────────────────────────
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
-  const isPastSelected =
-  !!displayEvent?.event_date &&
-  new Date(displayEvent.event_date) < todayStart
-
-const PAST_DATE_COLOR = '#4b5563'   // darker grey for past dates
-const DRAG_DATE_COLOR = '#9ca3af'   // lighter grey only while dragging
-
-// Base color: dark for future/today, darker grey for past
-const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
-
-// While dragging, date turns light grey; otherwise use base
-const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
+
+  const PAST_DATE_COLOR = '#4b5563'
+  const DRAG_DATE_COLOR = '#9ca3af'
+
+  const isPastSelected =
+    !!displayEvent?.event_date &&
+    new Date(displayEvent.event_date) < todayStart
+
+  const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
+  const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
 
   const getTextColorFromImage = (imageUrl) =>
     new Promise((resolve) => {
@@ -1699,7 +1742,6 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0)
 
-        // Sample the center pixel
         const imageData = ctx.getImageData(
           Math.floor(img.width / 2),
           Math.floor(img.height / 2),
@@ -1709,13 +1751,12 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
         const [r, g, b] = imageData.data
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
 
-        resolve(luminance > 0.5 ? '#111827' : '#ffffff') // light → dark text, dark → white
+        resolve(luminance > 0.5 ? '#111827' : '#ffffff')
       }
-      img.onerror = () => resolve('#111827') // fallback: dark
+      img.onerror = () => resolve('#111827')
       img.src = imageUrl
     })
 
-  // Update text color when the leading image changes
   useEffect(() => {
     let cancelled = false
 
@@ -1737,7 +1778,6 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
   return (
     <>
       <style>{`
-        /* Simple fade in/out for lightbox container */
         @keyframes lbFadeIn {
           from { opacity: 0; }
           to   { opacity: 1; }
@@ -1749,7 +1789,6 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
         .lb-open  { animation: lbFadeIn 0.15s ease-out; }
         .lb-close { animation: lbFadeOut 0.15s ease-in; }
 
-        /* Slide in for image when changing index */
         @keyframes slideInFromRight {
           from { opacity: 0; transform: translateX(40px); }
           to   { opacity: 1; transform: translateX(0); }
@@ -1778,13 +1817,13 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
       >
         {/* TOP SECTION */}
         <div
-  style={{
-    flex: '0 0 auto',
-    padding: '16px',
-    paddingTop: '24px',
-    backgroundColor: '#ffffff',
-  }}
->
+          style={{
+            flex: '0 0 auto',
+            padding: '16px',
+            paddingTop: '24px',
+            backgroundColor: '#ffffff',
+          }}
+        >
           {displayEvent && (
             <div className="px-2 max-w-md mx-auto">
               {/* Day + Status */}
@@ -1839,31 +1878,31 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                       style={{ flexShrink: 0 }}
                     >
                       <span
-  style={{
-    fontFamily: '"Handjet", system-ui, sans-serif',
-    fontSize: fs.date,
-    fontWeight: 800,
-    color: effectiveDateColor,      // ← changed
-    letterSpacing: '0.02em',
-    lineHeight: 0.85,
-  }}
->
-  {t.dateNum}
-</span>
-<span
-  style={{
-    fontFamily: '"Handjet", system-ui, sans-serif',
-    fontSize: fs.month,
-    fontWeight: 800,
-    color: effectiveDateColor,      // ← changed
-    letterSpacing: '0.04em',
-    textTransform: 'uppercase',
-    lineHeight: 0.85,
-    marginTop: '2px',
-  }}
->
-  {t.monthName}
-</span>
+                        style={{
+                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontSize: fs.date,
+                          fontWeight: 800,
+                          color: effectiveDateColor,
+                          letterSpacing: '0.02em',
+                          lineHeight: 0.85,
+                        }}
+                      >
+                        {t.dateNum}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontSize: fs.month,
+                          fontWeight: 800,
+                          color: effectiveDateColor,
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                          lineHeight: 0.85,
+                          marginTop: '2px',
+                        }}
+                      >
+                        {t.monthName}
+                      </span>
                     </div>
                   )
                 })()}
@@ -1871,10 +1910,12 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                 {/* Right: image pile + front blur panel */}
                 <div
                   className="flex-1"
+                  onClick={() => hasImages && openLightboxAt(0)}
                   style={{
                     paddingLeft: displayEvent.event_date ? '16px' : '0',
                     paddingRight: '4px',
                     position: 'relative',
+                    cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
                   {/* Back card 2 — image[1] */}
@@ -1943,14 +1984,13 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                     )
                   })()}
 
-                  {/* Front: semi-transparent Gaussian blur panel (always rendered) */}
+                  {/* Front: semi-transparent Gaussian blur panel (always) */}
                   {(() => {
                     const ratio = hasImages ? displayImageRatios[0] || 1 : 1
                     const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
 
                     return (
                       <div
-                        onClick={() => hasImages && openLightboxAt(0)}
                         style={{
                           position: 'relative',
                           zIndex: 3,
@@ -1960,7 +2000,6 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                           width: '100%',
                           backgroundColor: 'transparent',
                           border: 'none',
-                          cursor: hasImages ? 'pointer' : 'default',
                         }}
                       >
                         <div
@@ -1985,19 +2024,22 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                           }}
                         >
                           <span
-  style={{
-    fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-    fontSize: `calc(${W} * 0.052)`,
-    fontWeight: 700,
-    color:
-      nextEvent && displayEvent?.id === nextEvent.id
-        ? '#f97316'              // most upcoming event title always orange
-        : frontPanelTextColor,    // others still use dynamic light/dark text
-    lineHeight: 1.2,
-  }}
->
-  {displayEvent.title}
-</span>
+                            style={{
+                              fontFamily:
+                                '"Noto Sans KR", system-ui, sans-serif',
+                              fontSize: `calc(${W} * 0.052)`,
+                              fontWeight: 700,
+                              color:
+                                nextEvent &&
+                                displayEvent &&
+                                displayEvent.id === nextEvent.id
+                                  ? '#f97316' // most upcoming always orange
+                                  : frontPanelTextColor,
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {displayEvent.title}
+                          </span>
 
                           {displayEvent.event_date && (
                             <span
@@ -2030,7 +2072,7 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                           )}
                         </div>
 
-                        {/* Image count indicator – ALWAYS VISIBLE */}
+                        {/* Image count indicator – ALWAYS visible */}
                         <div
                           style={{
                             position: 'absolute',
@@ -2079,15 +2121,15 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
           <div className="px-4 py-6 max-w-md mx-auto">
             {/* CALENDAR */}
             <div
-  style={{
-    backgroundColor: '#ffffff',
-    padding: '16px',
-    marginTop: '8px',
-    marginBottom: '32px',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',  // iOS / Safari
-  }}
->
+              style={{
+                backgroundColor: '#ffffff',
+                padding: '16px',
+                marginTop: '8px',
+                marginBottom: '32px',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+              }}
+            >
               <div
                 style={{
                   display: 'flex',
@@ -2114,13 +2156,13 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
               </div>
 
               <div
-  style={{
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '3px',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-  }}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  marginBottom: '4px',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                }}
               >
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
                   <div
@@ -2144,6 +2186,8 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                   display: 'grid',
                   gridTemplateColumns: 'repeat(7, 1fr)',
                   gap: '3px',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
                 }}
               >
                 {cells.map((day, idx) => {
@@ -2176,6 +2220,13 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                     bg = s.bg
                     color = s.color
                     fw = 700
+
+                    const isPastDay =
+                      !!dayEvents[0].event_date &&
+                      new Date(dayEvents[0].event_date) < todayStart
+                    if (isPastDay) {
+                      color = PAST_DATE_COLOR
+                    }
                   } else if (isToday) {
                     bg = '#ffffff'
                     border = '2px solid #1f2937'
@@ -2240,7 +2291,9 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
                   let curMonth = null
                   const blocks = []
                   otherUpcomingEvents.forEach((ev) => {
-                    const label = `${new Date(ev.event_date).getMonth() + 1}월`
+                    const label = `${new Date(
+                      ev.event_date,
+                    ).getMonth() + 1}월`
                     if (label !== curMonth) {
                       curMonth = label
                       blocks.push(
@@ -2333,7 +2386,7 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
         </div>
       </div>
 
-      {/* LIGHTBOX: swipe up/down to close, left/right to navigate */}
+      {/* LIGHTBOX */}
       {(lightboxOpen || lightboxClosing) && displayImages.length > 0 && (
         <div
           onTouchStart={handleLbTouchStart}
@@ -2351,7 +2404,6 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
             touchAction: 'none',
           }}
         >
-          {/* Hint: icon + text */}
           <div
             style={{
               position: 'absolute',
@@ -2409,7 +2461,6 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
             />
           </div>
 
-          {/* Dot indicators */}
           {displayImages.length > 1 && (
             <div
               style={{
@@ -2451,6 +2502,7 @@ const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
 }
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
+
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
@@ -2465,7 +2517,7 @@ function MapTab({ restaurants }) {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Category slider with extra “puffer” */}
+      {/* Category slider */}
       <div
         className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
