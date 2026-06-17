@@ -613,8 +613,8 @@ function MembershipCard({
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* ── Brushed-metal open-bottom outline (SVG, rotates with card) ── */}
-        <svg
+        {/* ── Brushed-metal frame (behind faces) ── */}
+<svg
   style={{
     position: 'absolute',
     inset: '-3px',
@@ -633,22 +633,12 @@ function MembershipCard({
       <stop offset="50%"  stopColor="#dedad4" />
       <stop offset="100%" stopColor="#c0bcb4" />
     </linearGradient>
-    <linearGradient id="gripL" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stopColor="#b0aca4" />
-      <stop offset="100%" stopColor="#d4d0c8" />
-    </linearGradient>
-    <linearGradient id="gripR" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stopColor="#d4d0c8" />
-      <stop offset="100%" stopColor="#b0aca4" />
-    </linearGradient>
     <clipPath id="bottomGap">
       <rect x="0"  y="0"   width="106" height="158" />
       <rect x="0"  y="158" width="24"  height="20"  />
       <rect x="82" y="158" width="24"  height="20"  />
     </clipPath>
   </defs>
-
-  {/* Main frame outline */}
   <rect
     x="3"
     y="3"
@@ -661,31 +651,82 @@ function MembershipCard({
     strokeWidth="6"
     clipPath="url(#bottomGap)"
   />
-
-  {/* Left grip — anchored to the inner edge of the left frame wall (x≈6),
-      extends inward (rightward) into the card */}
-  <rect
-    x="6"
-    y="60"
-    width="12"
-    height="48"
-    rx="3"
-    ry="2"
-    fill="url(#gripL)"
-  />
-
-  {/* Right grip — anchored to the inner edge of the right frame wall (x≈88),
-      extends inward (leftward) into the card */}
-  <rect
-    x="88"
-    y="60"
-    width="12"
-    height="48"
-    rx="3"
-    ry="2"
-    fill="url(#gripR)"
-  />
 </svg>
+
+{/* ── Front face ── */}
+<div
+  style={{
+    position: 'absolute',
+    inset: 0,
+    backfaceVisibility: 'hidden',
+    padding: '12px',
+    boxSizing: 'border-box',
+    zIndex: 1,
+  }}
+>
+  {cardFront}
+</div>
+
+{/* ── Back face ── */}
+<div
+  style={{
+    position: 'absolute',
+    inset: 0,
+    backfaceVisibility: 'hidden',
+    transform: 'rotateY(180deg)',
+    padding: '12px',
+    boxSizing: 'border-box',
+    zIndex: 1,
+  }}
+>
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      background: '#F6F4F1',
+      border: '1px solid #d6d3c0',
+      borderRadius: '16px',
+      boxSizing: 'border-box',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    {flipped && <QRScanner onScan={onQRScanned} />}
+  </div>
+</div>
+
+{/* ── Left grip — rendered ABOVE card faces ── */}
+<div
+  style={{
+    position: 'absolute',
+    left: 0,
+    top: '35%',
+    width: '14px',
+    height: '80px',
+    zIndex: 2,
+    pointerEvents: 'none',
+    borderRadius: '0 4px 4px 0',
+    background: 'linear-gradient(to right, #a8a49c, #d4d0c8)',
+    transform: 'translateX(-3px)',
+  }}
+/>
+
+{/* ── Right grip — rendered ABOVE card faces ── */}
+<div
+  style={{
+    position: 'absolute',
+    right: 0,
+    top: '35%',
+    width: '14px',
+    height: '80px',
+    zIndex: 2,
+    pointerEvents: 'none',
+    borderRadius: '4px 0 0 4px',
+    background: 'linear-gradient(to left, #a8a49c, #d4d0c8)',
+    transform: 'translateX(3px)',
+  }}
+/>
 
         {/* ── Front face ─────────────────────────────────────────────────── */}
         <div
