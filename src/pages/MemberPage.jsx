@@ -1192,7 +1192,7 @@ function EventsTab({ events }) {
   const setSlide = (id, idx) =>
     setSlideIndexes((p) => ({ ...p, [id]: idx }))
 
-  // ── Load image dimensions for aspect ratio ───────────────────────────────────
+  // ── Load image dimensions to detect aspect ratio ─────────────────────────────
   useEffect(() => {
     const loadImageDimensions = (url) =>
       new Promise((resolve) => {
@@ -1272,7 +1272,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [lightboxOpen, selectedEvent])
 
-  // ── Helper to open/close lightbox with animations ───────────────────────────
+  // ── Helper to open/close lightbox with simple fade ──────────────────────────
   const openLightboxAt = (index) => {
     setLightboxIndex(index)
     setLbSlideDir(0)
@@ -1281,12 +1281,12 @@ function EventsTab({ events }) {
   }
 
   const startLightboxClose = () => {
+    setLbSlideDir(0)
     setLightboxClosing(true)
     setTimeout(() => {
       setLightboxOpen(false)
       setLightboxClosing(false)
-      setLbSlideDir(0)
-    }, 200) // match CSS exit animation
+    }, 150) // keep in sync with CSS
   }
 
   // ── Vertical drag between events in header ───────────────────────────────────
@@ -1657,45 +1657,35 @@ function EventsTab({ events }) {
   return (
     <>
       <style>{`
-        @keyframes expandFromBox {
-          from {
-            opacity: 0;
-            transform: scale(0.3) translateY(100px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
+        /* Simple fade in/out for lightbox container */
+        @keyframes lbFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
-        @keyframes shrinkToBox {
-          from {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-          to {
-            opacity: 0;
-            transform: scale(0.85) translateY(40px);
-          }
+        @keyframes lbFadeOut {
+          from { opacity: 1; }
+          to   { opacity: 0; }
         }
-        .lightbox-expand {
-          animation: expandFromBox 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .lb-open {
+          animation: lbFadeIn 0.15s ease-out;
         }
-        .lightbox-exit {
-          animation: shrinkToBox 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        .lb-close {
+          animation: lbFadeOut 0.15s ease-in;
         }
+        /* Slide in for image when changing index */
         @keyframes slideInFromRight {
-          from { opacity: 0; transform: translateX(60px); }
+          from { opacity: 0; transform: translateX(40px); }
           to   { opacity: 1; transform: translateX(0); }
         }
         @keyframes slideInFromLeft {
-          from { opacity: 0; transform: translateX(-60px); }
+          from { opacity: 0; transform: translateX(-40px); }
           to   { opacity: 1; transform: translateX(0); }
         }
         .lb-slide-left  {
-          animation: slideInFromRight 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          animation: slideInFromRight 0.18s ease-out;
         }
         .lb-slide-right {
-          animation: slideInFromLeft  0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          animation: slideInFromLeft  0.18s ease-out;
         }
       `}</style>
 
@@ -1766,7 +1756,7 @@ function EventsTab({ events }) {
                 </span>
               </div>
 
-              {/* Date + Photo Pile */}
+              {/* Date + blur thumbnail + pile */}
               <div className="flex items-stretch mt-2">
                 {/* Left: date */}
                 {displayEvent.event_date &&
@@ -1808,10 +1798,7 @@ function EventsTab({ events }) {
                     )
                   })()}
 
-                {/* Right: photo pile:
-                    - Back card 2: second image (index 1) if exists
-                    - Back card 1: first image (index 0)
-                    - Front: white Gaussian blur panel (no image) */}
+                {/* Right: pile + blur thumbnail */}
                 <div
                   className="flex-1"
                   style={{
@@ -1820,7 +1807,7 @@ function EventsTab({ events }) {
                     position: 'relative',
                   }}
                 >
-                  {/* Back card 2 — uses image[1] */}
+                  {/* Back card 2 — image[1] */}
                   {hasImages && displayImages.length >= 2 &&
                     (() => {
                       const ratio = displayImageRatios[1] || 1
@@ -1854,7 +1841,7 @@ function EventsTab({ events }) {
                       )
                     })()}
 
-                  {/* Back card 1 — uses image[0] */}
+                  {/* Back card 1 — image[0] */}
                   {hasImages &&
                     (() => {
                       const ratio = displayImageRatios[0] || 1
@@ -1888,10 +1875,9 @@ function EventsTab({ events }) {
                       )
                     })()}
 
-                  {/* Front card — white Gaussian blur panel only (thumbnail) */}
+                  {/* Front: white semi-transparent Gaussian blur panel */}
                   {hasImages &&
                     (() => {
-                      // use first image ratio for card shape
                       const ratio = displayImageRatios[0] || 1
                       const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
                       return (
@@ -1904,23 +1890,21 @@ function EventsTab({ events }) {
                             overflow: 'hidden',
                             aspectRatio,
                             width: '100%',
-                            backgroundColor: '#f3f4f6',
+                            backgroundColor: '#ffffff',
                             border: 'none',
                             cursor: 'pointer',
                           }}
                         >
-                          {/* Full-panel white blur over pile */}
                           <div
                             style={{
                               position: 'absolute',
                               inset: 0,
-                              backgroundColor: 'rgba(255,255,255,0.85)',
-                              backdropFilter: 'blur(10px)',
-                              WebkitBackdropFilter: 'blur(10px)',
+                              backgroundColor: 'rgba(255,255,255,0.5)',
+                              backdropFilter: 'blur(6px)',
+                              WebkitBackdropFilter: 'blur(6px)',
                             }}
                           />
 
-                          {/* Content on blur */}
                           <div
                             style={{
                               position: 'relative',
@@ -1978,7 +1962,6 @@ function EventsTab({ events }) {
                             )}
                           </div>
 
-                          {/* Photo count badge */}
                           {displayImages.length > 1 && (
                             <div
                               style={{
@@ -2101,7 +2084,7 @@ function EventsTab({ events }) {
           )}
         </div>
 
-        {/* SCROLLABLE SECTION (calendar + lists) — unchanged */}
+        {/* SCROLLABLE SECTION: calendar + lists */}
         <div style={{ flex: 1, overflow: 'auto' }}>
           <div className="px-4 py-6 max-w-md mx-auto">
             {/* CALENDAR */}
@@ -2248,7 +2231,7 @@ function EventsTab({ events }) {
               </div>
             </div>
 
-            {/* UPCOMING, TBD, PAST, EMPTY — same as before */}
+            {/* UPCOMING LIST */}
             {otherUpcomingEvents.length > 0 && (
               <div className="mb-8 space-y-3">
                 {(() => {
@@ -2274,6 +2257,7 @@ function EventsTab({ events }) {
               </div>
             )}
 
+            {/* TBD EVENTS */}
             {tbdEvents.length > 0 && (
               <div className="mb-8 space-y-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
@@ -2283,12 +2267,11 @@ function EventsTab({ events }) {
               </div>
             )}
 
+            {/* PAST EVENTS */}
             {pastEvents.length > 0 && (
               <div className="mt-6">
                 <button
-                  onClick={() =>
-                    setPastEventsExpanded(!pastEventsExpanded)
-                  }
+                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
                   className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-2">
@@ -2330,6 +2313,7 @@ function EventsTab({ events }) {
               </div>
             )}
 
+            {/* EMPTY STATE */}
             {allEvents.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
                 <p className="text-2xl mb-2">📅</p>
@@ -2345,6 +2329,7 @@ function EventsTab({ events }) {
         <div
           onTouchStart={handleLbTouchStart}
           onTouchEnd={handleLbTouchEnd}
+          className={lightboxClosing ? 'lb-close' : 'lb-open'}
           style={{
             position: 'fixed',
             inset: 0,
@@ -2357,7 +2342,7 @@ function EventsTab({ events }) {
             touchAction: 'none',
           }}
         >
-          {/* Hint: icon + text (Handjet) */}
+          {/* Hint: icon + text */}
           <div
             style={{
               position: 'absolute',
@@ -2393,18 +2378,17 @@ function EventsTab({ events }) {
             }}
           >
             <img
-              key={lightboxIndex}
+              key={`${selectedEvent?.id ?? 'none'}-${lightboxIndex}`}
               src={displayImages[lightboxIndex]}
               alt=""
               className={
                 lightboxClosing
-                  ? 'lightbox-exit'
-                  : 'lightbox-expand ' +
-                    (lbSlideDir === -1
-                      ? 'lb-slide-left'
-                      : lbSlideDir === 1
-                      ? 'lb-slide-right'
-                      : '')
+                  ? ''
+                  : lbSlideDir === -1
+                  ? 'lb-slide-left'
+                  : lbSlideDir === 1
+                  ? 'lb-slide-right'
+                  : ''
               }
               style={{
                 maxWidth: '100%',
