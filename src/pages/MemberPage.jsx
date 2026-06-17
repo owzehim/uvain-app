@@ -633,17 +633,13 @@ function MembershipCard({
       <stop offset="50%"  stopColor="#dedad4" />
       <stop offset="100%" stopColor="#c0bcb4" />
     </linearGradient>
-    {/* Left grip: darker on left (outer) edge, lighter inward */}
     <linearGradient id="gripL" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stopColor="#a8a49c" />
-      <stop offset="50%"  stopColor="#d4d0c8" />
-      <stop offset="100%" stopColor="#c8c4bc" />
+      <stop offset="0%"   stopColor="#b0aca4" />
+      <stop offset="100%" stopColor="#d4d0c8" />
     </linearGradient>
-    {/* Right grip: lighter on left (inward), darker on right (outer) edge */}
     <linearGradient id="gripR" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stopColor="#c8c4bc" />
-      <stop offset="50%"  stopColor="#d4d0c8" />
-      <stop offset="100%" stopColor="#a8a49c" />
+      <stop offset="0%"   stopColor="#d4d0c8" />
+      <stop offset="100%" stopColor="#b0aca4" />
     </linearGradient>
     <clipPath id="bottomGap">
       <rect x="0"  y="0"   width="106" height="158" />
@@ -652,29 +648,7 @@ function MembershipCard({
     </clipPath>
   </defs>
 
-  {/* Left grip — starts at the frame edge (x=0) and extends inward */}
-  <rect
-    x="0"
-    y="58"
-    width="10"
-    height="52"
-    rx="2"
-    ry="2"
-    fill="url(#gripL)"
-  />
-
-  {/* Right grip — ends at the frame edge (x=106) and extends inward */}
-  <rect
-    x="96"
-    y="58"
-    width="10"
-    height="52"
-    rx="2"
-    ry="2"
-    fill="url(#gripR)"
-  />
-
-  {/* Main frame outline — drawn on top so it caps the grips cleanly */}
+  {/* Main frame outline */}
   <rect
     x="3"
     y="3"
@@ -686,6 +660,30 @@ function MembershipCard({
     stroke="url(#metalGrad)"
     strokeWidth="6"
     clipPath="url(#bottomGap)"
+  />
+
+  {/* Left grip — anchored to the inner edge of the left frame wall (x≈6),
+      extends inward (rightward) into the card */}
+  <rect
+    x="6"
+    y="60"
+    width="12"
+    height="48"
+    rx="3"
+    ry="2"
+    fill="url(#gripL)"
+  />
+
+  {/* Right grip — anchored to the inner edge of the right frame wall (x≈88),
+      extends inward (leftward) into the card */}
+  <rect
+    x="88"
+    y="60"
+    width="12"
+    height="48"
+    rx="3"
+    ry="2"
+    fill="url(#gripR)"
   />
 </svg>
 
