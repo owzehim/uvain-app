@@ -2143,7 +2143,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: `calc(${W} * 0.045)`,
                     fontWeight: 700,
-                    color: '#1f2937',
+                    color: '#4b5563',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                   }}
@@ -2216,22 +2216,15 @@ function EventsTab({ events }) {
                   let fw = 500
 
                   if (hasEvt) {
-                    const s = circleStyle(dayEvents[0])
-                    bg = s.bg
-                    color = s.color
-                    fw = 700
-
-                    const isPastDay =
-                      !!dayEvents[0].event_date &&
-                      new Date(dayEvents[0].event_date) < todayStart
-                    if (isPastDay) {
-                      color = PAST_DATE_COLOR
-                    }
-                  } else if (isToday) {
-                    bg = '#ffffff'
-                    border = '2px solid #1f2937'
-                    fw = 700
-                  }
+  const s = circleStyle(dayEvents[0])
+  bg = s.bg       // grey / orange / etc
+  color = s.color // stays '#fff'
+  fw = 700
+} else if (isToday) {
+  bg = '#ffffff'
+  border = '2px solid #1f2937'
+  fw = 700
+}
 
                   const ring =
                     isToday && hasEvt
