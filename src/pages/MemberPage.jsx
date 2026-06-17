@@ -697,25 +697,24 @@ function MembershipCard({
 </div>
 
 {/* ── Left grip ──
-    Sits at the left edge of the card, extends inward.
-    zIndex 2 = above card face so it's visible.
-    It's a flat tab: full height of grip, thin width, rounded on the inward tip only.
-    Positioned so its LEFT edge aligns with the card's left border,
-    and it protrudes RIGHTWARD (inward) over the card surface.
+  - No backfaceVisibility so it shows on both front and back
+  - pointerEvents none so it never blocks the camera
+  - Vertically centered with top/transform, taller height
+  - zIndex 2 but pointerEvents none = visible but non-blocking
 */}
 <div
   style={{
     position: 'absolute',
     left: '8px',
-    top: '32%',
-    width: '18px',
-    height: '70px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '16px',
+    height: '120px',
     zIndex: 2,
     pointerEvents: 'none',
     borderRadius: '0 6px 6px 0',
-    background: 'linear-gradient(to right, #b8b4ac, #d8d4cc, #c8c4bc)',
-    boxShadow: '2px 0 4px rgba(0,0,0,0.12)',
-    backfaceVisibility: 'hidden',
+    background: 'linear-gradient(to right, #b0aca4, #d8d4cc, #c4c0b8)',
+    boxShadow: '2px 0 5px rgba(0,0,0,0.15)',
   }}
 />
 
@@ -724,15 +723,15 @@ function MembershipCard({
   style={{
     position: 'absolute',
     right: '8px',
-    top: '32%',
-    width: '18px',
-    height: '70px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '16px',
+    height: '120px',
     zIndex: 2,
     pointerEvents: 'none',
     borderRadius: '6px 0 0 6px',
-    background: 'linear-gradient(to left, #b8b4ac, #d8d4cc, #c8c4bc)',
-    boxShadow: '-2px 0 4px rgba(0,0,0,0.12)',
-    backfaceVisibility: 'hidden',
+    background: 'linear-gradient(to left, #b0aca4, #d8d4cc, #c4c0b8)',
+    boxShadow: '-2px 0 5px rgba(0,0,0,0.15)',
   }}
 />
 
