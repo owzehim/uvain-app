@@ -744,32 +744,43 @@ function MembershipCard({
 
         {/* ── Back face ──────────────────────────────────────────────────── */}
         <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            padding: '12px',
-            boxSizing: 'border-box',
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: '#F6F4F1',
-              border: '1px solid #d6d3c0',
-              borderRadius: '16px',
-              boxSizing: 'border-box',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {flipped && <QRScanner onScan={onQRScanned} />}
-          </div>
-        </div>
+  style={{
+    position: 'absolute',
+    inset: 0,
+    backfaceVisibility: 'hidden',
+    WebkitBackfaceVisibility: 'hidden',
+    transform: 'rotateY(180deg)',
+    padding: '12px',
+    boxSizing: 'border-box',
+    zIndex: 1,
+  }}
+>
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      background: '#F6F4F1',
+      border: '1px solid #d6d3c0',
+      borderRadius: '16px',
+      boxSizing: 'border-box',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      position: 'relative',
+    }}
+  >
+    {flipped && (
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+      }}>
+        <QRScanner onScan={onQRScanned} />
+      </div>
+    )}
+  </div>
+</div>
       </div>
     </div>
   )
