@@ -696,35 +696,43 @@ function MembershipCard({
   </div>
 </div>
 
-{/* ── Left grip — rendered ABOVE card faces ── */}
+{/* ── Left grip ──
+    Sits at the left edge of the card, extends inward.
+    zIndex 2 = above card face so it's visible.
+    It's a flat tab: full height of grip, thin width, rounded on the inward tip only.
+    Positioned so its LEFT edge aligns with the card's left border,
+    and it protrudes RIGHTWARD (inward) over the card surface.
+*/}
 <div
   style={{
     position: 'absolute',
-    left: 0,
-    top: '35%',
-    width: '14px',
-    height: '80px',
+    left: '8px',
+    top: '32%',
+    width: '18px',
+    height: '70px',
     zIndex: 2,
     pointerEvents: 'none',
-    borderRadius: '0 4px 4px 0',
-    background: 'linear-gradient(to right, #a8a49c, #d4d0c8)',
-    transform: 'translateX(-3px)',
+    borderRadius: '0 6px 6px 0',
+    background: 'linear-gradient(to right, #b8b4ac, #d8d4cc, #c8c4bc)',
+    boxShadow: '2px 0 4px rgba(0,0,0,0.12)',
+    backfaceVisibility: 'hidden',
   }}
 />
 
-{/* ── Right grip — rendered ABOVE card faces ── */}
+{/* ── Right grip ── */}
 <div
   style={{
     position: 'absolute',
-    right: 0,
-    top: '35%',
-    width: '14px',
-    height: '80px',
+    right: '8px',
+    top: '32%',
+    width: '18px',
+    height: '70px',
     zIndex: 2,
     pointerEvents: 'none',
-    borderRadius: '4px 0 0 4px',
-    background: 'linear-gradient(to left, #a8a49c, #d4d0c8)',
-    transform: 'translateX(3px)',
+    borderRadius: '6px 0 0 6px',
+    background: 'linear-gradient(to left, #b8b4ac, #d8d4cc, #c8c4bc)',
+    boxShadow: '-2px 0 4px rgba(0,0,0,0.12)',
+    backfaceVisibility: 'hidden',
   }}
 />
 
