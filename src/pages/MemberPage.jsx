@@ -625,10 +625,9 @@ function MembershipCard({
     pointerEvents: 'none',
   }}
   viewBox="0 0 100 158.6"
-  // NO preserveAspectRatio — defaults to xMidYMid meet, scales uniformly
 >
   <defs>
-    {/* Simple brushed-metal: two diagonal light/dark bands */}
+    {/* Brushed-metal gradient */}
     <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%"   stopColor="#d8d4cc" />
       <stop offset="30%"  stopColor="#eae6de" />
@@ -636,56 +635,53 @@ function MembershipCard({
       <stop offset="70%"  stopColor="#e2ddd5" />
       <stop offset="100%" stopColor="#ccc8c0" />
     </linearGradient>
+
+    {/*
+      clipPath: covers the ENTIRE SVG area EXCEPT a rectangular gap
+      at the bottom center. This erases the bottom edge of the stroke
+      while keeping the two bottom corner curls intact.
+
+      The gap starts at x=22 (just past the left corner curl end)
+      and ends at x=78 (just before the right corner curl end).
+      It cuts from y=145 (well into the bottom straight) to y=162 (below SVG).
+    */}
+    <clipPath id="bottomGap">
+      {/* We use two rects that together cover everything EXCEPT the gap */}
+      {/* Left strip: 0 → 22 */}
+      <rect x="0"  y="0" width="22"  height="162" />
+      {/* Right strip: 78 → 100 */}
+      <rect x="78" y="0" width="22"  height="162" />
+      {/* Top area above the gap: full width, 0 → 145 */}
+      <rect x="0"  y="0" width="100" height="145" />
+    </clipPath>
   </defs>
 
-  {/*
-    viewBox is 100 × 158.6  (matches card aspect ratio 1 : 1.586)
-    SVG is rendered 8px larger than the card on every side (inset: -4px),
-    so we map card edges to coords 4..96 (x) and 4..154.6 (y).
-
-    Corner radius: card uses borderRadius 16px.
-    Card width = 100vw - 32px. SVG width = card width + 8px.
-    16px / (cardWidth + 8px) * 100  ≈  use r=15.5 in viewBox units.
-
-    Open-bottom path:
-      Start: bottom-left curl tip
-      → up left side → top-left corner → top edge
-      → top-right corner → down right side → bottom-right curl tip
-      (no bottom edge — intentionally open)
-  */}
-  <path
-    d="
-      M 19.5 154.6
-      Q 4 154.6 4 139.1
-      L 4 19.5
-      Q 4 4 19.5 4
-      L 80.5 4
-      Q 96 4 96 19.5
-      L 96 139.1
-      Q 96 154.6 80.5 154.6
-    "
+  {/* Main stroke — perfectly closed rounded rect, clipped at bottom */}
+  <rect
+    x="4"
+    y="4"
+    width="92"
+    height="150.6"
+    rx="15.5"
+    ry="15.5"
     fill="none"
     stroke="url(#metalGrad)"
     strokeWidth="5"
-    strokeLinecap="round"
+    clipPath="url(#bottomGap)"
   />
 
-  {/* Thin bright inner highlight — polished edge feel */}
-  <path
-    d="
-      M 19.5 154.6
-      Q 4 154.6 4 139.1
-      L 4 19.5
-      Q 4 4 19.5 4
-      L 80.5 4
-      Q 96 4 96 19.5
-      L 96 139.1
-      Q 96 154.6 80.5 154.6
-    "
+  {/* Bright inner highlight on top of the metal stroke */}
+  <rect
+    x="4"
+    y="4"
+    width="92"
+    height="150.6"
+    rx="15.5"
+    ry="15.5"
     fill="none"
-    stroke="rgba(255,255,255,0.6)"
+    stroke="rgba(255,255,255,0.55)"
     strokeWidth="1.2"
-    strokeLinecap="round"
+    clipPath="url(#bottomGap)"
   />
 </svg>
 
