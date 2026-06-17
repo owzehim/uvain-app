@@ -1677,12 +1677,14 @@ function EventsTab({ events }) {
   !!displayEvent?.event_date &&
   new Date(displayEvent.event_date) < todayStart
 
-// Date (28.04 / APR) color:
-// - past → grey
-// - future/present → dark
-// - while dragging → grey (only date, not day or status)
-const baseDateColor = isPastSelected ? '#9ca3af' : '#1f2937'
-const effectiveDateColor = isDragging ? '#9ca3af' : baseDateColor
+const PAST_DATE_COLOR = '#4b5563'   // darker grey for past dates
+const DRAG_DATE_COLOR = '#9ca3af'   // lighter grey only while dragging
+
+// Base color: dark for future/today, darker grey for past
+const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
+
+// While dragging, date turns light grey; otherwise use base
+const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
 
@@ -2077,13 +2079,15 @@ const effectiveDateColor = isDragging ? '#9ca3af' : baseDateColor
           <div className="px-4 py-6 max-w-md mx-auto">
             {/* CALENDAR */}
             <div
-              style={{
-                backgroundColor: '#ffffff',
-                padding: '16px',
-                marginTop: '8px',
-                marginBottom: '32px',
-              }}
-            >
+  style={{
+    backgroundColor: '#ffffff',
+    padding: '16px',
+    marginTop: '8px',
+    marginBottom: '32px',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',  // iOS / Safari
+  }}
+>
               <div
                 style={{
                   display: 'flex',
@@ -2110,11 +2114,13 @@ const effectiveDateColor = isDragging ? '#9ca3af' : baseDateColor
               </div>
 
               <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(7, 1fr)',
-                  marginBottom: '4px',
-                }}
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)',
+    gap: '3px',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+  }}
               >
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
                   <div
