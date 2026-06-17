@@ -696,12 +696,7 @@ function MembershipCard({
   </div>
 </div>
 
-{/* ── Left grip ──
-  - No backfaceVisibility so it shows on both front and back
-  - pointerEvents none so it never blocks the camera
-  - Vertically centered with top/transform, taller height
-  - zIndex 2 but pointerEvents none = visible but non-blocking
-*/}
+{/* ── Left grip ── */}
 <div
   style={{
     position: 'absolute',
@@ -709,12 +704,11 @@ function MembershipCard({
     top: '50%',
     transform: 'translateY(-50%)',
     width: '16px',
-    height: '120px',
+    height: '180px',
     zIndex: 2,
     pointerEvents: 'none',
-    borderRadius: '0 6px 6px 0',
-    background: 'linear-gradient(to right, #b0aca4, #d8d4cc, #c4c0b8)',
-    boxShadow: '2px 0 5px rgba(0,0,0,0.15)',
+    borderRadius: '0 5px 5px 0',
+    background: '#ccc9c1',
   }}
 />
 
@@ -726,12 +720,11 @@ function MembershipCard({
     top: '50%',
     transform: 'translateY(-50%)',
     width: '16px',
-    height: '120px',
+    height: '180px',
     zIndex: 2,
     pointerEvents: 'none',
-    borderRadius: '6px 0 0 6px',
-    background: 'linear-gradient(to left, #b0aca4, #d8d4cc, #c4c0b8)',
-    boxShadow: '-2px 0 5px rgba(0,0,0,0.15)',
+    borderRadius: '5px 0 0 5px',
+    background: '#ccc9c1',
   }}
 />
 
