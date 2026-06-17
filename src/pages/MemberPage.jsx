@@ -1673,6 +1673,16 @@ function EventsTab({ events }) {
   // ── First-panel image + color logic ──────────────────────────────────────────
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
+  const isPastSelected =
+  !!displayEvent?.event_date &&
+  new Date(displayEvent.event_date) < todayStart
+
+// Date (28.04 / APR) color:
+// - past → grey
+// - future/present → dark
+// - while dragging → grey (only date, not day or status)
+const baseDateColor = isPastSelected ? '#9ca3af' : '#1f2937'
+const effectiveDateColor = isDragging ? '#9ca3af' : baseDateColor
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
 
@@ -1766,15 +1776,13 @@ function EventsTab({ events }) {
       >
         {/* TOP SECTION */}
         <div
-          style={{
-            flex: '0 0 auto',
-            padding: '16px',
-            paddingTop: '24px',
-            backgroundColor: '#ffffff',
-            opacity: isDragging ? 0.7 : 1,
-            transition: isDragging ? 'none' : 'opacity 0.2s',
-          }}
-        >
+  style={{
+    flex: '0 0 auto',
+    padding: '16px',
+    paddingTop: '24px',
+    backgroundColor: '#ffffff',
+  }}
+>
           {displayEvent && (
             <div className="px-2 max-w-md mx-auto">
               {/* Day + Status */}
@@ -1829,31 +1837,31 @@ function EventsTab({ events }) {
                       style={{ flexShrink: 0 }}
                     >
                       <span
-                        style={{
-                          fontFamily: '"Handjet", system-ui, sans-serif',
-                          fontSize: fs.date,
-                          fontWeight: 800,
-                          color: '#1f2937',
-                          letterSpacing: '0.02em',
-                          lineHeight: 0.85,
-                        }}
-                      >
-                        {t.dateNum}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: '"Handjet", system-ui, sans-serif',
-                          fontSize: fs.month,
-                          fontWeight: 800,
-                          color: '#1f2937',
-                          letterSpacing: '0.04em',
-                          textTransform: 'uppercase',
-                          lineHeight: 0.85,
-                          marginTop: '2px',
-                        }}
-                      >
-                        {t.monthName}
-                      </span>
+  style={{
+    fontFamily: '"Handjet", system-ui, sans-serif',
+    fontSize: fs.date,
+    fontWeight: 800,
+    color: effectiveDateColor,      // ← changed
+    letterSpacing: '0.02em',
+    lineHeight: 0.85,
+  }}
+>
+  {t.dateNum}
+</span>
+<span
+  style={{
+    fontFamily: '"Handjet", system-ui, sans-serif',
+    fontSize: fs.month,
+    fontWeight: 800,
+    color: effectiveDateColor,      // ← changed
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+    lineHeight: 0.85,
+    marginTop: '2px',
+  }}
+>
+  {t.monthName}
+</span>
                     </div>
                   )
                 })()}
@@ -1975,17 +1983,19 @@ function EventsTab({ events }) {
                           }}
                         >
                           <span
-                            style={{
-                              fontFamily:
-                                '"Noto Sans KR", system-ui, sans-serif',
-                              fontSize: `calc(${W} * 0.052)`,
-                              fontWeight: 700,
-                              color: frontPanelTextColor,
-                              lineHeight: 1.2,
-                            }}
-                          >
-                            {displayEvent.title}
-                          </span>
+  style={{
+    fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+    fontSize: `calc(${W} * 0.052)`,
+    fontWeight: 700,
+    color:
+      nextEvent && displayEvent?.id === nextEvent.id
+        ? '#f97316'              // most upcoming event title always orange
+        : frontPanelTextColor,    // others still use dynamic light/dark text
+    lineHeight: 1.2,
+  }}
+>
+  {displayEvent.title}
+</span>
 
                           {displayEvent.event_date && (
                             <span
