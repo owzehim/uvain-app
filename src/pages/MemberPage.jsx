@@ -627,7 +627,6 @@ function MembershipCard({
   viewBox="0 0 100 158.6"
 >
   <defs>
-    {/* Brushed-metal gradient */}
     <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%"   stopColor="#d8d4cc" />
       <stop offset="30%"  stopColor="#eae6de" />
@@ -637,49 +636,47 @@ function MembershipCard({
     </linearGradient>
 
     {/*
-      clipPath: covers the ENTIRE SVG area EXCEPT a rectangular gap
-      at the bottom center. This erases the bottom edge of the stroke
-      while keeping the two bottom corner curls intact.
-
-      The gap starts at x=22 (just past the left corner curl end)
-      and ends at x=78 (just before the right corner curl end).
-      It cuts from y=145 (well into the bottom straight) to y=162 (below SVG).
+      clipPath erases the bottom-center of the stroke.
+      Three rects together cover everything EXCEPT the gap between x=20..80
+      below y=143 — that gap disappears, leaving two corner feet.
     */}
     <clipPath id="bottomGap">
-      {/* We use two rects that together cover everything EXCEPT the gap */}
-      {/* Left strip: 0 → 22 */}
-      <rect x="0"  y="0" width="22"  height="162" />
-      {/* Right strip: 78 → 100 */}
-      <rect x="78" y="0" width="22"  height="162" />
-      {/* Top area above the gap: full width, 0 → 145 */}
-      <rect x="0"  y="0" width="100" height="145" />
+      <rect x="0"   y="0" width="100" height="143" />  {/* top bulk */}
+      <rect x="0"   y="0" width="20"  height="162" />  {/* left foot */}
+      <rect x="80"  y="0" width="20"  height="162" />  {/* right foot */}
     </clipPath>
   </defs>
 
-  {/* Main stroke — perfectly closed rounded rect, clipped at bottom */}
+  {/*
+    The rect spans nearly the full viewBox.
+    A small inset (1.5 units) so the stroke doesn't get clipped at the SVG edge.
+    rx matches the card's borderRadius: 16px.
+    Card occupies ~92% of the SVG width (4px margin each side out of ~cardWidth).
+    So rx in viewBox units ≈ 16 / cardWidth * 100 ≈ 16.5 — use 16.
+  */}
   <rect
-    x="4"
-    y="4"
-    width="92"
-    height="150.6"
-    rx="15.5"
-    ry="15.5"
+    x="1.5"
+    y="1.5"
+    width="97"
+    height="155.6"
+    rx="16"
+    ry="16"
     fill="none"
     stroke="url(#metalGrad)"
-    strokeWidth="5"
+    strokeWidth="4.5"
     clipPath="url(#bottomGap)"
   />
 
-  {/* Bright inner highlight on top of the metal stroke */}
+  {/* Bright highlight line */}
   <rect
-    x="4"
-    y="4"
-    width="92"
-    height="150.6"
-    rx="15.5"
-    ry="15.5"
+    x="1.5"
+    y="1.5"
+    width="97"
+    height="155.6"
+    rx="16"
+    ry="16"
     fill="none"
-    stroke="rgba(255,255,255,0.55)"
+    stroke="rgba(255,255,255,0.6)"
     strokeWidth="1.2"
     clipPath="url(#bottomGap)"
   />
