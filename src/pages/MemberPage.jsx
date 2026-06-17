@@ -615,86 +615,79 @@ function MembershipCard({
       >
         {/* ── Brushed-metal open-bottom outline (SVG, rotates with card) ── */}
         <svg
-          style={{
-            position: 'absolute',
-            inset: '-4px',
-            width: 'calc(100% + 8px)',
-            height: 'calc(100% + 8px)',
-            overflow: 'visible',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-          preserveAspectRatio="none"
-          viewBox="0 0 108 176"
-        >
-          <defs>
-            <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stopColor="#e8e4dc" />
-              <stop offset="15%"  stopColor="#c8c4bc" />
-              <stop offset="30%"  stopColor="#dedad2" />
-              <stop offset="45%"  stopColor="#b8b4ac" />
-              <stop offset="60%"  stopColor="#e0dcd4" />
-              <stop offset="75%"  stopColor="#c4c0b8" />
-              <stop offset="90%"  stopColor="#dedad2" />
-              <stop offset="100%" stopColor="#ccc8c0" />
-            </linearGradient>
+  style={{
+    position: 'absolute',
+    inset: '-4px',
+    width: 'calc(100% + 8px)',
+    height: 'calc(100% + 8px)',
+    overflow: 'visible',
+    zIndex: 0,
+    pointerEvents: 'none',
+  }}
+  viewBox="0 0 100 158.6"
+  // NO preserveAspectRatio — defaults to xMidYMid meet, scales uniformly
+>
+  <defs>
+    {/* Simple brushed-metal: two diagonal light/dark bands */}
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stopColor="#d8d4cc" />
+      <stop offset="30%"  stopColor="#eae6de" />
+      <stop offset="50%"  stopColor="#c8c4bc" />
+      <stop offset="70%"  stopColor="#e2ddd5" />
+      <stop offset="100%" stopColor="#ccc8c0" />
+    </linearGradient>
+  </defs>
 
-            <filter id="brushFilter" x="-5%" y="-5%" width="110%" height="110%">
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0 0.85"
-                numOctaves="3"
-                seed="4"
-                result="noise"
-              />
-              <feColorMatrix
-                type="saturate"
-                values="0"
-                in="noise"
-                result="grayNoise"
-              />
-              <feBlend in="SourceGraphic" in2="grayNoise" mode="overlay" result="blended" />
-              <feComposite in="blended" in2="SourceGraphic" operator="in" />
-            </filter>
-          </defs>
+  {/*
+    viewBox is 100 × 158.6  (matches card aspect ratio 1 : 1.586)
+    SVG is rendered 8px larger than the card on every side (inset: -4px),
+    so we map card edges to coords 4..96 (x) and 4..154.6 (y).
 
-          {/* Open-bottom path: left curl → up → top → down → right curl */}
-          <path
-            d="
-              M 18 170
-              Q 4 170 4 156
-              L 4 18
-              Q 4 4 18 4
-              L 90 4
-              Q 104 4 104 18
-              L 104 156
-              Q 104 170 90 170
-            "
-            fill="none"
-            stroke="url(#metalGrad)"
-            strokeWidth="5.5"
-            strokeLinecap="round"
-            filter="url(#brushFilter)"
-          />
+    Corner radius: card uses borderRadius 16px.
+    Card width = 100vw - 32px. SVG width = card width + 8px.
+    16px / (cardWidth + 8px) * 100  ≈  use r=15.5 in viewBox units.
 
-          {/* Inner highlight line */}
-          <path
-            d="
-              M 18 170
-              Q 4 170 4 156
-              L 4 18
-              Q 4 4 18 4
-              L 90 4
-              Q 104 4 104 18
-              L 104 156
-              Q 104 170 90 170
-            "
-            fill="none"
-            stroke="rgba(255,255,255,0.55)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+    Open-bottom path:
+      Start: bottom-left curl tip
+      → up left side → top-left corner → top edge
+      → top-right corner → down right side → bottom-right curl tip
+      (no bottom edge — intentionally open)
+  */}
+  <path
+    d="
+      M 19.5 154.6
+      Q 4 154.6 4 139.1
+      L 4 19.5
+      Q 4 4 19.5 4
+      L 80.5 4
+      Q 96 4 96 19.5
+      L 96 139.1
+      Q 96 154.6 80.5 154.6
+    "
+    fill="none"
+    stroke="url(#metalGrad)"
+    strokeWidth="5"
+    strokeLinecap="round"
+  />
+
+  {/* Thin bright inner highlight — polished edge feel */}
+  <path
+    d="
+      M 19.5 154.6
+      Q 4 154.6 4 139.1
+      L 4 19.5
+      Q 4 4 19.5 4
+      L 80.5 4
+      Q 96 4 96 19.5
+      L 96 139.1
+      Q 96 154.6 80.5 154.6
+    "
+    fill="none"
+    stroke="rgba(255,255,255,0.6)"
+    strokeWidth="1.2"
+    strokeLinecap="round"
+  />
+</svg>
 
         {/* ── Front face ─────────────────────────────────────────────────── */}
         <div
