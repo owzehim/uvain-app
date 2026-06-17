@@ -590,72 +590,187 @@ function MembershipCard({
   }
 
   return (
+  <div
+    style={{
+      width: cardW,
+      height: cardH,
+      margin: '0 auto',
+      perspective: '1200px',
+      flexShrink: 0,
+      cursor: disabled ? 'default' : 'pointer',
+    }}
+    onClick={() => {
+      if (disabled || !isValid) return
+      setFlipped((f) => !f)
+    }}
+  >
     <div
       style={{
-        width: cardW,
-        height: cardH,
-        margin: '0 auto',
-        perspective: '1200px',
-        flexShrink: 0,
-        cursor: disabled ? 'default' : 'pointer',
-      }}
-      onClick={() => {
-        if (disabled || !isValid) return
-        setFlipped((f) => !f)
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        transformStyle: 'preserve-3d',
+        transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
+        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
       }}
     >
+      {/* ── Brushed-metal open-bottom outline (SVG, rotates with card) ─────
+          The path traces: bottom-left curl → up left side → across top →
+          down right side → bottom-right curl.
+          strokeWidth 6 gives a thin but visible metallic border.           */}
+      <svg
+        style={{
+          position: 'absolute',
+          inset: '-4px',
+          width: 'calc(100% + 8px)',
+          height: 'calc(100% + 8px)',
+          overflow: 'visible',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+        preserveAspectRatio="none"
+        viewBox="0 0 108 176"
+      >
+        <defs>
+          {/* Brushed-metal gradient along the stroke */}
+          <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stopColor="#e8e4dc" />
+            <stop offset="15%"  stopColor="#c8c4bc" />
+            <stop offset="30%"  stopColor="#dedad2" />
+            <stop offset="45%"  stopColor="#b8b4ac" />
+            <stop offset="60%"  stopColor="#e0dcd4" />
+            <stop offset="75%"  stopColor="#c4c0b8" />
+            <stop offset="90%"  stopColor="#dedad2" />
+            <stop offset="100%" stopColor="#ccc8c0" />
+          </linearGradient>
+
+          {/* Fine horizontal brush-streak filter */}
+          <filter id="brushFilter" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0 0.85"
+              numOctaves="3"
+              seed="4"
+              result="noise"
+            />
+            <feColorMatrix
+              type="saturate"
+              values="0"
+              in="noise"
+              result="grayNoise"
+            />
+            <feBlend in="SourceGraphic" in2="grayNoise" mode="overlay" result="blended" />
+            <feComposite in="blended" in2="SourceGraphic" operator="in" />
+          </filter>
+
+          {/* Clip so the streak filter stays within the stroke shape */}
+          <clipPath id="strokeClip">
+            <path d="
+              M 14 172
+              Q 4 172 4 162
+              L 4 14
+              Q 4 4 14 4
+              L 94 4
+              Q 104 4 104 14
+              L 104 162
+              Q 104 172 94 172
+            " fill="none" stroke="white" strokeWidth="8" />
+          </clipPath>
+        </defs>
+
+        {/*
+          Path explanation (viewBox 108×176, card inset 4px on each side):
+            • Starts at bottom-left curl tip  (14, 172)
+            • Curves up-left corner           Q 4 172  → 4 14
+            • Straight across top             → 104 14  (with top-right corner)
+            • Down right side                 → 104 162
+            • Bottom-right curl               Q 104 172 → 94 172
+
+          The bottom edge is intentionally absent — path ends at the two
+          bottom curl tips without connecting them.
+        */}
+        <path
+          d="
+            M 18 170
+            Q 4 170 4 156
+            L 4 18
+            Q 4 4 18 4
+            L 90 4
+            Q 104 4 104 18
+            L 104 156
+            Q 104 170 90 170
+          "
+          fill="none"
+          stroke="url(#metalGrad)"
+          strokeWidth="5.5"
+          strokeLinecap="round"
+          filter="url(#brushFilter)"
+        />
+
+        {/* Bright inner highlight line — gives the "polished edge" feel */}
+        <path
+          d="
+            M 18 170
+            Q 4 170 4 156
+            L 4 18
+            Q 4 4 18 4
+            L 90 4
+            Q 104 4 104 18
+            L 104 156
+            Q 104 170 90 170
+          "
+          fill="none"
+          stroke="rgba(255,255,255,0.55)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+
+      {/* ── Front face ───────────────────────────────────────────────────── */}
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          position: 'relative',
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
-          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          position: 'absolute',
+          inset: 0,
+          backfaceVisibility: 'hidden',
+          padding: '12px',
+          boxSizing: 'border-box',
+          zIndex: 1,
+        }}
+      >
+        {cardFront}
+      </div>
+
+      {/* ── Back face ────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backfaceVisibility: 'hidden',
+          transform: 'rotateY(180deg)',
+          padding: '12px',
+          boxSizing: 'border-box',
+          zIndex: 1,
         }}
       >
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            padding: '12px',
+            width: '100%',
+            height: '100%',
+            background: '#F6F4F1',
+            border: '1px solid #d6d3c0',
+            borderRadius: '16px',
             boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          {cardFront}
-        </div>
-
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            padding: '12px',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: '#F6F4F1',
-              border: '1px solid #d6d3c0',
-              borderRadius: '16px',
-              boxSizing: 'border-box',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {flipped && <QRScanner onScan={onQRScanned} />}
-          </div>
+          {flipped && <QRScanner onScan={onQRScanned} />}
         </div>
       </div>
     </div>
-  )
-}
+  </div>
+)
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
