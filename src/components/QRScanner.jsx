@@ -10,11 +10,15 @@ export default function QRScanner({ onScan }) {
   useEffect(() => {
     const scannerId = 'qr-scanner-container'
     let isMounted = true
+    // Track whether stop() has already been requested
+    let stopRequested = false
 
     async function startScanner() {
+      let scanner
       try {
-        const scanner = new Html5Qrcode(scannerId, { verbose: false })
+        scanner = new Html5Qrcode(scannerId, { verbose: false })
         scannerRef.current = scanner
+
         await scanner.start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1.0 },
@@ -26,6 +30,15 @@ export default function QRScanner({ onScan }) {
           },
           () => {}
         )
+
+        // If unmount happened while we were awaiting start(), stop immediately
+        if (stopRequested) {
+          try {
+            await scanner.stop()
+          } catch (err) {
+            console.warn('QR scanner late-stop error:', err?.message)
+          }
+        }
       } catch (err) {
         console.error('QR scanner start error:', err)
       }
@@ -35,14 +48,18 @@ export default function QRScanner({ onScan }) {
 
     return () => {
       isMounted = false
+      stopRequested = true
       const scanner = scannerRef.current
       if (scanner) {
         try {
           const stopResult = scanner.stop()
-          if (stopResult?.catch) stopResult.catch((err) => console.warn('QR scanner stop error:', err?.message))
+          if (stopResult?.catch) {
+            stopResult.catch((err) => console.warn('QR scanner stop error:', err?.message))
+          }
         } catch (err) {
           console.warn('QR scanner stop threw:', err?.message)
         }
+        scannerRef.current = null
       }
     }
   }, [onScan])
@@ -60,12 +77,10 @@ export default function QRScanner({ onScan }) {
         #qr-scanner-container [id^="qr-code-full-region"] > div:last-child {
           border: none !important;
         }
-        /* Overlay: card background color */
         #qr-shaded-region {
           border: none !important;
           box-shadow: 0 0 0 9999px rgba(246, 244, 241, 0.75) !important;
         }
-        /* Scan box inner border: white */
         #qr-shaded-region::before {
           content: '';
           position: absolute;
@@ -79,7 +94,7 @@ export default function QRScanner({ onScan }) {
       <div className="relative w-full max-w-xs" style={{ aspectRatio: '1' }}>
         <div id="qr-scanner-container" className="w-full h-full rounded-2xl overflow-hidden" />
 
-        {/* Corner brackets — warm charcoal */}
+        {/* Corner brackets */}
         <div
           className="absolute pointer-events-none"
           style={{ top: '50%', left: '50%', width: QR_BOX_SIZE, height: QR_BOX_SIZE, transform: 'translate(-50%, -50%)' }}

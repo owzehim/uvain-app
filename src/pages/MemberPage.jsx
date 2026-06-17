@@ -1,26 +1,16 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import {
-  MAP_CATEGORIES,
-  CATEGORY_ICONS_WHITE,
-  CATEGORY_ICONS_ORANGE,
-} from '../lib/mapCategories'
-import {
-  QrCode,
-  Calendar,
-  MapPin,
-  Gear,
-  UserCircle,
-  ArrowsVertical,
-} from '@phosphor-icons/react'
+import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import { QrCode, Calendar, MapPin, Gear, UserCircle, ArrowsVertical } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
+
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -788,7 +778,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     if (onLiftChange) onLiftChange(false)
   }
 
-  const handleQRScanned = async (rawValue) => {
+  const handleQRScanned = useCallback(async (rawValue) => {
     if (handlingRef.current) return
     handlingRef.current = true
     setErrorMsg('')
@@ -860,7 +850,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     }
 
     handlingRef.current = false
-  }
+  }, []) // empty deps — uses only refs and stable setters
 
   const W = 'calc(100vw - 32px)'
   const fs = {
