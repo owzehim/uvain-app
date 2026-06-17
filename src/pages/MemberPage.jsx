@@ -1177,11 +1177,12 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 // ─── Events Tab ───────────────────────────────────────────────────────────────
+
 function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-  // ── Split & sort events ─────────────────────────────────────────────────────
+  // ── Split & sort ────────────────────────────────────────────────────────────
   const datedEvents = events.filter((ev) => ev.event_date)
 
   const tbdEvents = events
@@ -1206,11 +1207,9 @@ function EventsTab({ events }) {
   const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
   const initialEvent = allEvents[0] || null
 
-  // ── State ───────────────────────────────────────────────────────────────────
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
   const [isDragging, setIsDragging] = useState(false)
-
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
@@ -1230,42 +1229,207 @@ function EventsTab({ events }) {
     return new Date(base.getFullYear(), base.getMonth(), 1)
   })
 
-  // ── Refs ────────────────────────────────────────────────────────────────────
   const containerRef = useRef(null)
+
+  useEffect(() => {
+    if (!selectedEvent?.event_date) return
+    const d = new Date(selectedEvent.event_date)
+    setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1))
+  }, [selectedEvent])
+
+  const setSlide = (id, idx) =>
+    setSlideIndexes((p) => ({
+      ...p,
+      [id]: idx,
+    }))
+
+  // ── Load image dimensions to detect aspect ratio ────────────────────────────
+  useEffect(() => {
+    const loadImageDimensions = (url) =>
+      new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => {
+          const ratio = img.width / img.height
+          resolve(ratio)
+        }
+        img.onerror = () => resolve(1)
+        img.src = url
+      })
+
+    const loadAllRatios = async () => {
+      const ratios = {}
+      for (const ev of events) {
+        const imgs = ev.image_urls || []
+        const evRatios = []
+        for (const url of imgs) {
+          const ratio = await loadImageDimensions(url)
+          evRatios.push(ratio)
+        }
+        ratios[ev.id] = evRatios
+      }
+      setImageAspectRatios(ratios)
+    }
+
+    loadAllRatios()
+  }, [events])
+
+  const isPortrait = (aspectRatio) =>
+    aspectRatio >= 0.75 && aspectRatio <= 0.85
+
+  // ── Keyboard nav for image slider in expanded cards ─────────────────────────
+  useEffect(() => {
+    if (!expandedId) return
+    const ev = events.find((e) => e.id === expandedId)
+    if (!ev) return
+    const imgs = ev.image_urls || []
+    if (imgs.length <= 1) return
+
+    const h = (e) => {
+      if (e.key === 'ArrowRight') {
+        setSlide(
+          expandedId,
+          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
+        )
+      } else if (e.key === 'ArrowLeft') {
+        setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
+      }
+    }
+
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [expandedId, slideIndexes, events])
+
+  // ── Lightbox keyboard nav ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!lightboxOpen) return
+    const imgs = selectedEvent?.image_urls || []
+
+    const h = (e) => {
+      if (e.key === 'ArrowRight') {
+        setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
+        setLbSlideDir(-1)
+      } else if (e.key === 'ArrowLeft') {
+        setLightboxIndex((i) => Math.max(i - 1, 0))
+        setLbSlideDir(1)
+      } else if (e.key === 'Escape') {
+        startLightboxClose()
+      }
+    }
+
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [lightboxOpen, selectedEvent])
+
+  // ── Helper to open/close lightbox with simple fade ──────────────────────────
+  const openLightboxAt = (index) => {
+    setLightboxIndex(index)
+    setLbSlideDir(0)
+    setLightboxClosing(false)
+    setLightboxOpen(true)
+  }
+
+  const startLightboxClose = () => {
+    setLbSlideDir(0)
+    setLightboxClosing(true)
+    setTimeout(() => {
+      setLightboxOpen(false)
+      setLightboxClosing(false)
+    }, 150)
+  }
+
+  // ── Vertical drag between events in header ───────────────────────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
 
+  const currentEventIndex = allEvents.findIndex(
+    (ev) => ev.id === selectedEvent?.id,
+  )
+
+  const handleContainerTouchStart = (e) => {
+    const touch = e.touches[0]
+    const rect = containerRef.current?.getBoundingClientRect()
+    // Avoid grabbing when finger starts too low (near calendar)
+    if (rect && touch.clientY > rect.bottom - 60) return
+
+    dragStartY.current = touch.clientY
+    dragAccumulator.current = 0
+    lastIdxRef.current = currentEventIndex
+    setIsDragging(true)
+    setPreviewEvent(selectedEvent)
+  }
+
+  const handleContainerTouchMove = (e) => {
+    if (dragStartY.current == null) return
+    const dy = dragStartY.current - e.touches[0].clientY
+    dragAccumulator.current = dy
+
+    const delta =
+      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+    const idx = Math.max(
+      0,
+      Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
+    )
+    setPreviewEvent(allEvents[idx])
+  }
+
+  const handleContainerTouchEnd = () => {
+    if (dragStartY.current == null) return
+
+    const dy = dragAccumulator.current
+    const delta =
+      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+
+    if (delta !== 0) {
+      const newIdx = Math.max(
+        0,
+        Math.min((currentEventIndex ?? 0) + delta, allEvents.length - 1),
+      )
+      if (newIdx !== currentEventIndex) {
+        setSelectedEvent(allEvents[newIdx])
+      }
+    }
+
+    dragStartY.current = null
+    dragAccumulator.current = 0
+    lastIdxRef.current = null
+    setIsDragging(false)
+    setPreviewEvent(selectedEvent)
+  }
+
+  // ── LIGHTBOX TOUCH HANDLERS ─────────────────────────────────────────────────
   const lbSwipeX = useRef(null)
   const lbSwipeY = useRef(null)
 
-  // ── Derived display event & images ──────────────────────────────────────────
-  const displayEvent = isDragging ? previewEvent : selectedEvent
-  const displayImages = displayEvent?.image_urls || []
-  const hasImages = displayImages.length > 0
-  const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
+  const handleLbTouchStart = (e) => {
+    lbSwipeX.current = e.touches[0].clientX
+    lbSwipeY.current = e.touches[0].clientY
+  }
 
-  // ── Date color for big date (28.04 / APR) ───────────────────────────────────
-  const PAST_DATE_COLOR = '#4b5563'
-  const DRAG_DATE_COLOR = '#9ca3af'
+  const handleLbTouchEnd = (e) => {
+    if (lbSwipeX.current == null) return
+    const dx = e.changedTouches[0].clientX - lbSwipeX.current
+    const dy = e.changedTouches[0].clientY - lbSwipeY.current
+    lbSwipeX.current = null
+    lbSwipeY.current = null
 
-  const isPastSelected =
-    !!displayEvent?.event_date &&
-    new Date(displayEvent.event_date) < todayStart
+    // Close on vertical swipe
+    if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) {
+      startLightboxClose()
+      return
+    }
 
-  const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
-  const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
+    const imgs = selectedEvent?.image_urls || []
+    if (dx < -40) {
+      setLbSlideDir(-1)
+      setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
+    } else if (dx > 40) {
+      setLbSlideDir(1)
+      setLightboxIndex((i) => Math.max(i - 1, 0))
+    }
+  }
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
-  const isPortrait = (aspectRatio) =>
-    aspectRatio >= 0.75 && aspectRatio <= 0.85
-
-  const setSlide = (id, idx) =>
-    setSlideIndexes((prev) => ({
-      ...prev,
-      [id]: idx,
-    }))
-
+  // ── Formatting helpers ──────────────────────────────────────────────────────
   const getDayDiff = (s) => {
     const d = new Date(s)
     return Math.round(
@@ -1352,18 +1516,6 @@ function EventsTab({ events }) {
     month: `calc(${W} * 0.24)`,
   }
 
-  // ── Circle color for calendar dots ──────────────────────────────────────────
-  const circleStyle = (ev) => {
-    if (nextEvent && ev.id === nextEvent.id) {
-      return { bg: '#f97316', color: '#fff' }
-    }
-    if (new Date(ev.event_date) >= now) {
-      return { bg: '#1f2937', color: '#fff' }
-    }
-    return { bg: '#6b7280', color: '#fff' } // past = grey ball, white text
-  }
-
-  // ── Group events by date for calendar ───────────────────────────────────────
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
     const key = ev.event_date.slice(0, 10)
@@ -1371,15 +1523,26 @@ function EventsTab({ events }) {
     eventsByDate[key].push(ev)
   })
 
-  const [calYear, calMonthIdx] = [calMonth.getFullYear(), calMonth.getMonth()]
-  const calCells = [
+  const circleStyle = (ev) => {
+    if (nextEvent && ev.id === nextEvent.id) {
+      return { bg: '#f97316', color: '#fff' }
+    }
+    if (new Date(ev.event_date) >= now) {
+      return { bg: '#1f2937', color: '#fff' }
+    }
+    return { bg: '#6b7280', color: '#fff' }
+  }
+
+  const calYear = calMonth.getFullYear()
+  const calMonthIdx = calMonth.getMonth()
+  const cells = [
     ...Array(new Date(calYear, calMonthIdx, 1).getDay()).fill(null),
     ...Array.from(
       { length: new Date(calYear, calMonthIdx + 1, 0).getDate() },
       (_, i) => i + 1,
     ),
   ]
-  while (calCells.length < 42) calCells.push(null)
+  while (cells.length < 42) cells.push(null)
 
   const handleDayPress = (day) => {
     if (!day) return
@@ -1392,7 +1555,6 @@ function EventsTab({ events }) {
     setSelectedEvent(dayEvents[0])
   }
 
-  // ── Render single event row (리스트용) ───────────────────────────────────────
   const renderEvent = (ev) => {
     if (!ev) return null
     const isExpanded = expandedId === ev.id
@@ -1541,10 +1703,11 @@ function EventsTab({ events }) {
                       fill="currentColor"
                     >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
-                  </svg>
-                  Instagram 에서 열기
-                </a>
-              )}
+                    </svg>
+                    Instagram 에서 열기
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1552,116 +1715,50 @@ function EventsTab({ events }) {
     )
   }
 
-  // ── Load aspect ratios for images ───────────────────────────────────────────
-  useEffect(() => {
-    const loadImageDimensions = (url) =>
-      new Promise((resolve) => {
-        const img = new Image()
-        img.onload = () => {
-          const ratio = img.width / img.height
-          resolve(ratio)
-        }
-        img.onerror = () => resolve(1)
-        img.src = url
-      })
+  // ── First-panel image + color logic ─────────────────────────────────────────
+  const displayEvent = isDragging ? previewEvent : selectedEvent
+  const displayImages = displayEvent?.image_urls || []
+  const hasImages = displayImages.length > 0
+  const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
 
-    const loadAllRatios = async () => {
-      const ratios = {}
-      for (const ev of events) {
-        const imgs = ev.image_urls || []
-        const evRatios = []
-        for (const url of imgs) {
-          const ratio = await loadImageDimensions(url)
-          evRatios.push(ratio)
-        }
-        ratios[ev.id] = evRatios
-      }
-      setImageAspectRatios(ratios)
-    }
+  const PAST_DATE_COLOR = '#4b5563'
+  const DRAG_DATE_COLOR = '#9ca3af'
 
-    loadAllRatios()
-  }, [events])
+  const isPastSelected =
+    !!displayEvent?.event_date &&
+    new Date(displayEvent.event_date) < todayStart
 
-  // ── Update calendar month when selectedEvent changes ────────────────────────
-  useEffect(() => {
-    if (!selectedEvent?.event_date) return
-    const d = new Date(selectedEvent.event_date)
-    setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1))
-  }, [selectedEvent])
+  const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
+  const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
 
-  // ── Keyboard nav for expanded-card image slider ─────────────────────────────
-  useEffect(() => {
-    if (!expandedId) return
-    const ev = events.find((e) => e.id === expandedId)
-    if (!ev) return
-    const imgs = ev.image_urls || []
-    if (imgs.length <= 1) return
+  const getTextColorFromImage = (imageUrl) =>
+    new Promise((resolve) => {
+      const img = new Image()
+      img.crossOrigin = 'Anonymous'
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0)
 
-    const h = (e) => {
-      if (e.key === 'ArrowRight') {
-        setSlide(
-          expandedId,
-          Math.min((slideIndexes[expandedId] || 0) + 1, imgs.length - 1),
+        const imageData = ctx.getImageData(
+          Math.floor(img.width / 2),
+          Math.floor(img.height / 2),
+          1,
+          1,
         )
-      } else if (e.key === 'ArrowLeft') {
-        setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
+        const [r, g, b] = imageData.data
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+        resolve(luminance > 0.5 ? '#111827' : '#ffffff')
       }
-    }
+      img.onerror = () => resolve('#111827')
+      img.src = imageUrl
+    })
 
-    window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
-  }, [expandedId, slideIndexes, events])
-
-  // ── Lightbox keyboard nav ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (!lightboxOpen) return
-    const imgs = selectedEvent?.image_urls || []
-
-    const h = (e) => {
-      if (e.key === 'ArrowRight') {
-        setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
-        setLbSlideDir(-1)
-      } else if (e.key === 'ArrowLeft') {
-        setLightboxIndex((i) => Math.max(i - 1, 0))
-        setLbSlideDir(1)
-      } else if (e.key === 'Escape') {
-        startLightboxClose()
-      }
-    }
-
-    window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
-  }, [lightboxOpen, selectedEvent])
-
-  // ── Compute text color from image brightness ────────────────────────────────
   useEffect(() => {
     let cancelled = false
-
-    const getTextColorFromImage = (imageUrl) =>
-      new Promise((resolve) => {
-        const img = new Image()
-        img.crossOrigin = 'Anonymous'
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          canvas.width = img.width
-          canvas.height = img.height
-          const ctx = canvas.getContext('2d')
-          ctx.drawImage(img, 0, 0)
-
-          const imageData = ctx.getImageData(
-            Math.floor(img.width / 2),
-            Math.floor(img.height / 2),
-            1,
-            1,
-          )
-          const [r, g, b] = imageData.data
-          const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-
-          resolve(luminance > 0.5 ? '#111827' : '#ffffff')
-        }
-        img.onerror = () => resolve('#111827')
-        img.src = imageUrl
-      })
 
     const update = async () => {
       if (displayImages.length > 0) {
@@ -1677,35 +1774,6 @@ function EventsTab({ events }) {
       cancelled = true
     }
   }, [displayImages])
-
-  // ── Lightbox touch handlers ─────────────────────────────────────────────────
-  const handleLbTouchStart = (e) => {
-    lbSwipeX.current = e.touches[0].clientX
-    lbSwipeY.current = e.touches[0].clientY
-  }
-
-  const handleLbTouchEnd = (e) => {
-    if (lbSwipeX.current == null) return
-    const dx = e.changedTouches[0].clientX - lbSwipeX.current
-    const dy = e.changedTouches[0].clientY - lbSwipeY.current
-    lbSwipeX.current = null
-    lbSwipeY.current = null
-
-    // vertical swipe → close
-    if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) {
-      startLightboxClose()
-      return
-    }
-
-    const imgs = selectedEvent?.image_urls || []
-    if (dx < -40) {
-      setLbSlideDir(-1)
-      setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
-    } else if (dx > 40) {
-      setLbSlideDir(1)
-      setLightboxIndex((i) => Math.max(i - 1, 0))
-    }
-  }
 
   return (
     <>
@@ -1745,10 +1813,9 @@ function EventsTab({ events }) {
           overflow: 'hidden',
           touchAction: 'none',
           userSelect: 'none',
-          position: 'relative',
         }}
       >
-        {/* TOP SECTION: big date + image pile */}
+        {/* TOP SECTION */}
         <div
           style={{
             flex: '0 0 auto',
@@ -1801,7 +1868,7 @@ function EventsTab({ events }) {
 
               {/* Date + pile + front panel */}
               <div className="flex items-stretch mt-2">
-                {/* Left: big date */}
+                {/* Left: date */}
                 {displayEvent.event_date && (() => {
                   const t = formatTopDate(displayEvent.event_date)
                   if (!t) return null
@@ -1840,7 +1907,7 @@ function EventsTab({ events }) {
                   )
                 })()}
 
-                {/* Right: image pile + blur panel (전체 탭 영역) */}
+                {/* Right: image pile + front blur panel */}
                 <div
                   className="flex-1"
                   onClick={() => hasImages && openLightboxAt(0)}
@@ -1851,7 +1918,7 @@ function EventsTab({ events }) {
                     cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
-                  {/* Back card 2 (image[1]) */}
+                  {/* Back card 2 — image[1] */}
                   {hasImages && displayImages.length >= 2 && (() => {
                     const ratio = displayImageRatios[1] || 1
                     const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
@@ -1884,7 +1951,7 @@ function EventsTab({ events }) {
                     )
                   })()}
 
-                  {/* Back card 1 (image[0]) */}
+                  {/* Back card 1 — image[0] */}
                   {hasImages && (() => {
                     const ratio = displayImageRatios[0] || 1
                     const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
@@ -1917,10 +1984,11 @@ function EventsTab({ events }) {
                     )
                   })()}
 
-                  {/* Front blur panel (항상 렌더링) */}
+                  {/* Front: semi-transparent Gaussian blur panel (always) */}
                   {(() => {
                     const ratio = hasImages ? displayImageRatios[0] || 1 : 1
                     const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+
                     return (
                       <div
                         style={{
@@ -1965,7 +2033,7 @@ function EventsTab({ events }) {
                                 nextEvent &&
                                 displayEvent &&
                                 displayEvent.id === nextEvent.id
-                                  ? '#f97316'
+                                  ? '#f97316' // most upcoming always orange
                                   : frontPanelTextColor,
                               lineHeight: 1.2,
                             }}
@@ -2004,7 +2072,7 @@ function EventsTab({ events }) {
                           )}
                         </div>
 
-                        {/* Image count indicator – 항상 표시 (0도 포함) */}
+                        {/* Image count indicator – ALWAYS visible */}
                         <div
                           style={{
                             position: 'absolute',
@@ -2048,7 +2116,7 @@ function EventsTab({ events }) {
           )}
         </div>
 
-        {/* SCROLLABLE SECTION: calendar + event lists */}
+        {/* SCROLLABLE SECTION: calendar + lists */}
         <div style={{ flex: 1, overflow: 'auto' }}>
           <div className="px-4 py-6 max-w-md mx-auto">
             {/* CALENDAR */}
@@ -2075,7 +2143,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: `calc(${W} * 0.045)`,
                     fontWeight: 700,
-                    color: '#4b5563', // month-year grey
+                    color: '#4b5563',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                   }}
@@ -2122,11 +2190,11 @@ function EventsTab({ events }) {
                   WebkitUserSelect: 'none',
                 }}
               >
-                {calCells.map((day, idx) => {
+                {cells.map((day, idx) => {
                   if (!day)
                     return (
                       <div
-                        key={`empty-${idx}`}
+                        key={`e-${idx}`}
                         style={{ aspectRatio: '1/1' }}
                       />
                     )
@@ -2148,15 +2216,15 @@ function EventsTab({ events }) {
                   let fw = 500
 
                   if (hasEvt) {
-                    const s = circleStyle(dayEvents[0])
-                    bg = s.bg
-                    color = s.color // keep white
-                    fw = 700
-                  } else if (isToday) {
-                    bg = '#ffffff'
-                    border = '2px solid #1f2937'
-                    fw = 700
-                  }
+  const s = circleStyle(dayEvents[0])
+  bg = s.bg       // grey / orange / etc
+  color = s.color // stays '#fff'
+  fw = 700
+} else if (isToday) {
+  bg = '#ffffff'
+  border = '2px solid #1f2937'
+  fw = 700
+}
 
                   const ring =
                     isToday && hasEvt
@@ -2209,7 +2277,7 @@ function EventsTab({ events }) {
               </div>
             </div>
 
-            {/* UPCOMING EVENTS LIST */}
+            {/* UPCOMING LIST */}
             {otherUpcomingEvents.length > 0 && (
               <div className="mb-8 space-y-3">
                 {(() => {
@@ -2223,7 +2291,7 @@ function EventsTab({ events }) {
                       curMonth = label
                       blocks.push(
                         <p
-                          key={`up-month-${label}`}
+                          key={`m-${label}`}
                           className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
                         >
                           {label}
@@ -2282,7 +2350,7 @@ function EventsTab({ events }) {
                           curMonth = label
                           blocks.push(
                             <p
-                              key={`past-month-${label}`}
+                              key={`pm-${label}`}
                               className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
                             >
                               {label}
@@ -2309,34 +2377,9 @@ function EventsTab({ events }) {
             )}
           </div>
         </div>
-
-        {/* 아래 오른쪽 드래그 힌트 */}
-        <div
-          style={{
-            position: 'absolute',
-            right: 16,
-            bottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            color: '#9ca3af',
-            pointerEvents: 'none',
-          }}
-        >
-          <ArrowsVertical size={16} weight="bold" />
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: 12,
-              letterSpacing: '0.04em',
-            }}
-          >
-            위·아래 드래그로 다른 이벤트 보기
-          </span>
-        </div>
       </div>
 
-      {/* LIGHTBOX: 이미지 전체 보기 */}
+      {/* LIGHTBOX */}
       {(lightboxOpen || lightboxClosing) && displayImages.length > 0 && (
         <div
           onTouchStart={handleLbTouchStart}
