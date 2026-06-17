@@ -1876,34 +1876,33 @@ function EventsTab({ events }) {
                     })()}
 
                   {/* Front: white semi-transparent Gaussian blur panel */}
-                  {hasImages &&
-                    (() => {
-                      const ratio = displayImageRatios[0] || 1
-                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                      return (
-                        <div
-                          onClick={() => openLightboxAt(0)}
-                          style={{
-                            position: 'relative',
-                            zIndex: 3,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            aspectRatio,
-                            width: '100%',
-                            backgroundColor: '#ffffff',
-                            border: 'none',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <div
-                            style={{
-                              position: 'absolute',
-                              inset: 0,
-                              backgroundColor: 'rgba(255,255,255,0.5)',
-                              backdropFilter: 'blur(6px)',
-                              WebkitBackdropFilter: 'blur(6px)',
-                            }}
-                          />
+                  {hasImages && (() => {
+  const ratio = displayImageRatios[0] || 1
+  const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+  return (
+    <div
+      onClick={() => openLightboxAt(0)}
+      style={{
+        position: 'relative',
+        zIndex: 3,
+        borderRadius: '12px',
+        overflow: 'hidden',
+        aspectRatio,
+        width: '100%',
+        backgroundColor: 'transparent',  // ← changed: no more opaque white
+        border: 'none',
+        cursor: 'pointer',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(255,255,255,0.35)',  // ← slightly reduced opacity for more transparency
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+        }}
+      />
 
                           <div
                             style={{
