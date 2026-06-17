@@ -633,15 +633,17 @@ function MembershipCard({
       <stop offset="50%"  stopColor="#dedad4" />
       <stop offset="100%" stopColor="#c0bcb4" />
     </linearGradient>
-    <linearGradient id="gripGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stopColor="#b8b4ac" />
-      <stop offset="40%"  stopColor="#dedad4" />
+    {/* Left grip: darker on left (outer) edge, lighter inward */}
+    <linearGradient id="gripL" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stopColor="#a8a49c" />
+      <stop offset="50%"  stopColor="#d4d0c8" />
       <stop offset="100%" stopColor="#c8c4bc" />
     </linearGradient>
-    <linearGradient id="gripGradR" x1="0%" y1="0%" x2="100%" y2="0%">
+    {/* Right grip: lighter on left (inward), darker on right (outer) edge */}
+    <linearGradient id="gripR" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%"   stopColor="#c8c4bc" />
-      <stop offset="60%"  stopColor="#dedad4" />
-      <stop offset="100%" stopColor="#b8b4ac" />
+      <stop offset="50%"  stopColor="#d4d0c8" />
+      <stop offset="100%" stopColor="#a8a49c" />
     </linearGradient>
     <clipPath id="bottomGap">
       <rect x="0"  y="0"   width="106" height="158" />
@@ -650,7 +652,29 @@ function MembershipCard({
     </clipPath>
   </defs>
 
-  {/* Main frame outline */}
+  {/* Left grip — starts at the frame edge (x=0) and extends inward */}
+  <rect
+    x="0"
+    y="58"
+    width="10"
+    height="52"
+    rx="2"
+    ry="2"
+    fill="url(#gripL)"
+  />
+
+  {/* Right grip — ends at the frame edge (x=106) and extends inward */}
+  <rect
+    x="96"
+    y="58"
+    width="10"
+    height="52"
+    rx="2"
+    ry="2"
+    fill="url(#gripR)"
+  />
+
+  {/* Main frame outline — drawn on top so it caps the grips cleanly */}
   <rect
     x="3"
     y="3"
@@ -662,28 +686,6 @@ function MembershipCard({
     stroke="url(#metalGrad)"
     strokeWidth="6"
     clipPath="url(#bottomGap)"
-  />
-
-  {/* Left side grip — sits outside the card left edge, vertically centered */}
-  <rect
-    x="-5"
-    y="55"
-    width="8"
-    height="55"
-    rx="3"
-    ry="2"
-    fill="url(#gripGrad)"
-  />
-
-  {/* Right side grip */}
-  <rect
-    x="103"
-    y="55"
-    width="8"
-    height="55"
-    rx="3"
-    ry="2"
-    fill="url(#gripGradR)"
   />
 </svg>
 
