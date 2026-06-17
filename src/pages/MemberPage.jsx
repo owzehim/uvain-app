@@ -615,7 +615,7 @@ function MembershipCard({
       >
         {/* ── Brushed-metal open-bottom outline (SVG, rotates with card) ── */}
         <svg
-style={{
+  style={{
     position: 'absolute',
     inset: '-3px',
     width: 'calc(100% + 6px)',
@@ -628,40 +628,17 @@ style={{
   preserveAspectRatio="none"
 >
   <defs>
-    {/* Simple 3-stop muted silver — no bright whites */}
     <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%"   stopColor="#c8c4bc" />
       <stop offset="50%"  stopColor="#dedad4" />
       <stop offset="100%" stopColor="#c0bcb4" />
     </linearGradient>
-
-    {/*
-      clipPath: keep everything EXCEPT the bottom-center gap.
-      - Full coverage above y=158 (above where bottom straight begins curving)
-      - Left foot strip: x 0..24
-      - Right foot strip: x 82..106
-      Gap = x 24..82, y 158..180  →  this section is invisible
-    */}
     <clipPath id="bottomGap">
       <rect x="0"  y="0"   width="106" height="158" />
       <rect x="0"  y="158" width="24"  height="20"  />
       <rect x="82" y="158" width="24"  height="20"  />
     </clipPath>
   </defs>
-
-  {/*
-    viewBox: 106 × 174.1
-      - card aspect ratio = 1 : 1.586, so height = 106 * 1.586 = 168.1
-      - 3px overhang each side → total = 106 wide, 168.1 + 6 = 174.1 tall
-      - card occupies x: 3..103, y: 3..171.1
-      - rect drawn at x=3, y=3 to match card edges exactly
-      - rx: card has borderRadius 16px; card width in viewBox = 100 units
-        so rx = 16/100 * 100 = 16 viewBox units. With preserveAspectRatio=none
-        we need separate rx/ry to compensate for the stretch:
-        rx = 16, ry = 16 * (174.1/106) / (168.1/100) = ~15.6 → use 16
-      - strokeWidth 6 → half (3) extends inward, half outward from the rect edge
-        rect is at card edge, so 3 units outward = visible outside card ✓
-  *)
   <rect
     x="3"
     y="3"
