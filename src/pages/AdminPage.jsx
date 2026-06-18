@@ -8,55 +8,42 @@ import { Plus, Eye, EyeSlash, MapPin, Ticket } from '@phosphor-icons/react'
 
 /**
  * Extract the date part "YYYY-MM-DD" from whatever Supabase returns.
- * Handles both "YYYY-MM-DDTHH:MM:SS+00:00" (timestamptz) and "YYYY-MM-DDTHH:MM" (local).
- * We parse manually to avoid any UTC↔local conversion by the Date constructor.
  */
 function toLocalDateString(isoString) {
   if (!isoString) return ''
-  // Always take the first 10 characters — the date part is always YYYY-MM-DD
   return String(isoString).slice(0, 10)
 }
 
 /**
  * Extract the time part "HH:MM" from whatever Supabase returns.
- * Supabase returns timestamptz in UTC (e.g. "2026-05-10T12:00:00+00:00").
- * We convert to local time using the Date API.
- * If the string has no timezone info (already local), we just slice it.
+ * Converts timestamptz to local time; if already local, slice it.
  */
 function toLocalTimeString(isoString) {
   if (!isoString) return ''
   const s = String(isoString)
-  // If it has timezone info (+00:00 or Z), use Date to convert to local
   if (s.includes('+') || s.endsWith('Z') || s.includes('Z')) {
     const d = new Date(s)
     const hh = String(d.getHours()).padStart(2, '0')
     const mm = String(d.getMinutes()).padStart(2, '0')
     return `${hh}:${mm}`
   }
-  // No timezone info — treat as local, just slice HH:MM
   return s.length >= 16 ? s.slice(11, 16) : ''
 }
 
 /**
- * Combine a local date "YYYY-MM-DD" and time "HH:MM" into a full
- * ISO-like string WITH explicit +00:00 offset so Supabase stores it
- * correctly as the intended local time, not shifted by UTC.
- * We get the local UTC offset and encode it explicitly.
+ * Combine local date "YYYY-MM-DD" and time "HH:MM" into ISO string.
  */
 function combineDateTime(dateStr, timeStr) {
   if (!dateStr) return null
   const time = timeStr || '00:00'
-  // Build a local Date object from the date+time strings
   const [y, mo, d] = dateStr.split('-').map(Number)
   const [h, mi] = time.split(':').map(Number)
   const local = new Date(y, mo - 1, d, h, mi, 0)
-  // Return as ISO string — this is UTC, which is what Supabase expects
   return local.toISOString()
 }
 
 /**
- * Validate and normalise a typed time string.
- * Accepts "HH:MM", "H:MM", "HHMM" → returns "HH:MM" or '' if invalid.
+ * Validate & normalise a typed time string into "HH:MM".
  */
 function normaliseTime(raw) {
   const s = raw.trim().replace(/[^0-9:]/g, '')
@@ -64,29 +51,36 @@ function normaliseTime(raw) {
   if (noColon.length === 4) {
     const h = parseInt(noColon.slice(0, 2), 10)
     const m = parseInt(noColon.slice(2, 4), 10)
-    if (h >= 0 && h <= 23 && m >= 0 && m <= 59)
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    }
   }
   const parts = s.split(':')
   if (parts.length === 2) {
     const h = parseInt(parts[0], 10)
     const m = parseInt(parts[1], 10)
-    if (!isNaN(h) && !isNaN(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59)
+    if (!isNaN(h) && !isNaN(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59) {
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    }
   }
   return ''
 }
 
 function koreanSort(arr, key) {
-  return [...arr].sort((a, b) => (a[key] || '').localeCompare(b[key] || '', ['ko', 'en']))
+  return [...arr].sort((a, b) =>
+    (a[key] || '').localeCompare(b[key] || '', ['ko', 'en'])
+  )
 }
 
 // ─── Time Input ───────────────────────────────────────────────────────────────
+
 function TimeInput({ value, onChange, className = '' }) {
   const [draft, setDraft] = useState(value || '')
   const [error, setError] = useState(false)
 
-  useEffect(() => { setDraft(value || '') }, [value])
+  useEffect(() => {
+    setDraft(value || '')
+  }, [value])
 
   const handleChange = (e) => {
     setDraft(e.target.value)
@@ -94,7 +88,11 @@ function TimeInput({ value, onChange, className = '' }) {
   }
 
   const handleBlur = () => {
-    if (draft === '') { onChange(''); setError(false); return }
+    if (draft === '') {
+      onChange('')
+      setError(false)
+      return
+    }
     const normalised = normaliseTime(draft)
     if (normalised) {
       setDraft(normalised)
@@ -114,14 +112,21 @@ function TimeInput({ value, onChange, className = '' }) {
         value={draft}
         onChange={handleChange}
         onBlur={handleBlur}
-        className={`${className} ${error ? 'border-red-400 bg-red-50' : ''}`}
+        className={`${className} ${
+          error ? 'border-red-400 bg-red-50' : ''
+        }`}
       />
-      {error && <p className="text-xs text-red-500 mt-1">올바른 시간 형식을 입력하세요 (예: 14:30)</p>}
+      {error && (
+        <p className="text-xs text-red-500 mt-1">
+          올바른 시간 형식을 입력하세요 (예: 14:30)
+        </p>
+      )}
     </div>
   )
 }
 
 // ─── AdminPage ────────────────────────────────────────────────────────────────
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('members')
   const [loading, setLoading] = useState(true)
@@ -133,16 +138,14 @@ export default function AdminPage() {
         data: { user },
       } = await supabase.auth.getUser()
 
-      // Not logged in → send to login
       if (!user) {
         navigate('/login')
         return
       }
 
-      // New admin check: role from metadata (same idea as App.jsx & MemberPage)
       const isAdmin =
         user.user_metadata?.role === 'admin' ||
-        user.email === 'admin@uvain.nl' // fallback
+        user.email === 'admin@uvain.nl'
 
       if (!isAdmin) {
         navigate('/member')
@@ -155,15 +158,17 @@ export default function AdminPage() {
     checkAdmin()
   }, [navigate])
 
-  if (loading)
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">로딩 중...</p>
       </div>
     )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -181,6 +186,8 @@ export default function AdminPage() {
           로그아웃
         </button>
       </div>
+
+      {/* Tabs */}
       <div className="bg-white border-b border-gray-100 px-4 flex gap-1 overflow-x-auto">
         {[
           { key: 'members', label: '멤버 관리' },
@@ -200,6 +207,7 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
       <div className="w-full px-4 py-6">
         <div className="max-w-3xl mx-auto">
           {activeTab === 'members' && <MembersTab />}
@@ -212,7 +220,18 @@ export default function AdminPage() {
 }
 
 // ─── Rich Text Editor ─────────────────────────────────────────────────────────
-const COLORS = ['#000000','#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#ffffff']
+
+const COLORS = [
+  '#000000',
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#ffffff',
+]
 
 function RichEditor({ value, onChange, placeholder, rows = 3 }) {
   const ref = useRef(null)
@@ -231,31 +250,86 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
   }, [value])
 
   const exec = (cmd, val = null) => {
+    if (!ref.current) return
     ref.current.focus()
     document.execCommand(cmd, false, val)
     onChange(ref.current.innerHTML)
   }
-  const handleInput = () => onChange(ref.current.innerHTML)
-  const applyColor = (color) => { exec('foreColor', color); setShowColors(false) }
+
+  const handleInput = () => {
+    if (!ref.current) return
+    onChange(ref.current.innerHTML)
+  }
+
+  const applyColor = (color) => {
+    exec('foreColor', color)
+    setShowColors(false)
+  }
 
   return (
     <div className="border border-gray-200 rounded-lg overflow-visible">
       <div className="flex items-center gap-1 px-2 py-1 border-b border-gray-100 bg-gray-50 flex-wrap">
-        <button type="button" onMouseDown={e => { e.preventDefault(); exec('bold') }} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded font-bold hover:bg-gray-100">B</button>
-        <button type="button" onMouseDown={e => { e.preventDefault(); exec('italic') }} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded italic hover:bg-gray-100">I</button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            exec('bold')
+          }}
+          className="text-xs px-2 py-1 bg-white border border-gray-200 rounded font-bold hover:bg-gray-100"
+        >
+          B
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            exec('italic')
+          }}
+          className="text-xs px-2 py-1 bg-white border border-gray-200 rounded italic hover:bg-gray-100"
+        >
+          I
+        </button>
         <div className="relative">
-          <button type="button" onMouseDown={e => { e.preventDefault(); setShowColors(v => !v) }} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100">🎨</button>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              setShowColors((v) => !v)
+            }}
+            className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100"
+          >
+            🎨
+          </button>
           {showColors && (
-            <div className="absolute top-7 left-0 z-50 bg-white border border-gray-200 rounded-lg p-2 shadow-lg flex gap-1 flex-wrap" style={{ width: '120px' }}>
-              {COLORS.map(c => (
-                <button key={c} type="button" onMouseDown={e => { e.preventDefault(); applyColor(c) }}
+            <div
+              className="absolute top-7 left-0 z-50 bg-white border border-gray-200 rounded-lg p-2 shadow-lg flex gap-1 flex-wrap"
+              style={{ width: '120px' }}
+            >
+              {COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    applyColor(c)
+                  }}
                   className="w-6 h-6 rounded-full border border-gray-300 hover:scale-110 transition-transform"
-                  style={{ backgroundColor: c }} />
+                  style={{ backgroundColor: c }}
+                />
               ))}
             </div>
           )}
         </div>
-        <button type="button" onMouseDown={e => { e.preventDefault(); exec('removeFormat') }} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100 text-gray-500">✕</button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            exec('removeFormat')
+          }}
+          className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100 text-gray-500"
+        >
+          ✕
+        </button>
       </div>
       <div
         ref={ref}
@@ -265,12 +339,20 @@ function RichEditor({ value, onChange, placeholder, rows = 3 }) {
         onBlur={handleInput}
         data-placeholder={placeholder}
         className="px-3 py-2 text-sm outline-none"
-        style={{ minHeight: `${rows * 1.5}rem`, whiteSpace: 'pre-wrap', overflowY: 'auto', direction: 'ltr', unicodeBidi: 'plaintext' }}
+        style={{
+          minHeight: `${rows * 1.5}rem`,
+          whiteSpace: 'pre-wrap',
+          overflowY: 'auto',
+          direction: 'ltr',
+          unicodeBidi: 'plaintext',
+        }}
       />
       <style>{`[contenteditable]:empty:before{content:attr(data-placeholder);color:#9ca3af}`}</style>
     </div>
   )
 }
+
+// ─── ImageUploadPanel ────────────────────────────────────────────────────────
 
 function ImageUploadPanel({
   imagePreviews,
@@ -287,12 +369,14 @@ function ImageUploadPanel({
   const dragIdx = useRef(null)
 
   const handleFileSelect = (e) => {
-    Array.from(e.target.files).forEach(f => onAddFile(f))
+    Array.from(e.target.files || []).forEach((f) => onAddFile(f))
     e.target.value = ''
   }
 
   const handleFileSelectForCrop = (e) => {
-    if (e.target.files[0]) setCropperSource({ type: 'file', file: e.target.files[0] })
+    if (e.target.files && e.target.files[0]) {
+      setCropperSource({ type: 'file', file: e.target.files[0] })
+    }
     e.target.value = ''
   }
 
@@ -310,7 +394,10 @@ function ImageUploadPanel({
     setCropperSource(null)
   }
 
-  const handleDragStart = (idx) => { dragIdx.current = idx }
+  const handleDragStart = (idx) => {
+    dragIdx.current = idx
+  }
+
   const handleDrop = (idx) => {
     if (dragIdx.current === null || dragIdx.current === idx) return
     const reordered = [...(existingUrls || [])]
@@ -321,7 +408,7 @@ function ImageUploadPanel({
   }
 
   const getDisplayUrl = (idx) => {
-    const pending = pendingReplacements?.find(p => p.idx === idx)
+    const pending = pendingReplacements?.find((p) => p.idx === idx)
     return pending ? pending.previewUrl : existingUrls[idx]
   }
 
@@ -335,7 +422,7 @@ function ImageUploadPanel({
               className="relative group cursor-grab"
               draggable
               onDragStart={() => handleDragStart(idx)}
-              onDragOver={e => e.preventDefault()}
+              onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(idx)}
             >
               <img
@@ -345,30 +432,42 @@ function ImageUploadPanel({
                 className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-colors"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg transition-colors pointer-events-none flex items-center justify-center">
-                <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 drop-shadow">✂️</span>
+                <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 drop-shadow">
+                  ✂️
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => onRemoveExisting(existingUrls[idx])}
                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 z-10"
-              >✕</button>
+              >
+                ✕
+              </button>
             </div>
           ))}
           {imagePreviews.map((preview, idx) => (
             <div key={`new-${idx}`} className="relative">
-              <img src={preview} alt="" className="w-20 h-20 object-cover rounded-lg border-2 border-blue-200" />
+              <img
+                src={preview}
+                alt=""
+                className="w-20 h-20 object-cover rounded-lg border-2 border-blue-200"
+              />
               <button
                 type="button"
                 onClick={() => onRemoveNew(idx)}
                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-              >✕</button>
+              >
+                ✕
+              </button>
             </div>
           ))}
         </div>
       )}
 
       {existingUrls?.length > 0 && (
-        <p className="text-xs text-gray-400">💡 기존 사진을 탭하면 자를 수 있어요 · 드래그로 순서 변경</p>
+        <p className="text-xs text-gray-400">
+          💡 기존 사진을 탭하면 자를 수 있어요 · 드래그로 순서 변경
+        </p>
       )}
 
       <div className="flex gap-2">
@@ -377,14 +476,25 @@ function ImageUploadPanel({
             <p className="text-xs font-medium text-gray-600">📁 그냥 업로드</p>
             <p className="text-xs text-gray-400 mt-0.5">자르기 없이</p>
           </div>
-          <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileSelect} />
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+          />
         </label>
         <label className="flex-1 cursor-pointer">
           <div className="border-2 border-dashed border-blue-300 rounded-lg px-3 py-3 text-center hover:border-blue-400 transition-colors">
             <p className="text-xs font-medium text-blue-600">✂️ 자르기 업로드</p>
             <p className="text-xs text-gray-400 mt-0.5">비율 선택 후 자르기</p>
           </div>
-          <input type="file" accept="image/*" className="hidden" onChange={handleFileSelectForCrop} />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileSelectForCrop}
+          />
         </label>
       </div>
 
@@ -400,6 +510,8 @@ function ImageUploadPanel({
     </div>
   )
 }
+
+// ─── MembersTab ───────────────────────────────────────────────────────────────
 
 function MembersTab() {
   const [members, setMembers] = useState([])
@@ -461,8 +573,9 @@ function MembersTab() {
     const charset =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'
     let password = ''
-    for (let i = 0; i < 12; i++)
+    for (let i = 0; i < 12; i++) {
       password += charset.charAt(Math.floor(Math.random() * charset.length))
+    }
     setForm((prev) => ({ ...prev, password, confirmPassword: password }))
     checkPasswordStrength(password)
   }
@@ -505,10 +618,11 @@ function MembersTab() {
     if (!validateForm()) return
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-      })
+      const { data: authData, error: authError } =
+        await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+        })
 
       if (authError) {
         alert('계정 생성 실패: ' + authError.message)
@@ -607,15 +721,15 @@ function MembersTab() {
 
   const toggleMembership = async (member) => {
     const nextIsMember = !member.is_member
-
-    // If turning ON and no date is set, you can auto-set a default expiry
     const nextValidUntil =
       nextIsMember && !member.membership_valid_until
         ? new Date(
             new Date().getFullYear(),
             11,
             31
-          ).toISOString().slice(0, 10) // YYYY-12-31
+          )
+            .toISOString()
+            .slice(0, 10)
         : member.membership_valid_until
 
     const { error } = await supabase
@@ -687,8 +801,13 @@ function MembersTab() {
   }
 
   const strengthColor = () =>
-    ['bg-red-200', 'bg-orange-200', 'bg-yellow-200', 'bg-lime-200', 'bg-green-200'][passwordStrength] ||
-    'bg-gray-200'
+    [
+      'bg-red-200',
+      'bg-orange-200',
+      'bg-yellow-200',
+      'bg-lime-200',
+      'bg-green-200',
+    ][passwordStrength] || 'bg-gray-200'
 
   const strengthText = () =>
     ['매우 약함', '약함', '보통', '강함', '매우 강함'][passwordStrength] || ''
@@ -772,7 +891,7 @@ function MembersTab() {
         </div>
       )}
 
-      {/* 새 멤버 추가폼 (admin 수동 생성용) */}
+      {/* 새 멤버 추가 폼 */}
       {showForm && !editTarget && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
           <h3 className="font-medium text-gray-900">새 멤버 추가</h3>
@@ -848,8 +967,7 @@ function MembersTab() {
                 }
                 type={showPassword ? 'text' : 'password'}
                 className={`w-full border rounded-lg px-3 py-2 text-sm ${
-                  form.confirmPassword &&
-                  form.password !== form.confirmPassword
+                  form.confirmPassword && form.password !== form.confirmPassword
                     ? 'border-red-300 bg-red-50'
                     : 'border-gray-200'
                 }`}
@@ -1254,22 +1372,34 @@ function MembersTab() {
   )
 }
 
+// ─── EventsTab ────────────────────────────────────────────────────────────────
+
 function EventForm({
-  form, setForm, richEditorKey,
-  editTarget, uploading,
-  imagePreviews, pendingReplacements,
-  handleAddFile, handleAddCropped,
-  handleRemoveNew, handleRemoveExisting,
-  handlePendingReplace, handleReorderImages,
-  handleSave, resetForm,
+  form,
+  setForm,
+  richEditorKey,
+  editTarget,
+  uploading,
+  imagePreviews,
+  pendingReplacements,
+  handleAddFile,
+  handleAddCropped,
+  handleRemoveNew,
+  handleRemoveExisting,
+  handlePendingReplace,
+  handleReorderImages,
+  handleSave,
+  resetForm,
 }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
-      <h3 className="font-medium text-gray-900">{editTarget ? '이벤트 수정' : '새 이벤트'}</h3>
+      <h3 className="font-medium text-gray-900">
+        {editTarget ? '이벤트 수정' : '새 이벤트'}
+      </h3>
       <input
         placeholder="이벤트 제목"
         value={form.title}
-        onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+        onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
       <div>
@@ -1277,7 +1407,7 @@ function EventForm({
         <RichEditor
           key={richEditorKey}
           value={form.description}
-          onChange={v => setForm(f => ({ ...f, description: v }))}
+          onChange={(v) => setForm((f) => ({ ...f, description: v }))}
           placeholder="내용을 입력하세요"
           rows={3}
         />
@@ -1287,7 +1417,7 @@ function EventForm({
         <RichEditor
           key={richEditorKey + 50}
           value={form.location}
-          onChange={v => setForm(f => ({ ...f, location: v }))}
+          onChange={(v) => setForm((f) => ({ ...f, location: v }))}
           placeholder="장소를 입력하세요"
           rows={2}
         />
@@ -1298,15 +1428,19 @@ function EventForm({
           <input
             type="date"
             value={form.eventDate}
-            onChange={e => setForm(f => ({ ...f, eventDate: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, eventDate: e.target.value }))
+            }
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="text-sm text-gray-500 block mb-1">시간 (HH:MM)</label>
+          <label className="text-sm text-gray-500 block mb-1">
+            시간 (HH:MM)
+          </label>
           <TimeInput
             value={form.eventTime}
-            onChange={v => setForm(f => ({ ...f, eventTime: v }))}
+            onChange={(v) => setForm((f) => ({ ...f, eventTime: v }))}
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
           />
         </div>
@@ -1314,7 +1448,9 @@ function EventForm({
       <input
         placeholder="인스타그램 URL (선택)"
         value={form.instagram_url}
-        onChange={e => setForm(f => ({ ...f, instagram_url: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, instagram_url: e.target.value }))
+        }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
       <div>
@@ -1339,7 +1475,12 @@ function EventForm({
         >
           {uploading ? '업로드 중...' : editTarget ? '수정 완료' : '추가'}
         </button>
-        <button onClick={resetForm} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
+        <button
+          onClick={resetForm}
+          className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm"
+        >
+          취소
+        </button>
       </div>
     </div>
   )
@@ -1351,10 +1492,16 @@ function EventsTab() {
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [showArchivedList, setShowArchivedList] = useState(false)
+
   const [form, setForm] = useState({
-    title: '', description: '', eventDate: '', eventTime: '',
-    location: '', instagram_url: ''
+    title: '',
+    description: '',
+    eventDate: '',
+    eventTime: '',
+    location: '',
+    instagram_url: '',
   })
+
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
   const [pendingReplacements, setPendingReplacements] = useState([])
@@ -1362,102 +1509,173 @@ function EventsTab() {
   const [richEditorKey, setRichEditorKey] = useState(0)
 
   const fetchEvents = async () => {
-    const { data } = await supabase.from('events').select('*').eq('is_archived', false).order('event_date', { ascending: true })
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('is_archived', false)
+      .order('event_date', { ascending: true })
     setEvents(data || [])
   }
+
   const fetchArchivedEvents = async () => {
-    const { data } = await supabase.from('events').select('*').eq('is_archived', true).order('event_date', { ascending: false })
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('is_archived', true)
+      .order('event_date', { ascending: false })
     setArchivedEvents(data || [])
   }
-  useEffect(() => { fetchEvents(); fetchArchivedEvents() }, [])
+
+  useEffect(() => {
+    fetchEvents()
+    fetchArchivedEvents()
+  }, [])
 
   const handleAddFile = (file) => {
-    setImageFiles(prev => [...prev, file])
-    setImagePreviews(prev => [...prev, URL.createObjectURL(file)])
+    setImageFiles((prev) => [...prev, file])
+    setImagePreviews((prev) => [...prev, URL.createObjectURL(file)])
   }
+
   const handleAddCropped = (croppedFile) => {
-    setImageFiles(prev => [...prev, croppedFile])
-    setImagePreviews(prev => [...prev, URL.createObjectURL(croppedFile)])
+    setImageFiles((prev) => [...prev, croppedFile])
+    setImagePreviews((prev) => [...prev, URL.createObjectURL(croppedFile)])
   }
+
   const handleRemoveNew = (idx) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== idx))
-    setImagePreviews(prev => prev.filter((_, i) => i !== idx))
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== idx))
   }
+
   const handleRemoveExisting = async (url) => {
     if (!confirm('이 사진을 삭제할까요?')) return
     const fileName = url.split('/').pop()
     await supabase.storage.from('event-images').remove([fileName])
     const idx = (editTarget?.image_urls || []).indexOf(url)
-    setPendingReplacements(prev => prev.filter(p => p.idx !== idx))
-    setEditTarget(prev => ({ ...prev, image_urls: (prev.image_urls || []).filter(u => u !== url) }))
+    setPendingReplacements((prev) => prev.filter((p) => p.idx !== idx))
+    setEditTarget((prev) => ({
+      ...prev,
+      image_urls: (prev.image_urls || []).filter((u) => u !== url),
+    }))
   }
+
   const handlePendingReplace = (idx, file, previewUrl) => {
-    setPendingReplacements(prev => {
-      const next = prev.filter(p => p.idx !== idx)
+    setPendingReplacements((prev) => {
+      const next = prev.filter((p) => p.idx !== idx)
       return [...next, { idx, file, previewUrl }]
     })
   }
+
   const handleReorderImages = (reorderedUrls) => {
-    if (editTarget) setEditTarget(prev => ({ ...prev, image_urls: reorderedUrls }))
+    if (editTarget) {
+      setEditTarget((prev) => ({ ...prev, image_urls: reorderedUrls }))
+    }
   }
 
   const resetForm = () => {
-    setShowForm(false); setEditTarget(null)
-    setForm({ title: '', description: '', eventDate: '', eventTime: '', location: '', instagram_url: '' })
-    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1)
+    setShowForm(false)
+    setEditTarget(null)
+    setForm({
+      title: '',
+      description: '',
+      eventDate: '',
+      eventTime: '',
+      location: '',
+      instagram_url: '',
+    })
+    setImageFiles([])
+    setImagePreviews([])
+    setPendingReplacements([])
+    setRichEditorKey((k) => k + 1)
   }
 
   const handleSave = async () => {
-    if (!form.title) { alert('제목을 입력해주세요.'); return }
+    if (!form.title) {
+      alert('제목을 입력해주세요.')
+      return
+    }
     setUploading(true)
     const event_date = combineDateTime(form.eventDate, form.eventTime)
     let image_urls = [...(editTarget?.image_urls || [])]
 
     for (const { idx, file } of pendingReplacements) {
       const oldFileName = image_urls[idx]?.split('/').pop()
-      if (oldFileName) await supabase.storage.from('event-images').remove([oldFileName])
+      if (oldFileName) {
+        await supabase.storage.from('event-images').remove([oldFileName])
+      }
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
-      const { error } = await supabase.storage.from('event-images').upload(fileName, file)
-      if (error) { alert('업로드 실패: ' + error.message); setUploading(false); return }
-      const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(fileName)
+      const fileName = `${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}.${fileExt}`
+      const { error } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, file)
+      if (error) {
+        alert('업로드 실패: ' + error.message)
+        setUploading(false)
+        return
+      }
+      const { data: urlData } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(fileName)
       image_urls[idx] = urlData.publicUrl
     }
+
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('event-images').upload(fileName, file)
-      if (uploadError) { alert('업로드 실패: ' + uploadError.message); setUploading(false); return }
-      const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(fileName)
+      const fileName = `${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}.${fileExt}`
+      const { error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, file)
+      if (uploadError) {
+        alert('업로드 실패: ' + uploadError.message)
+        setUploading(false)
+        return
+      }
+      const { data: urlData } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(fileName)
       image_urls = [...image_urls, urlData.publicUrl]
     }
 
     const payload = {
-      title: form.title, description: form.description,
+      title: form.title,
+      description: form.description,
       event_date: event_date || null,
-      location: form.location, instagram_url: form.instagram_url,
-      image_urls
+      location: form.location,
+      instagram_url: form.instagram_url,
+      image_urls,
     }
+
     if (editTarget) {
       await supabase.from('events').update(payload).eq('id', editTarget.id)
     } else {
       await supabase.from('events').insert(payload)
     }
-    setUploading(false); resetForm(); fetchEvents()
+
+    setUploading(false)
+    resetForm()
+    fetchEvents()
   }
 
   const handleDelete = async (id) => {
     if (!confirm('삭제할까요?')) return
     await supabase.from('events').delete().eq('id', id)
-    fetchEvents(); fetchArchivedEvents()
+    fetchEvents()
+    fetchArchivedEvents()
   }
+
   const handleArchive = async (id) => {
     await supabase.from('events').update({ is_archived: true }).eq('id', id)
-    fetchEvents(); fetchArchivedEvents()
+    fetchEvents()
+    fetchArchivedEvents()
   }
+
   const handleRestore = async (id) => {
     await supabase.from('events').update({ is_archived: false }).eq('id', id)
-    fetchEvents(); fetchArchivedEvents()
+    fetchEvents()
+    fetchArchivedEvents()
   }
 
   const openEdit = (event) => {
@@ -1468,36 +1686,60 @@ function EventsTab() {
       eventDate: toLocalDateString(event.event_date),
       eventTime: toLocalTimeString(event.event_date),
       location: event.location || '',
-      instagram_url: event.instagram_url || ''
+      instagram_url: event.instagram_url || '',
     })
-    setImageFiles([]); setImagePreviews([]); setPendingReplacements([])
-    setRichEditorKey(k => k + 1); setShowForm(true)
+    setImageFiles([])
+    setImagePreviews([])
+    setPendingReplacements([])
+    setRichEditorKey((k) => k + 1)
+    setShowForm(true)
   }
+
   const openAdd = () => {
     setEditTarget(null)
-    setForm({ title: '', description: '', eventDate: '', eventTime: '', location: '', instagram_url: '' })
-    setImageFiles([]); setImagePreviews([]); setPendingReplacements([])
-    setRichEditorKey(k => k + 1); setShowForm(true)
+    setForm({
+      title: '',
+      description: '',
+      eventDate: '',
+      eventTime: '',
+      location: '',
+      instagram_url: '',
+    })
+    setImageFiles([])
+    setImagePreviews([])
+    setPendingReplacements([])
+    setRichEditorKey((k) => k + 1)
+    setShowForm(true)
   }
 
   const groupByMonth = (arr) => {
     const grouped = {}
-    arr.forEach(ev => {
-      const label = ev.event_date ? `${new Date(ev.event_date).getMonth() + 1}월` : '날짜 미정'
+    arr.forEach((ev) => {
+      const label = ev.event_date
+        ? `${new Date(ev.event_date).getMonth() + 1}월`
+        : '날짜 미정'
       if (!grouped[label]) grouped[label] = []
       grouped[label].push(ev)
     })
     return grouped
   }
 
-  // Shared props passed down to EventForm
   const formProps = {
-    form, setForm, richEditorKey, editTarget, uploading,
-    imagePreviews, pendingReplacements,
-    handleAddFile, handleAddCropped,
-    handleRemoveNew, handleRemoveExisting,
-    handlePendingReplace, handleReorderImages,
-    handleSave, resetForm,
+    form,
+    setForm,
+    richEditorKey,
+    editTarget,
+    uploading,
+    imagePreviews,
+    pendingReplacements,
+    handleAddFile,
+    handleAddCropped,
+    handleRemoveNew,
+    handleRemoveExisting,
+    handlePendingReplace,
+    handleReorderImages,
+    handleSave,
+    resetForm,
   }
 
   const renderCard = (event, isArchived = false) => (
@@ -1505,35 +1747,78 @@ function EventsTab() {
       <div className="bg-white rounded-xl border border-gray-100 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-900 text-sm">{event.title}</p>
+            <p className="font-medium text-gray-900 text-sm">
+              {event.title}
+            </p>
             {event.location && (
               <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                <MapPin size={12} weight="fill" />{event.location.replace(/<[^>]+>/g, '')}
+                <MapPin size={12} weight="fill" />
+                {event.location.replace(/<[^>]+>/g, '')}
               </p>
             )}
             {event.event_date && (
               <p className="text-xs text-gray-400 mt-0.5">
-                {new Date(event.event_date).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                {new Date(event.event_date).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
               </p>
             )}
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            {isArchived
-              ? <>
-                  <button onClick={() => handleRestore(event.id)} className="text-xs text-green-600 hover:underline whitespace-nowrap">복원</button>
-                  <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
-                  <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
-                </>
-              : <>
-                  <button onClick={() => handleArchive(event.id)} className="text-xs text-green-600 hover:underline whitespace-nowrap">보관</button>
-                  <button onClick={() => openEdit(event)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
-                  <button onClick={() => handleDelete(event.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
-                </>
-            }
+            {isArchived ? (
+              <>
+                <button
+                  onClick={() => handleRestore(event.id)}
+                  className="text-xs text-green-600 hover:underline whitespace-nowrap"
+                >
+                  복원
+                </button>
+                <button
+                  onClick={() => openEdit(event)}
+                  className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(event.id)}
+                  className="text-xs text-red-500 hover:underline whitespace-nowrap"
+                >
+                  삭제
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleArchive(event.id)}
+                  className="text-xs text-green-600 hover:underline whitespace-nowrap"
+                >
+                  보관
+                </button>
+                <button
+                  onClick={() => openEdit(event)}
+                  className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(event.id)}
+                  className="text-xs text-red-500 hover:underline whitespace-nowrap"
+                >
+                  삭제
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
-      {showForm && editTarget && editTarget.id === event.id && <EventForm {...formProps} />}
+      {showForm && editTarget && editTarget.id === event.id && (
+        <EventForm {...formProps} />
+      )}
     </div>
   )
 
@@ -1542,96 +1827,157 @@ function EventsTab() {
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 className="font-semibold text-gray-900">이벤트 관리</h2>
         <div className="flex gap-2">
-          {showArchivedList
-            ? <button onClick={() => setShowArchivedList(false)} className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 whitespace-nowrap">← 이벤트 목록</button>
-            : <button onClick={() => setShowArchivedList(true)} className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 whitespace-nowrap">보관된 이벤트</button>
-          }
+          {showArchivedList ? (
+            <button
+              onClick={() => setShowArchivedList(false)}
+              className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 whitespace-nowrap"
+            >
+              ← 이벤트 목록
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowArchivedList(true)}
+              className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 whitespace-nowrap"
+            >
+              보관된 이벤트
+            </button>
+          )}
           {!showForm && !showArchivedList && (
-            <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap">
-              <Plus size={16} weight="bold" />이벤트 추가
+            <button
+              onClick={openAdd}
+              className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"
+            >
+              <Plus size={16} weight="bold" />
+              이벤트 추가
             </button>
           )}
         </div>
       </div>
+
       {showArchivedList ? (
         <div className="space-y-3">
-          {archivedEvents.length === 0
-            ? <p className="text-gray-500 text-sm">보관된 이벤트가 없어요.</p>
-            : Object.entries(groupByMonth(archivedEvents)).map(([month, evs]) => (
-              <div key={month} className="space-y-2">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
-                {evs.map(e => renderCard(e, true))}
-              </div>
-            ))
-          }
+          {archivedEvents.length === 0 ? (
+            <p className="text-gray-500 text-sm">
+              보관된 이벤트가 없어요.
+            </p>
+          ) : (
+            Object.entries(groupByMonth(archivedEvents)).map(
+              ([month, evs]) => (
+                <div key={month} className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                    {month}
+                  </p>
+                  {evs.map((e) => renderCard(e, true))}
+                </div>
+              )
+            )
+          )}
         </div>
       ) : (
         <>
           {showForm && !editTarget && <EventForm {...formProps} />}
-          {events.length === 0
-            ? <p className="text-gray-500 text-sm">이벤트가 없어요.</p>
-            : (
-              <div className="space-y-3">
-                {Object.entries(groupByMonth(events)).map(([month, evs]) => (
+          {events.length === 0 ? (
+            <p className="text-gray-500 text-sm">이벤트가 없어요.</p>
+          ) : (
+            <div className="space-y-3">
+              {Object.entries(groupByMonth(events)).map(
+                ([month, evs]) => (
                   <div key={month} className="space-y-2">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{month}</p>
-                    {evs.map(e => renderCard(e, false))}
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                      {month}
+                    </p>
+                    {evs.map((e) => renderCard(e, false))}
                   </div>
-                ))}
-              </div>
-            )
-          }
+                )
+              )}
+            </div>
+          )}
         </>
       )}
     </div>
   )
 }
 
-const SPOT_CATEGORIES = ['맛집', '카페', '마트', '스터디', '학교', '의료', '운동', '미용/뷰티', '여가', '쇼핑', '기타']
+// ─── RestaurantsTab ───────────────────────────────────────────────────────────
 
-// RestaurantForm is defined OUTSIDE RestaurantsTab so React never remounts it on state change.
+const SPOT_CATEGORIES = [
+  '맛집',
+  '카페',
+  '마트',
+  '스터디',
+  '학교',
+  '의료',
+  '운동',
+  '미용/뷰티',
+  '여가',
+  '쇼핑',
+  '기타',
+]
+
 function RestaurantForm({
-  form, setForm, richEditorKey,
-  editTarget, uploading,
-  imagePreviews, pendingReplacements,
-  handleAddFile, handleAddCropped,
-  handleRemoveNew, handleRemoveExisting,
-  handlePendingReplace, handleReorderImages,
-  handleSave, resetForm,
+  form,
+  setForm,
+  richEditorKey,
+  editTarget,
+  uploading,
+  imagePreviews,
+  pendingReplacements,
+  handleAddFile,
+  handleAddCropped,
+  handleRemoveNew,
+  handleRemoveExisting,
+  handlePendingReplace,
+  handleReorderImages,
+  handleSave,
+  resetForm,
 }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
-      <h3 className="font-medium text-gray-900">{editTarget ? '장소 수정' : '새 장소 추가'}</h3>
+      <h3 className="font-medium text-gray-900">
+        {editTarget ? '장소 수정' : '새 장소 추가'}
+      </h3>
       <input
         placeholder="장소 이름"
         value={form.name}
-        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
       <input
         placeholder="지도 표시 이름"
         value={form.map_label}
-        onChange={e => setForm(f => ({ ...f, map_label: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, map_label: e.target.value }))
+        }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
       <select
         value={form.category}
-        onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, category: e.target.value }))
+        }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
       >
-        {SPOT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+        {SPOT_CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {c}
+          </option>
+        ))}
       </select>
       <textarea
         placeholder="설명"
         value={form.description}
-        onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, description: e.target.value }))
+        }
         rows={2}
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
       />
       <input
         placeholder="주소"
         value={form.address}
-        onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, address: e.target.value }))
+        }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
       <div className="grid grid-cols-2 gap-2">
@@ -1640,7 +1986,9 @@ function RestaurantForm({
           <input
             placeholder="위도"
             value={form.latitude}
-            onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, latitude: e.target.value }))
+            }
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
           />
         </div>
@@ -1649,7 +1997,9 @@ function RestaurantForm({
           <input
             placeholder="경도"
             value={form.longitude}
-            onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, longitude: e.target.value }))
+            }
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
           />
         </div>
@@ -1659,7 +2009,9 @@ function RestaurantForm({
         <RichEditor
           key={richEditorKey}
           value={form.discount_info}
-          onChange={v => setForm(f => ({ ...f, discount_info: v }))}
+          onChange={(v) =>
+            setForm((f) => ({ ...f, discount_info: v }))
+          }
           placeholder="할인 정보 (예: 10% 할인)"
           rows={2}
         />
@@ -1669,7 +2021,9 @@ function RestaurantForm({
         <RichEditor
           key={richEditorKey + 100}
           value={form.discount_terms}
-          onChange={v => setForm(f => ({ ...f, discount_terms: v }))}
+          onChange={(v) =>
+            setForm((f) => ({ ...f, discount_terms: v }))
+          }
           placeholder="할인 조건 (예: 주말 제외)"
           rows={2}
         />
@@ -1677,12 +2031,16 @@ function RestaurantForm({
       <input
         placeholder="평점 (0~5)"
         value={form.rating}
-        onChange={e => setForm(f => ({ ...f, rating: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, rating: e.target.value }))
+        }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
       <select
         value={form.price_range}
-        onChange={e => setForm(f => ({ ...f, price_range: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, price_range: e.target.value }))
+        }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
       >
         <option value="">가격대 선택</option>
@@ -1696,31 +2054,44 @@ function RestaurantForm({
           type="checkbox"
           id={`sp_${editTarget ? 'edit' : 'add'}`}
           checked={form.is_sponsored}
-          onChange={e => setForm(f => ({ ...f, is_sponsored: e.target.checked }))}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, is_sponsored: e.target.checked }))
+          }
         />
-        <label htmlFor={`sp_${editTarget ? 'edit' : 'add'}`} className="text-sm text-gray-700 flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />제휴/스폰서
+        <label
+          htmlFor={`sp_${editTarget ? 'edit' : 'add'}`}
+          className="text-sm text-gray-700 flex items-center gap-1"
+        >
+          <span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />
+          제휴/스폰서
         </label>
       </div>
 
-<textarea
-  placeholder="한 줄 평가"
-  value={form.one_line_review}
-  onChange={e => setForm(f => ({ ...f, one_line_review: e.target.value }))}
-  rows={2}
-  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
-/>
+      {/* 한 줄 평가 */}
+      <textarea
+        placeholder="한 줄 평가 (예: 분위기 최고, 가격도 착해요)"
+        value={form.one_line_review}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, one_line_review: e.target.value }))
+        }
+        rows={2}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+      />
 
       <input
         placeholder="리뷰어 이름"
         value={form.reviewer_name}
-        onChange={e => setForm(f => ({ ...f, reviewer_name: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, reviewer_name: e.target.value }))
+        }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
       <textarea
         placeholder="리뷰"
         value={form.review}
-        onChange={e => setForm(f => ({ ...f, review: e.target.value }))}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, review: e.target.value }))
+        }
         rows={3}
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
       />
@@ -1746,7 +2117,12 @@ function RestaurantForm({
         >
           {uploading ? '업로드 중...' : editTarget ? '수정 완료' : '추가'}
         </button>
-        <button onClick={resetForm} className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm">취소</button>
+        <button
+          onClick={resetForm}
+          className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm"
+        >
+          취소
+        </button>
       </div>
     </div>
   )
@@ -1756,68 +2132,8 @@ function RestaurantsTab() {
   const [restaurants, setRestaurants] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
+
   const [form, setForm] = useState({
-  name: '',
-  map_label: '',
-  description: '',
-  address: '',
-  latitude: '',
-  longitude: '',
-  discount_info: '',
-  discount_terms: '',
-  one_line_review: '',
-  rating: '',
-  review: '',
-  reviewer_name: '',
-  category: '맛집',
-  price_range: '',
-  is_sponsored: false
-})
-  const [imageFiles, setImageFiles] = useState([])
-  const [imagePreviews, setImagePreviews] = useState([])
-  const [pendingReplacements, setPendingReplacements] = useState([])
-  const [uploading, setUploading] = useState(false)
-  const [richEditorKey, setRichEditorKey] = useState(0)
-
-  const fetchRestaurants = async () => {
-    const { data } = await supabase.from('restaurants').select('*').order('created_at', { ascending: false })
-    setRestaurants(data || [])
-  }
-  useEffect(() => { fetchRestaurants() }, [])
-
-  const handleAddFile = (file) => {
-    setImageFiles(prev => [...prev, file])
-    setImagePreviews(prev => [...prev, URL.createObjectURL(file)])
-  }
-  const handleAddCropped = (croppedFile) => {
-    setImageFiles(prev => [...prev, croppedFile])
-    setImagePreviews(prev => [...prev, URL.createObjectURL(croppedFile)])
-  }
-  const handleRemoveNew = (idx) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== idx))
-    setImagePreviews(prev => prev.filter((_, i) => i !== idx))
-  }
-  const handleRemoveExisting = async (url) => {
-    if (!confirm('이 사진을 삭제할까요?')) return
-    const fileName = url.split('/').pop()
-    await supabase.storage.from('place-images').remove([fileName])
-    const idx = (editTarget?.image_urls || []).indexOf(url)
-    setPendingReplacements(prev => prev.filter(p => p.idx !== idx))
-    setEditTarget(prev => ({ ...prev, image_urls: (prev.image_urls || []).filter(u => u !== url) }))
-  }
-  const handlePendingReplace = (idx, file, previewUrl) => {
-    setPendingReplacements(prev => {
-      const next = prev.filter(p => p.idx !== idx)
-      return [...next, { idx, file, previewUrl }]
-    })
-  }
-  const handleReorderImages = (reorderedUrls) => {
-    if (editTarget) setEditTarget(prev => ({ ...prev, image_urls: reorderedUrls }))
-  }
-
-  const resetForm = () => {
-  setShowForm(false); setEditTarget(null)
-  setForm({
     name: '',
     map_label: '',
     description: '',
@@ -1832,61 +2148,185 @@ function RestaurantsTab() {
     reviewer_name: '',
     category: '맛집',
     price_range: '',
-    is_sponsored: false
+    is_sponsored: false,
   })
-    setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1)
+
+  const [imageFiles, setImageFiles] = useState([])
+  const [imagePreviews, setImagePreviews] = useState([])
+  const [pendingReplacements, setPendingReplacements] = useState([])
+  const [uploading, setUploading] = useState(false)
+  const [richEditorKey, setRichEditorKey] = useState(0)
+
+  const fetchRestaurants = async () => {
+    const { data } = await supabase
+      .from('restaurants')
+      .select('*')
+      .order('created_at', { ascending: false })
+    setRestaurants(data || [])
+  }
+
+  useEffect(() => {
+    fetchRestaurants()
+  }, [])
+
+  const handleAddFile = (file) => {
+    setImageFiles((prev) => [...prev, file])
+    setImagePreviews((prev) => [...prev, URL.createObjectURL(file)])
+  }
+
+  const handleAddCropped = (croppedFile) => {
+    setImageFiles((prev) => [...prev, croppedFile])
+    setImagePreviews((prev) => [...prev, URL.createObjectURL(croppedFile)])
+  }
+
+  const handleRemoveNew = (idx) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  const handleRemoveExisting = async (url) => {
+    if (!confirm('이 사진을 삭제할까요?')) return
+    const fileName = url.split('/').pop()
+    await supabase.storage.from('place-images').remove([fileName])
+    const idx = (editTarget?.image_urls || []).indexOf(url)
+    setPendingReplacements((prev) => prev.filter((p) => p.idx !== idx))
+    setEditTarget((prev) => ({
+      ...prev,
+      image_urls: (prev.image_urls || []).filter((u) => u !== url),
+    }))
+  }
+
+  const handlePendingReplace = (idx, file, previewUrl) => {
+    setPendingReplacements((prev) => {
+      const next = prev.filter((p) => p.idx !== idx)
+      return [...next, { idx, file, previewUrl }]
+    })
+  }
+
+  const handleReorderImages = (reorderedUrls) => {
+    if (editTarget) {
+      setEditTarget((prev) => ({ ...prev, image_urls: reorderedUrls }))
+    }
+  }
+
+  const resetForm = () => {
+    setShowForm(false)
+    setEditTarget(null)
+    setForm({
+      name: '',
+      map_label: '',
+      description: '',
+      address: '',
+      latitude: '',
+      longitude: '',
+      discount_info: '',
+      discount_terms: '',
+      one_line_review: '',
+      rating: '',
+      review: '',
+      reviewer_name: '',
+      category: '맛집',
+      price_range: '',
+      is_sponsored: false,
+    })
+    setImageFiles([])
+    setImagePreviews([])
+    setPendingReplacements([])
+    setRichEditorKey((k) => k + 1)
   }
 
   const handleSave = async () => {
-    if (!form.name) { alert('장소 이름을 입력해주세요.'); return }
+    if (!form.name) {
+      alert('장소 이름을 입력해주세요.')
+      return
+    }
     setUploading(true)
     let image_urls = [...(editTarget?.image_urls || [])]
 
     for (const { idx, file } of pendingReplacements) {
       const oldFileName = image_urls[idx]?.split('/').pop()
-      if (oldFileName) await supabase.storage.from('place-images').remove([oldFileName])
+      if (oldFileName) {
+        await supabase.storage.from('place-images').remove([oldFileName])
+      }
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
-      const { error } = await supabase.storage.from('place-images').upload(fileName, file)
-      if (error) { alert('업로드 실패: ' + error.message); setUploading(false); return }
-      const { data: urlData } = supabase.storage.from('place-images').getPublicUrl(fileName)
+      const fileName = `${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}.${fileExt}`
+      const { error } = await supabase.storage
+        .from('place-images')
+        .upload(fileName, file)
+      if (error) {
+        alert('업로드 실패: ' + error.message)
+        setUploading(false)
+        return
+      }
+      const { data: urlData } = supabase.storage
+        .from('place-images')
+        .getPublicUrl(fileName)
       image_urls[idx] = urlData.publicUrl
     }
+
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('place-images').upload(fileName, file)
-      if (uploadError) { alert('업로드 실패: ' + uploadError.message); setUploading(false); return }
-      const { data: urlData } = supabase.storage.from('place-images').getPublicUrl(fileName)
+      const fileName = `${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}.${fileExt}`
+      const { error: uploadError } = await supabase.storage
+        .from('place-images')
+        .upload(fileName, file)
+      if (uploadError) {
+        alert('업로드 실패: ' + uploadError.message)
+        setUploading(false)
+        return
+      }
+      const { data: urlData } = supabase.storage
+        .from('place-images')
+        .getPublicUrl(fileName)
       image_urls = [...image_urls, urlData.publicUrl]
     }
 
     const payload = {
-  name: form.name,
-  map_label: form.map_label,
-  description: form.description,
-  address: form.address,
-  latitude: form.latitude ? parseFloat(form.latitude) : null,
-  longitude: form.longitude ? parseFloat(form.longitude) : null,
-  discount_info: form.discount_info,
-  discount_terms: form.discount_terms,
-  one_line_review: form.one_line_review,
-  rating: form.rating ? parseFloat(form.rating) : 0,
-  review: form.review,
-  reviewer_name: form.reviewer_name,
-  category: form.category,
-  price_range: form.price_range,
-  is_sponsored: form.is_sponsored,
-  image_urls
-}
+      name: form.name,
+      map_label: form.map_label,
+      description: form.description,
+      address: form.address,
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
+      discount_info: form.discount_info,
+      discount_terms: form.discount_terms,
+      one_line_review: form.one_line_review,
+      rating: form.rating ? parseFloat(form.rating) : 0,
+      review: form.review,
+      reviewer_name: form.reviewer_name,
+      category: form.category,
+      price_range: form.price_range,
+      is_sponsored: form.is_sponsored,
+      image_urls,
+    }
+
     let saveError = null
     if (editTarget) {
-      const { error } = await supabase.from('restaurants').update(payload).eq('id', editTarget.id); saveError = error
+      const { error } = await supabase
+        .from('restaurants')
+        .update(payload)
+        .eq('id', editTarget.id)
+      saveError = error
     } else {
-      const { error } = await supabase.from('restaurants').insert(payload); saveError = error
+      const { error } = await supabase
+        .from('restaurants')
+        .insert(payload)
+      saveError = error
     }
-    if (saveError) { alert('저장 실패: ' + saveError.message); setUploading(false); return }
-    setUploading(false); resetForm(); fetchRestaurants()
+
+    if (saveError) {
+      alert('저장 실패: ' + saveError.message)
+      setUploading(false)
+      return
+    }
+
+    setUploading(false)
+    resetForm()
+    fetchRestaurants()
   }
 
   const handleDelete = async (id) => {
@@ -1895,58 +2335,76 @@ function RestaurantsTab() {
     fetchRestaurants()
   }
 
-  setForm({
-  name: r.name,
-  map_label: r.map_label || '',
-  description: r.description || '',
-  address: r.address || '',
-  latitude: r.latitude || '',
-  longitude: r.longitude || '',
-  discount_info: r.discount_info || '',
-  discount_terms: r.discount_terms || '',
-  one_line_review: r.one_line_review || '',
-  rating: r.rating || '',
-  review: r.review || '',
-  reviewer_name: r.reviewer_name || '',
-  category: r.category || '맛집',
-  price_range: r.price_range || '',
-  is_sponsored: r.is_sponsored || false
-})
-    setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setShowForm(true)
+  const openEdit = (r) => {
+    setEditTarget(r)
+    setForm({
+      name: r.name,
+      map_label: r.map_label || '',
+      description: r.description || '',
+      address: r.address || '',
+      latitude: r.latitude || '',
+      longitude: r.longitude || '',
+      discount_info: r.discount_info || '',
+      discount_terms: r.discount_terms || '',
+      one_line_review: r.one_line_review || '',
+      rating: r.rating || '',
+      review: r.review || '',
+      reviewer_name: r.reviewer_name || '',
+      category: r.category || '맛집',
+      price_range: r.price_range || '',
+      is_sponsored: r.is_sponsored || false,
+    })
+    setRichEditorKey((k) => k + 1)
+    setImageFiles([])
+    setImagePreviews([])
+    setPendingReplacements([])
+    setShowForm(true)
   }
 
   const openAdd = () => {
-  setEditTarget(null)
-  setForm({
-    name: '',
-    map_label: '',
-    description: '',
-    address: '',
-    latitude: '',
-    longitude: '',
-    discount_info: '',
-    discount_terms: '',
-    one_line_review: '',
-    rating: '',
-    review: '',
-    reviewer_name: '',
-    category: '맛집',
-    price_range: '',
-    is_sponsored: false
-  })
-    setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setShowForm(true)
+    setEditTarget(null)
+    setForm({
+      name: '',
+      map_label: '',
+      description: '',
+      address: '',
+      latitude: '',
+      longitude: '',
+      discount_info: '',
+      discount_terms: '',
+      one_line_review: '',
+      rating: '',
+      review: '',
+      reviewer_name: '',
+      category: '맛집',
+      price_range: '',
+      is_sponsored: false,
+    })
+    setRichEditorKey((k) => k + 1)
+    setImageFiles([])
+    setImagePreviews([])
+    setPendingReplacements([])
+    setShowForm(true)
   }
 
   const sorted = koreanSort(restaurants, 'name')
 
-  // Shared props passed down to RestaurantForm
   const formProps = {
-    form, setForm, richEditorKey, editTarget, uploading,
-    imagePreviews, pendingReplacements,
-    handleAddFile, handleAddCropped,
-    handleRemoveNew, handleRemoveExisting,
-    handlePendingReplace, handleReorderImages,
-    handleSave, resetForm,
+    form,
+    setForm,
+    richEditorKey,
+    editTarget,
+    uploading,
+    imagePreviews,
+    pendingReplacements,
+    handleAddFile,
+    handleAddCropped,
+    handleRemoveNew,
+    handleRemoveExisting,
+    handlePendingReplace,
+    handleReorderImages,
+    handleSave,
+    resetForm,
   }
 
   return (
@@ -1954,52 +2412,90 @@ function RestaurantsTab() {
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">장소 관리</h2>
         {!showForm && (
-          <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap">
-            <Plus size={16} weight="bold" />장소 추가
+          <button
+            onClick={openAdd}
+            className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"
+          >
+            <Plus size={16} weight="bold" />
+            장소 추가
           </button>
         )}
       </div>
 
       {showForm && !editTarget && <RestaurantForm {...formProps} />}
 
-      {restaurants.length === 0
-        ? <p className="text-gray-500 text-sm">등록된 장소가 없어요.</p>
-        : (() => {
+      {restaurants.length === 0 ? (
+        <p className="text-gray-500 text-sm">등록된 장소가 없어요.</p>
+      ) : (
+        (() => {
           const grouped = {}
-          sorted.forEach(r => {
+          sorted.forEach((r) => {
             const key = r.category || '기타'
             if (!grouped[key]) grouped[key] = []
             grouped[key].push(r)
           })
           return Object.entries(grouped).map(([cat, places]) => (
             <div key={cat} className="space-y-2">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">{cat} ({places.length})</p>
-              {places.map(r => (
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
+                {cat} ({places.length})
+              </p>
+              {places.map((r) => (
                 <div key={r.id}>
                   <div className="bg-white rounded-xl border border-gray-100 p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
-                          <p className="font-medium text-gray-900 text-sm">{r.name}</p>
-                          {r.is_sponsored && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full whitespace-nowrap">제휴</span>}
+                          <p className="font-medium text-gray-900 text-sm">
+                            {r.name}
+                          </p>
+                          {r.is_sponsored && (
+                            <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                              제휴
+                            </span>
+                          )}
                         </div>
-                        {r.address && <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin size={12} weight="fill" /> {r.address}</p>}
-                        {r.discount_info && <p className="text-xs text-orange-500 mt-0.5 flex items-center gap-1"><Ticket size={12} weight="fill" color="#FF5252" /> {r.discount_info.replace(/<[^>]+>/g, '')}</p>}
-                        {r.rating > 0 && <p className="text-xs text-amber-500 mt-0.5">★ {r.rating}</p>}
+                        {r.address && (
+                          <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                            <MapPin size={12} weight="fill" /> {r.address}
+                          </p>
+                        )}
+                        {r.discount_info && (
+                          <p className="text-xs text-orange-500 mt-0.5 flex items-center gap-1">
+                            <Ticket size={12} weight="fill" color="#FF5252" />{' '}
+                            {r.discount_info.replace(/<[^>]+>/g, '')}
+                          </p>
+                        )}
+                        {r.rating > 0 && (
+                          <p className="text-xs text-amber-500 mt-0.5">
+                            ★ {r.rating}
+                          </p>
+                        )}
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
-                        <button onClick={() => openEdit(r)} className="text-xs text-blue-600 hover:underline whitespace-nowrap">수정</button>
-                        <button onClick={() => handleDelete(r.id)} className="text-xs text-red-500 hover:underline whitespace-nowrap">삭제</button>
+                        <button
+                          onClick={() => openEdit(r)}
+                          className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                        >
+                          수정
+                        </button>
+                        <button
+                          onClick={() => handleDelete(r.id)}
+                          className="text-xs text-red-500 hover:underline whitespace-nowrap"
+                        >
+                          삭제
+                        </button>
                       </div>
                     </div>
                   </div>
-                  {showForm && editTarget && editTarget.id === r.id && <RestaurantForm {...formProps} />}
+                  {showForm && editTarget && editTarget.id === r.id && (
+                    <RestaurantForm {...formProps} />
+                  )}
                 </div>
               ))}
             </div>
           ))
         })()
-      }
+      )}
     </div>
   )
 }
