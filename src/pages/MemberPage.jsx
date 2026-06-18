@@ -291,8 +291,6 @@ function MembershipCard({
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize   = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
-  const topTabWidth  = `calc(${W} * 0.42)`
-  const topTabHeight = `calc(${W} * 0.11)`
 
   useEffect(() => {
     if (onFlipChange) onFlipChange(flipped)
@@ -407,32 +405,35 @@ function MembershipCard({
           </div>
         </div>
 
-        {/* ── Top tab with pill-shaped hole ── */}
+        {/* ── Top tab — thin strip flush with the top frame edge, centered ──
+            Width: ~55% of card. Height: same as frame stroke (~14px rendered).
+            top: -3px so it sits right on top of the frame border, not floating above it.
+            The pill hole is punched through the center.
+        ── */}
         <div
           style={{
             position: 'absolute',
-            top: `calc(-1 * ${topTabHeight} * 0.55)`,
+            top: '-14px',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: topTabWidth,
-            height: topTabHeight,
+            width: `calc(${W} * 0.55)`,
+            height: '20px',
             background: '#ccc9c1',
-            borderRadius: '10px',
+            borderRadius: '6px 6px 0 0',
             zIndex: 2,
             pointerEvents: 'none',
-            boxShadow: '0 4px 8px rgba(15,23,42,0.12)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
+          {/* pill hole */}
           <div
             style={{
-              width: '78%',
-              height: '44%',
+              width: '55%',
+              height: '8px',
               borderRadius: '999px',
-              background: '#F6F4F1',
-              boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.9)',
+              background: 'rgba(0,0,0,0.18)',
             }}
           />
         </div>
@@ -447,7 +448,6 @@ function MembershipCard({
     </div>
   )
 }
-
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
