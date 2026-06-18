@@ -72,7 +72,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
         <div className="mb-3">
   <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
 </div>
-        <div className="flex flex-col gap-2.5 px-3">
+        <div className="flex flex-col gap-2.5">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
             const pct =
@@ -434,7 +434,7 @@ export function SpotCard({ selected, onClose }) {
 
       <div
         ref={cardRef}
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl"
         style={{
           ...(hasImages ? imageStyle : noImageStyle),
           zIndex: 9999,
