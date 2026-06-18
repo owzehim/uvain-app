@@ -2337,22 +2337,28 @@ function EventsTab({ events }) {
 
       {/* LIGHTBOX */}
       {(lightboxOpen || lightboxClosing) && displayImages.length > 0 && (
-        <div
-          onTouchStart={handleLbTouchStart}
-          onTouchEnd={handleLbTouchEnd}
-          className={lightboxClosing ? 'lb-close' : 'lb-open'}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            touchAction: 'none',
-          }}
-        >
+  <div
+    onTouchStart={handleLbTouchStart}
+    onTouchEnd={handleLbTouchEnd}
+    onClick={(e) => {
+      // Only close when clicking the dark background, not inner elements
+      if (e.target === e.currentTarget) {
+        startLightboxClose()
+      }
+    }}
+    className={lightboxClosing ? 'lb-close' : 'lb-open'}
+    style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 9999,
+      backgroundColor: 'rgba(0,0,0,0.85)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      touchAction: 'none',
+    }}
+  >
           <div
             style={{
               position: 'absolute',
@@ -2388,26 +2394,27 @@ function EventsTab({ events }) {
             }}
           >
             <img
-              key={`${selectedEvent?.id ?? 'none'}-${lightboxIndex}`}
-              src={displayImages[lightboxIndex]}
-              alt=""
-              className={
-                lightboxClosing
-                  ? ''
-                  : lbSlideDir === -1
-                  ? 'lb-slide-left'
-                  : lbSlideDir === 1
-                  ? 'lb-slide-right'
-                  : ''
-              }
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain',
-                borderRadius: '8px',
-              }}
-              draggable={false}
-            />
+  key={`${selectedEvent?.id ?? 'none'}-${lightboxIndex}`}
+  src={displayImages[lightboxIndex]}
+  alt=""
+  onClick={startLightboxClose}
+  className={
+    lightboxClosing
+      ? ''
+      : lbSlideDir === -1
+      ? 'lb-slide-left'
+      : lbSlideDir === 1
+      ? 'lb-slide-right'
+      : ''
+  }
+  style={{
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain',
+    borderRadius: '8px',
+  }}
+  draggable={false}
+/>
           </div>
 
           {displayImages.length > 1 && (
