@@ -581,8 +581,9 @@ export function SpotCard({ selected, onClose }) {
       <svg
         className="w-full"
         viewBox="0 0 360 80"
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMid meet"
         xmlns="http://www.w3.org/2000/svg"
+        style={{ minHeight: '56px' }}
       >
         {/* 본체: 부드러운 직사각형 */}
         <rect
@@ -607,20 +608,18 @@ export function SpotCard({ selected, onClose }) {
         />
       </svg>
 
-                  {/* 텍스트: 직사각형 영역 안에서 수직 중앙 정렬 */}
+      {/* 텍스트: 직사각형 영역 안에서 수직 중앙 정렬 */}
       <div
-        className="absolute left-0 right-0 top-0"
-        style={{ height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        className="absolute left-0 right-0 top-0 flex items-center justify-center px-3 sm:px-4 md:px-6"
+        style={{ height: '56px' }}
       >
-        <div className="px-6">
-          <RichText
-            text={selected.one_line_review}
-            className="font-semibold text-white text-lg text-center block"
-          />
-        </div>
-      </div>
+        <RichText
+          text={selected.one_line_review}
+          className="font-semibold text-white text-base sm:text-lg text-center block"
+        />
       </div>
     </div>
+  </div>
 )}
 
           {/* ── Member review bar chart ── */}
