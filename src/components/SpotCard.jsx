@@ -363,7 +363,7 @@ export function SpotCard({ selected, onClose }) {
       e.preventDefault()
     }
 
-    // We don't update cardHeight here; snapping happens in handleTouchEnd.
+    // Snapping happens in handleTouchEnd.
   }
 
   const handleTouchEnd = () => {
@@ -467,7 +467,7 @@ export function SpotCard({ selected, onClose }) {
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        <div className="flex-1 px-8" style={{ overflowY: 'hidden' }}>
+        <div className="flex-1 px-5" style={{ overflowY: 'hidden' }}>
           {/* ── Place info ── */}
           <div className="pt-1 pb-3">
             {/* Category, price, sponsored badges (kept but not rendered) */}
