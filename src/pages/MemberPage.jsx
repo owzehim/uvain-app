@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear, UserCircle, ArrowsVertical } from '@phosphor-icons/react'
+import { QrCode, Calendar, MapPin, Gear, UserCircle } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -1362,28 +1362,23 @@ function EventsTab({ events }) {
     lbSwipeY.current = e.touches[0].clientY
   }
 
-  const handleLbTouchEnd = (e) => {
-    if (lbSwipeX.current == null) return
-    const dx = e.changedTouches[0].clientX - lbSwipeX.current
-    const dy = e.changedTouches[0].clientY - lbSwipeY.current
-    lbSwipeX.current = null
-    lbSwipeY.current = null
+ const handleLbTouchEnd = (e) => {
+  if (lbSwipeX.current == null) return
+  const dx = e.changedTouches[0].clientX - lbSwipeX.current
+  lbSwipeX.current = null
+  lbSwipeY.current = null
 
-    // Close on vertical swipe
-    if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) {
-      startLightboxClose()
-      return
-    }
-
-    const imgs = selectedEvent?.image_urls || []
-    if (dx < -40) {
-      setLbSlideDir(-1)
-      setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
-    } else if (dx > 40) {
-      setLbSlideDir(1)
-      setLightboxIndex((i) => Math.max(i - 1, 0))
-    }
+  const imgs = selectedEvent?.image_urls || []
+  if (dx < -40) {
+    // swipe left → next image
+    setLbSlideDir(-1)
+    setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
+  } else if (dx > 40) {
+    // swipe right → previous image
+    setLbSlideDir(1)
+    setLightboxIndex((i) => Math.max(i - 1, 0))
   }
+}
 
   // ── Formatting helpers ──────────────────────────────────────────────────────
   const getDayDiff = (s) => {
@@ -2341,7 +2336,7 @@ function EventsTab({ events }) {
     onTouchStart={handleLbTouchStart}
     onTouchEnd={handleLbTouchEnd}
     onClick={(e) => {
-      // Only close when clicking the dark background, not inner elements
+      // Close when tapping the dark background only
       if (e.target === e.currentTarget) {
         startLightboxClose()
       }
@@ -2359,29 +2354,6 @@ function EventsTab({ events }) {
       touchAction: 'none',
     }}
   >
-          <div
-            style={{
-              position: 'absolute',
-              top: 'calc(env(safe-area-inset-top) + 16px)',
-              right: 16,
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              pointerEvents: 'none',
-            }}
-          >
-            <ArrowsVertical size={16} weight="bold" />
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: 12,
-                letterSpacing: '0.12em',
-              }}
-            >
-              SWIPE TO CLOSE
-            </span>
-          </div>
 
           <div
             style={{
@@ -2397,7 +2369,10 @@ function EventsTab({ events }) {
   key={`${selectedEvent?.id ?? 'none'}-${lightboxIndex}`}
   src={displayImages[lightboxIndex]}
   alt=""
-  onClick={startLightboxClose}
+  onClick={(e) => {
+    e.stopPropagation() // prevent triggering background click
+    startLightboxClose()
+  }}
   className={
     lightboxClosing
       ? ''
@@ -2432,10 +2407,11 @@ function EventsTab({ events }) {
               {displayImages.map((_, i) => (
                 <div
                   key={i}
-                  onClick={() => {
-                    setLbSlideDir(i > lightboxIndex ? -1 : 1)
-                    setLightboxIndex(i)
-                  }}
+                  onClick={(e) => {
+  e.stopPropagation() // don’t trigger background tap
+  setLbSlideDir(i > lightboxIndex ? -1 : 1)
+  setLightboxIndex(i)
+}}
                   style={{
                     width: i === lightboxIndex ? 8 : 6,
                     height: i === lightboxIndex ? 8 : 6,
