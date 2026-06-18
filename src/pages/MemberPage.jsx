@@ -404,21 +404,16 @@ function MembershipCard({
             </clipPath>
 
             {/*
-              Tab dimensions (in viewBox units, card is 106 wide):
-              - Tab spans x=25 to x=81 → width=56 (wide, like the reference)
-              - Tab height: y=-8 to y=3 → 11 units tall (flat, not too tall)
-              - Top corners: soft radius via quadratic bezier
-              - Bottom corners: perfectly sharp (flush to card top at y=3)
-              - Pill hole: very thin (height=2.5), narrow (width=22), centered
+              Tab: wide (x=25→81), very flat (only 5 units tall: y=-2 to y=3)
+              Top corners softly rounded, bottom corners sharp/flush at y=3
+              Pill hole: thin (h=1.8) and narrow (w=20), centered at x=43→63
             */}
             <mask id="tabHoleMask">
-              {/* Tab shape: wide rectangle, rounded top corners only */}
               <path
-                d="M25,3 L81,3 L81,-5 Q81,-8 78,-8 L28,-8 Q25,-8 25,-5 Z"
+                d="M25,3 L81,3 L81,0 Q81,-2 79,-2 L27,-2 Q25,-2 25,0 Z"
                 fill="white"
               />
-              {/* Pill hole: thin and narrow, centered horizontally (x=42 to x=64) */}
-              <rect x="42" y="-5.75" width="22" height="2.5" rx="1.25" ry="1.25" fill="black" />
+              <rect x="43" y="-1.4" width="20" height="1.8" rx="0.9" ry="0.9" fill="black" />
             </mask>
           </defs>
 
@@ -432,9 +427,9 @@ function MembershipCard({
             clipPath="url(#bottomGap)"
           />
 
-          {/* Tab — bottom at y=3 (card top edge), zero gap */}
+          {/* Tab — bottom flush at y=3, very flat profile */}
           <path
-            d="M25,3 L81,3 L81,-5 Q81,-8 78,-8 L28,-8 Q25,-8 25,-5 Z"
+            d="M25,3 L81,3 L81,0 Q81,-2 79,-2 L27,-2 Q25,-2 25,0 Z"
             fill="url(#metalGrad)"
             mask="url(#tabHoleMask)"
           />
