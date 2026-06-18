@@ -69,12 +69,12 @@ function TagBarChart({ tagCounts, reviewCount }) {
   const maxCount = sorted[0].count
 
   return (
-    <div className="pb-4">
-      <div className="pt-3 border-t border-gray-100">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
-          <span className="text-xs text-gray-400">{reviewCount}개</span>
-        </div>
+  <div className="pb-4">
+    <div className="pt-3">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
+        <span className="text-xs text-gray-400">{reviewCount}개</span>
+      </div>
 
         <div className="flex flex-col gap-2.5">
           {sorted.map((tag) => {
@@ -570,7 +570,7 @@ export function SpotCard({ selected, onClose }) {
 
 {/* ── 한 줄 평가 ── */}
 {selected.one_line_review && (
-  <div className="mb-4">
+  <div className="mt-6 mb-4 text-center">
     <p className="text-xs font-semibold text-gray-500 mb-1.5">
       한 줄 평가
     </p>
@@ -590,29 +590,26 @@ export function SpotCard({ selected, onClose }) {
           )}
 
           {/* ── 임원 리뷰 ── */}
-          {(selected.review || selected.reviewer_name) && (
-            <div className="pb-4">
-              <div className="pt-3 border-t border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 mb-1.5">
-                  임원 리뷰
-                </p>
-
-                {selected.review && (
-                  <RichText
-                    text={selected.review}
-                    className="text-xs text-gray-600 block"
-                  />
-                )}
-
-                {selected.reviewer_name && (
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {'— ' + selected.reviewer_name}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
+{(selected.review || selected.reviewer_name) && (
+  <div className="pb-4">
+    <div className="pt-3">
+      <p className="text-xs font-semibold text-gray-500 mb-1.5">
+        임원 리뷰
+      </p>
+      {selected.review && (
+        <RichText
+          text={selected.review}
+          className="text-xs text-gray-600 block"
+        />
+      )}
+      {selected.reviewer_name && (
+        <p className="text-xs text-gray-400 mt-0.5">
+          {'— ' + selected.reviewer_name}
+        </p>
+      )}
+    </div>
+  </div>
+)}
           <div className="pb-16" />
         </div>
 

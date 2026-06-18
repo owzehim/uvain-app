@@ -143,9 +143,7 @@ export default function AdminPage() {
         return
       }
 
-      const isAdmin =
-        user.user_metadata?.role === 'admin' ||
-        user.email === 'admin@uvain.nl'
+      const isAdmin = user.user_metadata?.role === 'admin'
 
       if (!isAdmin) {
         navigate('/member')
