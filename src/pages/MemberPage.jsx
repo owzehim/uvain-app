@@ -330,7 +330,7 @@ function MembershipCard({
       </div>
 
       {/* MIDDLE */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '52px' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
           <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
           <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />

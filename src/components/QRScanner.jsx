@@ -10,7 +10,6 @@ export default function QRScanner({ onScan }) {
   useEffect(() => {
     const scannerId = 'qr-scanner-container'
     let isMounted = true
-    // Track whether stop() has already been requested
     let stopRequested = false
 
     async function startScanner() {
@@ -31,7 +30,6 @@ export default function QRScanner({ onScan }) {
           () => {}
         )
 
-        // If unmount happened while we were awaiting start(), stop immediately
         if (stopRequested) {
           try {
             await scanner.stop()
@@ -65,7 +63,8 @@ export default function QRScanner({ onScan }) {
   }, [onScan])
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full">
+    // ↓ h-full + justify-center → 카드 뒷면 전체 높이 안에서 수직 중앙 정렬
+    <div className="flex flex-col items-center justify-center gap-3 w-full h-full">
       <style>{`
         #qr-scanner-container #qr-shaded-region {
           border-width: 0 !important;
@@ -126,6 +125,7 @@ export default function QRScanner({ onScan }) {
         </div>
       </div>
 
+      {/* 텍스트 — 카메라 바로 아래, 기존 padding 유지 */}
       <div className="flex flex-col items-center gap-1 text-center px-4">
         <p style={{ fontSize: '14px', fontWeight: 600, color: '#2C2A27', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.04em', margin: 0 }}>
           매장 QR 코드를 스캔해주세요
