@@ -476,44 +476,43 @@ export function SpotCard({ selected, onClose }) {
         <div className="flex-1" style={{ overflowY: 'hidden' }}>
           {/* ── Place info ── */}
           <div className="px-4 pt-1 pb-3">
-            {/* Category, price, sponsored badges */}
-            <div className="flex items-center gap-1.5 flex-wrap mb-1">
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-                {iconSvg && (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: iconSvg.replace(
-                        'fill="currentColor"',
-                        'fill="#f97316"'
-                      ),
-                    }}
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  />
-                )}
-                {selected.category || '기타'}
-              </span>
+            {/* Category, price, sponsored badges (kept but not rendered) */}
+{false && (
+  <div className="flex items-center gap-1.5 flex-wrap mb-1">
+    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
+      {iconSvg && (
+        <div
+          dangerouslySetInnerHTML={{
+            __html: iconSvg.replace('fill="currentColor"', 'fill="#f97316"'),
+          }}
+          style={{
+            width: '14px',
+            height: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        />
+      )}
+      {selected.category || '기타'}
+    </span>
 
-              {selected.price_range && (
-                <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
-                  {selected.price_range}
-                </span>
-              )}
+    {selected.price_range && (
+      <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
+        {selected.price_range}
+      </span>
+    )}
 
-              {selected.is_sponsored && (
-                <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
-                  제휴
-                </span>
-              )}
-            </div>
+    {selected.is_sponsored && (
+      <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
+        제휴
+      </span>
+    )}
+  </div>
+)}
 
             {/* Store name */}
-            <p className="font-semibold text-gray-900">{selected.name}</p>
+            <p className="font-semibold text-gray-900 text-lg">{selected.name}</p>
 
             {/* Star review - NOW UNDER THE TITLE */}
             {hasReviews && (
