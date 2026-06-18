@@ -319,9 +319,9 @@ export function SpotCard({ selected, onClose }) {
     [],
   )
 
-  const isDesktop = WIN_W >= 768
-  const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.88
+const isDesktop = WIN_W >= 768
+const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
+const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
 
   // Trigger animation on mount
   useEffect(() => {
@@ -434,7 +434,7 @@ export function SpotCard({ selected, onClose }) {
 
       <div
         ref={cardRef}
-        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
         style={{
           ...(hasImages ? imageStyle : noImageStyle),
           zIndex: 9999,
