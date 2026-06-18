@@ -570,30 +570,27 @@ export function SpotCard({ selected, onClose }) {
 
 {/* ── 한 줄 평가 ── */}
 {selected.one_line_review && (
-  <div className="mt-6 mb-5 flex justify-center">
-    <div className="relative bg-orange-500 rounded-2xl px-4 py-3 max-w-full">
-      {/* label: left-aligned, white */}
-      <p className="text-xs font-semibold text-white mb-1.5 text-left">
+  <div className="mt-8 mb-6">
+    {/* 전체 가로폭을 채우는 말풍선 */}
+    <div className="relative w-full bg-orange-500 rounded-full px-5 py-3">
+      {/* 라벨: 왼쪽 정렬, 화이트 */}
+      <p className="text-xs font-semibold text-white mb-1 text-left">
         한 줄 평가
       </p>
 
-      {/* text: centered, white */}
+      {/* 텍스트: 가운데 정렬, 화이트 */}
       <RichText
         text={selected.one_line_review}
         className="font-semibold text-white text-lg text-center block"
       />
 
-      {/* speech-bubble tail */}
-      <div
-        className="absolute left-1/2 -bottom-2 -translate-x-1/2"
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: '8px solid transparent',
-          borderRight: '8px solid transparent',
-          borderTop: '10px solid #f97316', // same orange as bg-orange-500
-        }}
-      />
+      {/* 왼쪽 아래 꼬리 – iMessage 같은 느낌 */}
+      <div className="absolute left-6 -bottom-2">
+        {/* 바탕 꼬리 (오렌지) */}
+        <div className="w-4 h-4 bg-orange-500 rounded-full" />
+        {/* 잘라내기용 흰색 원 (배경색이 흰색이라 삼각형 느낌) */}
+        <div className="absolute -top-1 left-1 w-4 h-4 bg-white rounded-full" />
+      </div>
     </div>
   </div>
 )}
