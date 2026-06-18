@@ -376,7 +376,7 @@ function MembershipCard({
     >
       <div style={{ width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d', transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
 
-        {/* ── Brushed-metal frame + integrated top tab (single SVG, zero gap) ── */}
+        {/* ── Brushed-metal frame + integrated top tab ── */}
         <svg
           style={{
             position: 'absolute',
@@ -397,23 +397,32 @@ function MembershipCard({
               <stop offset="100%" stopColor="#c0bcb4" />
             </linearGradient>
 
-            {/* Clip away bottom-center gap for grips */}
             <clipPath id="bottomGap">
               <rect x="0"  y="0"   width="106" height="158" />
               <rect x="0"  y="158" width="24"  height="20"  />
               <rect x="82" y="158" width="24"  height="20"  />
             </clipPath>
 
-            {/* Mask: punches thin pill hole out of the tab */}
+            {/*
+              Tab dimensions (in viewBox units, card is 106 wide):
+              - Tab spans x=25 to x=81 → width=56 (wide, like the reference)
+              - Tab height: y=-8 to y=3 → 11 units tall (flat, not too tall)
+              - Top corners: soft radius via quadratic bezier
+              - Bottom corners: perfectly sharp (flush to card top at y=3)
+              - Pill hole: very thin (height=2.5), narrow (width=22), centered
+            */}
             <mask id="tabHoleMask">
-              {/* Full tab shape in white (visible area) */}
-              <path d="M34,3 L72,3 L72,3 Q72,-6 69,-6 L37,-6 Q34,-6 34,3 Z" fill="white" />
-              {/* Thin pill hole in black (cut out) */}
-              <rect x="39" y="-4" width="28" height="4" rx="2" ry="2" fill="black" />
+              {/* Tab shape: wide rectangle, rounded top corners only */}
+              <path
+                d="M25,3 L81,3 L81,-5 Q81,-8 78,-8 L28,-8 Q25,-8 25,-5 Z"
+                fill="white"
+              />
+              {/* Pill hole: thin and narrow, centered horizontally (x=42 to x=64) */}
+              <rect x="42" y="-5.75" width="22" height="2.5" rx="1.25" ry="1.25" fill="black" />
             </mask>
           </defs>
 
-          {/* Card frame stroke */}
+          {/* Card frame */}
           <rect
             x="3" y="3" width="100" height="168.1"
             rx="14.5" ry="9.2"
@@ -423,9 +432,9 @@ function MembershipCard({
             clipPath="url(#bottomGap)"
           />
 
-          {/* Tab — same coordinate space as frame, bottom edge at y=3 = top of frame, zero gap */}
+          {/* Tab — bottom at y=3 (card top edge), zero gap */}
           <path
-            d="M34,3 L72,3 L72,3 Q72,-6 69,-6 L37,-6 Q34,-6 34,3 Z"
+            d="M25,3 L81,3 L81,-5 Q81,-8 78,-8 L28,-8 Q25,-8 25,-5 Z"
             fill="url(#metalGrad)"
             mask="url(#tabHoleMask)"
           />
@@ -453,7 +462,6 @@ function MembershipCard({
     </div>
   )
 }
-
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
