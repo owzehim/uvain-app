@@ -60,6 +60,16 @@ function StarDisplay({ averageRating }) {
 // ── Tag bar chart ─────────────────────────────────────────────── 
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
+  
+  // DEBUG: Log the tag data
+  console.log('DEBUG TagBarChart - tagCounts:', tagCounts)
+  console.log('DEBUG TagBarChart - sorted:', sorted)
+  if (sorted.length > 0) {
+    console.log('DEBUG - First tag object:', sorted[0])
+    console.log('DEBUG - tag.icon value:', sorted[0].icon)
+    console.log('DEBUG - IconComponent lookup:', TAG_ICON_COMPONENTS[sorted[0].icon])
+  }
+  
   if (sorted.length === 0) return null
 
   const maxCount = sorted[0].count
@@ -82,6 +92,9 @@ function TagBarChart({ tagCounts, reviewCount }) {
                 <div className="flex items-center gap-1 w-28 flex-shrink-0">
                   {IconComponent && (
                     <IconComponent size={13} weight="fill" color="#f97316" />
+                  )}
+                  {!IconComponent && (
+                    <span className="text-xs text-red-500">❌ No icon for: {tag.icon}</span>
                   )}
                   <span className="text-xs text-gray-600 truncate">{tag.label}</span>
                 </div>
