@@ -376,21 +376,59 @@ function MembershipCard({
     >
       <div style={{ width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d', transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
 
-        {/* ── Brushed-metal frame ── */}
-        <svg style={{ position: 'absolute', inset: '-3px', width: 'calc(100% + 6px)', height: 'calc(100% + 6px)', overflow: 'visible', zIndex: 0, pointerEvents: 'none' }} viewBox="0 0 106 174.1" preserveAspectRatio="none">
+        {/* ── Brushed-metal frame + integrated top tab (single SVG, zero gap) ── */}
+        <svg
+          style={{
+            position: 'absolute',
+            inset: '-3px',
+            width: 'calc(100% + 6px)',
+            height: 'calc(100% + 6px)',
+            overflow: 'visible',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+          viewBox="0 0 106 174.1"
+          preserveAspectRatio="none"
+        >
           <defs>
             <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%"   stopColor="#c8c4bc" />
               <stop offset="50%"  stopColor="#dedad4" />
               <stop offset="100%" stopColor="#c0bcb4" />
             </linearGradient>
+
+            {/* Clip away bottom-center gap for grips */}
             <clipPath id="bottomGap">
               <rect x="0"  y="0"   width="106" height="158" />
               <rect x="0"  y="158" width="24"  height="20"  />
               <rect x="82" y="158" width="24"  height="20"  />
             </clipPath>
+
+            {/* Mask: punches thin pill hole out of the tab */}
+            <mask id="tabHoleMask">
+              {/* Full tab shape in white (visible area) */}
+              <path d="M34,3 L72,3 L72,3 Q72,-6 69,-6 L37,-6 Q34,-6 34,3 Z" fill="white" />
+              {/* Thin pill hole in black (cut out) */}
+              <rect x="39" y="-4" width="28" height="4" rx="2" ry="2" fill="black" />
+            </mask>
           </defs>
-          <rect x="3" y="3" width="100" height="168.1" rx="14.5" ry="9.2" fill="none" stroke="url(#metalGrad)" strokeWidth="6" clipPath="url(#bottomGap)" />
+
+          {/* Card frame stroke */}
+          <rect
+            x="3" y="3" width="100" height="168.1"
+            rx="14.5" ry="9.2"
+            fill="none"
+            stroke="url(#metalGrad)"
+            strokeWidth="6"
+            clipPath="url(#bottomGap)"
+          />
+
+          {/* Tab — same coordinate space as frame, bottom edge at y=3 = top of frame, zero gap */}
+          <path
+            d="M34,3 L72,3 L72,3 Q72,-6 69,-6 L37,-6 Q34,-6 34,3 Z"
+            fill="url(#metalGrad)"
+            mask="url(#tabHoleMask)"
+          />
         </svg>
 
         {/* ── Front face ── */}
@@ -405,46 +443,6 @@ function MembershipCard({
           </div>
         </div>
 
-        {/* ── Top tab — rectangle with soft top corners only, thin pill hole, flush with frame ── */}
-<svg
-  style={{
-    position: 'absolute',
-    top: '-10px',          // ← was '-12px'; reduced gap between tab and frame
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: `calc(${W} * 0.35)`,
-    height: '14px',        // ← was '18px'; shorter tab overall
-    zIndex: 2,
-    pointerEvents: 'none',
-    overflow: 'visible',
-  }}
-  viewBox="0 0 100 14"
-  preserveAspectRatio="none"
->
-  <defs>
-    <mask id="tabHole">
-      {/*
-        Tab shape: rectangle with ONLY top-left and top-right corners rounded (r=5).
-        Bottom corners are sharp (0) so it sits flush against the card frame.
-        Path: start bottom-left → bottom-right → top-right (rounded) → top-left (rounded) → close
-      */}
-      <path
-        d="M0,14 L100,14 L100,5 Q100,0 95,0 L5,0 Q0,0 0,5 Z"
-        fill="white"
-      />
-      {/* Thinner pill hole: height 5 (was 9), centered vertically */}
-      <rect x="27" y="4.5" width="46" height="5" rx="2.5" ry="2.5" fill="black" />
-    </mask>
-  </defs>
-  {/* Same tab shape as the mask */}
-  <path
-    d="M0,14 L100,14 L100,5 Q100,0 95,0 L5,0 Q0,0 0,5 Z"
-    fill="#ccc9c1"
-    mask="url(#tabHole)"
-  />
-</svg>
-
-
         {/* ── Left grip ── */}
         <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
 
@@ -455,6 +453,7 @@ function MembershipCard({
     </div>
   )
 }
+
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
