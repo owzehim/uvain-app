@@ -405,30 +405,45 @@ function MembershipCard({
           </div>
         </div>
 
-        {/* ── Top tab — SVG with real transparent pill hole ── */}
-        <svg
-          style={{
-            position: 'absolute',
-            top: '-12px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: `calc(${W} * 0.35)`,
-            height: '18px',
-            zIndex: 2,
-            pointerEvents: 'none',
-            overflow: 'visible',
-          }}
-          viewBox="0 0 100 18"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <mask id="tabHole">
-              <rect width="100" height="18" fill="white" rx="5" ry="5" />
-              <rect x="27" y="5" width="46" height="9" rx="4.5" ry="4.5" fill="black" />
-            </mask>
-          </defs>
-          <rect width="100" height="18" rx="5" ry="5" fill="#ccc9c1" mask="url(#tabHole)" />
-        </svg>
+        {/* ── Top tab — rectangle with soft top corners only, thin pill hole, flush with frame ── */}
+<svg
+  style={{
+    position: 'absolute',
+    top: '-10px',          // ← was '-12px'; reduced gap between tab and frame
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: `calc(${W} * 0.35)`,
+    height: '14px',        // ← was '18px'; shorter tab overall
+    zIndex: 2,
+    pointerEvents: 'none',
+    overflow: 'visible',
+  }}
+  viewBox="0 0 100 14"
+  preserveAspectRatio="none"
+>
+  <defs>
+    <mask id="tabHole">
+      {/*
+        Tab shape: rectangle with ONLY top-left and top-right corners rounded (r=5).
+        Bottom corners are sharp (0) so it sits flush against the card frame.
+        Path: start bottom-left → bottom-right → top-right (rounded) → top-left (rounded) → close
+      */}
+      <path
+        d="M0,14 L100,14 L100,5 Q100,0 95,0 L5,0 Q0,0 0,5 Z"
+        fill="white"
+      />
+      {/* Thinner pill hole: height 5 (was 9), centered vertically */}
+      <rect x="27" y="4.5" width="46" height="5" rx="2.5" ry="2.5" fill="black" />
+    </mask>
+  </defs>
+  {/* Same tab shape as the mask */}
+  <path
+    d="M0,14 L100,14 L100,5 Q100,0 95,0 L5,0 Q0,0 0,5 Z"
+    fill="#ccc9c1"
+    mask="url(#tabHole)"
+  />
+</svg>
+
 
         {/* ── Left grip ── */}
         <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
