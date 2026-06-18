@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import {
+  MAP_CATEGORIES,
+  CATEGORY_ICONS_WHITE,
+  CATEGORY_ICONS_ORANGE,
+} from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin, Gear, UserCircle } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
-
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -21,7 +24,6 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const [qrCardLifted, setQrCardLifted] = useState(false)
-
   const navigate = useNavigate()
 
   // ── Review prompt hook ───────────────────────────────────────────────────────
@@ -246,7 +248,6 @@ export default function MemberPage() {
 }
 
 // ─── Pastel avatar colors ─────────────────────────────────────────────────────
-
 const PASTEL_COLORS = [
   '#FFB3B3',
   '#FFD9A0',
@@ -266,8 +267,15 @@ function getPastelColor(seed) {
 }
 
 // ─── Membership Card ─────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlipChange }) {
+function MembershipCard({
+  member,
+  isValid,
+  onQRScanned,
+  disabled = false,
+  onFlipChange,
+}) {
   const [flipped, setFlipped] = useState(false)
+
   const W = 'calc(100vw - 32px)'
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
@@ -277,6 +285,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
     name: `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.18)`,
   }
+
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
   const avatarSize = `calc(${W} * 0.21)`
@@ -305,7 +314,13 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
       }}
     >
       {/* TOP */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+        }}
+      >
         <div
           style={{
             width: avatarSize,
@@ -332,9 +347,14 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               }}
             />
           ) : (
-            <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
+            <UserCircle
+              size="72%"
+              weight="fill"
+              color="rgba(44,42,39,0.55)"
+            />
           )}
         </div>
+
         <div
           style={{
             display: 'flex',
@@ -369,7 +389,9 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
           >
             Valid Until{' '}
             {member?.membership_valid_until
-              ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
+              ? new Date(
+                  member.membership_valid_until,
+                ).toLocaleDateString('en-CA')
               : 'N/A'}
           </span>
           <span
@@ -454,6 +476,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               borderRadius: '0 0 4px 0',
             }}
           />
+
           <div
             style={{
               position: 'absolute',
@@ -465,7 +488,11 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               gap: `calc(${W} * 0.02)`,
             }}
           >
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+            <QrCode
+              size={`calc(${W} * 0.1)`}
+              weight="bold"
+              color="rgba(44,42,39,0.25)"
+            />
             <span
               style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
@@ -538,11 +565,23 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
           활성화된 멤버십이 없습니다
         </span>
         {member?.first_name && (
-          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
+          <span
+            style={{
+              marginTop: '4px',
+              fontSize: fs.valid,
+              color: '#6b7280',
+            }}
+          >
             {member.first_name} {member.last_name}
           </span>
         )}
-        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
+        <span
+          style={{
+            marginTop: '10px',
+            fontSize: `calc(${W} * 0.028)`,
+            color: '#9ca3af',
+          }}
+        >
           멤버십 갱신은 임원에게 문의해주세요
         </span>
       </div>
@@ -624,12 +663,10 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
-
 function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
   const [cardFlipped, setCardFlipped] = useState(false)
-
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
   const touchStartY = useRef(null)
@@ -671,11 +708,9 @@ function QRTab({ member, isValid, onLiftChange }) {
   const handleTouchEnd = (e) => {
     if (cardFlipped) return
     if (touchStartY.current == null) return
-
     const dy = touchStartY.current - e.changedTouches[0].clientY
     const max = getMaxLift()
     const SWIPE_THRESHOLD = 40
-
     let nextLifted = liftedRef.current
 
     // swipe up → lift
@@ -816,7 +851,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     }
 
     handlingRef.current = false
-  }, []) // empty deps — uses only refs and stable setters
+  }, [])
 
   const W = 'calc(100vw - 32px)'
   const fs = {
@@ -824,7 +859,6 @@ function QRTab({ member, isValid, onLiftChange }) {
   }
 
   // ── Different states ────────────────────────────────────────────────────────
-
   if (!isValid) {
     if (onLiftChange) onLiftChange(false)
     return (
@@ -896,7 +930,6 @@ function QRTab({ member, isValid, onLiftChange }) {
                 {formatScanTime(scanTime)}
               </span>
             </div>
-
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
               <span className="text-xs font-medium text-gray-500">
                 Full Name
@@ -905,7 +938,6 @@ function QRTab({ member, isValid, onLiftChange }) {
                 {fullName || 'N/A'}
               </span>
             </div>
-
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
               <span className="text-xs font-medium text-gray-500">
                 Student ID
@@ -914,7 +946,6 @@ function QRTab({ member, isValid, onLiftChange }) {
                 {checkinMember?.student_number || 'N/A'}
               </span>
             </div>
-
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
               <span className="text-xs font-medium text-gray-500">
                 University
@@ -923,7 +954,6 @@ function QRTab({ member, isValid, onLiftChange }) {
                 {checkinMember?.University || 'N/A'}
               </span>
             </div>
-
             <div className="flex justify-between items-center">
               <span className="text-xs font-medium text-gray-500">
                 Membership Valid Until
@@ -1036,7 +1066,6 @@ function QRTab({ member, isValid, onLiftChange }) {
           disabled={lifted}
           onFlipChange={setCardFlipped}
         />
-
         <div
           style={{
             width: '100%',
@@ -1097,7 +1126,6 @@ function QRTab({ member, isValid, onLiftChange }) {
 }
 
 // ─── Nav Button (not currently used, but kept for future) ─────────────────────
-
 function NavBtn({ onClick, children, style = {} }) {
   return (
     <button
@@ -1132,8 +1160,217 @@ function NavBtn({ onClick, children, style = {} }) {
   )
 }
 
-// ─── Events Tab ───────────────────────────────────────────────────────────────
+// ─── Event Lightbox (SpotCard-style) ──────────────────────────────────────────
+function EventLightbox({ imgs, startIndex = 0, onClose }) {
+  const [index, setIndex] = useState(startIndex)
+  const [visible, setVisible] = useState(false)
+  const touchStartX = useRef(null)
+  const touchStartY = useRef(null)
 
+  // zoom-in + fade-in on open
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true))
+  }, [])
+
+  useEffect(() => {
+    setIndex(startIndex)
+  }, [startIndex, imgs])
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') handleClose()
+      if (e.key === 'ArrowRight')
+        setIndex((i) => Math.min(i + 1, imgs.length - 1))
+      if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imgs.length])
+
+  const handleClose = () => {
+    setVisible(false)
+    setTimeout(() => onClose?.(), 250)
+  }
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current == null || touchStartY.current == null) return
+
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    const dy = e.changedTouches[0].clientY - touchStartY.current
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
+
+    // Vertical swipe (up or down) → close
+    if (absDy > absDx && absDy > 60) {
+      handleClose()
+    }
+    // Horizontal swipe → next / prev
+    else if (absDx > absDy && absDx > 40) {
+      if (dx < 0) {
+        // swipe left → next
+        setIndex((i) => Math.min(i + 1, imgs.length - 1))
+      } else {
+        // swipe right → prev
+        setIndex((i) => Math.max(i - 1, 0))
+      }
+    }
+
+    touchStartX.current = null
+    touchStartY.current = null
+  }
+
+  if (!imgs || imgs.length === 0) return null
+
+  return (
+    <>
+      <style>{`
+        @keyframes lightboxZoomIn {
+          from { transform: scale(0.9); }
+          to { transform: scale(1); }
+        }
+        .lightbox-zoom-enter {
+          animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+      `}</style>
+      <div
+        onClick={handleClose}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'rgba(0, 0, 0, 0.75)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.25s ease',
+          touchAction: 'none',
+        }}
+      >
+        {/* Image */}
+        <img
+          src={imgs[index]}
+          alt={`사진 ${index + 1}`}
+          onClick={(e) => e.stopPropagation()}
+          className={visible ? 'lightbox-zoom-enter' : ''}
+          style={{
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            objectFit: 'contain',
+            borderRadius: 12,
+            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+          }}
+        />
+
+        {/* Prev button */}
+        {index > 0 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIndex((i) => Math.max(i - 1, 0))
+            }}
+            style={{
+              position: 'absolute',
+              left: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              color: '#fff',
+              borderRadius: '999px',
+              width: 44,
+              height: 44,
+              fontSize: 24,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10000,
+            }}
+          >
+            ‹
+          </button>
+        )}
+
+        {/* Next button */}
+        {index < imgs.length - 1 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIndex((i) => Math.min(i + 1, imgs.length - 1))
+            }}
+            style={{
+              position: 'absolute',
+              right: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              color: '#fff',
+              borderRadius: '999px',
+              width: 44,
+              height: 44,
+              fontSize: 24,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10000,
+            }}
+          >
+            ›
+          </button>
+        )}
+
+        {/* Dots */}
+        {imgs.length > 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 20,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            {imgs.map((_, i) => (
+              <div
+                key={i}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIndex(i)
+                }}
+                style={{
+                  width: i === index ? 8 : 6,
+                  height: i === index ? 8 : 6,
+                  borderRadius: '999px',
+                  background:
+                    i === index ? '#fff' : 'rgba(255,255,255,0.4)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// ─── Events Tab ───────────────────────────────────────────────────────────────
 function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -1159,7 +1396,6 @@ function EventsTab({ events }) {
 
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
-
   const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
   const initialEvent = allEvents[0] || null
 
@@ -1170,14 +1406,11 @@ function EventsTab({ events }) {
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [lightboxClosing, setLightboxClosing] = useState(false)
-  const [lightboxIndex, setLightboxIndex] = useState(0)
-  const [lbSlideDir, setLbSlideDir] = useState(0) // -1 = next, 1 = prev
+  // NEW: SpotCard-style Lightbox index
+  const [lightboxIndex, setLightboxIndex] = useState(null)
 
   const [imageAspectRatios, setImageAspectRatios] = useState({})
   const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
-
   const [calMonth, setCalMonth] = useState(() => {
     const base = initialEvent?.event_date
       ? new Date(initialEvent.event_date)
@@ -1255,44 +1488,6 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
 
-  // ── Lightbox keyboard nav ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (!lightboxOpen) return
-    const imgs = selectedEvent?.image_urls || []
-
-    const h = (e) => {
-      if (e.key === 'ArrowRight') {
-        setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
-        setLbSlideDir(-1)
-      } else if (e.key === 'ArrowLeft') {
-        setLightboxIndex((i) => Math.max(i - 1, 0))
-        setLbSlideDir(1)
-      } else if (e.key === 'Escape') {
-        startLightboxClose()
-      }
-    }
-
-    window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
-  }, [lightboxOpen, selectedEvent])
-
-  // ── Helper to open/close lightbox with simple fade ──────────────────────────
-  const openLightboxAt = (index) => {
-    setLightboxIndex(index)
-    setLbSlideDir(0)
-    setLightboxClosing(false)
-    setLightboxOpen(true)
-  }
-
-  const startLightboxClose = () => {
-    setLbSlideDir(0)
-    setLightboxClosing(true)
-    setTimeout(() => {
-      setLightboxOpen(false)
-      setLightboxClosing(false)
-    }, 150)
-  }
-
   // ── Vertical drag between events in header ───────────────────────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
@@ -1319,7 +1514,6 @@ function EventsTab({ events }) {
     if (dragStartY.current == null) return
     const dy = dragStartY.current - e.touches[0].clientY
     dragAccumulator.current = dy
-
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
     const idx = Math.max(
@@ -1331,7 +1525,6 @@ function EventsTab({ events }) {
 
   const handleContainerTouchEnd = () => {
     if (dragStartY.current == null) return
-
     const dy = dragAccumulator.current
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
@@ -1353,32 +1546,10 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
-  // ── LIGHTBOX TOUCH HANDLERS ─────────────────────────────────────────────────
-  const lbSwipeX = useRef(null)
-  const lbSwipeY = useRef(null)
-
-  const handleLbTouchStart = (e) => {
-    lbSwipeX.current = e.touches[0].clientX
-    lbSwipeY.current = e.touches[0].clientY
+  // ── Helper to open lightbox at specific index ───────────────────────────────
+  const openLightboxAt = (index) => {
+    setLightboxIndex(index)
   }
-
- const handleLbTouchEnd = (e) => {
-  if (lbSwipeX.current == null) return
-  const dx = e.changedTouches[0].clientX - lbSwipeX.current
-  lbSwipeX.current = null
-  lbSwipeY.current = null
-
-  const imgs = selectedEvent?.image_urls || []
-  if (dx < -40) {
-    // swipe left → next image
-    setLbSlideDir(-1)
-    setLightboxIndex((i) => Math.min(i + 1, imgs.length - 1))
-  } else if (dx > 40) {
-    // swipe right → previous image
-    setLbSlideDir(1)
-    setLightboxIndex((i) => Math.max(i - 1, 0))
-  }
-}
 
   // ── Formatting helpers ──────────────────────────────────────────────────────
   const getDayDiff = (s) => {
@@ -1418,7 +1589,6 @@ function EventsTab({ events }) {
   const getEventStatus = (ev) => {
     if (!ev) return ''
     if (!ev.event_date) return 'TBD'
-
     const days = getDayDiff(ev.event_date)
     if (days < 0) return 'PAST'
     if (nextEvent && ev.id === nextEvent.id)
@@ -1486,10 +1656,13 @@ function EventsTab({ events }) {
 
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
+
   const cells = [
     ...Array(new Date(calYear, calMonthIdx, 1).getDay()).fill(null),
     ...Array.from(
-      { length: new Date(calYear, calMonthIdx + 1, 0).getDate() },
+      {
+        length: new Date(calYear, calMonthIdx + 1, 0).getDate(),
+      },
       (_, i) => i + 1,
     ),
   ]
@@ -1528,7 +1701,6 @@ function EventsTab({ events }) {
               {isExpanded ? '▲' : '▼'}
             </span>
           </div>
-
           {ev.event_date && (
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
               <Calendar size={14} weight="fill" />
@@ -1544,7 +1716,6 @@ function EventsTab({ events }) {
               </span>
             </div>
           )}
-
           {ev.location && (
             <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
               <MapPin size={14} weight="fill" />
@@ -1578,7 +1749,9 @@ function EventsTab({ events }) {
                     <div
                       className="flex h-full"
                       style={{
-                        transform: `translateX(-${currentSlide * 100}%)`,
+                        transform: `translateX(-${
+                          currentSlide * 100
+                        }%)`,
                         transition: 'transform 0.3s ease',
                       }}
                     >
@@ -1596,11 +1769,11 @@ function EventsTab({ events }) {
                               objectFit: 'contain',
                             }}
                             draggable={false}
+                            onClick={() => openLightboxAt(i)}
                           />
                         </div>
                       ))}
                     </div>
-
                     {imgs.length > 1 && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {imgs.map((_, i) => (
@@ -1629,7 +1802,6 @@ function EventsTab({ events }) {
                   className="text-sm text-gray-600 mt-3 leading-relaxed block"
                 />
               )}
-
               <div className="flex gap-2 mt-3">
                 {ev.event_date && (
                   <button
@@ -1678,7 +1850,6 @@ function EventsTab({ events }) {
   const isPastSelected =
     !!displayEvent?.event_date &&
     new Date(displayEvent.event_date) < todayStart
-
   const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
   const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
 
@@ -1692,7 +1863,6 @@ function EventsTab({ events }) {
         canvas.height = img.height
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0)
-
         const imageData = ctx.getImageData(
           Math.floor(img.width / 2),
           Math.floor(img.height / 2),
@@ -1700,8 +1870,8 @@ function EventsTab({ events }) {
           1,
         )
         const [r, g, b] = imageData.data
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-
+        const luminance =
+          (0.299 * r + 0.587 * g + 0.114 * b) / 255
         resolve(luminance > 0.5 ? '#111827' : '#ffffff')
       }
       img.onerror = () => resolve('#111827')
@@ -1710,7 +1880,6 @@ function EventsTab({ events }) {
 
   useEffect(() => {
     let cancelled = false
-
     const update = async () => {
       if (displayImages.length > 0) {
         const color = await getTextColorFromImage(displayImages[0])
@@ -1719,7 +1888,6 @@ function EventsTab({ events }) {
         if (!cancelled) setFrontPanelTextColor('#111827')
       }
     }
-
     update()
     return () => {
       cancelled = true
@@ -1728,30 +1896,6 @@ function EventsTab({ events }) {
 
   return (
     <>
-      <style>{`
-        @keyframes lbFadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes lbFadeOut {
-          from { opacity: 1; }
-          to   { opacity: 0; }
-        }
-        .lb-open  { animation: lbFadeIn 0.15s ease-out; }
-        .lb-close { animation: lbFadeOut 0.15s ease-in; }
-
-        @keyframes slideInFromRight {
-          from { opacity: 0; transform: translateX(40px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slideInFromLeft {
-          from { opacity: 0; transform: translateX(-40px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        .lb-slide-left  { animation: slideInFromRight 0.18s ease-out; }
-        .lb-slide-right { animation: slideInFromLeft 0.18s ease-out; }
-      `}</style>
-
       <div
         ref={containerRef}
         onTouchStart={handleContainerTouchStart}
@@ -1830,7 +1974,8 @@ function EventsTab({ events }) {
                     >
                       <span
                         style={{
-                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontFamily:
+                            '"Handjet", system-ui, sans-serif',
                           fontSize: fs.date,
                           fontWeight: 800,
                           color: effectiveDateColor,
@@ -1842,7 +1987,8 @@ function EventsTab({ events }) {
                       </span>
                       <span
                         style={{
-                          fontFamily: '"Handjet", system-ui, sans-serif',
+                          fontFamily:
+                            '"Handjet", system-ui, sans-serif',
                           fontSize: fs.month,
                           fontWeight: 800,
                           color: effectiveDateColor,
@@ -1870,76 +2016,80 @@ function EventsTab({ events }) {
                   }}
                 >
                   {/* Back card 2 — image[1] */}
-                  {hasImages && displayImages.length >= 2 && (() => {
-                    const ratio = displayImageRatios[1] || 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                    return (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          aspectRatio,
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          backgroundColor: '#d1d5db',
-                          transform: 'rotate(3deg) translate(7px, 7px)',
-                          zIndex: 1,
-                        }}
-                      >
-                        {displayImages[1] && (
-                          <img
-                            src={displayImages[1]}
-                            alt=""
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                            }}
-                            draggable={false}
-                          />
-                        )}
-                      </div>
-                    )
-                  })()}
+                  {hasImages &&
+                    displayImages.length >= 2 &&
+                    (() => {
+                      const ratio = displayImageRatios[1] || 1
+                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#d1d5db',
+                            transform:
+                              'rotate(3deg) translate(7px, 7px)',
+                            zIndex: 1,
+                          }}
+                        >
+                          {displayImages[1] && (
+                            <img
+                              src={displayImages[1]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
 
                   {/* Back card 1 — image[0] */}
-                  {hasImages && (() => {
-                    const ratio = displayImageRatios[0] || 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                    return (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          aspectRatio,
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          backgroundColor: '#e5e7eb',
-                          transform: 'rotate(1.5deg) translate(3.5px, 3.5px)',
-                          zIndex: 2,
-                        }}
-                      >
-                        {displayImages[0] && (
-                          <img
-                            src={displayImages[0]}
-                            alt=""
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                            }}
-                            draggable={false}
-                          />
-                        )}
-                      </div>
-                    )
-                  })()}
+                  {hasImages &&
+                    (() => {
+                      const ratio = displayImageRatios[0] || 1
+                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#e5e7eb',
+                            transform:
+                              'rotate(1.5deg) translate(3.5px, 3.5px)',
+                            zIndex: 2,
+                          }}
+                        >
+                          {displayImages[0] && (
+                            <img
+                              src={displayImages[0]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
 
-                  {/* Front: semi-transparent Gaussian blur panel (always) */}
+                  {/* Front: semi-transparent Gaussian blur panel */}
                   {(() => {
                     const ratio = hasImages ? displayImageRatios[0] || 1 : 1
                     const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-
                     return (
                       <div
                         style={{
@@ -1957,12 +2107,12 @@ function EventsTab({ events }) {
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            backgroundColor: 'rgba(255,255,255,0.35)',
+                            backgroundColor:
+                              'rgba(255,255,255,0.35)',
                             backdropFilter: 'blur(6px)',
                             WebkitBackdropFilter: 'blur(6px)',
                           }}
                         />
-
                         <div
                           style={{
                             position: 'relative',
@@ -1984,14 +2134,13 @@ function EventsTab({ events }) {
                                 nextEvent &&
                                 displayEvent &&
                                 displayEvent.id === nextEvent.id
-                                  ? '#f97316' // most upcoming always orange
+                                  ? '#f97316'
                                   : frontPanelTextColor,
                               lineHeight: 1.2,
                             }}
                           >
                             {displayEvent.title}
                           </span>
-
                           {displayEvent.event_date && (
                             <span
                               style={{
@@ -2006,7 +2155,6 @@ function EventsTab({ events }) {
                               {formatTopTime(displayEvent.event_date)}
                             </span>
                           )}
-
                           {displayEvent.location && (
                             <span
                               style={{
@@ -2023,13 +2171,14 @@ function EventsTab({ events }) {
                           )}
                         </div>
 
-                        {/* Image count indicator – ALWAYS visible */}
+                        {/* Image count indicator */}
                         <div
                           style={{
                             position: 'absolute',
                             bottom: '8px',
                             right: '10px',
-                            backgroundColor: 'rgba(0,0,0,0.45)',
+                            backgroundColor:
+                              'rgba(0,0,0,0.45)',
                             borderRadius: '999px',
                             padding: '2px 8px',
                             display: 'flex',
@@ -2120,7 +2269,8 @@ function EventsTab({ events }) {
                     key={d}
                     style={{
                       textAlign: 'center',
-                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontFamily:
+                        '"Handjet", system-ui, sans-serif',
                       fontSize: `calc(${W} * 0.032)`,
                       fontWeight: 600,
                       color: '#9ca3af',
@@ -2149,13 +2299,14 @@ function EventsTab({ events }) {
                         style={{ aspectRatio: '1/1' }}
                       />
                     )
-
                   const dateKey = `${calYear}-${String(
                     calMonthIdx + 1,
-                  ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                  ).padStart(2, '0')}-${String(day).padStart(
+                    2,
+                    '0',
+                  )}`
                   const dayEvents = eventsByDate[dateKey] || []
                   const hasEvt = dayEvents.length > 0
-
                   const isToday =
                     day === now.getDate() &&
                     calMonthIdx === now.getMonth() &&
@@ -2167,15 +2318,15 @@ function EventsTab({ events }) {
                   let fw = 500
 
                   if (hasEvt) {
-  const s = circleStyle(dayEvents[0])
-  bg = s.bg       // grey / orange / etc
-  color = s.color // stays '#fff'
-  fw = 700
-} else if (isToday) {
-  bg = '#ffffff'
-  border = '2px solid #1f2937'
-  fw = 700
-}
+                    const s = circleStyle(dayEvents[0])
+                    bg = s.bg
+                    color = s.color
+                    fw = 700
+                  } else if (isToday) {
+                    bg = '#ffffff'
+                    border = '2px solid #1f2937'
+                    fw = 700
+                  }
 
                   const ring =
                     isToday && hasEvt
@@ -2235,9 +2386,9 @@ function EventsTab({ events }) {
                   let curMonth = null
                   const blocks = []
                   otherUpcomingEvents.forEach((ev) => {
-                    const label = `${new Date(
-                      ev.event_date,
-                    ).getMonth() + 1}월`
+                    const label = `${
+                      new Date(ev.event_date).getMonth() + 1
+                    }월`
                     if (label !== curMonth) {
                       curMonth = label
                       blocks.push(
@@ -2294,9 +2445,9 @@ function EventsTab({ events }) {
                       let curMonth = null
                       const blocks = []
                       pastEvents.forEach((ev) => {
-                        const label = `${new Date(
-                          ev.event_date,
-                        ).getMonth() + 1}월`
+                        const label = `${
+                          new Date(ev.event_date).getMonth() + 1
+                        }월`
                         if (label !== curMonth) {
                           curMonth = label
                           blocks.push(
@@ -2330,108 +2481,19 @@ function EventsTab({ events }) {
         </div>
       </div>
 
-      {/* LIGHTBOX */}
-      {(lightboxOpen || lightboxClosing) && displayImages.length > 0 && (
-  <div
-    onTouchStart={handleLbTouchStart}
-    onTouchEnd={handleLbTouchEnd}
-    onClick={(e) => {
-  startLightboxClose()
-}}
-    className={lightboxClosing ? 'lb-close' : 'lb-open'}
-    style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 9999,
-      backgroundColor: 'rgba(0,0,0,0.85)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      touchAction: 'none',
-    }}
-  >
-
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '64px 16px',
-            }}
-          >
-            <img
-  key={`${selectedEvent?.id ?? 'none'}-${lightboxIndex}`}
-  src={displayImages[lightboxIndex]}
-  alt=""
-  onClick={(e) => {
-    e.stopPropagation() // prevent triggering background click
-    startLightboxClose()
-  }}
-  className={
-    lightboxClosing
-      ? ''
-      : lbSlideDir === -1
-      ? 'lb-slide-left'
-      : lbSlideDir === 1
-      ? 'lb-slide-right'
-      : ''
-  }
-  style={{
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
-    borderRadius: '8px',
-  }}
-  draggable={false}
-/>
-          </div>
-
-          {displayImages.length > 1 && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '28px',
-                left: 0,
-                right: 0,
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '6px',
-              }}
-            >
-              {displayImages.map((_, i) => (
-                <div
-                  key={i}
-                  onClick={(e) => {
-  e.stopPropagation() // don’t trigger background tap
-  setLbSlideDir(i > lightboxIndex ? -1 : 1)
-  setLightboxIndex(i)
-}}
-                  style={{
-                    width: i === lightboxIndex ? 8 : 6,
-                    height: i === lightboxIndex ? 8 : 6,
-                    borderRadius: '50%',
-                    backgroundColor:
-                      i === lightboxIndex
-                        ? '#fff'
-                        : 'rgba(255,255,255,0.35)',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+      {/* SpotCard-style LIGHTBOX for event images */}
+      {lightboxIndex !== null && displayImages.length > 0 && (
+        <EventLightbox
+          imgs={displayImages}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
       )}
     </>
   )
 }
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
-
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
