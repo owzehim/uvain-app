@@ -413,7 +413,7 @@ function MembershipCard({
                 d="M25,3 L81,3 L81,0 Q81,-2 79,-2 L27,-2 Q25,-2 25,0 Z"
                 fill="white"
               />
-              <rect x="43" y="-1.4" width="20" height="1.8" rx="0.9" ry="0.9" fill="black" />
+              <rect x="43" y="0.8"  width="20" height="1.8" rx="0.9" ry="0.9" fill="black" />
             </mask>
           </defs>
 
