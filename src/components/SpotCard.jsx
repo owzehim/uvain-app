@@ -568,6 +568,18 @@ export function SpotCard({ selected, onClose }) {
             </div>
           )}
 
+{/* ── 한 줄 평가 ── */}
+{selected.one_line_review && (
+  <div className="mb-4">
+    <p className="text-xs font-semibold text-gray-500 mb-1.5">
+      한 줄 평가
+    </p>
+    <p className="font-semibold text-gray-900 text-lg">
+      {selected.one_line_review}
+    </p>
+  </div>
+)}
+
           {/* ── Member review bar chart ── */}
           {hasReviews && (
             <TagBarChart

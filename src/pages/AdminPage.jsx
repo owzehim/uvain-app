@@ -1702,6 +1702,15 @@ function RestaurantForm({
           <span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />제휴/스폰서
         </label>
       </div>
+
+<textarea
+  placeholder="한 줄 평가"
+  value={form.one_line_review}
+  onChange={e => setForm(f => ({ ...f, one_line_review: e.target.value }))}
+  rows={2}
+  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+/>
+
       <input
         placeholder="리뷰어 이름"
         value={form.reviewer_name}
@@ -1748,11 +1757,22 @@ function RestaurantsTab() {
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [form, setForm] = useState({
-    name: '', map_label: '', description: '', address: '',
-    latitude: '', longitude: '', discount_info: '', discount_terms: '',
-    rating: '', review: '', reviewer_name: '', category: '맛집',
-    price_range: '', is_sponsored: false
-  })
+  name: '',
+  map_label: '',
+  description: '',
+  address: '',
+  latitude: '',
+  longitude: '',
+  discount_info: '',
+  discount_terms: '',
+  one_line_review: '',
+  rating: '',
+  review: '',
+  reviewer_name: '',
+  category: '맛집',
+  price_range: '',
+  is_sponsored: false
+})
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
   const [pendingReplacements, setPendingReplacements] = useState([])
@@ -1796,13 +1816,24 @@ function RestaurantsTab() {
   }
 
   const resetForm = () => {
-    setShowForm(false); setEditTarget(null)
-    setForm({
-      name: '', map_label: '', description: '', address: '',
-      latitude: '', longitude: '', discount_info: '', discount_terms: '',
-      rating: '', review: '', reviewer_name: '', category: '맛집',
-      price_range: '', is_sponsored: false
-    })
+  setShowForm(false); setEditTarget(null)
+  setForm({
+    name: '',
+    map_label: '',
+    description: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+    discount_info: '',
+    discount_terms: '',
+    one_line_review: '',
+    rating: '',
+    review: '',
+    reviewer_name: '',
+    category: '맛집',
+    price_range: '',
+    is_sponsored: false
+  })
     setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setRichEditorKey(k => k + 1)
   }
 
@@ -1831,16 +1862,23 @@ function RestaurantsTab() {
     }
 
     const payload = {
-      name: form.name, map_label: form.map_label, description: form.description,
-      address: form.address,
-      latitude: form.latitude ? parseFloat(form.latitude) : null,
-      longitude: form.longitude ? parseFloat(form.longitude) : null,
-      discount_info: form.discount_info, discount_terms: form.discount_terms,
-      rating: form.rating ? parseFloat(form.rating) : 0,
-      review: form.review, reviewer_name: form.reviewer_name,
-      category: form.category, price_range: form.price_range,
-      is_sponsored: form.is_sponsored, image_urls
-    }
+  name: form.name,
+  map_label: form.map_label,
+  description: form.description,
+  address: form.address,
+  latitude: form.latitude ? parseFloat(form.latitude) : null,
+  longitude: form.longitude ? parseFloat(form.longitude) : null,
+  discount_info: form.discount_info,
+  discount_terms: form.discount_terms,
+  one_line_review: form.one_line_review,
+  rating: form.rating ? parseFloat(form.rating) : 0,
+  review: form.review,
+  reviewer_name: form.reviewer_name,
+  category: form.category,
+  price_range: form.price_range,
+  is_sponsored: form.is_sponsored,
+  image_urls
+}
     let saveError = null
     if (editTarget) {
       const { error } = await supabase.from('restaurants').update(payload).eq('id', editTarget.id); saveError = error
@@ -1857,27 +1895,45 @@ function RestaurantsTab() {
     fetchRestaurants()
   }
 
-  const openEdit = (r) => {
-    setEditTarget(r)
-    setForm({
-      name: r.name, map_label: r.map_label || '', description: r.description || '',
-      address: r.address || '', latitude: r.latitude || '', longitude: r.longitude || '',
-      discount_info: r.discount_info || '', discount_terms: r.discount_terms || '',
-      rating: r.rating || '', review: r.review || '', reviewer_name: r.reviewer_name || '',
-      category: r.category || '맛집', price_range: r.price_range || '',
-      is_sponsored: r.is_sponsored || false
-    })
+  setForm({
+  name: r.name,
+  map_label: r.map_label || '',
+  description: r.description || '',
+  address: r.address || '',
+  latitude: r.latitude || '',
+  longitude: r.longitude || '',
+  discount_info: r.discount_info || '',
+  discount_terms: r.discount_terms || '',
+  one_line_review: r.one_line_review || '',
+  rating: r.rating || '',
+  review: r.review || '',
+  reviewer_name: r.reviewer_name || '',
+  category: r.category || '맛집',
+  price_range: r.price_range || '',
+  is_sponsored: r.is_sponsored || false
+})
     setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setShowForm(true)
   }
 
   const openAdd = () => {
-    setEditTarget(null)
-    setForm({
-      name: '', map_label: '', description: '', address: '',
-      latitude: '', longitude: '', discount_info: '', discount_terms: '',
-      rating: '', review: '', reviewer_name: '', category: '맛집',
-      price_range: '', is_sponsored: false
-    })
+  setEditTarget(null)
+  setForm({
+    name: '',
+    map_label: '',
+    description: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+    discount_info: '',
+    discount_terms: '',
+    one_line_review: '',
+    rating: '',
+    review: '',
+    reviewer_name: '',
+    category: '맛집',
+    price_range: '',
+    is_sponsored: false
+  })
     setRichEditorKey(k => k + 1); setImageFiles([]); setImagePreviews([]); setPendingReplacements([]); setShowForm(true)
   }
 
