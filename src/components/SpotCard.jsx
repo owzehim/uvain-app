@@ -570,7 +570,7 @@ export function SpotCard({ selected, onClose }) {
 
 {/* ── 한 줄 평가 ── */}
 {selected.one_line_review && (
-  <div className="mt-8 mb-4">
+  <div className="mt-8 mb-3">
     {/* 타이틀: 말풍선 밖, 왼쪽 정렬 */}
     <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
       한 줄 평가
