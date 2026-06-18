@@ -443,7 +443,6 @@ export function SpotCard({ selected, onClose }) {
       )}
 
       <div
-        <div
   ref={cardRef}
   className="absolute bottom-0 inset-x-4 bg-white rounded-t-2xl"
   style={{
