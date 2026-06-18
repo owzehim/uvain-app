@@ -443,16 +443,17 @@ export function SpotCard({ selected, onClose }) {
       )}
 
       <div
-        ref={cardRef}
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
-        style={{
-          ...(hasImages ? imageStyle : noImageStyle),
-          zIndex: 1000,
-          boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}
+        <div
+  ref={cardRef}
+  className="absolute bottom-0 inset-x-4 bg-white rounded-t-2xl"
+  style={{
+    ...(hasImages ? imageStyle : noImageStyle),
+    zIndex: 1000,
+    boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
