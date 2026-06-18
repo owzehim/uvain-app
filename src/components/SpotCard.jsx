@@ -574,9 +574,10 @@ export function SpotCard({ selected, onClose }) {
     <p className="text-xs font-semibold text-gray-500 mb-1.5">
       한 줄 평가
     </p>
-    <p className="font-semibold text-gray-900 text-lg">
-      {selected.one_line_review}
-    </p>
+    <RichText
+      text={selected.one_line_review}
+      className="font-semibold text-gray-900 text-lg"
+    />
   </div>
 )}
 

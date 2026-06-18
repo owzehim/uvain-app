@@ -183,22 +183,36 @@ export default function MemberPage() {
         </div>
       )}
 
-      {/* Floating settings button for MY tab (no header) */}
+            {/* Floating admin + settings buttons for MY tab (no header) */}
       {activeTab === 'qr' && (
-        <button
-          onClick={() => navigate('/settings')}
+        <div
           className={
-            'absolute right-4 rounded-full bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
+            'absolute right-4 flex gap-2 transition-opacity duration-200 ' +
             (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
           }
           style={{
             top: 'calc(env(safe-area-inset-top) + 8px)',
-            zIndex: 20, // above card layer
+            zIndex: 20,
           }}
-          aria-label="Settings"
         >
-          <Gear size={20} weight="bold" />
-        </button>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                window.location.href = '/admin'
+              }}
+              className="text-xs text-white font-medium px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+            >
+              관리자
+            </button>
+          )}
+          <button
+            onClick={() => navigate('/settings')}
+            className="rounded-full bg-white p-2 text-gray-500"
+            aria-label="Settings"
+          >
+            <Gear size={20} weight="bold" />
+          </button>
+        </div>
       )}
 
       {/* Content */}

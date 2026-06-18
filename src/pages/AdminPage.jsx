@@ -2068,15 +2068,16 @@ function RestaurantForm({
       </div>
 
       {/* 한 줄 평가 */}
-      <textarea
-        placeholder="한 줄 평가 (예: 분위기 최고, 가격도 착해요)"
-        value={form.one_line_review}
-        onChange={(e) =>
-          setForm((f) => ({ ...f, one_line_review: e.target.value }))
-        }
-        rows={2}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
-      />
+      <div>
+  <label className="text-sm text-gray-500 block mb-1">한 줄 평가</label>
+  <RichEditor
+    key={richEditorKey + 200}
+    value={form.one_line_review}
+    onChange={v => setForm(f => ({ ...f, one_line_review: v }))}
+    placeholder="한 줄 평가 (예: 분위기 최고, 가격도 착해요)"
+    rows={2}
+  />
+</div>
 
       <input
         placeholder="리뷰어 이름"
