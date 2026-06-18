@@ -58,51 +58,44 @@ function StarDisplay({ averageRating }) {
 }
 
 // ── Tag bar chart ───────────────────────────────────────────────
-function TagBarChart({ tagCounts, reviewCount }) {
-  const sorted = getSortedTagsForDisplay(tagCounts)
-  if (sorted.length === 0) return null
-
-  const maxCount = sorted[0].count
-
-  return (
-    <div className="px-4 pb-4">
-      <div className="pt-3 border-t border-gray-100">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
-          <span className="text-xs text-gray-400">{reviewCount}개</span>
-        </div>
-
-        <div className="flex flex-col gap-2.5">
-          {sorted.map((tag) => {
-            const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
-            const pct = maxCount > 0 ? Math.round((tag.count / maxCount) * 100) : 0
-
-            return (
-              <div key={tag.key} className="flex items-center gap-2">
-                <div className="flex items-center gap-1 w-28 flex-shrink-0">
-                  {IconComponent && (
-                    <IconComponent size={13} weight="fill" color="#f97316" />
-                  )}
-                  <span className="text-xs text-gray-600 truncate">{tag.label}</span>
-                </div>
-
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-orange-400 rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-
-                <span className="text-xs text-gray-400 font-medium w-4 text-right flex-shrink-0">
-                  {tag.count}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  )
+function TagBarChart({ tagCounts, reviewCount }) { 
+  const sorted = getSortedTagsForDisplay(tagCounts) 
+  if (sorted.length === 0) return null 
+  const maxCount = sorted[0].count 
+  return ( 
+    <div className="px-4 pb-4"> 
+      <div className="pt-3 border-t border-gray-100"> 
+        <div className="flex items-center justify-between mb-3"> 
+          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p> 
+          <span className="text-xs text-gray-400">{reviewCount}개</span> 
+        </div> 
+        <div className="flex flex-col gap-2.5"> 
+          {sorted.map((tag) => { 
+            const IconComponent = TAG_ICON_COMPONENTS[tag.icon] 
+            const pct = maxCount > 0 ? Math.round((tag.count / maxCount) * 100) : 0 
+            return ( 
+              <div key={tag.key} className="flex items-center gap-2"> 
+                <div className="flex items-center gap-1 w-20 flex-shrink-0"> 
+                  {IconComponent && ( 
+                    <IconComponent size={13} weight="fill" color="#f97316" /> 
+                  )} 
+                  <span className="text-xs text-gray-600 truncate">{tag.label}</span> 
+                </div> 
+                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden max-w-xs"> 
+                  <div className="h-full bg-orange-400 rounded-full transition-all duration-500" 
+                    style={{ width: `${pct}%` }} 
+                  /> 
+                </div> 
+                <span className="text-xs text-gray-400 font-medium w-4 text-right flex-shrink-0"> 
+                  {tag.count} 
+                </span> 
+              </div> 
+            ) 
+          })} 
+        </div> 
+      </div> 
+    </div> 
+  ) 
 }
 
 // ── Lightbox ────────────────────────────────────────────────────
