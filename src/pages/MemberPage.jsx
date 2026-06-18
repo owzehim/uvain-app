@@ -332,7 +332,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               }}
             />
           ) : (
-            <UserCircle size="80%" weight="fill" color="rgba(44,42,39,0.55)" />
+            <UserCircle size="100%" weight="fill" color="rgba(44,42,39,0.55)" />
           )}
         </div>
         <div
@@ -465,7 +465,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               gap: `calc(${W} * 0.02)`,
             }}
           >
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.22)" />
             <span
               style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
