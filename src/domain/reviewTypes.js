@@ -24,7 +24,7 @@ export const REVIEW_TAGS = [
     key:     'NICE_ATMOSPHERE',
     label:   '분위기가 좋아요',
     labelEn: 'Nice atmosphere',
-    icon:    'Sparkle',
+    icon:    'Sunglasses',
   },
   {
     key:     'GOOD_VALUE',
