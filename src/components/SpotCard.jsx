@@ -576,41 +576,49 @@ export function SpotCard({ selected, onClose }) {
       한 줄 평가
     </p>
 
-    {/* 전체 가로폭을 채우는 네모 말풍선 + 꼬리 (SVG) */}
     <div className="relative w-full">
+      {/* 네모 말풍선 + 왼쪽으로 향하는 꼬리 */}
       <svg
         className="w-full h-[72px]"
-        viewBox="0 0 344 72"
+        viewBox="-16 0 376 72"
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* 부드러운 직사각형 말풍선 본체 */}
+        {/* 본체: 부드러운 직사각형 */}
         <rect
           x="0"
           y="0"
-          width="344"
+          width="360"
           height="56"
           rx="16"
           ry="16"
-          fill="#f97316"  // bg-orange-500
+          fill="#f97316" // bg-orange-500
         />
-        {/* 왼쪽 아래 꼬리 (곡선) */}
+
+        {/* 왼쪽 측면으로 뾰족하게 나가는 꼬리 */}
         <path
-          d="M72 56
-             C 56 56 50 60 46 64
-             C 44 66 42 69 38 72
-             L 26 56
-             Z"
+          d="
+            M0 30
+            C -6 28 -10 25 -16 20
+            C -12 30 -12 42 -16 52
+            C -10 47 -6 44 0 42
+            Z
+          "
           fill="#f97316"
         />
       </svg>
 
-      {/* 말풍선 안의 텍스트 (가운데 정렬, 흰색) */}
-      <div className="absolute inset-0 flex items-center justify-center px-6">
-        <RichText
-          text={selected.one_line_review}
-          className="font-semibold text-white text-lg text-center block"
-        />
+      {/* 텍스트: 위쪽 56px(직사각형 영역) 안에서만 수직 중앙 정렬 */}
+      <div
+        className="absolute left-0 right-0 top-0"
+        style={{ height: '56px' }}
+      >
+        <div className="flex items-center justify-center h-full px-6">
+          <RichText
+            text={selected.one_line_review}
+            className="font-semibold text-white text-lg text-center block"
+          />
+        </div>
       </div>
     </div>
   </div>
