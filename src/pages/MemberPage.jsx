@@ -291,6 +291,8 @@ function MembershipCard({
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize   = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
+  const topTabWidth  = `calc(${W} * 0.42)`
+  const topTabHeight = `calc(${W} * 0.11)`
 
   useEffect(() => {
     if (onFlipChange) onFlipChange(flipped)
@@ -405,6 +407,36 @@ function MembershipCard({
           </div>
         </div>
 
+        {/* ── Top tab with pill-shaped hole ── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: `calc(-1 * ${topTabHeight} * 0.55)`,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: topTabWidth,
+            height: topTabHeight,
+            background: '#ccc9c1',
+            borderRadius: '10px',
+            zIndex: 2,
+            pointerEvents: 'none',
+            boxShadow: '0 4px 8px rgba(15,23,42,0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: '78%',
+              height: '44%',
+              borderRadius: '999px',
+              background: '#F6F4F1',
+              boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.9)',
+            }}
+          />
+        </div>
+
         {/* ── Left grip ── */}
         <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
 
@@ -415,6 +447,7 @@ function MembershipCard({
     </div>
   )
 }
+
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
