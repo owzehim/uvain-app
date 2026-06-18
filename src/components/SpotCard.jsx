@@ -570,14 +570,31 @@ export function SpotCard({ selected, onClose }) {
 
 {/* ── 한 줄 평가 ── */}
 {selected.one_line_review && (
-  <div className="mt-4 mb-4 text-center">
-    <p className="text-xs font-semibold text-gray-500 mb-1.5 text-left">
-      한 줄 평가
-    </p>
-    <RichText
-      text={selected.one_line_review}
-      className="font-semibold text-gray-900 text-lg"
-    />
+  <div className="mt-6 mb-5 flex justify-center">
+    <div className="relative bg-orange-500 rounded-2xl px-4 py-3 max-w-full">
+      {/* label: left-aligned, white */}
+      <p className="text-xs font-semibold text-white mb-1.5 text-left">
+        한 줄 평가
+      </p>
+
+      {/* text: centered, white */}
+      <RichText
+        text={selected.one_line_review}
+        className="font-semibold text-white text-lg text-center block"
+      />
+
+      {/* speech-bubble tail */}
+      <div
+        className="absolute left-1/2 -bottom-2 -translate-x-1/2"
+        style={{
+          width: 0,
+          height: 0,
+          borderLeft: '8px solid transparent',
+          borderRight: '8px solid transparent',
+          borderTop: '10px solid #f97316', // same orange as bg-orange-500
+        }}
+      />
+    </div>
   </div>
 )}
 
