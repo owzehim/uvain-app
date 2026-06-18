@@ -517,15 +517,15 @@ const hasReviews = summary && summary.review_count > 0
   {selected.name}
 </p>
 
-{/* Star review - visible even when there are 0 reviews, if admin allows 별점 표시 */}
-{showRating && summary && (
+{/* Star review - always visible, even when there are 0 reviews */}
+{showRating && (
   <div className="flex items-center gap-1 mt-1">
     <StarDisplay
-      averageRating={summary.average_rating ?? 0}
+      averageRating={summary?.average_rating ?? 0} // 0 when no reviews
       showWhenZero
     />
     <span className="text-xs text-gray-400">
-      ({summary.review_count ?? 0})
+      ({summary?.review_count ?? 0})  {/* shows (0) when no reviews */}
     </span>
   </div>
 )}
