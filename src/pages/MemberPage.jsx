@@ -405,38 +405,36 @@ function MembershipCard({
           </div>
         </div>
 
-        {/* ── Top tab — thin strip flush with the top frame edge, centered ──
-            Width: ~55% of card. Height: same as frame stroke (~14px rendered).
-            top: -3px so it sits right on top of the frame border, not floating above it.
-            The pill hole is punched through the center.
-        ── */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '-14px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: `calc(${W} * 0.55)`,
-            height: '20px',
-            background: '#ccc9c1',
-            borderRadius: '6px 6px 0 0',
-            zIndex: 2,
-            pointerEvents: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {/* pill hole */}
-          <div
-            style={{
-              width: '55%',
-              height: '8px',
-              borderRadius: '999px',
-              background: 'rgba(0,0,0,0.18)',
-            }}
-          />
-        </div>
+        {/* ── Top tab ── */}
+<div
+  style={{
+    position: 'absolute',
+    top: '-14px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: `calc(${W} * 0.35)`,
+    height: '18px',
+    background: '#ccc9c1',
+    borderRadius: '5px 5px 0 0',
+    zIndex: 2,
+    pointerEvents: 'none',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+>
+  {/* Real pill hole — transparent window through the tab */}
+  <div
+    style={{
+      width: '52%',
+      height: '7px',
+      borderRadius: '999px',
+      background: 'transparent',
+      boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.25), inset 0 2px 3px rgba(0,0,0,0.2)',
+    }}
+  />
+</div>
 
         {/* ── Left grip ── */}
         <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
