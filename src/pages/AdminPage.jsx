@@ -900,7 +900,7 @@ function MembersTab() {
             <div>
               <label className="text-sm text-gray-700 block mb-1">이메일</label>
               <input
-                placeholder="member@example.com"
+                placeholder="이메일"
                 value={form.email}
                 onChange={(e) =>
                   setForm({
@@ -2026,27 +2026,41 @@ function RestaurantForm({
           rows={2}
         />
       </div>
-      <input
-        placeholder="평점 (0~5)"
-        value={form.rating}
-        onChange={(e) =>
-          setForm((f) => ({ ...f, rating: e.target.value }))
-        }
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-      />
-      <select
-        value={form.price_range}
-        onChange={(e) =>
-          setForm((f) => ({ ...f, price_range: e.target.value }))
-        }
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
-      >
-        <option value="">가격대 선택</option>
-        <option value="€">€ (저렴)</option>
-        <option value="€€">€€ (보통)</option>
-        <option value="€€€">€€€ (비쌈)</option>
-        <option value="€€€€">€€€€ (고급)</option>
-      </select>
+      {/* 별점 표시 토글 */}
+<div className="flex items-center justify-between">
+  <span className="text-sm text-gray-500">별점 표시</span>
+  <button
+    type="button"
+    onClick={() =>
+      setForm((f) => ({ ...f, show_rating: !f.show_rating }))
+    }
+    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+      form.show_rating
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        : 'bg-gray-50 text-gray-500 border-gray-200'
+    }`}
+  >
+    {form.show_rating ? '켜짐' : '꺼짐'}
+  </button>
+</div>
+
+{/* 가격대 */}
+<div>
+  <label className="text-sm text-gray-500 block mb-1">가격대</label>
+  <select
+    value={form.price_range}
+    onChange={(e) =>
+      setForm((f) => ({ ...f, price_range: e.target.value }))
+    }
+    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+  >
+    <option value="">가격대 선택</option>
+    <option value="€">€ (저렴)</option>
+    <option value="€€">€€ (보통)</option>
+    <option value="€€€">€€€ (비쌈)</option>
+    <option value="€€€€">€€€€ (고급)</option>
+  </select>
+</div>
       <div className="flex items-center gap-2">
         <input
           type="checkbox"
@@ -2066,34 +2080,42 @@ function RestaurantForm({
       </div>
 
       {/* 한 줄 평가 */}
-      <div>
+<div>
   <label className="text-sm text-gray-500 block mb-1">한 줄 평가</label>
   <RichEditor
     key={richEditorKey + 200}
     value={form.one_line_review}
-    onChange={v => setForm(f => ({ ...f, one_line_review: v }))}
-    placeholder="한 줄 평가 (예: 분위기 최고, 가격도 착해요)"
+    onChange={v =>
+      setForm(f => ({ ...f, one_line_review: v }))
+    }
+    placeholder="한 줄 평가"
     rows={2}
   />
 </div>
 
-      <input
-        placeholder="리뷰어 이름"
-        value={form.reviewer_name}
-        onChange={(e) =>
-          setForm((f) => ({ ...f, reviewer_name: e.target.value }))
-        }
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-      />
-      <textarea
-        placeholder="리뷰"
-        value={form.review}
-        onChange={(e) =>
-          setForm((f) => ({ ...f, review: e.target.value }))
-        }
-        rows={3}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
-      />
+{/* 임원 리뷰 */}
+<div className="mt-3 space-y-2">
+  <p className="text-sm font-medium text-gray-900">임원 리뷰</p>
+
+  <input
+    placeholder="리뷰어 이름"
+    value={form.reviewer_name}
+    onChange={(e) =>
+      setForm((f) => ({ ...f, reviewer_name: e.target.value }))
+    }
+    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+  />
+
+  <textarea
+    placeholder="리뷰"
+    value={form.review}
+    onChange={(e) =>
+      setForm((f) => ({ ...f, review: e.target.value }))
+    }
+    rows={3}
+    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+  />
+</div>
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
         <ImageUploadPanel
@@ -2133,22 +2155,23 @@ function RestaurantsTab() {
   const [editTarget, setEditTarget] = useState(null)
 
   const [form, setForm] = useState({
-    name: '',
-    map_label: '',
-    description: '',
-    address: '',
-    latitude: '',
-    longitude: '',
-    discount_info: '',
-    discount_terms: '',
-    one_line_review: '',
-    rating: '',
-    review: '',
-    reviewer_name: '',
-    category: '맛집',
-    price_range: '',
-    is_sponsored: false,
-  })
+  name: '',
+  map_label: '',
+  description: '',
+  address: '',
+  latitude: '',
+  longitude: '',
+  discount_info: '',
+  discount_terms: '',
+  one_line_review: '',
+  rating: '',
+  review: '',
+  reviewer_name: '',
+  category: '맛집',
+  price_range: '',
+  is_sponsored: false,
+  show_rating: true,
+})
 
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
@@ -2212,22 +2235,23 @@ function RestaurantsTab() {
     setShowForm(false)
     setEditTarget(null)
     setForm({
-      name: '',
-      map_label: '',
-      description: '',
-      address: '',
-      latitude: '',
-      longitude: '',
-      discount_info: '',
-      discount_terms: '',
-      one_line_review: '',
-      rating: '',
-      review: '',
-      reviewer_name: '',
-      category: '맛집',
-      price_range: '',
-      is_sponsored: false,
-    })
+  name: '',
+  map_label: '',
+  description: '',
+  address: '',
+  latitude: '',
+  longitude: '',
+  discount_info: '',
+  discount_terms: '',
+  one_line_review: '',
+  rating: '',
+  review: '',
+  reviewer_name: '',
+  category: '맛집',
+  price_range: '',
+  is_sponsored: false,
+  show_rating: true,
+})
     setImageFiles([])
     setImagePreviews([])
     setPendingReplacements([])
@@ -2285,23 +2309,24 @@ function RestaurantsTab() {
     }
 
     const payload = {
-      name: form.name,
-      map_label: form.map_label,
-      description: form.description,
-      address: form.address,
-      latitude: form.latitude ? parseFloat(form.latitude) : null,
-      longitude: form.longitude ? parseFloat(form.longitude) : null,
-      discount_info: form.discount_info,
-      discount_terms: form.discount_terms,
-      one_line_review: form.one_line_review,
-      rating: form.rating ? parseFloat(form.rating) : 0,
-      review: form.review,
-      reviewer_name: form.reviewer_name,
-      category: form.category,
-      price_range: form.price_range,
-      is_sponsored: form.is_sponsored,
-      image_urls,
-    }
+  name: form.name,
+  map_label: form.map_label,
+  description: form.description,
+  address: form.address,
+  latitude: form.latitude ? parseFloat(form.latitude) : null,
+  longitude: form.longitude ? parseFloat(form.longitude) : null,
+  discount_info: form.discount_info,
+  discount_terms: form.discount_terms,
+  one_line_review: form.one_line_review,
+  rating: form.rating ? parseFloat(form.rating) : 0,
+  review: form.review,
+  reviewer_name: form.reviewer_name,
+  category: form.category,
+  price_range: form.price_range,
+  is_sponsored: form.is_sponsored,
+  show_rating: form.show_rating,
+  image_urls,
+}
 
     let saveError = null
     if (editTarget) {
@@ -2337,22 +2362,25 @@ function RestaurantsTab() {
   const openEdit = (r) => {
     setEditTarget(r)
     setForm({
-      name: r.name,
-      map_label: r.map_label || '',
-      description: r.description || '',
-      address: r.address || '',
-      latitude: r.latitude || '',
-      longitude: r.longitude || '',
-      discount_info: r.discount_info || '',
-      discount_terms: r.discount_terms || '',
-      one_line_review: r.one_line_review || '',
-      rating: r.rating || '',
-      review: r.review || '',
-      reviewer_name: r.reviewer_name || '',
-      category: r.category || '맛집',
-      price_range: r.price_range || '',
-      is_sponsored: r.is_sponsored || false,
-    })
+  name: r.name,
+  map_label: r.map_label || '',
+  description: r.description || '',
+  address: r.address || '',
+  latitude: r.latitude || '',
+  longitude: r.longitude || '',
+  discount_info: r.discount_info || '',
+  discount_terms: r.discount_terms || '',
+  one_line_review: r.one_line_review || '',
+  rating: r.rating || '',
+  review: r.review || '',
+  reviewer_name: r.reviewer_name || '',
+  category: r.category || '맛집',
+  price_range: r.price_range || '',
+  is_sponsored: r.is_sponsored || false,
+  show_rating:
+    typeof r.show_rating === 'boolean' ? r.show_rating : true,
+})
+
     setRichEditorKey((k) => k + 1)
     setImageFiles([])
     setImagePreviews([])

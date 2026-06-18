@@ -22,8 +22,13 @@ const TAG_ICON_COMPONENTS = {
 }
 
 // ── Read-only star row ──────────────────────────────────────────
-function StarDisplay({ averageRating }) {
-  const formatted = formatAverageRating(averageRating)
+function StarDisplay({ averageRating, showWhenZero = false }) {
+  if (averageRating == null || Number.isNaN(averageRating)) return null
+
+  const formatted = showWhenZero
+    ? averageRating.toFixed(1)
+    : formatAverageRating(averageRating)
+
   if (!formatted) return null
 
   const { filled, half, empty } = computeStarDisplay(averageRating)
@@ -56,6 +61,7 @@ function StarDisplay({ averageRating }) {
           <Star key={'e' + i} size={12} weight="fill" color="#d1d5db" />
         ))}
       </div>
+
       <span className="text-xs text-amber-500 font-medium">{formatted}</span>
     </div>
   )
@@ -387,8 +393,10 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
   }
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
-  const iconSvg = CATEGORY_ICONS[selected.category]
-  const hasReviews = summary && summary.review_count > 0
+const iconSvg = CATEGORY_ICONS[selected.category]
+// default: show stars unless admin explicitly turned them off
+const showRating = selected.show_rating !== false
+const hasReviews = summary && summary.review_count > 0
 
   // treat empty / whitespace / HTML-only as empty (no ※)
   const rawTerms = selected.discount_terms ?? ''
@@ -505,25 +513,26 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
             )}
 
             {/* Store name */}
-            <p className="font-semibold text-gray-900 text-lg">
-              {selected.name}
-            </p>
+<p className="font-semibold text-gray-900 text-lg">
+  {selected.name}
+</p>
 
-            {/* Star review - NOW UNDER THE TITLE */}
-            {hasReviews && (
-              <div className="flex items-center gap-1 mt-1">
-                <StarDisplay averageRating={summary.average_rating} />
-                <span className="text-xs text-gray-400">
-                  ({summary.review_count})
-                </span>
-              </div>
-            )}
+{/* Star review - visible even when there are 0 reviews, if admin allows 별점 표시 */}
+{showRating && summary && (
+  <div className="flex items-center gap-1 mt-1">
+    <StarDisplay
+      averageRating={summary.average_rating ?? 0}
+      showWhenZero
+    />
+    <span className="text-xs text-gray-400">
+      ({summary.review_count ?? 0})
+    </span>
+  </div>
+)}
 
-            {summaryLoading && (
-              <span className="text-xs text-gray-300 mt-1 block">
-                로딩 중...
-              </span>
-            )}
+{showRating && summaryLoading && (
+  <span className="text-xs text-gray-300 mt-1 block">로딩 중...</span>
+)}
 
             {/* Description, address, discount info */}
             {selected.description && (
@@ -619,12 +628,12 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
 )}
 
           {/* ── Member review bar chart ── */}
-          {hasReviews && (
-            <TagBarChart
-              tagCounts={summary.tag_counts}
-              reviewCount={summary.review_count}
-            />
-          )}
+{hasReviews && (
+  <TagBarChart
+    tagCounts={summary.tag_counts}
+    reviewCount={summary.review_count}
+  />
+)}
 
           {/* ── 임원 리뷰 ── */}
 {(selected.review || selected.reviewer_name) && (
