@@ -577,10 +577,10 @@ export function SpotCard({ selected, onClose }) {
     </p>
 
     <div className="relative w-full">
-      {/* 네모 말풍선 + 왼쪽으로 향하는 꼬리 */}
+      {/* 네모 말풍선 + 아래에서 왼쪽으로 휘어나가는 꼬리 */}
       <svg
-        className="w-full h-[72px]"
-        viewBox="-12 0 376 72"
+        className="w-full"
+        viewBox="0 0 360 80"
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -595,13 +595,12 @@ export function SpotCard({ selected, onClose }) {
           fill="#f97316"
         />
 
-        {/* 왼쪽 측면: 부드럽고 작은 꼬리 */}
+        {/* 아래에서 시작해서 왼쪽으로 휘어나가는 꼬리 */}
         <path
           d="
-            M0 28
-            C -4 26 -8 24 -12 22
-            C -8 28 -8 44 -12 50
-            C -8 48 -4 46 0 44
+            M 40 56
+            C 30 60 20 65 15 75
+            C 18 70 22 62 25 56
             Z
           "
           fill="#f97316"
