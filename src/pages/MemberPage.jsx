@@ -299,55 +299,29 @@ function MembershipCard({
   const cardFront = (
     <div
       style={{
-        width: '100%',
-        height: '100%',
-        borderRadius: '16px',
-        background: '#F6F4F1',
-        border: '1px solid #d6d3c0',
+        width: '100%', height: '100%', borderRadius: '16px',
+        background: '#F6F4F1', border: '1px solid #d6d3c0',
         boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-        padding: `calc(${W} * 0.07)`,
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
+        padding: `calc(${W} * 0.07)`, boxSizing: 'border-box',
+        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
       }}
     >
       {/* TOP */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div
-          style={{
-            width: avatarSize,
-            height: avatarSize,
-            borderRadius: '50%',
-            background: hasProfileImage ? 'transparent' : pastelBg,
-            flexShrink: 0,
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            userSelect: 'none',
-          }}
-        >
+        <div style={{ width: avatarSize, height: avatarSize, borderRadius: '50%', background: hasProfileImage ? 'transparent' : pastelBg, flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
           {hasProfileImage ? (
-            <img
-              src={member.profile_image_url}
-              alt="Profile"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
+            <img src={member.profile_image_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : (
             <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
           )}
         </div>
-
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: `calc(${W} * 0.01)`, textAlign: 'right' }}>
           <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.brand, fontWeight: 700, color: '#2C2A27', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             UvA-IN Membership
           </span>
           <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.valid, fontWeight: 500, color: '#6b6a5e', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.012)` }}>
             Valid Until{' '}
-            {member?.membership_valid_until
-              ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
-              : 'N/A'}
+            {member?.membership_valid_until ? new Date(member.membership_valid_until).toLocaleDateString('en-CA') : 'N/A'}
           </span>
           <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.name, fontWeight: 800, color: '#f97316', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.008)` }}>
             {member?.first_name} {member?.last_name}
@@ -382,83 +356,28 @@ function MembershipCard({
 
   if (!isValid) {
     return (
-      <div
-        style={{
-          width: cardW,
-          height: cardH,
-          margin: '0 auto',
-          flexShrink: 0,
-          borderRadius: '16px',
-          border: '2px dashed #cbd5b1',
-          background: '#F6F4F1',
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#4b5563',
-          textAlign: 'center',
-          padding: '16px',
-          fontFamily: '"Handjet", system-ui, sans-serif',
-        }}
-      >
+      <div style={{ width: cardW, height: cardH, margin: '0 auto', flexShrink: 0, borderRadius: '16px', border: '2px dashed #cbd5b1', background: '#F6F4F1', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#4b5563', textAlign: 'center', padding: '16px', fontFamily: '"Handjet", system-ui, sans-serif' }}>
         <span style={{ fontSize: fs.brand, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: '"Alien Block", system-ui, sans-serif', color: '#2C2A27' }}>
           UvA-IN MEMBERSHIP
         </span>
-        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
-          활성화된 멤버십이 없습니다
-        </span>
+        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>활성화된 멤버십이 없습니다</span>
         {member?.first_name && (
-          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
-            {member.first_name} {member.last_name}
-          </span>
+          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>{member.first_name} {member.last_name}</span>
         )}
-        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
-          멤버십 갱신은 임원에게 문의해주세요
-        </span>
+        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>멤버십 갱신은 임원에게 문의해주세요</span>
       </div>
     )
   }
 
   return (
     <div
-      style={{
-        width: cardW,
-        height: cardH,
-        margin: '0 auto',
-        perspective: '1200px',
-        flexShrink: 0,
-        cursor: disabled ? 'default' : 'pointer',
-      }}
-      onClick={() => {
-        if (disabled || !isValid) return
-        setFlipped((f) => !f)
-      }}
+      style={{ width: cardW, height: cardH, margin: '0 auto', perspective: '1200px', flexShrink: 0, cursor: disabled ? 'default' : 'pointer' }}
+      onClick={() => { if (disabled || !isValid) return; setFlipped((f) => !f) }}
     >
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          position: 'relative',
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
-          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        }}
-      >
+      <div style={{ width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d', transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
+
         {/* ── Brushed-metal frame ── */}
-        <svg
-          style={{
-            position: 'absolute',
-            inset: '-3px',
-            width: 'calc(100% + 6px)',
-            height: 'calc(100% + 6px)',
-            overflow: 'visible',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-          viewBox="0 0 106 174.1"
-          preserveAspectRatio="none"
-        >
+        <svg style={{ position: 'absolute', inset: '-3px', width: 'calc(100% + 6px)', height: 'calc(100% + 6px)', overflow: 'visible', zIndex: 0, pointerEvents: 'none' }} viewBox="0 0 106 174.1" preserveAspectRatio="none">
           <defs>
             <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%"   stopColor="#c8c4bc" />
@@ -471,60 +390,26 @@ function MembershipCard({
               <rect x="82" y="158" width="24"  height="20"  />
             </clipPath>
           </defs>
-          <rect
-            x="3" y="3" width="100" height="168.1"
-            rx="14.5" ry="9.2"
-            fill="none"
-            stroke="url(#metalGrad)"
-            strokeWidth="6"
-            clipPath="url(#bottomGap)"
-          />
+          <rect x="3" y="3" width="100" height="168.1" rx="14.5" ry="9.2" fill="none" stroke="url(#metalGrad)" strokeWidth="6" clipPath="url(#bottomGap)" />
         </svg>
 
         {/* ── Front face ── */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            padding: '12px',
-            boxSizing: 'border-box',
-            zIndex: 1,
-          }}
-        >
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', padding: '12px', boxSizing: 'border-box', zIndex: 1 }}>
           {cardFront}
         </div>
 
         {/* ── Back face (camera) ── */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            padding: '12px',
-            boxSizing: 'border-box',
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: '#F6F4F1',
-              border: '1px solid #d6d3c0',
-              borderRadius: '16px',
-              boxSizing: 'border-box',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', padding: '12px', boxSizing: 'border-box', zIndex: 1 }}>
+          <div style={{ width: '100%', height: '100%', background: '#F6F4F1', border: '1px solid #d6d3c0', borderRadius: '16px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {flipped && <QRScanner onScan={onQRScanned} />}
           </div>
         </div>
+
+        {/* ── Left grip ── */}
+        <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
+
+        {/* ── Right grip ── */}
+        <div style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '5px 0 0 5px', background: '#ccc9c1' }} />
 
       </div>
     </div>
