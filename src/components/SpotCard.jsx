@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, Ticket, Star, StarHalf } from '@phosphor-icons/react'
+import { MapPin, Ticket, Star } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
-import { computeStarDisplay, getSortedTagsForDisplay, formatAverageRating } from '../domain/reviewDomain'
+import {
+  computeStarDisplay,
+  getSortedTagsForDisplay,
+  formatAverageRating,
+} from '../domain/reviewDomain'
 
 export function RichText({ text, className = '' }) {
   if (!text) return null
@@ -17,7 +21,7 @@ const TAG_ICON_COMPONENTS = {
   CoinVertical,
 }
 
-// ── Read-only star row ────────────────────────────────────────── 
+// ── Read-only star row ──────────────────────────────────────────
 function StarDisplay({ averageRating }) {
   const formatted = formatAverageRating(averageRating)
   if (!formatted) return null
@@ -57,25 +61,15 @@ function StarDisplay({ averageRating }) {
   )
 }
 
-// ── Tag bar chart ─────────────────────────────────────────────── 
+// ── Tag bar chart ───────────────────────────────────────────────
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
-  
-  // DEBUG: Log the tag data
-  console.log('DEBUG TagBarChart - tagCounts:', tagCounts)
-  console.log('DEBUG TagBarChart - sorted:', sorted)
-  if (sorted.length > 0) {
-    console.log('DEBUG - First tag object:', sorted[0])
-    console.log('DEBUG - tag.icon value:', sorted[0].icon)
-    console.log('DEBUG - IconComponent lookup:', TAG_ICON_COMPONENTS[sorted[0].icon])
-  }
-  
   if (sorted.length === 0) return null
 
   const maxCount = sorted[0].count
 
   return (
-    <div className="px-4 pb-4">
+    <div className="pb-4">
       <div className="pt-3 border-t border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
@@ -85,7 +79,8 @@ function TagBarChart({ tagCounts, reviewCount }) {
         <div className="flex flex-col gap-2.5">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
-            const pct = maxCount > 0 ? Math.round((tag.count / maxCount) * 100) : 0
+            const pct =
+              maxCount > 0 ? Math.round((tag.count / maxCount) * 100) : 0
 
             return (
               <div key={tag.key} className="flex items-center gap-2">
@@ -94,9 +89,13 @@ function TagBarChart({ tagCounts, reviewCount }) {
                     <IconComponent size={13} weight="fill" color="#f97316" />
                   )}
                   {!IconComponent && (
-                    <span className="text-xs text-red-500">❌ No icon for: {tag.icon}</span>
+                    <span className="text-xs text-red-500">
+                      ❌ No icon for: {tag.icon}
+                    </span>
                   )}
-                  <span className="text-xs text-gray-600 truncate">{tag.label}</span>
+                  <span className="text-xs text-gray-600 truncate">
+                    {tag.label}
+                  </span>
                 </div>
 
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -118,7 +117,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
   )
 }
 
-// ── Lightbox ──────────────────────────────────────────────────── 
+// ── Lightbox ────────────────────────────────────────────────────
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
@@ -263,11 +262,11 @@ function Lightbox({ imgs, startIndex, onClose }) {
   )
 }
 
-// ── Thumbnail grid (same on mobile + desktop) ─────────────────── 
+// ── Thumbnail grid (same on mobile + desktop) ───────────────────
 function ImageThumbnails({ imgs, onTap }) {
   return (
     <div
-      className="flex gap-2 px-4 overflow-x-auto"
+      className="flex gap-2 overflow-x-auto"
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       {imgs.map((url, i) => (
@@ -313,7 +312,7 @@ export function SpotCard({ selected, onClose }) {
   const hasImages = imgs.length > 0
 
   const { summary, loading: summaryLoading } = useStoreReviewSummary(
-    selected?.partnership_id
+    selected?.partnership_id,
   )
 
   const { WIN_H, WIN_W } = useMemo(
@@ -321,7 +320,7 @@ export function SpotCard({ selected, onClose }) {
       WIN_H: typeof window !== 'undefined' ? window.innerHeight : 700,
       WIN_W: typeof window !== 'undefined' ? window.innerWidth : 1024,
     }),
-    []
+    [],
   )
 
   const isDesktop = WIN_W >= 768
@@ -349,9 +348,8 @@ export function SpotCard({ selected, onClose }) {
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
-    startHeightRef.current = hasImages
-      ? cardHeight
-      : cardRef.current?.offsetHeight || MIN_HEIGHT
+    startHeightRef.current =
+      hasImages ? cardHeight : cardRef.current?.offsetHeight || MIN_HEIGHT
     setIsDragging(true)
   }
 
@@ -365,11 +363,7 @@ export function SpotCard({ selected, onClose }) {
       e.preventDefault()
     }
 
-    // NOTE:
-    // We no longer update cardHeight here.
-    // We just detect the gesture, and in handleTouchEnd
-    // we snap to MIN_HEIGHT, MAX_HEIGHT or close,
-    // same style as the membership card.
+    // We don't update cardHeight here; snapping happens in handleTouchEnd.
   }
 
   const handleTouchEnd = () => {
@@ -412,8 +406,8 @@ export function SpotCard({ selected, onClose }) {
     transform: closing
       ? 'translateY(110%)'
       : isVisible
-        ? 'translateY(0)'
-        : 'translateY(110%)',
+      ? 'translateY(0)'
+      : 'translateY(110%)',
     transition: isDragging
       ? 'none'
       : 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
@@ -425,8 +419,8 @@ export function SpotCard({ selected, onClose }) {
     transform: closing
       ? 'translateY(110%)'
       : isVisible
-        ? 'translateY(0)'
-        : 'translateY(110%)',
+      ? 'translateY(0)'
+      : 'translateY(110%)',
     transition: isDragging
       ? 'none'
       : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)',
@@ -443,16 +437,16 @@ export function SpotCard({ selected, onClose }) {
       )}
 
       <div
-  ref={cardRef}
-  className="absolute bottom-0 inset-x-4 bg-white rounded-t-2xl"
-  style={{
-    ...(hasImages ? imageStyle : noImageStyle),
-    zIndex: 1000,
-    boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  }}
+        ref={cardRef}
+        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+        style={{
+          ...(hasImages ? imageStyle : noImageStyle),
+          zIndex: 1000,
+          boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -473,46 +467,51 @@ export function SpotCard({ selected, onClose }) {
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        <div className="flex-1" style={{ overflowY: 'hidden' }}>
+        <div className="flex-1 px-8" style={{ overflowY: 'hidden' }}>
           {/* ── Place info ── */}
-          <div className="px-4 pt-1 pb-3">
+          <div className="pt-1 pb-3">
             {/* Category, price, sponsored badges (kept but not rendered) */}
-{false && (
-  <div className="flex items-center gap-1.5 flex-wrap mb-1">
-    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-      {iconSvg && (
-        <div
-          dangerouslySetInnerHTML={{
-            __html: iconSvg.replace('fill="currentColor"', 'fill="#f97316"'),
-          }}
-          style={{
-            width: '14px',
-            height: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        />
-      )}
-      {selected.category || '기타'}
-    </span>
+            {false && (
+              <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  {iconSvg && (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: iconSvg.replace(
+                          'fill="currentColor"',
+                          'fill="#f97316"',
+                        ),
+                      }}
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    />
+                  )}
+                  {selected.category || '기타'}
+                </span>
 
-    {selected.price_range && (
-      <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
-        {selected.price_range}
-      </span>
-    )}
+                {selected.price_range && (
+                  <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
+                    {selected.price_range}
+                  </span>
+                )}
 
-    {selected.is_sponsored && (
-      <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
-        제휴
-      </span>
-    )}
-  </div>
-)}
+                {selected.is_sponsored && (
+                  <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
+                    제휴
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Store name */}
-            <p className="font-semibold text-gray-900 text-lg">{selected.name}</p>
+            <p className="font-semibold text-gray-900 text-lg">
+              {selected.name}
+            </p>
 
             {/* Star review - NOW UNDER THE TITLE */}
             {hasReviews && (
@@ -532,37 +531,40 @@ export function SpotCard({ selected, onClose }) {
 
             {/* Description, address, discount info */}
             {selected.description && (
-  <RichText
-    text={selected.description}
-    className="text-xs text-gray-500 mt-1 block"
-  />
-)}
+              <RichText
+                text={selected.description}
+                className="text-xs text-gray-500 mt-1 block"
+              />
+            )}
 
-{selected.discount_info && (
-  <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
-    <Ticket size={14} weight="fill" color="#FF5252" />
-    <RichText text={selected.discount_info} />
-  </p>
-)}
+            {selected.discount_info && (
+              <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
+                <Ticket size={14} weight="fill" color="#FF5252" />
+                <RichText text={selected.discount_info} />
+              </p>
+            )}
 
-{discountTerms && (
-  <p className="text-xs text-gray-800 mt-0.5">
-    ※ <RichText text={discountTerms} />
-  </p>
-)}
+            {discountTerms && (
+              <p className="text-xs text-gray-800 mt-0.5">
+                ※ <RichText text={discountTerms} />
+              </p>
+            )}
 
-{selected.address && (
-  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-    <MapPin size={12} weight="fill" />
-    {selected.address}
-  </p>
-)}
+            {selected.address && (
+              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                <MapPin size={12} weight="fill" />
+                {selected.address}
+              </p>
+            )}
           </div>
 
           {/* ── Images: same thumbnail grid on mobile + desktop ── */}
           {hasImages && (
             <div className="mb-3">
-              <ImageThumbnails imgs={imgs} onTap={(i) => setLightboxIndex(i)} />
+              <ImageThumbnails
+                imgs={imgs}
+                onTap={(i) => setLightboxIndex(i)}
+              />
             </div>
           )}
 
@@ -576,7 +578,7 @@ export function SpotCard({ selected, onClose }) {
 
           {/* ── 임원 리뷰 ── */}
           {(selected.review || selected.reviewer_name) && (
-            <div className="px-4 pb-4">
+            <div className="pb-4">
               <div className="pt-3 border-t border-gray-100">
                 <p className="text-xs font-semibold text-gray-500 mb-1.5">
                   임원 리뷰
@@ -617,7 +619,7 @@ export function SpotCard({ selected, onClose }) {
               href={
                 'https://www.google.com/maps/search/?api=1&query=' +
                 encodeURIComponent(
-                  selected.name + ' ' + (selected.address || '')
+                  selected.name + ' ' + (selected.address || ''),
                 )
               }
               target="_blank"
