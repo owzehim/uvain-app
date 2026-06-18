@@ -405,50 +405,30 @@ function MembershipCard({
           </div>
         </div>
 
-        {/* ── Top tab ── */}
-<svg
-  style={{
-    position: 'absolute',
-    top: '-12px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: `calc(${W} * 0.35)`,
-    height: '18px',
-    zIndex: 2,
-    pointerEvents: 'none',
-    overflow: 'visible',
-  }}
-  viewBox="0 0 100 18"
-  preserveAspectRatio="none"
->
-  <defs>
-    <mask id="tabHole">
-      {/* white = show, black = cut out */}
-      <rect width="100" height="18" fill="white" rx="5" ry="5" />
-      {/* pill hole centered, flat bottom so it merges with frame */}
-      <rect x="27" y="5" width="46" height="9" rx="4.5" ry="4.5" fill="black" />
-    </mask>
-  </defs>
-  <rect
-    width="100"
-    height="18"
-    rx="5"
-    ry="5"
-    fill="#ccc9c1"
-    mask="url(#tabHole)"
-  />
-</svg>
-  {/* Real pill hole — transparent window through the tab */}
-  <div
-    style={{
-      width: '52%',
-      height: '7px',
-      borderRadius: '999px',
-      background: 'transparent',
-      boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.25), inset 0 2px 3px rgba(0,0,0,0.2)',
-    }}
-  />
-</div>
+        {/* ── Top tab — SVG with real transparent pill hole ── */}
+        <svg
+          style={{
+            position: 'absolute',
+            top: '-12px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: `calc(${W} * 0.35)`,
+            height: '18px',
+            zIndex: 2,
+            pointerEvents: 'none',
+            overflow: 'visible',
+          }}
+          viewBox="0 0 100 18"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <mask id="tabHole">
+              <rect width="100" height="18" fill="white" rx="5" ry="5" />
+              <rect x="27" y="5" width="46" height="9" rx="4.5" ry="4.5" fill="black" />
+            </mask>
+          </defs>
+          <rect width="100" height="18" rx="5" ry="5" fill="#ccc9c1" mask="url(#tabHole)" />
+        </svg>
 
         {/* ── Left grip ── */}
         <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
