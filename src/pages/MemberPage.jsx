@@ -574,7 +574,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* ── Brushed-metal frame (no tab, no grips, closed bottom) ── */}
+        {/* ── Brushed-metal frame ── */}
         <svg
           style={{
             position: 'absolute',
@@ -594,9 +594,12 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               <stop offset="50%" stopColor="#dedad4" />
               <stop offset="100%" stopColor="#c0bcb4" />
             </linearGradient>
+            <clipPath id="bottomGap">
+              <rect x="0" y="0" width="106" height="174.1" />
+            </clipPath>
           </defs>
 
-          {/* Card frame - full rounded rectangle with no gaps */}
+          {/* Card frame - CLOSED BOTTOM */}
           <rect
             x="3"
             y="3"
@@ -607,6 +610,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
             fill="none"
             stroke="url(#metalGrad)"
             strokeWidth="6"
+            clipPath="url(#bottomGap)"
           />
         </svg>
 
