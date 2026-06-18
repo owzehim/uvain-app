@@ -69,10 +69,9 @@ function TagBarChart({ tagCounts, reviewCount }) {
   return (
     <div className="pb-4">
       <div className="pt-3">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
-          <span className="text-xs text-gray-400">{reviewCount}개</span>
-        </div>
+        <div className="mb-3">
+  <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
+</div>
         <div className="flex flex-col gap-2.5 px-3">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]

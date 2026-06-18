@@ -2463,10 +2463,13 @@ function MapTab({ restaurants }) {
   return (
     <div className="h-full flex flex-col">
       {/* Category slider */}
-      <div
-        className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
-      >
+<div 
+  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0" 
+  style={{ 
+    paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
+    zIndex: 10  // ← 이 줄 추가
+  }} 
+>
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
           const iconSvg = isActive
