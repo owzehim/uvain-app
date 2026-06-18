@@ -532,31 +532,31 @@ export function SpotCard({ selected, onClose }) {
 
             {/* Description, address, discount info */}
             {selected.description && (
-              <RichText
-                text={selected.description}
-                className="text-xs text-gray-500 mt-1 block"
-              />
-            )}
+  <RichText
+    text={selected.description}
+    className="text-xs text-gray-500 mt-1 block"
+  />
+)}
 
-            {selected.address && (
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                <MapPin size={12} weight="fill" />
-                {selected.address}
-              </p>
-            )}
+{selected.discount_info && (
+  <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
+    <Ticket size={14} weight="fill" color="#FF5252" />
+    <RichText text={selected.discount_info} />
+  </p>
+)}
 
-            {selected.discount_info && (
-              <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
-                <Ticket size={14} weight="fill" color="#FF5252" />
-                <RichText text={selected.discount_info} />
-              </p>
-            )}
+{discountTerms && (
+  <p className="text-xs text-gray-800 mt-0.5">
+    ※ <RichText text={discountTerms} />
+  </p>
+)}
 
-            {discountTerms && (
-              <p className="text-xs text-gray-800 mt-0.5">
-                ※ <RichText text={discountTerms} />
-              </p>
-            )}
+{selected.address && (
+  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+    <MapPin size={12} weight="fill" />
+    {selected.address}
+  </p>
+)}
           </div>
 
           {/* ── Images: same thumbnail grid on mobile + desktop ── */}
