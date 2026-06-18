@@ -226,66 +226,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
           }}
         />
 
-        {/* Prev button */}
-        {index > 0 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setIndex((i) => Math.max(i - 1, 0))
-            }}
-            style={{
-              position: 'absolute',
-              left: 20,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255,255,255,0.15)',
-              border: 'none',
-              color: '#fff',
-              borderRadius: '999px',
-              width: 44,
-              height: 44,
-              fontSize: 24,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10000,
-            }}
-          >
-            ‹
-          </button>
-        )}
-
-        {/* Next button */}
-        {index < imgs.length - 1 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setIndex((i) => Math.min(i + 1, imgs.length - 1))
-            }}
-            style={{
-              position: 'absolute',
-              right: 20,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255,255,255,0.15)',
-              border: 'none',
-              color: '#fff',
-              borderRadius: '999px',
-              width: 44,
-              height: 44,
-              fontSize: 24,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10000,
-            }}
-          >
-            ›
-          </button>
-        )}
-
         {/* Dots */}
         {imgs.length > 1 && (
           <div
