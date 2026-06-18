@@ -399,8 +399,8 @@ function MembershipCard({
 
             <clipPath id="bottomGap">
               <rect x="0"  y="0"   width="106" height="158" />
-              <rect x="0"  y="158" width="24"  height="20"  />
-              <rect x="82" y="158" width="24"  height="20"  />
+              <rect x="0"  y="158" width="28" height="20" />
+<rect x="78" y="158" width="28" height="20" />
             </clipPath>
 
             {/*
@@ -410,7 +410,7 @@ function MembershipCard({
             */}
             <mask id="tabHoleMask">
               <path
-                d="M25,3 L81,3 L81,0 Q81,-2 79,-2 L27,-2 Q25,-2 25,0 Z"
+                d="M28,3 L78,3 L78,0 Q78,-2 76,-2 L30,-2 Q28,-2 28,0 Z"
                 fill="white"
               />
               <rect x="43" y="0.8"  width="20" height="1.8" rx="0.9" ry="0.9" fill="black" />
@@ -429,7 +429,7 @@ function MembershipCard({
 
           {/* Tab — bottom flush at y=3, very flat profile */}
           <path
-            d="M25,3 L81,3 L81,0 Q81,-2 79,-2 L27,-2 Q25,-2 25,0 Z"
+            d="M28,3 L78,3 L78,0 Q78,-2 76,-2 L30,-2 Q28,-2 28,0 Z"
             fill="url(#metalGrad)"
             mask="url(#tabHoleMask)"
           />
