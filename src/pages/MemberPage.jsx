@@ -574,46 +574,6 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* ── Brushed-metal frame ── */}
-        <svg
-          style={{
-            position: 'absolute',
-            inset: '-3px',
-            width: 'calc(100% + 6px)',
-            height: 'calc(100% + 6px)',
-            overflow: 'visible',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-          viewBox="0 0 106 174.1"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#c8c4bc" />
-              <stop offset="50%" stopColor="#dedad4" />
-              <stop offset="100%" stopColor="#c0bcb4" />
-            </linearGradient>
-            <clipPath id="bottomGap">
-              <rect x="0" y="0" width="106" height="174.1" />
-            </clipPath>
-          </defs>
-
-          {/* Card frame - CLOSED BOTTOM */}
-          <rect
-            x="3"
-            y="3"
-            width="100"
-            height="168.1"
-            rx="14.5"
-            ry="9.2"
-            fill="none"
-            stroke="url(#metalGrad)"
-            strokeWidth="6"
-            clipPath="url(#bottomGap)"
-          />
-        </svg>
-
         {/* ── Front face ── */}
         <div
           style={{
