@@ -607,21 +607,20 @@ export function SpotCard({ selected, onClose }) {
         />
       </svg>
 
-      {/* 텍스트: 위쪽 56px(직사각형 영역) 안에서만 수직 중앙 정렬 */}
+            {/* 텍스트: 직사각형 영역 안에서 수직 중앙 정렬 */}
       <div
-        className="absolute left-0 right-0 top-0"
+        className="absolute left-0 right-0 top-0 flex items-center justify-center px-6"
         style={{ height: '56px' }}
       >
-        <div className="flex items-center justify-center h-full px-6">
-          <RichText
-            text={selected.one_line_review}
-            className="font-semibold text-white text-lg text-center block"
-          />
-        </div>
+        <RichText
+          text={selected.one_line_review}
+          className="font-semibold text-white text-lg text-center block"
+        />
+      </div>
       </div>
     </div>
-  </div>
 )}
+
           {/* ── Member review bar chart ── */}
           {hasReviews && (
             <TagBarChart
