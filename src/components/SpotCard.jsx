@@ -584,17 +584,25 @@ export function SpotCard({ selected, onClose }) {
         className="font-semibold text-white text-lg text-center block"
       />
 
-      {/* 왼쪽 아래 꼬리 (텍스트 메시지처럼) */}
-      <div
-        className="absolute -bottom-2 left-8"
-        style={{
-          width: 16,
-          height: 16,
-          backgroundColor: '#f97316', // bg-orange-500
-          borderBottomRightRadius: 16,
-          transform: 'rotate(45deg)',
-        }}
-      />
+      {/* 꼬리: iMessage 스타일, 부드러운 곡선 */}
+      <svg
+        className="absolute -bottom-3 left-10"
+        width="32"
+        height="20"
+        viewBox="0 0 32 20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* 왼쪽 아래에서 부드럽게 올라오는 꼬리 */}
+        <path
+          d="M0 20
+             C 6 20 10 16 12 12
+             C 13.5 9 14 6 14 0
+             H32
+             V20
+             Z"
+          fill="#f97316"  // bg-orange-500와 같은 색
+        />
+      </svg>
     </div>
   </div>
 )}
