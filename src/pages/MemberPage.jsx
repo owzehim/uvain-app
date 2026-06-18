@@ -441,17 +441,25 @@ function MembershipCard({
         </div>
 
         {/* ── Back face (camera) ── */}
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', padding: '12px', boxSizing: 'border-box', zIndex: 1 }}>
-          <div style={{ width: '100%', height: '100%', background: '#F6F4F1', border: '1px solid #d6d3c0', borderRadius: '16px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {flipped && <QRScanner onScan={onQRScanned} />}
-          </div>
-        </div>
+        <div style={{
+  width: '100%',
+  height: '100%',
+  background: '#F6F4F1',
+  border: '1px solid #d6d3c0',
+  borderRadius: '16px',
+  boxSizing: 'border-box',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}}>
+  {flipped && <QRScanner onScan={onQRScanned} />}
+</div>
 
         {/* ── Left grip ── */}
-        <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
+        <div style={{ position: 'absolute', left: '8px', top: '52%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '0 5px 5px 0', background: '#ccc9c1' }} />
 
         {/* ── Right grip ── */}
-        <div style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '5px 0 0 5px', background: '#ccc9c1' }} />
+        <div style={{ position: 'absolute', right: '8px', top: '52%', transform: 'translateY(-50%)', width: '16px', height: '300px', zIndex: 2, pointerEvents: 'none', borderRadius: '5px 0 0 5px', background: '#ccc9c1' }} />
 
       </div>
     </div>
