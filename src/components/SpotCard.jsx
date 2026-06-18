@@ -13,7 +13,7 @@ export function RichText({ text, className = '' }) {
 const TAG_ICON_COMPONENTS = {
   BowlSteam,
   HandHeart,
-  sunglasses: Sunglasses,
+  Sunglasses,
   CoinVertical,
 }
 
