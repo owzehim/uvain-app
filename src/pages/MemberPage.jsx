@@ -279,7 +279,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
   }
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
-  const avatarSize = `calc(${W} * 0.25)`
+  const avatarSize = `calc(${W} * 0.22)`
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
@@ -332,7 +332,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               }}
             />
           ) : (
-            <UserCircle size="100%" weight="fill" color="rgba(44,42,39,0.55)" />
+            <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
           )}
         </div>
         <div
@@ -465,7 +465,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
               gap: `calc(${W} * 0.02)`,
             }}
           >
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.22)" />
+            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
             <span
               style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
