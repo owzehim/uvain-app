@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapPin, Ticket, Star, StarHalf } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
-import { BowlSteam, HandHeart, Sparkle, CoinVertical } from '@phosphor-icons/react'
+import { BowlSteam, HandHeart, Sunglasses, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
 import { computeStarDisplay, getSortedTagsForDisplay, formatAverageRating } from '../domain/reviewDomain'
 
@@ -13,11 +13,11 @@ export function RichText({ text, className = '' }) {
 const TAG_ICON_COMPONENTS = {
   BowlSteam,
   HandHeart,
-  Sparkle,
+  Sunglasses,
   CoinVertical,
 }
 
-// ── Read-only star row ──────────────────────────────────────────
+// ── Read-only star row ────────────────────────────────────────── 
 function StarDisplay({ averageRating }) {
   const formatted = formatAverageRating(averageRating)
   if (!formatted) return null
@@ -57,7 +57,7 @@ function StarDisplay({ averageRating }) {
   )
 }
 
-// ── Tag bar chart ───────────────────────────────────────────────
+// ── Tag bar chart ─────────────────────────────────────────────── 
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
   if (sorted.length === 0) return null
@@ -105,7 +105,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
   )
 }
 
-// ── Lightbox ────────────────────────────────────────────────────
+// ── Lightbox ──────────────────────────────────────────────────── 
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
@@ -123,7 +123,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
       if (e.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, imgs.length - 1))
       if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
     }
-
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [imgs.length])
@@ -311,7 +310,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
   )
 }
 
-// ── Thumbnail grid (same on mobile + desktop) ───────────────────
+// ── Thumbnail grid (same on mobile + desktop) ─────────────────── 
 function ImageThumbnails({ imgs, onTap }) {
   return (
     <div
@@ -352,7 +351,6 @@ export function SpotCard({ selected, onClose }) {
   const [closing, setClosing] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [isVisible, setIsVisible] = useState(false)
-
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -405,22 +403,21 @@ export function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchMove = (e) => {
-  if (!isDragging) return
+    if (!isDragging) return
+    lastYRef.current = e.touches[0].clientY
+    const delta = startYRef.current - e.touches[0].clientY
 
-  lastYRef.current = e.touches[0].clientY
-  const delta = startYRef.current - e.touches[0].clientY
+    // Prevent scroll when clearly vertical swipe (like membership card)
+    if (Math.abs(delta) > 10) {
+      e.preventDefault()
+    }
 
-  // Prevent scroll when clearly vertical swipe (like membership card)
-  if (Math.abs(delta) > 10) {
-    e.preventDefault()
+    // NOTE:
+    // We no longer update cardHeight here.
+    // We just detect the gesture, and in handleTouchEnd
+    // we snap to MIN_HEIGHT, MAX_HEIGHT or close,
+    // same style as the membership card.
   }
-
-  // NOTE:
-  // We no longer update cardHeight here.
-  // We just detect the gesture, and in handleTouchEnd
-  // we snap to MIN_HEIGHT, MAX_HEIGHT or close,
-  // same style as the membership card.
-}
 
   const handleTouchEnd = () => {
     setIsDragging(false)
@@ -462,8 +459,8 @@ export function SpotCard({ selected, onClose }) {
     transform: closing
       ? 'translateY(110%)'
       : isVisible
-      ? 'translateY(0)'
-      : 'translateY(110%)',
+        ? 'translateY(0)'
+        : 'translateY(110%)',
     transition: isDragging
       ? 'none'
       : 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
@@ -475,8 +472,8 @@ export function SpotCard({ selected, onClose }) {
     transform: closing
       ? 'translateY(110%)'
       : isVisible
-      ? 'translateY(0)'
-      : 'translateY(110%)',
+        ? 'translateY(0)'
+        : 'translateY(110%)',
     transition: isDragging
       ? 'none'
       : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)',
@@ -613,10 +610,7 @@ export function SpotCard({ selected, onClose }) {
           {/* ── Images: same thumbnail grid on mobile + desktop ── */}
           {hasImages && (
             <div className="mb-3">
-              <ImageThumbnails
-                imgs={imgs}
-                onTap={(i) => setLightboxIndex(i)}
-              />
+              <ImageThumbnails imgs={imgs} onTap={(i) => setLightboxIndex(i)} />
             </div>
           )}
 
