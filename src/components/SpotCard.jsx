@@ -576,33 +576,42 @@ export function SpotCard({ selected, onClose }) {
       한 줄 평가
     </p>
 
-    {/* 말풍선: 가로 전체 + 부드러운 직사각형 */}
-    <div className="relative w-full bg-orange-500 rounded-2xl px-5 py-4">
-      {/* 텍스트: 가운데 정렬, 화이트 */}
-      <RichText
-        text={selected.one_line_review}
-        className="font-semibold text-white text-lg text-center block"
-      />
-
-      {/* 꼬리: iMessage 스타일, 부드러운 곡선 */}
+    {/* 전체 가로폭을 채우는 네모 말풍선 + 꼬리 (SVG) */}
+    <div className="relative w-full">
       <svg
-        className="absolute -bottom-3 left-10"
-        width="32"
-        height="20"
-        viewBox="0 0 32 20"
+        className="w-full h-[72px]"
+        viewBox="0 0 344 72"
+        preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* 왼쪽 아래에서 부드럽게 올라오는 꼬리 */}
+        {/* 부드러운 직사각형 말풍선 본체 */}
+        <rect
+          x="0"
+          y="0"
+          width="344"
+          height="56"
+          rx="16"
+          ry="16"
+          fill="#f97316"  // bg-orange-500
+        />
+        {/* 왼쪽 아래 꼬리 (곡선) */}
         <path
-          d="M0 20
-             C 6 20 10 16 12 12
-             C 13.5 9 14 6 14 0
-             H32
-             V20
+          d="M72 56
+             C 56 56 50 60 46 64
+             C 44 66 42 69 38 72
+             L 26 56
              Z"
-          fill="#f97316"  // bg-orange-500와 같은 색
+          fill="#f97316"
         />
       </svg>
+
+      {/* 말풍선 안의 텍스트 (가운데 정렬, 흰색) */}
+      <div className="absolute inset-0 flex items-center justify-center px-6">
+        <RichText
+          text={selected.one_line_review}
+          className="font-semibold text-white text-lg text-center block"
+        />
+      </div>
     </div>
   </div>
 )}
