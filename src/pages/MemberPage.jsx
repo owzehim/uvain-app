@@ -279,7 +279,7 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false, onFlip
   }
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
-  const avatarSize = `calc(${W} * 0.22)`
+  const avatarSize = `calc(${W} * 0.21)`
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
