@@ -10,6 +10,7 @@ export default function QRScanner({ onScan }) {
   useEffect(() => {
     const scannerId = 'qr-scanner-container'
     let isMounted = true
+    // Track whether stop() has already been requested
     let stopRequested = false
 
     async function startScanner() {
@@ -30,6 +31,7 @@ export default function QRScanner({ onScan }) {
           () => {}
         )
 
+        // If unmount happened while we were awaiting start(), stop immediately
         if (stopRequested) {
           try {
             await scanner.stop()
@@ -63,8 +65,7 @@ export default function QRScanner({ onScan }) {
   }, [onScan])
 
   return (
-    // 전체 영역을 채우되, 카메라와 텍스트를 분리해서 배치
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col items-center gap-3 w-full">
       <style>{`
         #qr-scanner-container #qr-shaded-region {
           border-width: 0 !important;
@@ -90,73 +91,46 @@ export default function QRScanner({ onScan }) {
         }
       `}</style>
 
-      {/* 1) 여기 flex-1 영역 안에서 "카메라 박스만" 수직 중앙 정렬 */}
-      <div className="flex flex-1 items-center justify-center w-full">
-        <div className="relative w-full max-w-xs" style={{ aspectRatio: '1' }}>
-          <div id="qr-scanner-container" className="w-full h-full rounded-2xl overflow-hidden" />
+      <div className="relative w-full max-w-xs" style={{ aspectRatio: '1' }}>
+        <div id="qr-scanner-container" className="w-full h-full rounded-2xl overflow-hidden" />
 
-          {/* Corner brackets */}
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              top: '50%',
-              left: '50%',
-              width: QR_BOX_SIZE,
-              height: QR_BOX_SIZE,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            {[
-              { top: 0,    left: 0,  borderTop: true,    borderLeft: true,  radius: '4px 0 0 0' },
-              { top: 0,    right: 0, borderTop: true,    borderRight: true, radius: '0 4px 0 0' },
-              { bottom: 0, left: 0,  borderBottom: true, borderLeft: true,  radius: '0 0 0 4px' },
-              { bottom: 0, right: 0, borderBottom: true, borderRight: true, radius: '0 0 4px 0' },
-            ].map((corner, i) => (
-              <span
-                key={i}
-                style={{
-                  position: 'absolute',
-                  width: 28,
-                  height: 28,
-                  ...(corner.top    !== undefined && { top:    corner.top }),
-                  ...(corner.bottom !== undefined && { bottom: corner.bottom }),
-                  ...(corner.left   !== undefined && { left:   corner.left }),
-                  ...(corner.right  !== undefined && { right:  corner.right }),
-                  ...(corner.borderTop    && { borderTop:    '3px solid #F6F4F1' }),
-                  ...(corner.borderBottom && { borderBottom: '3px solid #F6F4F1' }),
-                  ...(corner.borderLeft   && { borderLeft:   '3px solid #F6F4F1' }),
-                  ...(corner.borderRight  && { borderRight:  '3px solid #F6F4F1' }),
-                  borderRadius: corner.radius,
-                }}
-              />
-            ))}
-          </div>
+        {/* Corner brackets */}
+        <div
+          className="absolute pointer-events-none"
+          style={{ top: '50%', left: '50%', width: QR_BOX_SIZE, height: QR_BOX_SIZE, transform: 'translate(-50%, -50%)' }}
+        >
+          {[
+            { top: 0,    left: 0,  borderTop: true,    borderLeft: true,  radius: '4px 0 0 0' },
+            { top: 0,    right: 0, borderTop: true,    borderRight: true, radius: '0 4px 0 0' },
+            { bottom: 0, left: 0,  borderBottom: true, borderLeft: true,  radius: '0 0 0 4px' },
+            { bottom: 0, right: 0, borderBottom: true, borderRight: true, radius: '0 0 4px 0' },
+          ].map((corner, i) => (
+            <span
+              key={i}
+              style={{
+                position: 'absolute',
+                width: 28,
+                height: 28,
+                ...(corner.top    !== undefined && { top:    corner.top }),
+                ...(corner.bottom !== undefined && { bottom: corner.bottom }),
+                ...(corner.left   !== undefined && { left:   corner.left }),
+                ...(corner.right  !== undefined && { right:  corner.right }),
+                ...(corner.borderTop    && { borderTop:    '3px solid #F6F4F1' }),
+                ...(corner.borderBottom && { borderBottom: '3px solid #F6F4F1' }),
+                ...(corner.borderLeft   && { borderLeft:   '3px solid #F6F4F1' }),
+                ...(corner.borderRight  && { borderRight:  '3px solid #F6F4F1' }),
+                borderRadius: corner.radius,
+              }}
+            />
+          ))}
         </div>
       </div>
 
-      {/* 2) 텍스트는 flex-1 밖, 아래쪽에 별도로 배치 (카메라 중앙에 영향 X) */}
-      <div className="flex flex-col items-center gap-1 text-center px-4 mt-3">
-        <p
-          style={{
-            fontSize: '14px',
-            fontWeight: 600,
-            color: '#2C2A27',
-            fontFamily: '"Handjet", system-ui, sans-serif',
-            letterSpacing: '0.04em',
-            margin: 0,
-          }}
-        >
+      <div className="flex flex-col items-center gap-1 text-center px-4">
+        <p style={{ fontSize: '14px', fontWeight: 600, color: '#2C2A27', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.04em', margin: 0 }}>
           매장 QR 코드를 스캔해주세요
         </p>
-        <p
-          style={{
-            fontSize: '12px',
-            color: 'rgba(44,42,39,0.45)',
-            fontFamily: '"Handjet", system-ui, sans-serif',
-            letterSpacing: '0.02em',
-            margin: 0,
-          }}
-        >
+        <p style={{ fontSize: '12px', color: 'rgba(44,42,39,0.45)', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.02em', margin: 0 }}>
           카메라가 실행되지 않으면 앱을 재시작해주세요
         </p>
       </div>
