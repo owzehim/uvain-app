@@ -2336,11 +2336,8 @@ function EventsTab({ events }) {
     onTouchStart={handleLbTouchStart}
     onTouchEnd={handleLbTouchEnd}
     onClick={(e) => {
-      // Close when tapping the dark background only
-      if (e.target === e.currentTarget) {
-        startLightboxClose()
-      }
-    }}
+  startLightboxClose()
+}}
     className={lightboxClosing ? 'lb-close' : 'lb-open'}
     style={{
       position: 'fixed',
