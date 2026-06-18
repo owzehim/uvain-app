@@ -279,17 +279,17 @@ function MembershipCard({
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
   const fs = {
-    brand: `calc(${W} * 0.038)`,
-    valid: `calc(${W} * 0.032)`,
-    name: `calc(${W} * 0.052)`,
+    brand:    `calc(${W} * 0.038)`,
+    valid:    `calc(${W} * 0.032)`,
+    name:     `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.18)`,
   }
 
-  const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
-  const pastelBg = getPastelColor(avatarSeed)
-  const avatarSize = `calc(${W} * 0.19)`
+  const avatarSeed      = `${member?.first_name || ''}${member?.last_name || ''}`
+  const pastelBg        = getPastelColor(avatarSeed)
+  const avatarSize      = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
-  const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
+  const qrOutlineSize   = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
   useEffect(() => {
@@ -313,13 +313,7 @@ function MembershipCard({
       }}
     >
       {/* TOP */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-        }}
-      >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div
           style={{
             width: avatarSize,
@@ -338,170 +332,39 @@ function MembershipCard({
             <img
               src={member.profile_image_url}
               alt="Profile"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           ) : (
-            <UserCircle
-              size="72%"
-              weight="fill"
-              color="rgba(44,42,39,0.55)"
-            />
+            <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
           )}
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: `calc(${W} * 0.01)`,
-            textAlign: 'right',
-          }}
-        >
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.brand,
-              fontWeight: 700,
-              color: '#2C2A27',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: `calc(${W} * 0.01)`, textAlign: 'right' }}>
+          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.brand, fontWeight: 700, color: '#2C2A27', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             UvA-IN Membership
           </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.valid,
-              fontWeight: 500,
-              color: '#6b6a5e',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.012)`,
-            }}
-          >
+          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.valid, fontWeight: 500, color: '#6b6a5e', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.012)` }}>
             Valid Until{' '}
             {member?.membership_valid_until
-              ? new Date(
-                  member.membership_valid_until,
-                ).toLocaleDateString('en-CA')
+              ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
               : 'N/A'}
           </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.name,
-              fontWeight: 800,
-              color: '#f97316',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.008)`,
-            }}
-          >
+          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.name, fontWeight: 800, color: '#f97316', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.008)` }}>
             {member?.first_name} {member?.last_name}
           </span>
         </div>
       </div>
 
       {/* MIDDLE */}
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingBottom: '52px',
-        }}
-      >
-        <div
-          style={{
-            position: 'relative',
-            width: qrOutlineSize,
-            height: qrOutlineSize,
-            flexShrink: 0,
-          }}
-        >
-          {/* Corner brackets */}
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '4px 0 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 4px 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 0 0 4px',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 0 4px 0',
-            }}
-          />
-
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: `calc(${W} * 0.02)`,
-            }}
-          >
-            <QrCode
-              size={`calc(${W} * 0.1)`}
-              weight="bold"
-              color="rgba(44,42,39,0.25)"
-            />
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.034)`,
-                fontWeight: 600,
-                color: 'rgba(44,42,39,0.4)',
-                letterSpacing: '0.05em',
-              }}
-            >
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '52px' }}>
+        <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
+          <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
+          <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />
+          <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
+          <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: `calc(${W} * 0.02)` }}>
+            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+            <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: `calc(${W} * 0.034)`, fontWeight: 600, color: 'rgba(44,42,39,0.4)', letterSpacing: '0.05em' }}>
               탭 해서 Check-IN 하기
             </span>
           </div>
@@ -510,17 +373,7 @@ function MembershipCard({
 
       {/* BOTTOM */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span
-          style={{
-            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-            fontSize: fs.wordmark,
-            fontWeight: 900,
-            color: '#2C2A27',
-            letterSpacing: '-0.01em',
-            lineHeight: 1,
-            textTransform: 'uppercase',
-          }}
-        >
+        <span style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif', fontSize: fs.wordmark, fontWeight: 900, color: '#2C2A27', letterSpacing: '-0.01em', lineHeight: 1, textTransform: 'uppercase' }}>
           UvA-IN
         </span>
       </div>
@@ -549,39 +402,18 @@ function MembershipCard({
           fontFamily: '"Handjet", system-ui, sans-serif',
         }}
       >
-        <span
-          style={{
-            fontSize: fs.brand,
-            fontWeight: 600,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            fontFamily: '"Alien Block", system-ui, sans-serif',
-            color: '#2C2A27',
-          }}
-        >
+        <span style={{ fontSize: fs.brand, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: '"Alien Block", system-ui, sans-serif', color: '#2C2A27' }}>
           UvA-IN MEMBERSHIP
         </span>
         <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
           활성화된 멤버십이 없습니다
         </span>
         {member?.first_name && (
-          <span
-            style={{
-              marginTop: '4px',
-              fontSize: fs.valid,
-              color: '#6b7280',
-            }}
-          >
+          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
             {member.first_name} {member.last_name}
           </span>
         )}
-        <span
-          style={{
-            marginTop: '10px',
-            fontSize: `calc(${W} * 0.028)`,
-            color: '#9ca3af',
-          }}
-        >
+        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
           멤버십 갱신은 임원에게 문의해주세요
         </span>
       </div>
@@ -613,147 +445,87 @@ function MembershipCard({
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* ── Brushed-metal frame (behind faces) ── */}
-<svg
-  style={{
-    position: 'absolute',
-    inset: '-3px',
-    width: 'calc(100% + 6px)',
-    height: 'calc(100% + 6px)',
-    overflow: 'visible',
-    zIndex: 0,
-    pointerEvents: 'none',
-  }}
-  viewBox="0 0 106 174.1"
-  preserveAspectRatio="none"
->
-  <defs>
-    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stopColor="#c8c4bc" />
-      <stop offset="50%"  stopColor="#dedad4" />
-      <stop offset="100%" stopColor="#c0bcb4" />
-    </linearGradient>
-    <clipPath id="bottomGap">
-      <rect x="0"  y="0"   width="106" height="158" />
-      <rect x="0"  y="158" width="24"  height="20"  />
-      <rect x="82" y="158" width="24"  height="20"  />
-    </clipPath>
-  </defs>
-  <rect
-    x="3"
-    y="3"
-    width="100"
-    height="168.1"
-    rx="14.5"
-    ry="9.2"
-    fill="none"
-    stroke="url(#metalGrad)"
-    strokeWidth="6"
-    clipPath="url(#bottomGap)"
-  />
-</svg>
+        {/* ── Brushed-metal frame ── */}
+        <svg
+          style={{
+            position: 'absolute',
+            inset: '-3px',
+            width: 'calc(100% + 6px)',
+            height: 'calc(100% + 6px)',
+            overflow: 'visible',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+          viewBox="0 0 106 174.1"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stopColor="#c8c4bc" />
+              <stop offset="50%"  stopColor="#dedad4" />
+              <stop offset="100%" stopColor="#c0bcb4" />
+            </linearGradient>
+            <clipPath id="bottomGap">
+              <rect x="0"  y="0"   width="106" height="158" />
+              <rect x="0"  y="158" width="24"  height="20"  />
+              <rect x="82" y="158" width="24"  height="20"  />
+            </clipPath>
+          </defs>
+          <rect
+            x="3" y="3" width="100" height="168.1"
+            rx="14.5" ry="9.2"
+            fill="none"
+            stroke="url(#metalGrad)"
+            strokeWidth="6"
+            clipPath="url(#bottomGap)"
+          />
+        </svg>
 
-{/* ── Front face ── */}
-<div
-  style={{
-    position: 'absolute',
-    inset: 0,
-    backfaceVisibility: 'hidden',
-    padding: '12px',
-    boxSizing: 'border-box',
-    zIndex: 1,
-  }}
->
-  {cardFront}
-</div>
+        {/* ── Front face ── */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            padding: '12px',
+            boxSizing: 'border-box',
+            zIndex: 1,
+          }}
+        >
+          {cardFront}
+        </div>
 
-{/* ── Back face ── */}
-<div
-  style={{
-    position: 'absolute',
-    inset: 0,
-    backfaceVisibility: 'hidden',
-    transform: 'rotateY(180deg)',
-    padding: '12px',
-    boxSizing: 'border-box',
-    zIndex: 1,
-  }}
->
-  <div
-    style={{
-      width: '100%',
-      height: '100%',
-      background: '#F6F4F1',
-      border: '1px solid #d6d3c0',
-      borderRadius: '16px',
-      boxSizing: 'border-box',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    {flipped && <QRScanner onScan={onQRScanned} />}
-  </div>
-</div>
+        {/* ── Back face (camera) ── */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            padding: '12px',
+            boxSizing: 'border-box',
+            zIndex: 1,
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: '#F6F4F1',
+              border: '1px solid #d6d3c0',
+              borderRadius: '16px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {flipped && <QRScanner onScan={onQRScanned} />}
+          </div>
+        </div>
 
-{/* ── Left grip ── */}
-<div
-  style={{
-    position: 'absolute',
-    left: '8px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: '16px',
-    height: '300px',
-    zIndex: 2,
-    pointerEvents: 'none',
-    borderRadius: '0 5px 5px 0',
-    background: '#ccc9c1',
-  }}
-/>
-
-{/* ── Right grip ── */}
-<div
-  style={{
-    position: 'absolute',
-    right: '8px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: '16px',
-    height: '300px',
-    zIndex: 2,
-    pointerEvents: 'none',
-    borderRadius: '5px 0 0 5px',
-    background: '#ccc9c1',
-  }}
-/>
-
-        {/* Front face */}
-<div style={{
-  position: 'absolute', inset: 0,
-  backfaceVisibility: 'hidden',
-  padding: '12px', boxSizing: 'border-box', zIndex: 1,
-}}>
-  {cardFront}
-</div>
-
-{/* Back face — single, no extra wrapper around QRScanner */}
-<div style={{
-  position: 'absolute', inset: 0,
-  backfaceVisibility: 'hidden',
-  WebkitBackfaceVisibility: 'hidden',
-  transform: 'rotateY(180deg)',
-  padding: '12px', boxSizing: 'border-box', zIndex: 1,
-}}>
-  <div style={{
-    width: '100%', height: '100%',
-    background: '#F6F4F1', border: '1px solid #d6d3c0',
-    borderRadius: '16px', boxSizing: 'border-box',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-  }}>
-    {flipped && <QRScanner onScan={onQRScanned} />}
-  </div>
-</div>
       </div>
     </div>
   )
