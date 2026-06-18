@@ -571,26 +571,30 @@ export function SpotCard({ selected, onClose }) {
 {/* ── 한 줄 평가 ── */}
 {selected.one_line_review && (
   <div className="mt-8 mb-6">
-    {/* 전체 가로폭을 채우는 말풍선 */}
-    <div className="relative w-full bg-orange-500 rounded-full px-5 py-3">
-      {/* 라벨: 왼쪽 정렬, 화이트 */}
-      <p className="text-xs font-semibold text-white mb-1 text-left">
-        한 줄 평가
-      </p>
+    {/* 타이틀: 말풍선 밖, 왼쪽 정렬 */}
+    <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
+      한 줄 평가
+    </p>
 
+    {/* 말풍선: 가로 전체 + 부드러운 직사각형 */}
+    <div className="relative w-full bg-orange-500 rounded-2xl px-5 py-4">
       {/* 텍스트: 가운데 정렬, 화이트 */}
       <RichText
         text={selected.one_line_review}
         className="font-semibold text-white text-lg text-center block"
       />
 
-      {/* 왼쪽 아래 꼬리 – iMessage 같은 느낌 */}
-      <div className="absolute left-6 -bottom-2">
-        {/* 바탕 꼬리 (오렌지) */}
-        <div className="w-4 h-4 bg-orange-500 rounded-full" />
-        {/* 잘라내기용 흰색 원 (배경색이 흰색이라 삼각형 느낌) */}
-        <div className="absolute -top-1 left-1 w-4 h-4 bg-white rounded-full" />
-      </div>
+      {/* 왼쪽 아래 꼬리 (텍스트 메시지처럼) */}
+      <div
+        className="absolute -bottom-2 left-8"
+        style={{
+          width: 16,
+          height: 16,
+          backgroundColor: '#f97316', // bg-orange-500
+          borderBottomRightRadius: 16,
+          transform: 'rotate(45deg)',
+        }}
+      />
     </div>
   </div>
 )}
