@@ -580,7 +580,7 @@ export function SpotCard({ selected, onClose }) {
       {/* 네모 말풍선 + 왼쪽으로 향하는 꼬리 */}
       <svg
         className="w-full h-[72px]"
-        viewBox="-16 0 376 72"
+        viewBox="-12 0 376 72"
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -592,16 +592,16 @@ export function SpotCard({ selected, onClose }) {
           height="56"
           rx="16"
           ry="16"
-          fill="#f97316" // bg-orange-500
+          fill="#f97316"
         />
 
-        {/* 왼쪽 측면으로 뾰족하게 나가는 꼬리 */}
+        {/* 왼쪽 측면: 부드럽고 작은 꼬리 */}
         <path
           d="
-            M0 30
-            C -6 28 -10 25 -16 20
-            C -12 30 -12 42 -16 52
-            C -10 47 -6 44 0 42
+            M0 28
+            C -4 26 -8 24 -12 22
+            C -8 28 -8 44 -12 50
+            C -8 48 -4 46 0 44
             Z
           "
           fill="#f97316"
