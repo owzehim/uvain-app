@@ -65,18 +65,15 @@ function StarDisplay({ averageRating }) {
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
   if (sorted.length === 0) return null
-
   const maxCount = sorted[0].count
-
   return (
-  <div className="pb-4">
-    <div className="pt-3">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
-        <span className="text-xs text-gray-400">{reviewCount}개</span>
-      </div>
-
-        <div className="flex flex-col gap-2.5">
+    <div className="pb-4">
+      <div className="pt-3">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
+          <span className="text-xs text-gray-400">{reviewCount}개</span>
+        </div>
+        <div className="flex flex-col gap-2.5 px-3">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
             const pct =
@@ -441,7 +438,7 @@ export function SpotCard({ selected, onClose }) {
         className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
         style={{
           ...(hasImages ? imageStyle : noImageStyle),
-          zIndex: 1000,
+          zIndex: 9999,
           boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
           display: 'flex',
           flexDirection: 'column',
