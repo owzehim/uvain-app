@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapPin, Ticket, Star, StarHalf } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
-import { BowlSteam, HandHeart, Sunglasses, CoinVertical } from '@phosphor-icons/react'
+import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
 import { computeStarDisplay, getSortedTagsForDisplay, formatAverageRating } from '../domain/reviewDomain'
 
@@ -13,7 +13,7 @@ export function RichText({ text, className = '' }) {
 const TAG_ICON_COMPONENTS = {
   BowlSteam,
   HandHeart,
-  Sunglasses,
+  Wine,
   CoinVertical,
 }
 
