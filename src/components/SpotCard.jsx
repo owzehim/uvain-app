@@ -577,30 +577,30 @@ export function SpotCard({ selected, onClose }) {
     </p>
 
     <div className="relative w-full">
-      {/* 네모 말풍선 + 아래 왼쪽으로 휘어나가는 꼬리 */}
+      {/* 네모 말풍선 + 아래에서 왼쪽으로 휘어나가는 꼬리 */}
       <svg
         className="w-full"
-        viewBox="0 0 360 90"
+        viewBox="0 0 360 80"
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* 본체: 더 둥근 직사각형 (pill 형태에 가까움) */}
+        {/* 본체: 부드러운 직사각형 */}
         <rect
           x="0"
           y="0"
           width="360"
           height="56"
-          rx="28"
-          ry="28"
+          rx="16"
+          ry="16"
           fill="#f97316"
         />
 
-        {/* 아래 왼쪽에서 부드럽게 내려가는 꼬리 */}
+        {/* 아래에서 시작해서 왼쪽으로 휘어나가는 꼬리 */}
         <path
           d="
-            M 50 56
-            C 40 62 30 72 22 85
-            C 26 75 32 64 38 56
+            M 40 56
+            C 30 60 20 65 15 75
+            C 18 70 22 62 25 56
             Z
           "
           fill="#f97316"
