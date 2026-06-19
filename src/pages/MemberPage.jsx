@@ -1429,41 +1429,61 @@ function EventsTab({ events }) {
     (ev) => ev.id === selectedEvent?.id,
   )
 
-  const handleContainerTouchStart = (e) => {
-    const touch = e.touches[0]
-    const rect = containerRef.current?.getBoundingClientRect()
-    // Avoid grabbing when finger starts too low (near calendar)
-    if (rect && touch.clientY > rect.bottom - 60) return
+const resetDragState = () => {
+  dragStartY.current = null
+  dragAccumulator.current = 0
+  lastIdxRef.current = null
+  setIsDragging(false)
+  // go back to the actually-selected event
+  setPreviewEvent((prev) => selectedEvent || prev)
+}
 
-    dragStartY.current = touch.clientY
-    dragAccumulator.current = 0
-    lastIdxRef.current = currentEventIndex
-    setIsDragging(true)
-    setPreviewEvent(selectedEvent)
-  }
+  const handleContainerTouchStart = (e) => {
+  if (!allEvents.length) return
+
+  const touch = e.touches[0]
+  if (!touch) return
+
+  const rect = containerRef.current?.getBoundingClientRect()
+
+  // Avoid grabbing when finger starts too low (near calendar)
+  if (rect && touch.clientY > rect.bottom - 60) return
+
+  dragStartY.current = touch.clientY
+  dragAccumulator.current = 0
+  lastIdxRef.current = currentEventIndex
+
+  setIsDragging(true)
+  setPreviewEvent(selectedEvent)
+}
 
   const handleContainerTouchMove = (e) => {
-    if (dragStartY.current == null) return
-    const dy = dragStartY.current - e.touches[0].clientY
-    dragAccumulator.current = dy
+  if (dragStartY.current == null) return
 
-    const delta =
-      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+  const touch = e.touches[0]
+  if (!touch) return
 
-    const idx = Math.max(
-      0,
-      Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
-    )
+  const dy = dragStartY.current - touch.clientY
+  dragAccumulator.current = dy
 
-    setPreviewEvent(allEvents[idx])
-  }
+  const delta =
+    dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+
+  const idx = Math.max(
+    0,
+    Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
+  )
+
+  setPreviewEvent(allEvents[idx])
+}
 
   const handleContainerTouchEnd = (e) => {
   const hadDrag = dragStartY.current != null
 
-  // If we had an active drag, decide whether to switch events
-  if (hadDrag) {
-    const dy = dragStartY.current - e.changedTouches[0].clientY
+  if (hadDrag && e.changedTouches && e.changedTouches.length > 0) {
+    const touch = e.changedTouches[0]
+    const dy = dragStartY.current - touch.clientY
+
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
 
@@ -1478,13 +1498,9 @@ function EventsTab({ events }) {
     }
   }
 
-  // Always reset drag state
-  dragStartY.current = null
-  dragAccumulator.current = 0
-  lastIdxRef.current = null
-
-  setIsDragging(false)
-  setPreviewEvent(selectedEvent)
+  // Even if there was no valid touch point (e.g. touchcancel with empty changedTouches),
+  // ALWAYS reset drag state so the UI doesn't get stuck in “dragging” mode.
+  resetDragState()
 }
 
   // ── Helper to open lightbox at specific index ───────────────────────────────
@@ -1856,16 +1872,16 @@ function EventsTab({ events }) {
   onTouchMove={handleContainerTouchMove}
   onTouchEnd={handleContainerTouchEnd}
   onTouchCancel={handleContainerTouchEnd}
-        style={{
-          position: 'relative',
-          height: '100%',       // fill content area
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',   // no scroll
-          touchAction: 'none',
-          userSelect: 'none',
-        }}
-      >
+  style={{
+    position: 'relative',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    touchAction: 'none',
+    userSelect: 'none',
+  }}
+>
         {/* TOP SECTION */}
         <div
           style={{
