@@ -2460,7 +2460,7 @@ function EventsTab({ events }) {
         <div
           style={{
             position: 'fixed',
-            bottom: 'calc(env(safe-area-inset-bottom) + 16px)',
+            bottom: 'calc(env(safe-area-inset-bottom) + 72px)',
             right: 16,
             display: 'flex',
             alignItems: 'center',
