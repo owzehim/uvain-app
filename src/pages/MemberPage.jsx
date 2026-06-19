@@ -1847,20 +1847,20 @@ function EventsTab({ events }) {
   return (
     <>
       <div
-        ref={containerRef}
-        onTouchStart={handleContainerTouchStart}
-        onTouchMove={handleContainerTouchMove}
-        onTouchEnd={handleContainerTouchEnd}
-        style={{
-          position: 'relative',      // ★ make container relative
-          height: '100dvh',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          touchAction: 'none',
-          userSelect: 'none',
-        }}
-      >
+  ref={containerRef}
+  onTouchStart={handleContainerTouchStart}
+  onTouchMove={handleContainerTouchMove}
+  onTouchEnd={handleContainerTouchEnd}
+  style={{
+    height: '100%',        // ⬅️ key change
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    touchAction: 'none',
+    userSelect: 'none',
+    position: 'relative',  // ⬅️ for the absolute guide
+  }}
+>
         {/* TOP SECTION */}
         <div
           style={{
@@ -2442,44 +2442,44 @@ function EventsTab({ events }) {
 
         {/* Drag guide - bottom right overlay */}
         {allEvents.length > 1 && (
-          <div
-            style={{
-              position: 'absolute',
-              right: 20,
-              bottom: 10,
-              zIndex: 20,
-              pointerEvents: 'none',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                opacity: isDragging ? 0 : 1,
-                transition: 'opacity 0.2s ease',
-              }}
-            >
-              <ArrowsVertical
-                size={16}
-                weight="bold"
-                color="rgba(44,42,39,0.35)"
-              />
-              <span
-                style={{
-                  fontSize: `calc(${W} * 0.032)`,
-                  color: 'rgba(44,42,39,0.35)',
-                  fontWeight: 500,
-                  fontFamily: '"Handjet", system-ui, sans-serif',
-                  letterSpacing: '0.04em',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                드래그해서 이벤트 보기
-              </span>
-            </div>
-          </div>
-        )}
+  <div
+    style={{
+      position: 'absolute',
+      right: 20,
+      bottom: 10,
+      zIndex: 20,
+      pointerEvents: 'none',
+    }}
+  >
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        opacity: isDragging ? 0 : 1,
+        transition: 'opacity 0.2s ease',
+      }}
+    >
+      <ArrowsVertical
+        size={16}
+        weight="bold"
+        color="rgba(44,42,39,0.35)"
+      />
+      <span
+        style={{
+          fontSize: `calc(${W} * 0.032)`,
+          color: 'rgba(44,42,39,0.35)',
+          fontWeight: 500,
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          letterSpacing: '0.04em',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        드래그해서 이벤트 보기
+      </span>
+    </div>
+  </div>
+)}
       </div>
 
       {/* SpotCard-style LIGHTBOX for event images */}
