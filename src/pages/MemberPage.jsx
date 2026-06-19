@@ -2455,46 +2455,46 @@ function EventsTab({ events }) {
         </div>
       </div>
 
-                 {/* Drag guide - bottom right (same feel as MY tab) */}
-      {allEvents.length > 1 && (
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            paddingRight: '20px',          // same right padding as MY tab
-            paddingBottom: '96px',          // tweak this if you want a bit higher/lower
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              opacity: isDragging ? 0 : 1, // fade out while dragging
-              transition: 'opacity 0.2s ease',
-            }}
-          >
-            <ArrowsVertical
-              size={16}
-              weight="bold"
-              color="rgba(44,42,39,0.35)"
-            />
-            <span
-              style={{
-                fontSize: `calc(${W} * 0.032)`,
-                color: 'rgba(44,42,39,0.35)',
-                fontWeight: 500,
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                letterSpacing: '0.04em',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              드래그해서 이벤트 보기
-            </span>
-          </div>
-        </div>
-      )}
+                 {/* Drag guide - bottom right (same style as MY tab) */}
+{allEvents.length > 1 && (
+  <div
+    style={{
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      paddingRight: '20px',   // same side padding as MY guide
+      paddingBottom: '6px',   // adjust 4–10px to fine‑tune height
+    }}
+  >
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        opacity: isDragging ? 0 : 1, // fade while dragging
+        transition: 'opacity 0.2s ease',
+      }}
+    >
+      <ArrowsVertical
+        size={16}
+        weight="bold"
+        color="rgba(44,42,39,0.35)"
+      />
+      <span
+        style={{
+          fontSize: `calc(${W} * 0.032)`,
+          color: 'rgba(44,42,39,0.35)',
+          fontWeight: 500,
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          letterSpacing: '0.04em',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        드래그해서 이벤트 보기
+      </span>
+    </div>
+  </div>
+)}
 
       {/* SpotCard-style LIGHTBOX for event images */}
       {lightboxIndex !== null && displayImages.length > 0 && (
