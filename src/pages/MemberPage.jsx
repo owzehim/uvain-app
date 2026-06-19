@@ -1458,9 +1458,12 @@ function EventsTab({ events }) {
     setPreviewEvent(allEvents[idx])
   }
 
-  const handleContainerTouchEnd = () => {
-    if (dragStartY.current == null) return
-    const dy = dragAccumulator.current
+  const handleContainerTouchEnd = (e) => {
+  const hadDrag = dragStartY.current != null
+
+  // If we had an active drag, decide whether to switch events
+  if (hadDrag) {
+    const dy = dragStartY.current - e.changedTouches[0].clientY
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
 
@@ -1473,13 +1476,16 @@ function EventsTab({ events }) {
         setSelectedEvent(allEvents[newIdx])
       }
     }
-
-    dragStartY.current = null
-    dragAccumulator.current = 0
-    lastIdxRef.current = null
-    setIsDragging(false)
-    setPreviewEvent(selectedEvent)
   }
+
+  // Always reset drag state
+  dragStartY.current = null
+  dragAccumulator.current = 0
+  lastIdxRef.current = null
+
+  setIsDragging(false)
+  setPreviewEvent(selectedEvent)
+}
 
   // ── Helper to open lightbox at specific index ───────────────────────────────
   const openLightboxAt = (index) => {
@@ -1845,10 +1851,11 @@ function EventsTab({ events }) {
   return (
     <>
       <div
-        ref={containerRef}
-        onTouchStart={handleContainerTouchStart}
-        onTouchMove={handleContainerTouchMove}
-        onTouchEnd={handleContainerTouchEnd}
+  ref={containerRef}
+  onTouchStart={handleContainerTouchStart}
+  onTouchMove={handleContainerTouchMove}
+  onTouchEnd={handleContainerTouchEnd}
+  onTouchCancel={handleContainerTouchEnd}
         style={{
           position: 'relative',
           height: '100%',       // fill content area
@@ -2383,56 +2390,58 @@ function EventsTab({ events }) {
           </div>
         </div>
 
-        {/* Drag guide - only while dragging, with side padding, pushed up */}
-        {allEvents.length > 1 && isDragging && (
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 52, // pushed up from bottom bar
-              zIndex: 20,
-              pointerEvents: 'none',
-            }}
-          >
-            <div
-              style={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                paddingRight: 20, // side padding like MY tab
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  opacity: 1,
-                  transition: 'opacity 0.15s ease',
-                }}
-              >
-                <ArrowsVertical
-                  size={16}
-                  weight="bold"
-                  color="rgba(44,42,39,0.35)"
-                />
-                <span
-                  style={{
-                    fontSize: `calc(${W} * 0.032)`,
-                    color: 'rgba(44,42,39,0.35)',
-                    fontWeight: 500,
-                    fontFamily: '"Handjet", system-ui, sans-serif',
-                    letterSpacing: '0.04em',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  드래그해서 이벤트 보기
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Drag guide - bottom right overlay, always rendered, fades with opacity */}
+{allEvents.length > 1 && (
+  <div
+    style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 52, // pushed up from bottom tab bar
+      zIndex: 20,
+      pointerEvents: 'none',          // don't block touches
+      userSelect: 'none',             // prevent highlight
+      WebkitUserSelect: 'none',
+    }}
+  >
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        paddingRight: 20,             // side padding like MY tab
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          opacity: isDragging ? 1 : 0,          // fade in/out
+          transition: 'opacity 0.2s ease',      // animation
+        }}
+      >
+        <ArrowsVertical
+          size={16}
+          weight="bold"
+          color="rgba(44,42,39,0.35)"
+        />
+        <span
+          style={{
+            fontSize: `calc(${W} * 0.032)`,
+            color: 'rgba(44,42,39,0.35)',
+            fontWeight: 500,
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            letterSpacing: '0.04em',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          드래그해서 이벤트 보기
+        </span>
+      </div>
+    </div>
+  </div>
+)}
       </div>
 
       {/* SpotCard-style LIGHTBOX for event images */}
