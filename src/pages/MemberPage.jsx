@@ -1346,7 +1346,6 @@ function EventsTab({ events }) {
 
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
-
   const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
   const initialEvent = allEvents[0] || null
 
@@ -1359,14 +1358,10 @@ function EventsTab({ events }) {
 
   // SpotCard-style Lightbox index
   const [lightboxIndex, setLightboxIndex] = useState(null)
-
   const [imageAspectRatios, setImageAspectRatios] = useState({})
   const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
-
   const [calMonth, setCalMonth] = useState(() => {
-    const base = initialEvent?.event_date
-      ? new Date(initialEvent.event_date)
-      : now
+    const base = initialEvent?.event_date ? new Date(initialEvent.event_date) : now
     return new Date(base.getFullYear(), base.getMonth(), 1)
   })
 
@@ -1422,7 +1417,6 @@ function EventsTab({ events }) {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
     if (!ev) return
-
     const imgs = ev.image_urls || []
     if (imgs.length <= 1) return
 
@@ -1436,7 +1430,6 @@ function EventsTab({ events }) {
         setSlide(expandedId, Math.max((slideIndexes[expandedId] || 0) - 1, 0))
       }
     }
-
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
@@ -1445,7 +1438,6 @@ function EventsTab({ events }) {
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
-
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
   )
@@ -1453,7 +1445,6 @@ function EventsTab({ events }) {
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
-
     // Avoid grabbing when finger starts too low (near calendar)
     if (rect && touch.clientY > rect.bottom - 60) return
 
@@ -1476,12 +1467,12 @@ function EventsTab({ events }) {
       0,
       Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
     )
+
     setPreviewEvent(allEvents[idx])
   }
 
   const handleContainerTouchEnd = () => {
     if (dragStartY.current == null) return
-
     const dy = dragAccumulator.current
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
@@ -1520,7 +1511,6 @@ function EventsTab({ events }) {
   const formatTopDate = (dateStr) => {
     if (!dateStr) return null
     const date = new Date(dateStr)
-
     return {
       dayName: date
         .toLocaleDateString('en-US', { weekday: 'short' })
@@ -1537,26 +1527,21 @@ function EventsTab({ events }) {
   const formatTopTime = (dateStr) => {
     if (!dateStr) return ''
     const d = new Date(dateStr)
-
     let h = d.getHours()
     const m = String(d.getMinutes()).padStart(2, '0')
     const ampm = h >= 12 ? 'PM' : 'AM'
     h = h % 12 || 12
-
     return `${String(h).padStart(2, '0')}:${m} ${ampm}`
   }
 
   const getEventStatus = (ev) => {
     if (!ev) return ''
     if (!ev.event_date) return 'TBD'
-
     const days = getDayDiff(ev.event_date)
     if (days < 0) return 'PAST'
-
     if (nextEvent && ev.id === nextEvent.id) {
       return days === 0 ? 'TODAY' : `D-${days}`
     }
-
     return 'UPCOMING'
   }
 
@@ -1587,7 +1572,6 @@ function EventsTab({ events }) {
     const url = URL.createObjectURL(
       new Blob([ics], { type: 'text/calendar' }),
     )
-
     const a = document.createElement('a')
     a.href = url
     a.download = (ev.title || 'event') + '.ics'
@@ -1621,13 +1605,10 @@ function EventsTab({ events }) {
 
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
-
   const cells = [
     ...Array(new Date(calYear, calMonthIdx, 1).getDay()).fill(null),
     ...Array.from(
-      {
-        length: new Date(calYear, calMonthIdx + 1, 0).getDate(),
-      },
+      { length: new Date(calYear, calMonthIdx + 1, 0).getDate() },
       (_, i) => i + 1,
     ),
   ]
@@ -1639,7 +1620,6 @@ function EventsTab({ events }) {
       2,
       '0',
     )}-${String(day).padStart(2, '0')}`
-
     const dayEvents = eventsByDate[key]
     if (!dayEvents?.length) return
     setSelectedEvent(dayEvents[0])
@@ -1648,7 +1628,6 @@ function EventsTab({ events }) {
   const renderEvent = (ev) => {
     if (!ev) return null
     const isExpanded = expandedId === ev.id
-
     const imgs = ev.image_urls || []
     const instaUrl = ev.instagram_url
     const currentSlide = slideIndexes[ev.id] || 0
@@ -1718,9 +1697,7 @@ function EventsTab({ events }) {
                     <div
                       className="flex h-full"
                       style={{
-                        transform: `translateX(-${
-                          currentSlide * 100
-                        }%)`,
+                        transform: `translateX(-${currentSlide * 100}%)`,
                         transition: 'transform 0.3s ease',
                       }}
                     >
@@ -1853,7 +1830,6 @@ function EventsTab({ events }) {
 
   useEffect(() => {
     let cancelled = false
-
     const update = async () => {
       if (displayImages.length > 0) {
         const color = await getTextColorFromImage(displayImages[0])
@@ -1862,7 +1838,6 @@ function EventsTab({ events }) {
         if (!cancelled) setFrontPanelTextColor('#111827')
       }
     }
-
     update()
     return () => {
       cancelled = true
@@ -1877,6 +1852,7 @@ function EventsTab({ events }) {
         onTouchMove={handleContainerTouchMove}
         onTouchEnd={handleContainerTouchEnd}
         style={{
+          position: 'relative',      // ★ make container relative
           height: '100dvh',
           display: 'flex',
           flexDirection: 'column',
@@ -1939,43 +1915,46 @@ function EventsTab({ events }) {
               {/* Date + pile + front panel */}
               <div className="flex items-stretch mt-2">
                 {/* Left: date */}
-                {displayEvent.event_date && (() => {
-                  const t = formatTopDate(displayEvent.event_date)
-                  if (!t) return null
-                  return (
-                    <div
-                      className="flex flex-col items-start justify-center"
-                      style={{ flexShrink: 0 }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: '"Handjet", system-ui, sans-serif',
-                          fontSize: fs.date,
-                          fontWeight: 800,
-                          color: effectiveDateColor,
-                          letterSpacing: '0.02em',
-                          lineHeight: 0.85,
-                        }}
+                {displayEvent.event_date &&
+                  (() => {
+                    const t = formatTopDate(displayEvent.event_date)
+                    if (!t) return null
+                    return (
+                      <div
+                        className="flex flex-col items-start justify-center"
+                        style={{ flexShrink: 0 }}
                       >
-                        {t.dateNum}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: '"Handjet", system-ui, sans-serif',
-                          fontSize: fs.month,
-                          fontWeight: 800,
-                          color: effectiveDateColor,
-                          letterSpacing: '0.04em',
-                          textTransform: 'uppercase',
-                          lineHeight: 0.85,
-                          marginTop: '2px',
-                        }}
-                      >
-                        {t.monthName}
-                      </span>
-                    </div>
-                  )
-                })()}
+                        <span
+                          style={{
+                            fontFamily:
+                              '"Handjet", system-ui, sans-serif',
+                            fontSize: fs.date,
+                            fontWeight: 800,
+                            color: effectiveDateColor,
+                            letterSpacing: '0.02em',
+                            lineHeight: 0.85,
+                          }}
+                        >
+                          {t.dateNum}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily:
+                              '"Handjet", system-ui, sans-serif',
+                            fontSize: fs.month,
+                            fontWeight: 800,
+                            color: effectiveDateColor,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            lineHeight: 0.85,
+                            marginTop: '2px',
+                          }}
+                        >
+                          {t.monthName}
+                        </span>
+                      </div>
+                    )
+                  })()}
 
                 {/* Right: image pile + front blur panel */}
                 <div
@@ -1989,76 +1968,88 @@ function EventsTab({ events }) {
                   }}
                 >
                   {/* Back card 2 — image[1] */}
-                  {hasImages && displayImages.length >= 2 && (() => {
-                    const ratio = displayImageRatios[1] || 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                    return (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          aspectRatio,
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          backgroundColor: '#d1d5db',
-                          transform: 'rotate(3deg) translate(7px, 7px)',
-                          zIndex: 1,
-                        }}
-                      >
-                        {displayImages[1] && (
-                          <img
-                            src={displayImages[1]}
-                            alt=""
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                            }}
-                            draggable={false}
-                          />
-                        )}
-                      </div>
-                    )
-                  })()}
+                  {hasImages &&
+                    displayImages.length >= 2 &&
+                    (() => {
+                      const ratio = displayImageRatios[1] || 1
+                      const aspectRatio = isPortrait(ratio)
+                        ? '4/5'
+                        : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#d1d5db',
+                            transform:
+                              'rotate(3deg) translate(7px, 7px)',
+                            zIndex: 1,
+                          }}
+                        >
+                          {displayImages[1] && (
+                            <img
+                              src={displayImages[1]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
 
                   {/* Back card 1 — image[0] */}
-                  {hasImages && (() => {
-                    const ratio = displayImageRatios[0] || 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-                    return (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          aspectRatio,
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          backgroundColor: '#e5e7eb',
-                          transform: 'rotate(1.5deg) translate(3.5px, 3.5px)',
-                          zIndex: 2,
-                        }}
-                      >
-                        {displayImages[0] && (
-                          <img
-                            src={displayImages[0]}
-                            alt=""
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                            }}
-                            draggable={false}
-                          />
-                        )}
-                      </div>
-                    )
-                  })()}
+                  {hasImages &&
+                    (() => {
+                      const ratio = displayImageRatios[0] || 1
+                      const aspectRatio = isPortrait(ratio)
+                        ? '4/5'
+                        : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#e5e7eb',
+                            transform:
+                              'rotate(1.5deg) translate(3.5px, 3.5px)',
+                            zIndex: 2,
+                          }}
+                        >
+                          {displayImages[0] && (
+                            <img
+                              src={displayImages[0]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
 
                   {/* Front: semi-transparent Gaussian blur panel */}
                   {(() => {
-                    const ratio = hasImages ? displayImageRatios[0] || 1 : 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
-
+                    const ratio = hasImages
+                      ? displayImageRatios[0] || 1
+                      : 1
+                    const aspectRatio = isPortrait(ratio)
+                      ? '4/5'
+                      : '1/1'
                     return (
                       <div
                         style={{
@@ -2076,12 +2067,12 @@ function EventsTab({ events }) {
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            backgroundColor: 'rgba(255,255,255,0.35)',
+                            backgroundColor:
+                              'rgba(255,255,255,0.35)',
                             backdropFilter: 'blur(6px)',
                             WebkitBackdropFilter: 'blur(6px)',
                           }}
                         />
-
                         <div
                           style={{
                             position: 'relative',
@@ -2110,7 +2101,6 @@ function EventsTab({ events }) {
                           >
                             {displayEvent.title}
                           </span>
-
                           {displayEvent.event_date && (
                             <span
                               style={{
@@ -2125,7 +2115,6 @@ function EventsTab({ events }) {
                               {formatTopTime(displayEvent.event_date)}
                             </span>
                           )}
-
                           {displayEvent.location && (
                             <span
                               style={{
@@ -2273,7 +2262,6 @@ function EventsTab({ events }) {
                   const dateKey = `${calYear}-${String(
                     calMonthIdx + 1,
                   ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-
                   const dayEvents = eventsByDate[dateKey] || []
                   const hasEvt = dayEvents.length > 0
 
@@ -2355,11 +2343,8 @@ function EventsTab({ events }) {
                 {(() => {
                   let curMonth = null
                   const blocks = []
-
                   otherUpcomingEvents.forEach((ev) => {
-                    const label = `${
-                      new Date(ev.event_date).getMonth() + 1
-                    }월`
+                    const label = `${new Date(ev.event_date).getMonth() + 1}월`
                     if (label !== curMonth) {
                       curMonth = label
                       blocks.push(
@@ -2373,7 +2358,6 @@ function EventsTab({ events }) {
                     }
                     blocks.push(renderEvent(ev))
                   })
-
                   return blocks
                 })()}
               </div>
@@ -2416,7 +2400,6 @@ function EventsTab({ events }) {
                     {(() => {
                       let curMonth = null
                       const blocks = []
-
                       pastEvents.forEach((ev) => {
                         const label = `${
                           new Date(ev.event_date).getMonth() + 1
@@ -2434,7 +2417,6 @@ function EventsTab({ events }) {
                         }
                         blocks.push(renderEvent(ev))
                       })
-
                       return blocks
                     })()}
                   </div>
@@ -2443,26 +2425,30 @@ function EventsTab({ events }) {
             )}
 
             {/* EMPTY STATE */}
-{allEvents.length === 0 && (
-  <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-    <p className="text-2xl mb-2">📅</p>
-    <p className="text-gray-500 text-sm">
-      예정된 이벤트가 없어요
-    </p>
-  </div>
-)}
-          </div>   {/* ① closes inner content wrapper */}
-        </div>     {/* ② closes scrollable section */}
+            {allEvents.length === 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+                <p className="text-2xl mb-2">📅</p>
+                <p className="text-gray-500 text-sm">
+                  예정된 이벤트가 없어요
+                </p>
+              </div>
+            )}
 
-        {/* Drag guide - bottom right (same style as MY tab) */}
+            {/* Some extra padding at the bottom so content doesn't sit
+                right under the bottom bar / guide */}
+            <div style={{ height: 40 }} />
+          </div>
+        </div>
+
+        {/* Drag guide - bottom right overlay */}
         {allEvents.length > 1 && (
           <div
             style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'flex-end',
-              paddingRight: 20,
-              paddingBottom: 6,
+              position: 'absolute',
+              right: 20,
+              bottom: 10,
+              zIndex: 20,
+              pointerEvents: 'none',
             }}
           >
             <div
