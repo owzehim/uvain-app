@@ -1430,14 +1430,13 @@ function EventsTab({ events }) {
     (ev) => ev.id === selectedEvent?.id,
   )
 
-const resetDragState = () => {
+const resetDragState = useCallback(() => {
   dragStartY.current = null
   dragAccumulator.current = 0
   lastIdxRef.current = null
-  isDraggingRef.current = false
   setIsDragging(false)
   setPreviewEvent(selectedEvent)
-}
+}, [selectedEvent])
 
   const handleContainerTouchStart = (e) => {
   if (!allEvents.length) return
@@ -1446,13 +1445,14 @@ const resetDragState = () => {
   if (!touch) return
 
   const rect = containerRef.current?.getBoundingClientRect()
-
   if (rect && touch.clientY > rect.bottom - 60) return
 
   dragStartY.current = touch.clientY
   dragAccumulator.current = 0
   lastIdxRef.current = currentEventIndex
-  isDraggingRef.current = false
+
+  setIsDragging(true)
+  setPreviewEvent(selectedEvent)
 }
 
   const handleContainerTouchMove = (e) => {
@@ -1484,12 +1484,11 @@ const resetDragState = () => {
 }
 
   const handleContainerTouchEnd = (e) => {
-  const wasDragging = isDraggingRef.current    // ← use the ref, not dragStartY
+  if (dragStartY.current == null) return
 
-  if (wasDragging && e.changedTouches && e.changedTouches.length > 0) {
-    const touch = e.changedTouches[0]
+  const touch = e.changedTouches?.[0]
+  if (touch) {
     const dy = dragStartY.current - touch.clientY
-
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
 
@@ -1506,6 +1505,23 @@ const resetDragState = () => {
 
   resetDragState()
 }
+
+useEffect(() => {
+  const onDocumentTouchEnd = () => {
+    // If a drag was in progress and the container's own touchend didn't fire
+    // (because a child element consumed it), this catches it at document level.
+    if (dragStartY.current != null) {
+      resetDragState()
+    }
+  }
+
+  document.addEventListener('touchend', onDocumentTouchEnd)
+  document.addEventListener('touchcancel', onDocumentTouchEnd)
+  return () => {
+    document.removeEventListener('touchend', onDocumentTouchEnd)
+    document.removeEventListener('touchcancel', onDocumentTouchEnd)
+  }
+}, [resetDragState])
 
   // ── Helper to open lightbox at specific index ───────────────────────────────
   const openLightboxAt = (index) => {
