@@ -2443,58 +2443,58 @@ function EventsTab({ events }) {
             )}
 
             {/* EMPTY STATE */}
-            {allEvents.length === 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <p className="text-2xl mb-2">📅</p>
-                <p className="text-gray-500 text-sm">
-                  예정된 이벤트가 없어요
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-                 {/* Drag guide - bottom right (same style as MY tab) */}
-{allEvents.length > 1 && (
-  <div
-    style={{
-      width: '100%',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      paddingRight: '20px',   // same side padding as MY guide
-      paddingBottom: '6px',   // adjust 4–10px to fine‑tune height
-    }}
-  >
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        opacity: isDragging ? 0 : 1, // fade while dragging
-        transition: 'opacity 0.2s ease',
-      }}
-    >
-      <ArrowsVertical
-        size={16}
-        weight="bold"
-        color="rgba(44,42,39,0.35)"
-      />
-      <span
-        style={{
-          fontSize: `calc(${W} * 0.032)`,
-          color: 'rgba(44,42,39,0.35)',
-          fontWeight: 500,
-          fontFamily: '"Handjet", system-ui, sans-serif',
-          letterSpacing: '0.04em',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        드래그해서 이벤트 보기
-      </span>
-    </div>
+{allEvents.length === 0 && (
+  <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+    <p className="text-2xl mb-2">📅</p>
+    <p className="text-gray-500 text-sm">
+      예정된 이벤트가 없어요
+    </p>
   </div>
 )}
+          </div>   {/* ① closes inner content wrapper */}
+        </div>     {/* ② closes scrollable section */}
+
+        {/* Drag guide - bottom right (same style as MY tab) */}
+        {allEvents.length > 1 && (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              paddingRight: 20,
+              paddingBottom: 6,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                opacity: isDragging ? 0 : 1,
+                transition: 'opacity 0.2s ease',
+              }}
+            >
+              <ArrowsVertical
+                size={16}
+                weight="bold"
+                color="rgba(44,42,39,0.35)"
+              />
+              <span
+                style={{
+                  fontSize: `calc(${W} * 0.032)`,
+                  color: 'rgba(44,42,39,0.35)',
+                  fontWeight: 500,
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  letterSpacing: '0.04em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                드래그해서 이벤트 보기
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* SpotCard-style LIGHTBOX for event images */}
       {lightboxIndex !== null && displayImages.length > 0 && (
