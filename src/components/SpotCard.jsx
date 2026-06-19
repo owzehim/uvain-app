@@ -201,7 +201,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 9999,
+          zIndex: 1000,
           background: 'rgba(0, 0, 0, 0.75)',
           display: 'flex',
           alignItems: 'center',
@@ -445,7 +445,7 @@ const hasReviews = summary && summary.review_count > 0
         className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
         style={{
           ...(hasImages ? imageStyle : noImageStyle),
-          zIndex: 9999,
+          zIndex: 1000,
           boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
           display: 'flex',
           flexDirection: 'column',
