@@ -1349,6 +1349,7 @@ function EventsTab({ events }) {
   const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
   const initialEvent = allEvents[0] || null
 
+  // ── State ───────────────────────────────────────────────────────────────────
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
   const [isDragging, setIsDragging] = useState(false)
@@ -1359,6 +1360,12 @@ function EventsTab({ events }) {
   const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
 
   const containerRef = useRef(null)
+  const selectedEventRef = useRef(initialEvent)
+
+  // keep ref in sync so native listeners always see current selection
+  useEffect(() => {
+    selectedEventRef.current = selectedEvent
+  }, [selectedEvent])
 
   const setSlide = (id, idx) =>
     setSlideIndexes((p) => ({
@@ -1421,107 +1428,88 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
 
-  // ── Vertical drag between events in header ───────────────────────────────────
-  const dragStartY = useRef(null)
-  const dragAccumulator = useRef(0)
-  const lastIdxRef = useRef(null)
-  const isDraggingRef = useRef(false)
-  const currentEventIndex = allEvents.findIndex(
-    (ev) => ev.id === selectedEvent?.id,
-  )
+  // ── Drag gesture: native listeners on container element ─────────────────────
+  useEffect(() => {
+    if (!containerRef.current) return
 
-const resetDragState = useCallback(() => {
-  dragStartY.current = null
-  dragAccumulator.current = 0
-  lastIdxRef.current = null
-  setIsDragging(false)
-  setPreviewEvent(selectedEvent)
-}, [selectedEvent])
+    // Local refs for this effect only (no stale closure problems)
+    const startY = { current: null }
+    const startIdx = { current: null }
+    const previewIdx = { current: null }
 
-  const handleContainerTouchStart = (e) => {
-  if (!allEvents.length) return
+    const onStart = (e) => {
+      if (!allEvents.length) return
+      const touch = e.touches[0]
+      if (!touch) return
 
-  const touch = e.touches[0]
-  if (!touch) return
+      const rect = containerRef.current?.getBoundingClientRect()
+      // ignore touches starting in bottom 60px (future calendar area)
+      if (rect && touch.clientY > rect.bottom - 60) return
 
-  const rect = containerRef.current?.getBoundingClientRect()
-  if (rect && touch.clientY > rect.bottom - 60) return
-
-  dragStartY.current = touch.clientY
-  dragAccumulator.current = 0
-  lastIdxRef.current = currentEventIndex
-
-  setIsDragging(true)
-  setPreviewEvent(selectedEvent)
-}
-
-  const handleContainerTouchMove = (e) => {
-  if (dragStartY.current == null) return
-
-  const touch = e.touches[0]
-  if (!touch) return
-
-  const dy = dragStartY.current - touch.clientY
-  dragAccumulator.current = dy
-
-  // Only enter dragging mode after 8px of real movement
-  if (!isDraggingRef.current) {
-    if (Math.abs(dy) < 8) return          // ← ADD: ignore tiny movements
-    isDraggingRef.current = true           // ← ADD
-    setIsDragging(true)                    // ← ADD
-    setPreviewEvent(selectedEvent)         // ← ADD: initialise preview
-  }
-
-  const delta =
-    dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
-
-  const idx = Math.max(
-    0,
-    Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
-  )
-
-  setPreviewEvent(allEvents[idx])
-}
-
-  const handleContainerTouchEnd = (e) => {
-  if (dragStartY.current == null) return
-
-  const touch = e.changedTouches?.[0]
-  if (touch) {
-    const dy = dragStartY.current - touch.clientY
-    const delta =
-      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
-
-    if (delta !== 0) {
-      const newIdx = Math.max(
-        0,
-        Math.min((currentEventIndex ?? 0) + delta, allEvents.length - 1),
+      const currentIdx = allEvents.findIndex(
+        (ev) => ev.id === selectedEventRef.current?.id,
       )
-      if (newIdx !== currentEventIndex) {
-        setSelectedEvent(allEvents[newIdx])
+
+      // start a drag session
+      startY.current = touch.clientY
+      startIdx.current = currentIdx
+      previewIdx.current = currentIdx
+
+      setIsDragging(true)                 // finger down → show guide text
+      setPreviewEvent(selectedEventRef.current)
+    }
+
+    const onMove = (e) => {
+      if (startY.current == null) return
+      const touch = e.touches[0]
+      if (!touch) return
+
+      const dy = startY.current - touch.clientY
+      const delta =
+        dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+
+      const idx = Math.max(
+        0,
+        Math.min((startIdx.current ?? 0) + delta, allEvents.length - 1),
+      )
+
+      if (idx !== previewIdx.current) {
+        previewIdx.current = idx
+        setPreviewEvent(allEvents[idx])   // live preview while dragging
       }
     }
-  }
 
-  resetDragState()
-}
+    const onEnd = () => {
+      // if no drag session started on this container, ignore
+      if (startY.current == null) return
 
-useEffect(() => {
-  const onDocumentTouchEnd = () => {
-    // If a drag was in progress and the container's own touchend didn't fire
-    // (because a child element consumed it), this catches it at document level.
-    if (dragStartY.current != null) {
-      resetDragState()
+      // commit whatever was last previewed
+      if (previewIdx.current !== null && allEvents[previewIdx.current]) {
+        setSelectedEvent(allEvents[previewIdx.current])
+      }
+
+      // reset local refs
+      startY.current = null
+      startIdx.current = null
+      previewIdx.current = null
+
+      setIsDragging(false)               // finger up → hide guide text
+      setPreviewEvent(null)
     }
-  }
 
-  document.addEventListener('touchend', onDocumentTouchEnd)
-  document.addEventListener('touchcancel', onDocumentTouchEnd)
-  return () => {
-    document.removeEventListener('touchend', onDocumentTouchEnd)
-    document.removeEventListener('touchcancel', onDocumentTouchEnd)
-  }
-}, [resetDragState])
+    const el = containerRef.current
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: true })
+    el.addEventListener('touchend', onEnd)
+    el.addEventListener('touchcancel', onEnd)
+
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onEnd)
+    }
+  }, [allEvents])
 
   // ── Helper to open lightbox at specific index ───────────────────────────────
   const openLightboxAt = (index) => {
@@ -1633,7 +1621,8 @@ useEffect(() => {
   }
 
   // ── Display event (top card + calendar follow this) ─────────────────────────
-  const displayEvent = isDragging ? previewEvent : selectedEvent
+  const displayEvent =
+    isDragging && previewEvent ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
@@ -1887,21 +1876,17 @@ useEffect(() => {
   return (
     <>
       <div
-  ref={containerRef}
-  onTouchStart={handleContainerTouchStart}
-  onTouchMove={handleContainerTouchMove}
-  onTouchEnd={handleContainerTouchEnd}
-  onTouchCancel={handleContainerTouchEnd}
-  style={{
-    position: 'relative',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    touchAction: 'none',
-    userSelect: 'none',
-  }}
->
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          touchAction: 'none',
+          userSelect: 'none',
+        }}
+      >
         {/* TOP SECTION */}
         <div
           style={{
@@ -2385,7 +2370,9 @@ useEffect(() => {
                   let curMonth = null
                   const blocks = []
                   otherUpcomingEvents.forEach((ev) => {
-                    const label = `${new Date(ev.event_date).getMonth() + 1}월`
+                    const label = `${
+                      new Date(ev.event_date).getMonth() + 1
+                    }월`
                     if (label !== curMonth) {
                       curMonth = label
                       blocks.push(
@@ -2426,58 +2413,58 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Drag guide - bottom right overlay, always rendered, fades with opacity */}
-{allEvents.length > 1 && (
-  <div
-    style={{
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 52, // pushed up from bottom tab bar
-      zIndex: 20,
-      pointerEvents: 'none',          // don't block touches
-      userSelect: 'none',             // prevent highlight
-      WebkitUserSelect: 'none',
-    }}
-  >
-    <div
-      style={{
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        paddingRight: 20,             // side padding like MY tab
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          opacity: isDragging ? 1 : 0,          // fade in/out
-          transition: 'opacity 0.2s ease',      // animation
-        }}
-      >
-        <ArrowsVertical
-          size={16}
-          weight="bold"
-          color="rgba(44,42,39,0.35)"
-        />
-        <span
-          style={{
-            fontSize: `calc(${W} * 0.032)`,
-            color: 'rgba(44,42,39,0.35)',
-            fontWeight: 500,
-            fontFamily: '"Handjet", system-ui, sans-serif',
-            letterSpacing: '0.04em',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          드래그해서 이벤트 보기
-        </span>
-      </div>
-    </div>
-  </div>
-)}
+        {/* Drag guide overlay (uses isDragging) */}
+        {allEvents.length > 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 52,
+              zIndex: 20,
+              pointerEvents: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                paddingRight: 20,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  opacity: isDragging ? 1 : 0,
+                  transition: 'opacity 0.2s ease',
+                }}
+              >
+                <ArrowsVertical
+                  size={16}
+                  weight="bold"
+                  color="rgba(44,42,39,0.35)"
+                />
+                <span
+                  style={{
+                    fontSize: `calc(${W} * 0.032)`,
+                    color: 'rgba(44,42,39,0.35)',
+                    fontWeight: 500,
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    letterSpacing: '0.04em',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  드래그해서 이벤트 보기
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* SpotCard-style LIGHTBOX for event images */}
