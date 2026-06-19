@@ -1325,7 +1325,7 @@ function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-  // Split & sort
+  // ── Split & sort ────────────────────────────────────────────────────────────
   const datedEvents = events.filter((ev) => ev.event_date)
 
   const tbdEvents = events
@@ -1366,7 +1366,7 @@ function EventsTab({ events }) {
       [id]: idx,
     }))
 
-  // Load image aspect ratios
+  // ── Load image dimensions to detect aspect ratio ────────────────────────────
   useEffect(() => {
     const loadImageDimensions = (url) =>
       new Promise((resolve) => {
@@ -1399,7 +1399,7 @@ function EventsTab({ events }) {
   const isPortrait = (aspectRatio) =>
     aspectRatio >= 0.75 && aspectRatio <= 0.85
 
-  // Keyboard nav for image slider
+  // ── Keyboard nav for image slider in expanded cards ─────────────────────────
   useEffect(() => {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
@@ -1421,7 +1421,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
 
-  // Vertical drag between events (header area)
+  // ── Vertical drag between events in header ───────────────────────────────────
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
@@ -1432,7 +1432,7 @@ function EventsTab({ events }) {
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
-    // avoid grabbing when finger starts too low (near calendar)
+    // Avoid grabbing when finger starts too low (near calendar)
     if (rect && touch.clientY > rect.bottom - 60) return
 
     dragStartY.current = touch.clientY
@@ -1481,11 +1481,12 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
+  // ── Helper to open lightbox at specific index ───────────────────────────────
   const openLightboxAt = (index) => {
     setLightboxIndex(index)
   }
 
-  // Formatting helpers
+  // ── Formatting helpers ──────────────────────────────────────────────────────
   const getDayDiff = (s) => {
     const d = new Date(s)
     return Math.round(
@@ -1589,7 +1590,7 @@ function EventsTab({ events }) {
     return { bg: '#6b7280', color: '#fff' }
   }
 
-  // Display event (top card + calendar should follow this)
+  // ── Display event (top card + calendar follow this) ─────────────────────────
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
@@ -1605,7 +1606,7 @@ function EventsTab({ events }) {
   const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
   const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
 
-  // Calendar month now depends on displayEvent (updates while dragging)
+  // ── Calendar month derived from displayEvent (changes while dragging) ───────
   const calMonth = useMemo(() => {
     const base = displayEvent?.event_date
       ? new Date(displayEvent.event_date)
@@ -1635,6 +1636,7 @@ function EventsTab({ events }) {
     setSelectedEvent(dayEvents[0])
   }
 
+  // ── Front panel text color based on image ───────────────────────────────────
   const getTextColorFromImage = (imageUrl) =>
     new Promise((resolve) => {
       const img = new Image()
@@ -1676,6 +1678,7 @@ function EventsTab({ events }) {
     }
   }, [displayImages])
 
+  // ── Render event card in list ───────────────────────────────────────────────
   const renderEvent = (ev) => {
     if (!ev) return null
     const isExpanded = expandedId === ev.id
@@ -1817,7 +1820,7 @@ function EventsTab({ events }) {
                     href={instaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 text-xs bg-orange-500 text-white px-3 py-2 rounded-lg text-center flex itemsCenter justify-center gap-1.5"
+                    className="flex-1 text-xs bg-orange-500 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5"
                   >
                     <svg
                       width="14"
@@ -1838,6 +1841,7 @@ function EventsTab({ events }) {
     )
   }
 
+  // ── JSX ──────────────────────────────────────────────────────────────────────
   return (
     <>
       <div
@@ -1847,10 +1851,10 @@ function EventsTab({ events }) {
         onTouchEnd={handleContainerTouchEnd}
         style={{
           position: 'relative',
-          height: '100%',
+          height: '100%',       // fill content area
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden', // no scroll
+          overflow: 'hidden',   // no scroll
           touchAction: 'none',
           userSelect: 'none',
         }}
@@ -1950,17 +1954,226 @@ function EventsTab({ events }) {
                     )
                   })()}
 
-                {/* Right: image pile + front blur panel (same as before) */}
-                {/* ... (keep the existing image pile + blur panel code here) ... */}
+                {/* Right: image pile + front blur panel */}
+                <div
+                  className="flex-1"
+                  onClick={() => hasImages && openLightboxAt(0)}
+                  style={{
+                    paddingLeft: displayEvent.event_date ? '16px' : '0',
+                    paddingRight: '4px',
+                    position: 'relative',
+                    cursor: hasImages ? 'pointer' : 'default',
+                  }}
+                >
+                  {/* Back card 2 — image[1] */}
+                  {hasImages &&
+                    displayImages.length >= 2 &&
+                    (() => {
+                      const ratio = displayImageRatios[1] || 1
+                      const aspectRatio = isPortrait(ratio)
+                        ? '4/5'
+                        : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#d1d5db',
+                            transform:
+                              'rotate(3deg) translate(7px, 7px)',
+                            zIndex: 1,
+                          }}
+                        >
+                          {displayImages[1] && (
+                            <img
+                              src={displayImages[1]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
 
-                {/* For brevity, reuse the image pile + blur panel code from your current EventsTab;
-                   nothing else in that part needs to change. */}
+                  {/* Back card 1 — image[0] */}
+                  {hasImages &&
+                    (() => {
+                      const ratio = displayImageRatios[0] || 1
+                      const aspectRatio = isPortrait(ratio)
+                        ? '4/5'
+                        : '1/1'
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            aspectRatio,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            backgroundColor: '#e5e7eb',
+                            transform:
+                              'rotate(1.5deg) translate(3.5px, 3.5px)',
+                            zIndex: 2,
+                          }}
+                        >
+                          {displayImages[0] && (
+                            <img
+                              src={displayImages[0]}
+                              alt=""
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                      )
+                    })()}
+
+                  {/* Front: semi-transparent Gaussian blur panel */}
+                  {(() => {
+                    const ratio = hasImages
+                      ? displayImageRatios[0] || 1
+                      : 1
+                    const aspectRatio = isPortrait(ratio)
+                      ? '4/5'
+                      : '1/1'
+                    return (
+                      <div
+                        style={{
+                          position: 'relative',
+                          zIndex: 3,
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          aspectRatio,
+                          width: '100%',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundColor:
+                              'rgba(255,255,255,0.35)',
+                            backdropFilter: 'blur(6px)',
+                            WebkitBackdropFilter: 'blur(6px)',
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: 'relative',
+                            height: '100%',
+                            padding: '12px 14px 28px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'flex-start',
+                            gap: '4px',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily:
+                                '"Noto Sans KR", system-ui, sans-serif',
+                              fontSize: `calc(${W} * 0.052)`,
+                              fontWeight: 700,
+                              color:
+                                nextEvent &&
+                                displayEvent &&
+                                displayEvent.id === nextEvent.id
+                                  ? '#f97316'
+                                  : frontPanelTextColor,
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {displayEvent.title}
+                          </span>
+                          {displayEvent.event_date && (
+                            <span
+                              style={{
+                                fontFamily:
+                                  '"Handjet", system-ui, sans-serif',
+                                fontSize: `calc(${W} * 0.042)`,
+                                fontWeight: 700,
+                                color: frontPanelTextColor,
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {formatTopTime(displayEvent.event_date)}
+                            </span>
+                          )}
+                          {displayEvent.location && (
+                            <span
+                              style={{
+                                fontFamily:
+                                  '"Handjet", system-ui, sans-serif',
+                                fontSize: `calc(${W} * 0.036)`,
+                                fontWeight: 700,
+                                color: frontPanelTextColor,
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {displayEvent.location}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Image count indicator */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '8px',
+                            right: '10px',
+                            backgroundColor: 'rgba(0,0,0,0.45)',
+                            borderRadius: '999px',
+                            padding: '2px 8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 24 24"
+                            fill="white"
+                          >
+                            <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
+                          </svg>
+                          <span
+                            style={{
+                              fontFamily:
+                                '"Handjet", system-ui, sans-serif',
+                              fontSize: 12,
+                              color: '#fff',
+                              fontWeight: 600,
+                              letterSpacing: '0.04em',
+                            }}
+                          >
+                            {displayImages.length}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* CALENDAR + UPCOMING + TBD (no scroll) */}
+        {/* SCROLL-LESS SECTION: calendar + lists */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <div className="px-4 py-6 max-w-md mx-auto">
             {/* CALENDAR */}
@@ -2170,8 +2383,8 @@ function EventsTab({ events }) {
           </div>
         </div>
 
-        {/* Drag guide - show ONLY while dragging, with side padding and pushed up */}
-        {allEvents.length > 1 && (
+        {/* Drag guide - only while dragging, with side padding, pushed up */}
+        {allEvents.length > 1 && isDragging && (
           <div
             style={{
               position: 'absolute',
@@ -2187,7 +2400,7 @@ function EventsTab({ events }) {
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'flex-end',
-                paddingRight: 20, // side padding similar to MY tab
+                paddingRight: 20, // side padding like MY tab
               }}
             >
               <div
@@ -2195,7 +2408,7 @@ function EventsTab({ events }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  opacity: isDragging ? 1 : 0, // only visible while dragging
+                  opacity: 1,
                   transition: 'opacity 0.15s ease',
                 }}
               >
@@ -2222,7 +2435,7 @@ function EventsTab({ events }) {
         )}
       </div>
 
-      {/* Lightbox for event images */}
+      {/* SpotCard-style LIGHTBOX for event images */}
       {lightboxIndex !== null && displayImages.length > 0 && (
         <EventLightbox
           imgs={displayImages}
