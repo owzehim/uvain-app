@@ -1,6 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+const FIVE_MINUTES_MS = 5 * 60 * 1000
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -29,7 +31,9 @@ serve(async (req) => {
         const raw = Deno.env.get('SUPABASE_SECRET_KEYS') || '{}'
         const parsed = JSON.parse(raw)
         return parsed.service_role_key || parsed.service_role || Object.values(parsed)[0] || ''
-      } catch { return '' }
+      } catch {
+        return ''
+      }
     })()
 
     if (!serviceKey) {
@@ -56,10 +60,11 @@ serve(async (req) => {
     }
 
     // ── Fetch member profile ───────────────────────────────────────────────
-    // ✅ FIXED: select education_level + year_number instead of year
     const { data: member, error: memberError } = await admin
       .from('members')
-      .select('first_name, last_name, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, is_member')
+      .select(
+        'first_name, last_name, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, is_member',
+      )
       .eq('user_id', user.id)
       .single()
 
@@ -117,6 +122,38 @@ serve(async (req) => {
     // ── Safe field helpers ─────────────────────────────────────────────────
     const safe = (v: unknown) => (v != null && v !== '' ? String(v) : '')
 
+    // ── Check for recent redemption (5 minutes window) ─────────────────────
+    const { data: recentRedemption, error: recentError } = await admin
+      .from('redemptions')
+      .select('id, redeemed_at')
+      .eq('user_id', user.id)
+      .eq('store_id', storeId)
+      .order('redeemed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (recentError) {
+      console.error('Recent redemption fetch error:', recentError)
+    }
+
+    let reuseRecent = false
+    if (recentRedemption?.redeemed_at) {
+      const last = new Date(recentRedemption.redeemed_at)
+      const diffMs = now.getTime() - last.getTime()
+      if (diffMs >= 0 && diffMs < FIVE_MINUTES_MS) {
+        // Within 5 minutes: treat as already logged, do NOT create a new record
+        reuseRecent = true
+      }
+    }
+
+    if (reuseRecent) {
+      // No new DB row, no Google Sheets POST — just return success
+      return new Response(
+        JSON.stringify({ success: true, storeName: partnership.name }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
     // ── Log to redemptions table first so we have the ID ──────────────────
     const { data: redemptionRow, error: redemptionError } = await admin
       .from('redemptions')
@@ -136,62 +173,60 @@ serve(async (req) => {
     const redemptionId = redemptionRow?.id ?? ''
 
     // ── Master sheet payload ───────────────────────────────────────────────
-    // ✅ FIXED: send education_level + year_number instead of year
     const masterPayload = {
-      type:                    'master',
+      type: 'master',
       date,
       time,
-      first_name:              safe(member.first_name),
-      last_name:               safe(member.last_name),
-      university:              safe(member.University),
-      student_id:              safe(member.student_number),
-      major:                   safe(member.major),
-      education_level:         safe(member.education_level),   // ✅ was: year
-      year_number:             member.year_number ?? '',        // ✅ new
-      year_of_birth:           safe(member.year_of_birth),
-      country_of_origin:       safe(member.country_of_origin),
-      gender:                  safe(member.gender),
-      membership_valid_until:  safe(member.membership_valid_until),
-      place_name:              partnership.name,
-      redemption_id:           redemptionId,
+      first_name: safe(member.first_name),
+      last_name: safe(member.last_name),
+      university: safe(member.University),
+      student_id: safe(member.student_number),
+      major: safe(member.major),
+      education_level: safe(member.education_level),
+      year_number: member.year_number ?? '',
+      year_of_birth: safe(member.year_of_birth),
+      country_of_origin: safe(member.country_of_origin),
+      gender: safe(member.gender),
+      membership_valid_until: safe(member.membership_valid_until),
+      place_name: partnership.name,
+      redemption_id: redemptionId,
     }
 
     // ── Partner sheet payload ──────────────────────────────────────────────
-    // ✅ FIXED: send education_level + year_number instead of year
     const storePayload = {
-      type:                    'store',
-      sheet_name:              partnership.sheet_name || partnership.name,
+      type: 'store',
+      sheet_name: partnership.sheet_name || partnership.name,
       date,
       time,
-      first_name:              safe(member.first_name),
-      last_name:               safe(member.last_name),
-      university:              safe(member.University),
-      major:                   safe(member.major),
-      education_level:         safe(member.education_level),   // ✅ was: year
-      year_number:             member.year_number ?? '',        // ✅ new
-      year_of_birth:           safe(member.year_of_birth),
-      country_of_origin:       safe(member.country_of_origin),
-      gender:                  safe(member.gender),
-      membership_valid_until:  safe(member.membership_valid_until),
-      redemption_id:           redemptionId,
+      first_name: safe(member.first_name),
+      last_name: safe(member.last_name),
+      university: safe(member.University),
+      major: safe(member.major),
+      education_level: safe(member.education_level),
+      year_number: member.year_number ?? '',
+      year_of_birth: safe(member.year_of_birth),
+      country_of_origin: safe(member.country_of_origin),
+      gender: safe(member.gender),
+      membership_valid_until: safe(member.membership_valid_until),
+      redemption_id: redemptionId,
     }
 
     const [masterRes, storeRes] = await Promise.all([
       fetch(partnership.master_apps_script_url, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(masterPayload),
+        body: JSON.stringify(masterPayload),
       }),
       fetch(partnership.partner_apps_script_url, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(storePayload),
+        body: JSON.stringify(storePayload),
       }),
     ])
 
     if (!masterRes.ok || !storeRes.ok) {
       const masterText = await masterRes.text()
-      const storeText  = await storeRes.text()
+      const storeText = await storeRes.text()
       console.error('Sheet POST failed — master:', masterText, '| store:', storeText)
     }
 
@@ -199,7 +234,6 @@ serve(async (req) => {
       JSON.stringify({ success: true, storeName: partnership.name }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
-
   } catch (err) {
     console.error('log-redemption fatal error:', err)
     return new Response(
