@@ -201,7 +201,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 1000,
+          zIndex: 2000,
           background: 'rgba(0, 0, 0, 0.75)',
           display: 'flex',
           alignItems: 'center',
