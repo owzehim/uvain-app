@@ -1325,7 +1325,7 @@ function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-  // ── Split & sort ────────────────────────────────────────────────────────────
+  // Split & sort
   const datedEvents = events.filter((ev) => ev.event_date)
 
   const tbdEvents = events
@@ -1354,9 +1354,6 @@ function EventsTab({ events }) {
   const [isDragging, setIsDragging] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
-  const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
-
-  // SpotCard-style Lightbox index
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [imageAspectRatios, setImageAspectRatios] = useState({})
   const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
@@ -1379,7 +1376,7 @@ function EventsTab({ events }) {
       [id]: idx,
     }))
 
-  // ── Load image dimensions to detect aspect ratio ────────────────────────────
+  // Load image aspect ratios
   useEffect(() => {
     const loadImageDimensions = (url) =>
       new Promise((resolve) => {
@@ -1412,7 +1409,7 @@ function EventsTab({ events }) {
   const isPortrait = (aspectRatio) =>
     aspectRatio >= 0.75 && aspectRatio <= 0.85
 
-  // ── Keyboard nav for image slider in expanded cards ─────────────────────────
+  // Keyboard nav for image slider when a card is expanded
   useEffect(() => {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
@@ -1434,7 +1431,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
 
-  // ── Vertical drag between events in header ───────────────────────────────────
+  // Vertical drag between events (header area)
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
@@ -1445,7 +1442,7 @@ function EventsTab({ events }) {
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
-    // Avoid grabbing when finger starts too low (near calendar)
+    // avoid grabbing when finger starts too low (near calendar)
     if (rect && touch.clientY > rect.bottom - 60) return
 
     dragStartY.current = touch.clientY
@@ -1494,12 +1491,11 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
-  // ── Helper to open lightbox at specific index ───────────────────────────────
   const openLightboxAt = (index) => {
     setLightboxIndex(index)
   }
 
-  // ── Formatting helpers ──────────────────────────────────────────────────────
+  // Formatting helpers
   const getDayDiff = (s) => {
     const d = new Date(s)
     return Math.round(
@@ -1787,7 +1783,7 @@ function EventsTab({ events }) {
     )
   }
 
-  // ── First-panel image + color logic ─────────────────────────────────────────
+  // First-panel image + color logic
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
@@ -1847,20 +1843,20 @@ function EventsTab({ events }) {
   return (
     <>
       <div
-  ref={containerRef}
-  onTouchStart={handleContainerTouchStart}
-  onTouchMove={handleContainerTouchMove}
-  onTouchEnd={handleContainerTouchEnd}
-  style={{
-    height: '100%',        // ⬅️ key change
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    touchAction: 'none',
-    userSelect: 'none',
-    position: 'relative',  // ⬅️ for the absolute guide
-  }}
->
+        ref={containerRef}
+        onTouchStart={handleContainerTouchStart}
+        onTouchMove={handleContainerTouchMove}
+        onTouchEnd={handleContainerTouchEnd}
+        style={{
+          position: 'relative',
+          height: '100%',    // fill the content area, no extra height
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden', // disable scroll
+          touchAction: 'none',
+          userSelect: 'none',
+        }}
+      >
         {/* TOP SECTION */}
         <div
           style={{
@@ -2175,8 +2171,8 @@ function EventsTab({ events }) {
           )}
         </div>
 
-        {/* SCROLLABLE SECTION: calendar + lists */}
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        {/* CALENDAR + UPCOMING + TBD (no scroll) */}
+        <div style={{ flex: 1, overflow: 'hidden' }}>
           <div className="px-4 py-6 max-w-md mx-auto">
             {/* CALENDAR */}
             <div
@@ -2339,7 +2335,7 @@ function EventsTab({ events }) {
 
             {/* UPCOMING LIST */}
             {otherUpcomingEvents.length > 0 && (
-              <div className="mb-8 space-y-3">
+              <div className="mb-4 space-y-3">
                 {(() => {
                   let curMonth = null
                   const blocks = []
@@ -2365,62 +2361,11 @@ function EventsTab({ events }) {
 
             {/* TBD EVENTS */}
             {tbdEvents.length > 0 && (
-              <div className="mb-8 space-y-3">
+              <div className="mb-4 space-y-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
                   TBD
                 </p>
                 {tbdEvents.map((ev) => renderEvent(ev))}
-              </div>
-            )}
-
-            {/* PAST EVENTS */}
-            {pastEvents.length > 0 && (
-              <div className="mt-6">
-                <button
-                  onClick={() =>
-                    setPastEventsExpanded(!pastEventsExpanded)
-                  }
-                  className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-semibold">
-                      지난 이벤트
-                    </span>
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
-                      {pastEvents.length}
-                    </span>
-                  </div>
-                  <span className="text-gray-400 text-lg">
-                    {pastEventsExpanded ? '▲' : '▼'}
-                  </span>
-                </button>
-
-                {pastEventsExpanded && (
-                  <div className="space-y-3 mt-3">
-                    {(() => {
-                      let curMonth = null
-                      const blocks = []
-                      pastEvents.forEach((ev) => {
-                        const label = `${
-                          new Date(ev.event_date).getMonth() + 1
-                        }월`
-                        if (label !== curMonth) {
-                          curMonth = label
-                          blocks.push(
-                            <p
-                              key={`pm-${label}`}
-                              className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
-                            >
-                              {label}
-                            </p>,
-                          )
-                        }
-                        blocks.push(renderEvent(ev))
-                      })
-                      return blocks
-                    })()}
-                  </div>
-                )}
               </div>
             )}
 
@@ -2433,56 +2378,62 @@ function EventsTab({ events }) {
                 </p>
               </div>
             )}
-
-            {/* Some extra padding at the bottom so content doesn't sit
-                right under the bottom bar / guide */}
-            <div style={{ height: 40 }} />
           </div>
         </div>
 
-        {/* Drag guide - bottom right overlay */}
+        {/* Drag guide - bottom right overlay with side padding, pushed up */}
         {allEvents.length > 1 && (
-  <div
-    style={{
-      position: 'absolute',
-      right: 20,
-      bottom: 10,
-      zIndex: 20,
-      pointerEvents: 'none',
-    }}
-  >
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        opacity: isDragging ? 0 : 1,
-        transition: 'opacity 0.2s ease',
-      }}
-    >
-      <ArrowsVertical
-        size={16}
-        weight="bold"
-        color="rgba(44,42,39,0.35)"
-      />
-      <span
-        style={{
-          fontSize: `calc(${W} * 0.032)`,
-          color: 'rgba(44,42,39,0.35)',
-          fontWeight: 500,
-          fontFamily: '"Handjet", system-ui, sans-serif',
-          letterSpacing: '0.04em',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        드래그해서 이벤트 보기
-      </span>
-    </div>
-  </div>
-)}
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 52, // push up from bottom bar
+              zIndex: 20,
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                paddingRight: 20,  // side padding like MY tab
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  opacity: isDragging ? 0 : 1,
+                  transition: 'opacity 0.2s ease',
+                }}
+              >
+                <ArrowsVertical
+                  size={16}
+                  weight="bold"
+                  color="rgba(44,42,39,0.35)"
+                />
+                <span
+                  style={{
+                    fontSize: `calc(${W} * 0.032)`,
+                    color: 'rgba(44,42,39,0.35)',
+                    fontWeight: 500,
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    letterSpacing: '0.04em',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  드래그해서 이벤트 보기
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* SpotCard-style LIGHTBOX for event images */}
+      {/* Lightbox for event images */}
       {lightboxIndex !== null && displayImages.length > 0 && (
         <EventLightbox
           imgs={displayImages}
