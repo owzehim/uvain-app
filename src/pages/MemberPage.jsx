@@ -2455,39 +2455,44 @@ function EventsTab({ events }) {
         </div>
       </div>
 
-            {/* Drag guide - bottom right */}
+                 {/* Drag guide - bottom right (same feel as MY tab) */}
       {allEvents.length > 1 && (
         <div
           style={{
-            position: 'fixed',
-            bottom: 'calc(env(safe-area-inset-bottom) + 72px)',
-            right: 16,
+            width: '100%',
             display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            zIndex: 50,
-            opacity: isDragging ? 0 : 1,
-            transition: 'opacity 0.2s ease',
-            pointerEvents: isDragging ? 'none' : 'auto',
+            justifyContent: 'flex-end',
+            paddingRight: '20px',          // same right padding as MY tab
+            paddingBottom: '8px',          // tweak this if you want a bit higher/lower
           }}
         >
-          <ArrowsVertical
-            size={16}
-            weight="bold"
-            color="rgba(44,42,39,0.35)"
-          />
-          <span
+          <div
             style={{
-              fontSize: `calc(${W} * 0.032)`,
-              color: 'rgba(44,42,39,0.35)',
-              fontWeight: 500,
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              letterSpacing: '0.04em',
-              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              opacity: isDragging ? 0 : 1, // fade out while dragging
+              transition: 'opacity 0.2s ease',
             }}
           >
-            드래그해서 이벤트 보기
-          </span>
+            <ArrowsVertical
+              size={16}
+              weight="bold"
+              color="rgba(44,42,39,0.35)"
+            />
+            <span
+              style={{
+                fontSize: `calc(${W} * 0.032)`,
+                color: 'rgba(44,42,39,0.35)',
+                fontWeight: 500,
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                letterSpacing: '0.04em',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              드래그해서 이벤트 보기
+            </span>
+          </div>
         </div>
       )}
 
