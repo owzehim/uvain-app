@@ -2463,7 +2463,7 @@ function EventsTab({ events }) {
             display: 'flex',
             justifyContent: 'flex-end',
             paddingRight: '20px',          // same right padding as MY tab
-            paddingBottom: '8px',          // tweak this if you want a bit higher/lower
+            paddingBottom: '96px',          // tweak this if you want a bit higher/lower
           }}
         >
           <div
