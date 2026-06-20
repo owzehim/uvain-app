@@ -49,11 +49,11 @@ export default function StampCard({ config, visits = [], size = 'full', isCardFu
     aspectRatio: '1.586 / 1',
     borderRadius: 0,
     overflow: 'hidden',
-    boxShadow: 'none',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
     display: 'grid',
     gridTemplateRows: '25% 55% 20%',
     ...(isCardFull && {
-      boxShadow: `0 0 0 2.5px ${config.accent_color}`,
+      boxShadow: `0 0 0 2.5px ${config.accent_color}, 0 2px 8px rgba(0,0,0,0.12)`,
     }),
   }
 

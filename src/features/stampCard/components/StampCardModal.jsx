@@ -56,6 +56,7 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
 
   return (
     <div
+      className="stamp-card-preview-backdrop"
       onClick={handleClose}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -63,7 +64,7 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
         position: 'fixed',
         inset: 0,
         zIndex: 1500,
-        background: visible ? 'rgba(0,0,0,0.86)' : 'rgba(0,0,0,0)',
+        background: visible ? 'rgba(0,0,0,0.92)' : 'rgba(0,0,0,0)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -71,6 +72,15 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
         transition: 'background 250ms ease',
       }}
     >
+      <style>{`
+        .stamp-card-preview-backdrop::before {
+          content: '';
+          position: fixed;
+          inset: calc(env(safe-area-inset-top) * -1) 0 calc(env(safe-area-inset-bottom) * -1) 0;
+          background: inherit;
+          pointer-events: none;
+        }
+      `}</style>
       <div
         onClick={(e) => e.stopPropagation()}
         style={{

@@ -17,6 +17,7 @@ import StampCardMini from '../features/stampCard/components/StampCardMini'
 import StampCardModal from '../features/stampCard/components/StampCardModal'
 
 export default function MemberPage() {
+  const [authUserId, setAuthUserId] = useState(null)
   const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -60,6 +61,7 @@ export default function MemberPage() {
 
       // Admin flag from user metadata (same logic as App.jsx)
       const isAdminUser = user?.user_metadata?.role === 'admin'
+      setAuthUserId(user.id)
 
       // Members: maybeSingle() so we don't get a 406 if the admin has no row
       const { data: memberData, error: memberError } = await supabase
@@ -228,7 +230,13 @@ export default function MemberPage() {
           )}
           {activeTab === 'events' && <EventsTab events={events} />}
           {activeTab === 'map' && (
-  <MapTab restaurants={restaurants} member={member} isValid={isValid} />
+  <MapTab
+    restaurants={restaurants}
+    member={member}
+    isValid={isValid}
+    isAdmin={isAdmin}
+    authUserId={authUserId}
+  />
 )}        </div>
       </div>
 
@@ -2528,21 +2536,33 @@ function EventsTab({ events }) {
 }
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
-function MapTab({ restaurants, member, isValid }) {
+function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
   const [stampCardModalOpen, setStampCardModalOpen] = useState(false)
   const [stampCardSpot, setStampCardSpot] = useState(null)
+  const [spotCardClosing, setSpotCardClosing] = useState(false)
 
   useEffect(() => {
     if (!selected) setStampCardModalOpen(false)
   }, [selected])
 
-  const stampCardEligible = !!(selected?.stamp_card_enabled && isValid && member?.user_id)
+  const stampCardUserId = member?.user_id || authUserId
+  const canSeeStampCard = isValid || isAdmin
+  const stampCardEligible = !!(
+    selected?.stamp_card_enabled &&
+    canSeeStampCard &&
+    stampCardUserId &&
+    !spotCardClosing
+  )
 
   useEffect(() => {
     if (stampCardEligible) setStampCardSpot(selected)
   }, [selected, stampCardEligible])
+
+  useEffect(() => {
+    setSpotCardClosing(false)
+  }, [selected?.id])
 
   const filtered = useMemo(
     () =>
@@ -2604,14 +2624,18 @@ function MapTab({ restaurants, member, isValid }) {
           onSelect={setSelected}
         />
         {selected && (
-          <SpotCard selected={selected} onClose={() => setSelected(null)} />
+          <SpotCard
+            selected={selected}
+            onClosingStart={() => setSpotCardClosing(true)}
+            onClose={() => setSelected(null)}
+          />
         )}
 
         {/* Stamp card mini widget — fixed top-right, only for valid members */}
-        {stampCardSpot && member?.user_id && (
+        {stampCardSpot && stampCardUserId && (
           <StampCardMini
             restaurantId={stampCardSpot.id}
-            userId={member.user_id}
+            userId={stampCardUserId}
             open={stampCardEligible && stampCardSpot.id === selected?.id}
             onOpenModal={() => setStampCardModalOpen(true)}
             onExited={() => {
@@ -2621,10 +2645,10 @@ function MapTab({ restaurants, member, isValid }) {
         )}
 
         {/* Stamp card full modal */}
-        {stampCardModalOpen && selected && member?.user_id && (
+        {stampCardModalOpen && selected && stampCardUserId && (
           <StampCardModal
             restaurantId={selected.id}
-            userId={member.user_id}
+            userId={stampCardUserId}
             onClose={() => setStampCardModalOpen(false)}
           />
         )}

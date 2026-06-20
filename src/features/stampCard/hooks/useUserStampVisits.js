@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../../../lib/supabase'
 import { fetchVisits } from '../api/visits'
 import { computeStampState } from '../utils'
 
@@ -27,7 +28,8 @@ export function useUserStampVisits({ userId, restaurantId, totalStamps }) {
       const data = await fetchVisits(userId, restaurantId)
       setVisits(data)
       setStampState(computeStampState(data, totalStamps))
-    } catch {
+    } catch (e) {
+      console.warn('fetchVisits error:', e)
       setVisits([])
       setStampState(EMPTY_STATE)
     } finally {
@@ -36,6 +38,37 @@ export function useUserStampVisits({ userId, restaurantId, totalStamps }) {
   }, [userId, restaurantId, totalStamps])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    if (!userId || !restaurantId || !totalStamps) return undefined
+
+    const channel = supabase
+      .channel(`stamp-card-visits:${restaurantId}:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'stamp_card_visits',
+          filter: `restaurant_id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          const row = payload.new?.user_id ? payload.new : payload.old
+          if (row?.user_id === userId) load()
+        },
+      )
+      .subscribe()
+
+    const handleFocus = () => load()
+    window.addEventListener('focus', handleFocus)
+    const intervalId = window.setInterval(load, 10000)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.clearInterval(intervalId)
+      supabase.removeChannel(channel)
+    }
+  }, [load, restaurantId, totalStamps, userId])
 
   return { visits, stampState, loading, refetch: load }
 }

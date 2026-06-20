@@ -299,7 +299,7 @@ function ImageThumbnails({ imgs, onTap }) {
   )
 }
 
-export function SpotCard({ selected, onClose }) {
+export function SpotCard({ selected, onClose, onClosingStart }) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [closing, setClosing] = useState(false)
@@ -341,6 +341,7 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
   }, [selected, MIN_HEIGHT])
 
   const triggerClose = () => {
+    onClosingStart?.()
     setClosing(true)
     setTimeout(() => onClose(), 320)
   }
