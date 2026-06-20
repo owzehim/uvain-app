@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { supabaseAdmin } from '../lib/supabaseAdmin'
-import compressImage from '../lib/imageCompression'
+import { compressImage } from '../lib/imageCompression'
 
 export async function fetchConfigBySpot(restaurantId) {
   const { data, error } = await supabase
@@ -29,7 +29,11 @@ export async function upsertConfig(restaurantId, data) {
 }
 
 export async function uploadWallpaper(restaurantId, file) {
-  const compressed = await compressImage(file, { maxSizeMB: 0.8, maxWidthOrHeight: 1200 })
+  // Use existing compressImage helper (browser-image-compression)
+  const compressed = await compressImage(file, {
+    maxSizeMB: 0.8,
+    maxWidthOrHeight: 1200,
+  })
 
   const fileName = `${restaurantId}_${Date.now()}.jpg`
 
