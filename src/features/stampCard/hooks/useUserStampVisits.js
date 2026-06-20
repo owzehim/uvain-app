@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { fetchVisits } from '../api/visits'
 import { computeStampState } from '../utils'
@@ -12,6 +12,9 @@ const EMPTY_STATE = {
 }
 
 export function useUserStampVisits({ userId, restaurantId, totalStamps }) {
+  const channelIdRef = useRef(
+    Math.random().toString(36).slice(2) + Date.now().toString(36),
+  )
   const [visits, setVisits] = useState([])
   const [stampState, setStampState] = useState(EMPTY_STATE)
   const [loading, setLoading] = useState(false)
@@ -43,7 +46,7 @@ export function useUserStampVisits({ userId, restaurantId, totalStamps }) {
     if (!userId || !restaurantId || !totalStamps) return undefined
 
     const channel = supabase
-      .channel(`stamp-card-visits:${restaurantId}:${userId}`)
+      .channel(`stamp-card-visits:${restaurantId}:${userId}:${channelIdRef.current}`)
       .on(
         'postgres_changes',
         {
