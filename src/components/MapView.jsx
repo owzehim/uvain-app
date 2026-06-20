@@ -139,7 +139,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
       el.addEventListener('click', () => onSelect(r))
 
-      markersRef.current.set(r.id, { marker, element: el })
+      markersRef.current.set(r.id, { marker, element: el, isSponsored: r.is_sponsored })
     })
 
     // Fit bounds
@@ -197,33 +197,41 @@ export default function MapView({ restaurants, selected, onSelect }) {
   }, [restaurants, renderMarkers])
 
   // ─── Update selection styling using data attributes ──────────────────────
-  useEffect(() => {
-    if (!mapReadyRef.current) return
+useEffect(() => {
+  if (!mapReadyRef.current) return
 
-    // Remove selection from all markers
-    markersRef.current.forEach(({ element }) => {
-      element.setAttribute('data-selected', 'false')
+  // Remove selection from all markers
+  markersRef.current.forEach(({ element, isSponsored }) => {
+    element.setAttribute('data-selected', 'false')
+    const circle = element.querySelector('.marker-circle')
+    if (!circle) return
+
+    if (isSponsored) {
+      // 제휴 spot: keep orange bg + white outline when not selected
+      circle.style.border = '3px solid white'
+      circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.4)'
+    } else {
+      // Normal spot: grey outline when not selected
+      circle.style.border = '2px solid #e5e7eb'
+      circle.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)'
+    }
+  })
+
+  // Add selection to current marker
+  if (selected) {
+    const selectedData = markersRef.current.get(selected.id)
+    if (selectedData) {
+      const { element } = selectedData
+      element.setAttribute('data-selected', 'true')
       const circle = element.querySelector('.marker-circle')
       if (circle) {
-        circle.style.border = '2px solid #e5e7eb'
-        circle.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)'
-      }
-    })
-
-    // Add selection to current marker
-    if (selected) {
-      const selectedData = markersRef.current.get(selected.id)
-      if (selectedData) {
-        const { element } = selectedData
-        element.setAttribute('data-selected', 'true')
-        const circle = element.querySelector('.marker-circle')
-        if (circle) {
-          circle.style.border = '3px solid #f97316'
-          circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.5)'
-        }
+        // Selected: orange outline for both sponsored + normal
+        circle.style.border = '3px solid #f97316'
+        circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.5)'
       }
     }
-  }, [selected])
+  }
+}, [selected])
 
   // ─── Pan to selected spot ──────────────────────────────────────────────
   useEffect(() => {
