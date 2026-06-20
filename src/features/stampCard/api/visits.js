@@ -79,8 +79,15 @@ export async function insertVisit(userId, restaurantId, totalStamps) {
 }
 
 export async function adminInsertVisit(userId, restaurantId, totalStamps, visitedAt, adminNote) {
-  // admin도 supabase(anon 키)로 동작하도록 변경.
-  // RLS에서 admin 유저만 이 쿼리를 허용하도록 정책을 설정해야 함.
+  const pendingReward = await fetchPendingReward(userId, restaurantId)
+  if (pendingReward) {
+    return {
+      rewardPending: true,
+      cycleCompleted: true,
+      cardCycle: pendingReward.card_cycle,
+    }
+  }
+
   const { data: priorVisits, error: fetchError } = await supabase
     .from('stamp_card_visits')
     .select('*')

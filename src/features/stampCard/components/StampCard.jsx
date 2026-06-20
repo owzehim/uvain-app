@@ -25,6 +25,26 @@ const SIZES = {
   },
 }
 
+function hasMarkup(value) {
+  return /<\/?[a-z][\s\S]*>/i.test(value || '')
+}
+
+function RichText({ value, fallback, style }) {
+  const content = value || fallback
+  if (!content) return null
+
+  if (hasMarkup(content)) {
+    return (
+      <div
+        style={style}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    )
+  }
+
+  return <p style={style}>{content}</p>
+}
+
 export default function StampCard({
   config,
   visits = [],
@@ -46,8 +66,9 @@ export default function StampCard({
     date: i < visits.length ? visits[i].visited_at?.slice(0, 10) : null,
   }))
 
-  const accentBg = hasWallpaper ? 'transparent' : config.accent_color
-  const whiteBg = hasWallpaper ? 'transparent' : '#ffffff'
+  const surfaceBg = hasWallpaper ? 'transparent' : '#ffffff'
+  const stampColor = hasWallpaper ? config.text_color : '#111827'
+  const secondaryTextColor = hasWallpaper ? config.text_color : '#6b7280'
 
   const cardStyle = {
     position: 'relative',
@@ -85,47 +106,45 @@ export default function StampCard({
         style={{
           position: 'relative',
           zIndex: 1,
-          background: whiteBg,
+          background: surfaceBg,
           padding: `${Math.round(s.padding * 0.7)}px ${s.padding}px`,
           minHeight: 0,
           overflow: 'hidden',
         }}
       >
-        {config.title && (
-          <p style={{
+        <RichText
+          value={config.title}
+          style={{
             margin: 0,
             fontWeight: 600,
             fontSize: s.titleFont,
-            color: '#111827',
+            color: stampColor,
             lineHeight: 1.15,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-          }}>
-            {config.title}
-          </p>
-        )}
-        {config.subtitle && (
-          <p style={{
+          }}
+        />
+        <RichText
+          value={config.subtitle}
+          style={{
             margin: 0,
             fontSize: s.subtitleFont,
-            color: '#6b7280',
+            color: secondaryTextColor,
             lineHeight: 1.15,
             marginTop: 1,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-          }}>
-            {config.subtitle}
-          </p>
-        )}
+          }}
+        />
       </div>
 
       <div
         style={{
           position: 'relative',
           zIndex: 1,
-          background: accentBg,
+          background: surfaceBg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -140,6 +159,7 @@ export default function StampCard({
             gridTemplateColumns: `repeat(${stampsPerRow}, minmax(${s.iconSize}px, max-content))`,
             justifyContent: 'center',
             alignContent: 'center',
+            alignItems: 'start',
             gap: s.stampGap,
             maxWidth: '100%',
             maxHeight: '100%',
@@ -151,7 +171,7 @@ export default function StampCard({
               key={i}
               slot={slot}
               iconSize={s.iconSize}
-              textColor={config.text_color}
+              textColor={stampColor}
               showDates={s.showDates}
               dateFont={s.dateFont}
             />
@@ -163,42 +183,64 @@ export default function StampCard({
         style={{
           position: 'relative',
           zIndex: 1,
-          background: whiteBg,
+          background: surfaceBg,
           padding: `${Math.round(s.padding * 0.45)}px ${s.padding}px`,
           textAlign: 'center',
           minHeight: 0,
           overflow: 'hidden',
         }}
       >
-        <p style={{
+        <RichText
+          value={config.reward_text}
+          fallback={isCardFull ? '리워드를 획득하셨어요' : ''}
+          style={{
           margin: 0,
           fontSize: s.rewardFont,
           fontWeight: isCardFull ? 700 : 500,
-          color: isCardFull ? config.accent_color : '#374151',
+          color: stampColor,
           lineHeight: 1.2,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-        }}>
-          {config.reward_text || (isCardFull ? '리워드를 획득하셨어요' : '')}
-        </p>
+        }}
+        />
       </div>
     </div>
   )
 }
 
 function SlotItem({ slot, iconSize, textColor, showDates, dateFont }) {
+  const reservedDateHeight = showDates ? `calc(${dateFont} + 2px)` : 0
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: iconSize }}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateRows: showDates ? `${iconSize}px ${reservedDateHeight}` : `${iconSize}px`,
+        justifyItems: 'center',
+        alignItems: 'start',
+        rowGap: 2,
+        minWidth: iconSize,
+      }}
+    >
       <Octagon
         size={iconSize}
         weight={slot.filled ? 'fill' : 'regular'}
         color={textColor}
         style={{ opacity: slot.filled ? 1 : 0.25, display: 'block', flexShrink: 0 }}
       />
-      {showDates && slot.filled && slot.date && (
-        <span style={{ fontSize: dateFont, color: textColor, lineHeight: 1, whiteSpace: 'nowrap' }}>
-          {slot.date}
+      {showDates && (
+        <span
+          style={{
+            minHeight: reservedDateHeight,
+            fontSize: dateFont,
+            color: textColor,
+            lineHeight: 1,
+            opacity: slot.filled && slot.date ? 1 : 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {slot.date || '0000-00-00'}
         </span>
       )}
     </div>

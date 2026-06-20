@@ -105,6 +105,18 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
               isCardFull={stampState.isCardFull}
             />
           )}
+          <p
+            style={{
+              margin: '12px 0 0',
+              color: '#ffffff',
+              fontSize: 14,
+              fontWeight: 800,
+              textAlign: 'center',
+              lineHeight: 1.2,
+            }}
+          >
+            Check-IN 시 포인트 자동 적립
+          </p>
         </div>
       </div>
     </>

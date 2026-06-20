@@ -7,8 +7,8 @@ export const DEFAULT_STAMP_CARD_CONFIG = {
   title: '',
   subtitle: '',
   reward_text: '',
-  accent_color: '#ef4444',
-  text_color: '#ffffff',
+  accent_color: '#111827',
+  text_color: '#111827',
   wallpaper_url: null,
 }
 

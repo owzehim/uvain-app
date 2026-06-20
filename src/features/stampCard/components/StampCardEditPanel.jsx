@@ -170,32 +170,26 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
             </Field>
 
             <Field label="카드 제목">
-              <input
-                type="text"
+              <RichTextField
                 placeholder="카드 제목"
                 value={draft.title}
-                onChange={(e) => set('title', e.target.value)}
-                className="input-base"
+                onChange={(value) => set('title', value)}
               />
             </Field>
 
             <Field label="부제목">
-              <input
-                type="text"
+              <RichTextField
                 placeholder="부제목"
                 value={draft.subtitle}
-                onChange={(e) => set('subtitle', e.target.value)}
-                className="input-base"
+                onChange={(value) => set('subtitle', value)}
               />
             </Field>
 
             <Field label="리워드 문구">
-              <input
-                type="text"
+              <RichTextField
                 placeholder="예: 음료 1잔 무료"
                 value={draft.reward_text}
-                onChange={(e) => set('reward_text', e.target.value)}
-                className="input-base"
+                onChange={(value) => set('reward_text', value)}
               />
             </Field>
 
@@ -293,6 +287,11 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
           border-color: #f97316;
           box-shadow: 0 0 0 2px rgba(249,115,22,0.15);
         }
+        .rich-text-box:empty:before {
+          content: attr(data-placeholder);
+          color: #9ca3af;
+          pointer-events: none;
+        }
       `}</style>
     </div>
   )
@@ -303,6 +302,73 @@ function Field({ label, children }) {
     <div className="flex flex-col gap-1.5">
       <label className="text-xs font-medium text-gray-500">{label}</label>
       {children}
+    </div>
+  )
+}
+
+function RichTextField({ value, onChange, placeholder }) {
+  const editorRef = useRef(null)
+
+  useEffect(() => {
+    if (!editorRef.current) return
+    if (editorRef.current.innerHTML !== (value || '')) {
+      editorRef.current.innerHTML = value || ''
+    }
+  }, [value])
+
+  const emitChange = () => {
+    const html = editorRef.current?.innerHTML || ''
+    onChange(html === '<br>' ? '' : html)
+  }
+
+  const format = (command) => {
+    editorRef.current?.focus()
+    document.execCommand(command, false, null)
+    emitChange()
+  }
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden bg-white focus-within:border-orange-400 focus-within:shadow-[0_0_0_2px_rgba(249,115,22,0.15)]">
+      <div className="flex items-center gap-1 border-b border-gray-100 bg-gray-50 px-2 py-1">
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => format('bold')}
+          className="w-7 h-7 rounded text-xs font-bold text-gray-700 hover:bg-white"
+          title="Bold"
+        >
+          B
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => format('italic')}
+          className="w-7 h-7 rounded text-xs italic font-semibold text-gray-700 hover:bg-white"
+          title="Italic"
+        >
+          I
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => format('underline')}
+          className="w-7 h-7 rounded text-xs underline font-semibold text-gray-700 hover:bg-white"
+          title="Underline"
+        >
+          U
+        </button>
+      </div>
+      <div
+        ref={editorRef}
+        contentEditable
+        role="textbox"
+        aria-label={placeholder}
+        data-placeholder={placeholder}
+        className="rich-text-box min-h-9 px-3 py-2 text-sm text-gray-900 outline-none"
+        onInput={emitChange}
+        onBlur={emitChange}
+        suppressContentEditableWarning
+      />
     </div>
   )
 }

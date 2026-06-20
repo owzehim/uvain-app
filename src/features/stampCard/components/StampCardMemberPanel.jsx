@@ -99,19 +99,24 @@ function MemberRow({ member, stampState, latestReward, totalStamps, restaurantId
   const handleAddStamp = async () => {
     setSubmitting(true)
     try {
-      await adminInsertVisit(
+      const result = await adminInsertVisit(
         member.user_id,
         restaurantId,
         totalStamps,
         `${date}T12:00:00Z`,
         note || null,
       )
+      if (result?.rewardPending) {
+        alert('이미 적용 가능한 혜택이 있어요. 혜택 적용 완료 후 새 스탬프를 추가할 수 있습니다.')
+        return
+      }
       setAddOpen(false)
       setNote('')
       setDate(todayString())
       await onRefresh()
     } catch (e) {
       console.error('adminInsertVisit error:', e)
+      alert('스탬프 추가 실패: ' + (e?.message || '알 수 없는 오류'))
     } finally {
       setSubmitting(false)
     }
