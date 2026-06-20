@@ -13,6 +13,7 @@ export default defineConfig({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
       },
       manifest: {
         name: 'UvA-IN 멤버십',
@@ -45,23 +46,21 @@ export default defineConfig({
       },
     }),
   ],
-
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        // Vite 8 (Rolldown) requires manualChunks as a function, not an object
         manualChunks(id) {
-  if (id.includes('node_modules/@supabase')) {
-    return 'vendor-supabase'
-  }
-  if (id.includes('node_modules/leaflet') || id.includes('node_modules/react-leaflet')) {
-    return 'vendor-map'
-  }
-  if (id.includes('node_modules/qrcode')) {
-    return 'vendor-qr'
-  }
-},
+          if (id.includes('node_modules/@supabase')) {
+            return 'vendor-supabase'
+          }
+          if (id.includes('node_modules/leaflet') || id.includes('node_modules/react-leaflet')) {
+            return 'vendor-map'
+          }
+          if (id.includes('node_modules/qrcode')) {
+            return 'vendor-qr'
+          }
+        },
       },
     },
   },
