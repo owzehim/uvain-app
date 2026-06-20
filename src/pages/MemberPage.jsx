@@ -1352,7 +1352,7 @@ function EventsTab({ events }) {
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
   const [isDragging, setIsDragging] = useState(false)
-  const [isTouching, setIsTouching] = useState(false) // NEW: touch state
+  const [isTouching, setIsTouching] = useState(false) // for guide visibility
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
@@ -1458,7 +1458,7 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = currentEventIndex
     setIsDragging(true)
-    setIsTouching(true) // NEW
+    setIsTouching(true) // show guide
     setPreviewEvent(selectedEvent)
   }
 
@@ -1495,7 +1495,7 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = null
     setIsDragging(false)
-    setIsTouching(false) // NEW
+    setIsTouching(false) // hide guide
     setPreviewEvent(selectedEvent)
   }
 
@@ -1588,7 +1588,7 @@ function EventsTab({ events }) {
     day: `calc(${W} * 0.06)`,
     date: `calc(${W} * 0.24)`,
     month: `calc(${W} * 0.24)`,
-    guide: `calc(${W} * 0.032)`, // NEW: match MY tab guide size
+    guide: `calc(${W} * 0.032)`, // same as MY tab guide
   }
 
   const eventsByDate = {}
@@ -1851,20 +1851,19 @@ function EventsTab({ events }) {
   return (
     <>
       <div
-  ref={containerRef}
-  onTouchStart={handleContainerTouchStart}
-  onTouchMove={handleContainerTouchMove}
-  onTouchEnd={handleContainerTouchEnd}
-  style={{
-    position: 'relative',
-    height: '100dvh',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    touchAction: 'none',
-    userSelect: 'none',
-  }}
->
+        ref={containerRef}
+        onTouchStart={handleContainerTouchStart}
+        onTouchMove={handleContainerTouchMove}
+        onTouchEnd={handleContainerTouchEnd}
+        style={{
+          height: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          touchAction: 'none',
+          userSelect: 'none',
+        }}
+      >
         {/* TOP SECTION */}
         <div
           style={{
@@ -1872,7 +1871,6 @@ function EventsTab({ events }) {
             padding: '16px',
             paddingTop: '24px',
             backgroundColor: '#ffffff',
-            position: 'relative', // for bottom-right guide
           }}
         >
           {displayEvent && (
@@ -2170,39 +2168,6 @@ function EventsTab({ events }) {
               </div>
             </div>
           )}
-
-          {/* Drag guide — fixed to bottom right of screen, matches MY tab style */}
-{allEvents.length > 0 && (
-  <div
-    style={{
-      position: 'absolute',
-      bottom: 'calc(env(safe-area-inset-bottom) + 24px)',
-      right: '20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 4,
-      opacity: isTouching ? 1 : 0,
-      transition: 'opacity 0.25s ease',
-      pointerEvents: 'none',
-      zIndex: 10,
-    }}
-  >
-    <ArrowsVertical
-      size={fs.guide}
-      weight="bold"
-      color="rgba(44,42,39,0.35)"
-    />
-    <span
-      style={{
-        fontSize: fs.guide,
-        color: 'rgba(44,42,39,0.35)',
-        fontWeight: 500,
-      }}
-    >
-      드래그해서 이벤트 보기
-    </span>
-  </div>
-)}
         </div>
 
         {/* SCROLLABLE SECTION: calendar + lists */}
@@ -2466,6 +2431,39 @@ function EventsTab({ events }) {
           </div>
         </div>
       </div>
+
+      {/* Drag guide — fixed to bottom right of screen, like MY tab */}
+      {allEvents.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 'calc(env(safe-area-inset-bottom) + 60px)',
+            right: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            opacity: isTouching ? 1 : 0,
+            transition: 'opacity 0.25s ease',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }}
+        >
+          <ArrowsVertical
+            size={fs.guide}
+            weight="bold"
+            color="rgba(44,42,39,0.35)"
+          />
+          <span
+            style={{
+              fontSize: fs.guide,
+              color: 'rgba(44,42,39,0.35)',
+              fontWeight: 500,
+            }}
+          >
+            드래그해서 이벤트 보기
+          </span>
+        </div>
+      )}
 
       {/* SpotCard-style LIGHTBOX for event images */}
       {lightboxIndex !== null && displayImages.length > 0 && (
