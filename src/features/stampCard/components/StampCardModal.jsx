@@ -55,51 +55,58 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
   }
 
   return (
-    <div
-      className="stamp-card-preview-backdrop"
-      onClick={handleClose}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1500,
-        background: visible ? 'rgba(0,0,0,0.92)' : 'rgba(0,0,0,0)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-        transition: 'background 250ms ease',
-      }}
-    >
+    <>
       <style>{`
-        .stamp-card-preview-backdrop::before {
-          content: '';
-          position: fixed;
-          inset: calc(env(safe-area-inset-top) * -1) 0 calc(env(safe-area-inset-bottom) * -1) 0;
-          background: inherit;
-          pointer-events: none;
+        @keyframes lightboxZoomIn {
+          from {
+            transform: scale(0.9);
+          }
+          to {
+            transform: scale(1);
+          }
+        }
+        .lightbox-zoom-enter {
+          animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
       `}</style>
+
       <div
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleClose}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
-          width: '100%',
-          maxWidth: 380,
-          transform: visible ? 'scale(1)' : 'scale(0.92)',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 2000,
+          background: 'rgba(0, 0, 0, 0.75)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           opacity: visible ? 1 : 0,
-          transition: 'transform 250ms cubic-bezier(0.34,1.56,0.64,1), opacity 250ms ease',
+          transition: 'opacity 0.25s ease',
         }}
       >
-        {!loading && config && (
-          <StampCard
-            size="full"
-            config={config}
-            visits={stampState.currentCycleVisits}
-            isCardFull={stampState.isCardFull}
-          />
-        )}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={visible ? 'lightbox-zoom-enter' : ''}
+          style={{
+            width: '100%',
+            maxWidth: 380,
+            maxHeight: '90vh',
+            padding: 20,
+            userSelect: 'none',
+          }}
+        >
+          {!loading && config && (
+            <StampCard
+              size="full"
+              config={config}
+              visits={stampState.currentCycleVisits}
+              isCardFull={stampState.isCardFull}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
