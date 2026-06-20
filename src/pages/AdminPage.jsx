@@ -2051,6 +2051,43 @@ function RestaurantForm({
   </button>
 </div>
 
+{/* 스탬프 카드 사용 여부 */}
+<div className="flex items-center justify-between mt-3">
+  <span className="text-sm text-gray-500">스탬프 카드 사용</span>
+  <button
+    type="button"
+    onClick={() => setForm(f => ({ ...f, stamp_card_enabled: !f.stamp_card_enabled }))}
+    className={
+      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ' +
+      (form.stamp_card_enabled
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        : 'bg-gray-50 text-gray-500 border-gray-200')
+    }
+  >
+    {form.stamp_card_enabled ? '켜짐' : '꺼짐'}
+  </button>
+</div>
+
+{/* (수정 모드에서만) 스탬프 카드 편집 / 멤버 스탬프 관리 */}
+{editTarget && (
+  <div className="flex gap-2 mt-3">
+    <button
+      type="button"
+      onClick={() => setStampCardEditOpen(true)}
+      className="flex-1 text-xs bg-orange-500 text-white px-3 py-2 rounded-lg"
+    >
+      스탬프 카드 편집
+    </button>
+    <button
+      type="button"
+      onClick={() => setStampCardMemberOpen(true)}
+      className="flex-1 text-xs bg-gray-900 text-white px-3 py-2 rounded-lg"
+    >
+      멤버 스탬프 현황
+    </button>
+  </div>
+)}
+
 {/* 가격대 */}
 <div>
   <label className="text-sm text-gray-500 block mb-1">가격대</label>
