@@ -2439,7 +2439,7 @@ function EventsTab({ events }) {
       position: 'fixed',
       bottom: 'calc(env(safe-area-inset-bottom) + 115px)', // your value
       right: 0,                    // anchor to screen edge
-      paddingRight: 60,            // outer right padding (like MY tab)
+      paddingRight: 40,            // outer right padding (like MY tab)
       paddingLeft: 12,             // extra inner left padding
       display: 'flex',
       alignItems: 'center',
