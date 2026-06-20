@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { fetchConfigBySpot } from '../api/stampCardConfig'
+import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../api/stampCardConfig'
 
-export function useStampCardConfig(restaurantId) {
+export function useStampCardConfig(restaurantId, { useDefault = false } = {}) {
   const [config, setConfig] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -15,12 +15,16 @@ export function useStampCardConfig(restaurantId) {
     setLoading(true)
 
     fetchConfigBySpot(restaurantId)
-      .then((data) => { if (!cancelled) setConfig(data) })
-      .catch(() => { if (!cancelled) setConfig(null) })
+      .then((data) => {
+        if (!cancelled) setConfig(data ?? (useDefault ? DEFAULT_STAMP_CARD_CONFIG : null))
+      })
+      .catch(() => {
+        if (!cancelled) setConfig(useDefault ? DEFAULT_STAMP_CARD_CONFIG : null)
+      })
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [restaurantId])
+  }, [restaurantId, useDefault])
 
   return { config, loading }
 }

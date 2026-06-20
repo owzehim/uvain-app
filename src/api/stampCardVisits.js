@@ -13,6 +13,22 @@ export async function fetchVisits(userId, restaurantId) {
   return data ?? []
 }
 
+export async function resetStampCardProgress(restaurantId) {
+  const { error: rewardsError } = await supabase
+    .from('stamp_card_rewards')
+    .delete()
+    .eq('restaurant_id', restaurantId)
+
+  if (rewardsError) throw rewardsError
+
+  const { error: visitsError } = await supabase
+    .from('stamp_card_visits')
+    .delete()
+    .eq('restaurant_id', restaurantId)
+
+  if (visitsError) throw visitsError
+}
+
 export async function insertVisit(userId, restaurantId, totalStamps) {
   const alreadyStamped = await checkAlreadyStampedToday(userId, restaurantId)
   if (alreadyStamped) return { alreadyStamped: true }

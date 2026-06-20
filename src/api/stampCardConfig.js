@@ -1,16 +1,25 @@
 import { supabase } from '../lib/supabase'
 import { compressImage } from '../lib/imageCompression'
 
+export const DEFAULT_STAMP_CARD_CONFIG = {
+  total_stamps: 10,
+  stamps_per_row: 5,
+  title: '',
+  subtitle: '',
+  reward_text: '',
+  accent_color: '#ef4444',
+  text_color: '#ffffff',
+  wallpaper_url: null,
+}
+
 export async function fetchConfigBySpot(restaurantId) {
   const { data, error } = await supabase
     .from('stamp_card_config')
     .select('*')
     .eq('restaurant_id', restaurantId)
-    .single()
+    .maybeSingle()
 
   if (error) {
-    // No row found is not a real error here
-    if (error.code === 'PGRST116') return null
     throw error
   }
 

@@ -4,7 +4,7 @@ import { useUserStampVisits } from '../hooks/useUserStampVisits'
 import StampCard from './StampCard'
 
 export default function StampCardMini({ restaurantId, userId, onOpenModal }) {
-  const { config, loading } = useStampCardConfig(restaurantId)
+  const { config, loading } = useStampCardConfig(restaurantId, { useDefault: true })
   const { stampState } = useUserStampVisits({
     userId,
     restaurantId,

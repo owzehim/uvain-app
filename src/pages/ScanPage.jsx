@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { logRedemption } from '../lib/redemption'
-import { fetchConfigBySpot } from '../api/stampCardConfig'
+import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../api/stampCardConfig'
 import { insertVisit } from '../api/stampCardVisits'
 import QRScanner from '../components/QRScanner'
 import ScanPageStampBox from '../components/ScanPageStampBox'
@@ -97,13 +97,11 @@ export default function ScanPage() {
           .single()
 
         if (restaurant?.stamp_card_enabled && isValid) {
-          const config = await fetchConfigBySpot(restaurant.id)
-          if (config) {
-            setStampRestaurantId(restaurant.id)
-            setStampCardEnabled(true)
-            const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
-            setStampResult(visitResult)
-          }
+          const config = (await fetchConfigBySpot(restaurant.id)) ?? DEFAULT_STAMP_CARD_CONFIG
+          setStampRestaurantId(restaurant.id)
+          setStampCardEnabled(true)
+          const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
+          setStampResult(visitResult)
         }
 
         setState(STATE.SUCCESS)

@@ -10,10 +10,9 @@ export async function fetchPendingReward(userId, restaurantId) {
     .eq('redeemed', false)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (error) {
-    if (error.code === 'PGRST116') return null
     throw error
   }
   return data

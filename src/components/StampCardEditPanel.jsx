@@ -1,19 +1,14 @@
-
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, UploadSimple, Trash } from '@phosphor-icons/react'
-import { fetchConfigBySpot, upsertConfig, uploadWallpaper, deleteWallpaper } from '../api/stampCardConfig'
+import { ArrowLeft, ClockCounterClockwise, Trash, UploadSimple } from '@phosphor-icons/react'
+import {
+  DEFAULT_STAMP_CARD_CONFIG,
+  deleteWallpaper,
+  fetchConfigBySpot,
+  uploadWallpaper,
+  upsertConfig,
+} from '../api/stampCardConfig'
+import { resetStampCardProgress } from '../api/stampCardVisits'
 import StampCard from './StampCard'
-
-const DEFAULT_CONFIG = {
-  total_stamps: 10,
-  stamps_per_row: 5,
-  title: '',
-  subtitle: '',
-  reward_text: '',
-  accent_color: '#ef4444',
-  text_color: '#ffffff',
-  wallpaper_url: null,
-}
 
 const PREVIEW_VISITS = [
   { visited_at: '2026-05-10T12:00:00Z' },
@@ -23,30 +18,28 @@ const PREVIEW_VISITS = [
 
 export default function StampCardEditPanel({ restaurantId, spotName, onClose }) {
   const [savedConfig, setSavedConfig] = useState(null)
-  const [draft, setDraft] = useState(DEFAULT_CONFIG)
+  const [draft, setDraft] = useState(DEFAULT_STAMP_CARD_CONFIG)
   const [slideIn, setSlideIn] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef(null)
 
-  // Slide-up on mount
   useEffect(() => {
     const t = setTimeout(() => setSlideIn(true), 30)
     return () => clearTimeout(t)
   }, [])
 
-  // Load existing config
   useEffect(() => {
     if (!restaurantId) return
     fetchConfigBySpot(restaurantId).then((config) => {
-      const base = config ?? DEFAULT_CONFIG
+      const base = config ?? DEFAULT_STAMP_CARD_CONFIG
       setSavedConfig(base)
-      setDraft({ ...DEFAULT_CONFIG, ...base })
+      setDraft({ ...DEFAULT_STAMP_CARD_CONFIG, ...base })
     })
   }, [restaurantId])
 
-  const isDirty = JSON.stringify(draft) !== JSON.stringify(savedConfig ?? DEFAULT_CONFIG)
-
+  const isDirty = JSON.stringify(draft) !== JSON.stringify(savedConfig ?? DEFAULT_STAMP_CARD_CONFIG)
   const set = (key, value) => setDraft((d) => ({ ...d, [key]: value }))
 
   const handleBack = () => {
@@ -61,8 +54,23 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
       onClose()
     } catch (e) {
       console.error('upsertConfig error:', e)
+      alert('저장 실패: ' + (e?.message || '알 수 없는 오류'))
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleResetProgress = async () => {
+    if (!window.confirm('이 스팟의 모든 멤버 스탬프와 리워드 기록을 0부터 다시 시작할까요?')) return
+    setResetting(true)
+    try {
+      await resetStampCardProgress(restaurantId)
+      alert('스탬프 카드가 0부터 다시 시작되도록 초기화되었습니다.')
+    } catch (e) {
+      console.error('resetStampCardProgress error:', e)
+      alert('초기화 실패: ' + (e?.message || '알 수 없는 오류'))
+    } finally {
+      setResetting(false)
     }
   }
 
@@ -75,6 +83,7 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
       set('wallpaper_url', publicUrl)
     } catch (e) {
       console.error('uploadWallpaper error:', e)
+      alert('이미지 업로드 실패: ' + (e?.message || '알 수 없는 오류'))
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -88,6 +97,7 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
       set('wallpaper_url', null)
     } catch (e) {
       console.error('deleteWallpaper error:', e)
+      alert('이미지 삭제 실패: ' + (e?.message || '알 수 없는 오류'))
     }
   }
 
@@ -104,9 +114,8 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
         transition: 'transform 350ms cubic-bezier(0.4,0,0.2,1)',
       }}
     >
-      {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0"
+        className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button
@@ -116,21 +125,28 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
           <ArrowLeft size={18} weight="bold" />
           스탬프 카드 편집
         </button>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-4 py-1.5 rounded-lg text-sm font-semibold text-white"
-          style={{ background: saving ? '#9ca3af' : '#f97316' }}
-        >
-          {saving ? '저장 중...' : '저장'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleResetProgress}
+            disabled={resetting}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border border-red-200 bg-red-50 text-red-600"
+          >
+            <ClockCounterClockwise size={15} weight="bold" />
+            {resetting ? '초기화 중...' : '스탬프 초기화'}
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-1.5 rounded-lg text-sm font-semibold text-white"
+            style={{ background: saving ? '#9ca3af' : '#f97316' }}
+          >
+            {saving ? '저장 중...' : '저장'}
+          </button>
+        </div>
       </div>
 
-      {/* Body */}
       <div className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 max-w-3xl mx-auto">
-
-          {/* ── Left: form fields ── */}
           <div className="flex flex-col gap-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               {spotName}
@@ -141,7 +157,7 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
                 type="number"
                 min="1"
                 value={draft.total_stamps}
-                onChange={(e) => set('total_stamps', Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => set('total_stamps', Math.max(1, parseInt(e.target.value, 10) || 1))}
                 className="input-base"
               />
             </Field>
@@ -151,37 +167,35 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
                 type="number"
                 min="1"
                 value={draft.stamps_per_row}
-                onChange={(e) => set('stamps_per_row', Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => set('stamps_per_row', Math.max(1, parseInt(e.target.value, 10) || 1))}
                 onBlur={() => {
-                  if (draft.stamps_per_row > draft.total_stamps) {
-                    set('stamps_per_row', draft.total_stamps)
-                  }
+                  if (draft.stamps_per_row > draft.total_stamps) set('stamps_per_row', draft.total_stamps)
                 }}
                 className="input-base"
               />
             </Field>
 
-            <Field label="카드 제목 (선택)">
+            <Field label="카드 제목">
               <input
                 type="text"
-                placeholder="카드 제목 (선택)"
+                placeholder="카드 제목"
                 value={draft.title}
                 onChange={(e) => set('title', e.target.value)}
                 className="input-base"
               />
             </Field>
 
-            <Field label="부제목 (선택)">
+            <Field label="부제목">
               <input
                 type="text"
-                placeholder="부제목 (선택)"
+                placeholder="부제목"
                 value={draft.subtitle}
                 onChange={(e) => set('subtitle', e.target.value)}
                 className="input-base"
               />
             </Field>
 
-            <Field label="리워드 문구 (선택)">
+            <Field label="리워드 문구">
               <input
                 type="text"
                 placeholder="예: 음료 1잔 무료"
@@ -217,8 +231,7 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
               </Field>
             </div>
 
-            {/* Wallpaper */}
-            <Field label="배경 이미지 (선택)">
+            <Field label="배경 이미지">
               {draft.wallpaper_url ? (
                 <div className="flex items-center gap-3">
                   <img
@@ -254,7 +267,6 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
             </Field>
           </div>
 
-          {/* ── Right: live preview ── */}
           <div className="flex flex-col gap-3">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               미리보기
@@ -266,14 +278,12 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
               isCardFull={false}
             />
             <p className="text-xs text-gray-400 text-center">
-              실제 카드는 멤버의 방문 기록에 따라 표시됩니다
+              실제 카드는 멤버의 방문 기록에 따라 표시됩니다.
             </p>
           </div>
-
         </div>
       </div>
 
-      {/* Tailwind inline styles for inputs */}
       <style>{`
         .input-base {
           width: 100%;

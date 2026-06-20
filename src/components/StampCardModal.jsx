@@ -6,7 +6,7 @@ import { fetchPendingReward } from '../api/stampCardRewards'
 import StampCard from './StampCard'
 
 export default function StampCardModal({ restaurantId, userId, onClose }) {
-  const { config, loading } = useStampCardConfig(restaurantId)
+  const { config, loading } = useStampCardConfig(restaurantId, { useDefault: true })
   const { stampState } = useUserStampVisits({
     userId,
     restaurantId,

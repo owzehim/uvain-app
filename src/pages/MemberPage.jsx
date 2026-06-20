@@ -10,7 +10,7 @@ import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
-import { fetchConfigBySpot } from '../api/stampCardConfig'
+import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../api/stampCardConfig'
 import { insertVisit } from '../api/stampCardVisits'
 import ScanPageStampBox from '../components/ScanPageStampBox'
 import StampCardMini from '../components/StampCardMini'
@@ -875,13 +875,11 @@ function QRTab({ member, isValid, onLiftChange }) {
           .single()
 
         if (restaurant?.stamp_card_enabled && memberIsValid) {
-          const config = await fetchConfigBySpot(restaurant.id)
-          if (config) {
-            setStampRestaurantId(restaurant.id)
-            setStampCardEnabled(true)
-            const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
-            setStampResult(visitResult)
-          }
+          const config = (await fetchConfigBySpot(restaurant.id)) ?? DEFAULT_STAMP_CARD_CONFIG
+          setStampRestaurantId(restaurant.id)
+          setStampCardEnabled(true)
+          const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
+          setStampResult(visitResult)
         }
 
         setState('success')
