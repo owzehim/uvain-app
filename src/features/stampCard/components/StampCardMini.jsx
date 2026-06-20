@@ -37,6 +37,10 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
     : remaining === 1
       ? '다음 방문 혜택'
       : ''
+  const miniWidth = 120
+  const previewWidth = 360
+  const scale = miniWidth / previewWidth
+  const miniHeight = miniWidth / 1.586
 
   return (
     <button
@@ -58,13 +62,29 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-        <StampCard
-          size="mini"
-          config={config}
-          visits={stampState.currentCycleVisits}
-          isCardFull={stampState.isCardFull}
-          highlighted={!!statusText}
-        />
+        <div
+          style={{
+            width: miniWidth,
+            height: miniHeight,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              width: previewWidth,
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+            }}
+          >
+            <StampCard
+              size="full"
+              config={config}
+              visits={stampState.currentCycleVisits}
+              isCardFull={stampState.isCardFull}
+              highlighted={!!statusText}
+            />
+          </div>
+        </div>
         {statusText && (
           <span
             style={{

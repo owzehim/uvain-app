@@ -10,6 +10,7 @@ export const DEFAULT_STAMP_CARD_CONFIG = {
   accent_color: '#ffffff',
   background_color: '#ffffff',
   text_color: '#111827',
+  stamp_color: '#111827',
   wallpaper_url: null,
 }
 

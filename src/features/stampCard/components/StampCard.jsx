@@ -68,7 +68,8 @@ export default function StampCard({
 
   const outerBg = hasWallpaper ? 'transparent' : (config.background_color || '#ffffff')
   const accentBg = hasWallpaper ? 'transparent' : (config.accent_color || '#ffffff')
-  const stampColor = config.text_color || '#111827'
+  const textColor = config.text_color || '#111827'
+  const stampColor = config.stamp_color || config.text_color || '#111827'
   const secondaryTextColor = config.text_color || '#6b7280'
 
   const cardStyle = {
@@ -119,7 +120,7 @@ export default function StampCard({
             margin: 0,
             fontWeight: 600,
             fontSize: s.titleFont,
-            color: stampColor,
+            color: textColor,
             lineHeight: 1.15,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -198,7 +199,7 @@ export default function StampCard({
           margin: 0,
           fontSize: s.rewardFont,
           fontWeight: isCardFull ? 700 : 500,
-          color: stampColor,
+          color: textColor,
           lineHeight: 1.2,
           whiteSpace: 'nowrap',
           overflow: 'hidden',

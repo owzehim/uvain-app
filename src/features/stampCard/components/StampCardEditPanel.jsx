@@ -193,7 +193,7 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
               />
             </Field>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="강조 색상">
                 <div className="flex items-center gap-2">
                   <input
@@ -227,6 +227,18 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
                     className="w-10 h-10 rounded cursor-pointer border border-gray-200"
                   />
                   <span className="text-xs text-gray-500 font-mono">{draft.text_color}</span>
+                </div>
+              </Field>
+
+              <Field label="스탬프 색상">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={draft.stamp_color || draft.text_color || '#111827'}
+                    onChange={(e) => set('stamp_color', e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border border-gray-200"
+                  />
+                  <span className="text-xs text-gray-500 font-mono">{draft.stamp_color || draft.text_color || '#111827'}</span>
                 </div>
               </Field>
             </div>
