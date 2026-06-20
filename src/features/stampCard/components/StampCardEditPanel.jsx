@@ -10,12 +10,6 @@ import {
 import { resetStampCardProgress } from '../api/visits'
 import StampCard from './StampCard'
 
-const PREVIEW_VISITS = [
-  { visited_at: '2026-05-10T12:00:00Z' },
-  { visited_at: '2026-05-24T09:30:00Z' },
-  { visited_at: '2026-06-03T18:45:00Z' },
-]
-
 export default function StampCardEditPanel({ restaurantId, spotName, onClose }) {
   const [savedConfig, setSavedConfig] = useState(null)
   const [draft, setDraft] = useState(DEFAULT_STAMP_CARD_CONFIG)
@@ -274,7 +268,7 @@ export default function StampCardEditPanel({ restaurantId, spotName, onClose }) 
             <StampCard
               size="full"
               config={draft}
-              visits={PREVIEW_VISITS}
+              visits={[]}
               isCardFull={false}
             />
             <p className="text-xs text-gray-400 text-center">

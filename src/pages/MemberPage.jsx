@@ -2532,10 +2532,17 @@ function MapTab({ restaurants, member, isValid }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
   const [stampCardModalOpen, setStampCardModalOpen] = useState(false)
+  const [stampCardSpot, setStampCardSpot] = useState(null)
 
   useEffect(() => {
     if (!selected) setStampCardModalOpen(false)
   }, [selected])
+
+  const stampCardEligible = !!(selected?.stamp_card_enabled && isValid && member?.user_id)
+
+  useEffect(() => {
+    if (stampCardEligible) setStampCardSpot(selected)
+  }, [selected, stampCardEligible])
 
   const filtered = useMemo(
     () =>
@@ -2601,11 +2608,15 @@ function MapTab({ restaurants, member, isValid }) {
         )}
 
         {/* Stamp card mini widget — fixed top-right, only for valid members */}
-        {selected?.stamp_card_enabled && isValid && member?.user_id && (
+        {stampCardSpot && member?.user_id && (
           <StampCardMini
-            restaurantId={selected.id}
+            restaurantId={stampCardSpot.id}
             userId={member.user_id}
+            open={stampCardEligible && stampCardSpot.id === selected?.id}
             onOpenModal={() => setStampCardModalOpen(true)}
+            onExited={() => {
+              if (!stampCardEligible) setStampCardSpot(null)
+            }}
           />
         )}
 

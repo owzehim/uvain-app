@@ -3,7 +3,7 @@ import { useStampCardConfig } from '../hooks/useStampCardConfig'
 import { useUserStampVisits } from '../hooks/useUserStampVisits'
 import StampCard from './StampCard'
 
-export default function StampCardMini({ restaurantId, userId, onOpenModal }) {
+export default function StampCardMini({ restaurantId, userId, open = true, onOpenModal, onExited }) {
   const { config, loading } = useStampCardConfig(restaurantId, { useDefault: true })
   const { stampState } = useUserStampVisits({
     userId,
@@ -15,14 +15,18 @@ export default function StampCardMini({ restaurantId, userId, onOpenModal }) {
   const timerRef = useRef(null)
 
   useEffect(() => {
-    if (!loading && config) {
-      // slight delay so the slide-in plays after mount
+    clearTimeout(timerRef.current)
+
+    if (!loading && config && open) {
       timerRef.current = setTimeout(() => setVisible(true), 30)
     } else {
       setVisible(false)
+      if (!open) {
+        timerRef.current = setTimeout(() => onExited?.(), 300)
+      }
     }
     return () => clearTimeout(timerRef.current)
-  }, [loading, config])
+  }, [loading, config, open, onExited])
 
   if (loading || !config) return null
 
@@ -31,7 +35,7 @@ export default function StampCardMini({ restaurantId, userId, onOpenModal }) {
       onClick={onOpenModal}
       aria-label="스탬프 카드 열기"
       style={{
-        position: 'fixed',
+        position: 'absolute',
         top: 16,
         right: 16,
         zIndex: 1100,
@@ -39,10 +43,11 @@ export default function StampCardMini({ restaurantId, userId, onOpenModal }) {
         border: 'none',
         padding: 0,
         cursor: 'pointer',
-        borderRadius: 12,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+        borderRadius: 0,
+        boxShadow: 'none',
         transform: visible ? 'translateX(0)' : 'translateX(130%)',
         transition: 'transform 300ms cubic-bezier(0.4,0,0.2,1)',
+        pointerEvents: visible ? 'auto' : 'none',
       }}
     >
       <StampCard

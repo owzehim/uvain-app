@@ -30,17 +30,18 @@ export default function StampCard({ config, visits = [], size = 'full', isCardFu
 
   const s = SIZES[size] ?? SIZES.full
   const hasWallpaper = !!config.wallpaper_url
+  const stampsPerRow = Math.max(
+    1,
+    Math.min(config.stamps_per_row || config.total_stamps, config.total_stamps),
+  )
 
   const slots = Array.from({ length: config.total_stamps }, (_, i) => ({
     filled: i < visits.length,
     date: i < visits.length ? visits[i].visited_at?.slice(0, 10) : null,
   }))
 
-  const accentBg = hasWallpaper
-    ? hexToRgba(config.accent_color, 0.85)
-    : config.accent_color
-
-  const whiteBg = hasWallpaper ? 'rgba(255,255,255,0.85)' : '#ffffff'
+  const accentBg = hasWallpaper ? 'transparent' : config.accent_color
+  const whiteBg = hasWallpaper ? 'transparent' : '#ffffff'
 
   const cardStyle = {
     position: 'relative',
@@ -48,11 +49,11 @@ export default function StampCard({ config, visits = [], size = 'full', isCardFu
     aspectRatio: '1.586 / 1',
     borderRadius: 0,
     overflow: 'hidden',
-    boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+    boxShadow: 'none',
     display: 'grid',
     gridTemplateRows: '25% 55% 20%',
     ...(isCardFull && {
-      boxShadow: `0 0 0 2.5px ${config.accent_color}, 0 4px 18px rgba(0,0,0,0.13)`,
+      boxShadow: `0 0 0 2.5px ${config.accent_color}`,
     }),
   }
 
@@ -129,8 +130,8 @@ export default function StampCard({ config, visits = [], size = 'full', isCardFu
       >
         <div
           style={{
-            display: 'flex',
-            flexWrap: 'wrap',
+            display: 'grid',
+            gridTemplateColumns: `repeat(${stampsPerRow}, minmax(${s.iconSize}px, max-content))`,
             justifyContent: 'center',
             alignContent: 'center',
             gap: s.stampGap,
@@ -196,12 +197,4 @@ function SlotItem({ slot, iconSize, textColor, showDates, dateFont }) {
       )}
     </div>
   )
-}
-
-function hexToRgba(hex, alpha) {
-  const clean = hex.replace('#', '')
-  const r = parseInt(clean.substring(0, 2), 16)
-  const g = parseInt(clean.substring(2, 4), 16)
-  const b = parseInt(clean.substring(4, 6), 16)
-  return `rgba(${r},${g},${b},${alpha})`
 }

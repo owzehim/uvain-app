@@ -48,12 +48,14 @@ export async function uploadWallpaper(restaurantId, file) {
     maxWidthOrHeight: 1200,
   })
 
-  const fileName = `${restaurantId}_${Date.now()}.jpg`
+  const fileExt = file.name.split('.').pop() || 'jpg'
+  const fileName = `${restaurantId}_${Date.now()}.${fileExt}`
+  const contentType = compressed.type || file.type || 'image/jpeg'
 
   const { error: uploadError } = await supabase.storage
     .from('stamp-card-wallpapers')
     .upload(fileName, compressed, {
-      contentType: 'image/jpeg',
+      contentType,
       upsert: true,
     })
 
