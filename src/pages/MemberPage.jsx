@@ -678,14 +678,14 @@ function MembershipCard({
   )
 }
 
-// Stamp card state
+// ─── QR Tab ───────────────────────────────────────────────────────────────────
+function QRTab({ member, isValid, onLiftChange }) {
+  // Stamp card state (QR 탭 전용 상태)
   const [scannedUserId, setScannedUserId] = useState(null)
   const [stampRestaurantId, setStampRestaurantId] = useState(null)
   const [stampCardEnabled, setStampCardEnabled] = useState(false)
   const [stampResult, setStampResult] = useState(null)
-
-// ─── QR Tab ───────────────────────────────────────────────────────────────────
-function QRTab({ member, isValid, onLiftChange }) {
+  
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
   const [cardFlipped, setCardFlipped] = useState(false)
