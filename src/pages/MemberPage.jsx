@@ -1851,19 +1851,20 @@ function EventsTab({ events }) {
   return (
     <>
       <div
-        ref={containerRef}
-        onTouchStart={handleContainerTouchStart}
-        onTouchMove={handleContainerTouchMove}
-        onTouchEnd={handleContainerTouchEnd}
-        style={{
-          height: '100dvh',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          touchAction: 'none',
-          userSelect: 'none',
-        }}
-      >
+  ref={containerRef}
+  onTouchStart={handleContainerTouchStart}
+  onTouchMove={handleContainerTouchMove}
+  onTouchEnd={handleContainerTouchEnd}
+  style={{
+    position: 'relative',
+    height: '100dvh',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    touchAction: 'none',
+    userSelect: 'none',
+  }}
+>
         {/* TOP SECTION */}
         <div
           style={{
@@ -2170,37 +2171,38 @@ function EventsTab({ events }) {
             </div>
           )}
 
-          {/* Drag guide — bottom right, appears while touching/dragging */}
-          {allEvents.length > 0 && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '10px',
-                right: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                opacity: isTouching ? 1 : 0,
-                transition: 'opacity 0.25s ease',
-                pointerEvents: 'none',
-              }}
-            >
-              <ArrowsVertical
-                size={fs.guide}
-                weight="bold"
-                color="rgba(44,42,39,0.35)"
-              />
-              <span
-                style={{
-                  fontSize: fs.guide,
-                  color: 'rgba(44,42,39,0.35)',
-                  fontWeight: 500,
-                }}
-              >
-                드래그해서 이벤트 보기
-              </span>
-            </div>
-          )}
+          {/* Drag guide — fixed to bottom right of screen, matches MY tab style */}
+{allEvents.length > 0 && (
+  <div
+    style={{
+      position: 'absolute',
+      bottom: 'calc(env(safe-area-inset-bottom) + 24px)',
+      right: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 4,
+      opacity: isTouching ? 1 : 0,
+      transition: 'opacity 0.25s ease',
+      pointerEvents: 'none',
+      zIndex: 10,
+    }}
+  >
+    <ArrowsVertical
+      size={fs.guide}
+      weight="bold"
+      color="rgba(44,42,39,0.35)"
+    />
+    <span
+      style={{
+        fontSize: fs.guide,
+        color: 'rgba(44,42,39,0.35)',
+        fontWeight: 500,
+      }}
+    >
+      드래그해서 이벤트 보기
+    </span>
+  </div>
+)}
         </div>
 
         {/* SCROLLABLE SECTION: calendar + lists */}
