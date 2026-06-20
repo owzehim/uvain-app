@@ -5,6 +5,7 @@ import { ImageCropper } from '../components/ImageCropper'
 import { Plus, Eye, EyeSlash, MapPin, Ticket } from '@phosphor-icons/react'
 import StampCardEditPanel from '../components/StampCardEditPanel'
 import StampCardMemberPanel from '../components/StampCardMemberPanel'
+import { fetchConfigBySpot } from '../api/stampCardConfig'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -2208,13 +2209,14 @@ function RestaurantsTab() {
 
   // When editTarget changes, load stamp card config total_stamps (for Member panel)
   useEffect(() => {
-    if (!editTarget) return
-    fetchConfigBySpot(editTarget.id)
-      .then((config) => {
-        setStampCardTotalStamps(config?.total_stamps || 10)
-      })
-      .catch(() => setStampCardTotalStamps(10))
-  }, [editTarget])
+  if (!editTarget) return
+
+  fetchConfigBySpot(editTarget.id)
+    .then((config) => {
+      setStampCardTotalStamps(config?.total_stamps ?? 10)
+    })
+    .catch(() => setStampCardTotalStamps(10))
+}, [editTarget])
 
   const handleAddFile = (file) => {
     setImageFiles((prev) => [...prev, file])
