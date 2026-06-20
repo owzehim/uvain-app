@@ -10,11 +10,11 @@ import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
-import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../api/stampCardConfig'
-import { insertVisit } from '../api/stampCardVisits'
-import ScanPageStampBox from '../components/ScanPageStampBox'
-import StampCardMini from '../components/StampCardMini'
-import StampCardModal from '../components/StampCardModal'
+import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../features/stampCard/api/config'
+import { insertVisit } from '../features/stampCard/api/visits'
+import ScanPageStampBox from '../features/stampCard/components/ScanPageStampBox'
+import StampCardMini from '../features/stampCard/components/StampCardMini'
+import StampCardModal from '../features/stampCard/components/StampCardModal'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)

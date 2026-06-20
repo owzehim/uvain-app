@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { logRedemption } from '../lib/redemption'
-import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../api/stampCardConfig'
-import { insertVisit } from '../api/stampCardVisits'
+import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../features/stampCard/api/config'
+import { insertVisit } from '../features/stampCard/api/visits'
 import QRScanner from '../components/QRScanner'
-import ScanPageStampBox from '../components/ScanPageStampBox'
+import ScanPageStampBox from '../features/stampCard/components/ScanPageStampBox'
 
 const STATE = {
   SCANNING: 'scanning',

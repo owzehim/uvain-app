@@ -3,9 +3,9 @@ import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { ImageCropper } from '../components/ImageCropper'
 import { Plus, Eye, EyeSlash, MapPin, Ticket } from '@phosphor-icons/react'
-import StampCardEditPanel from '../components/StampCardEditPanel'
-import StampCardMemberPanel from '../components/StampCardMemberPanel'
-import { fetchConfigBySpot } from '../api/stampCardConfig'
+import StampCardEditPanel from '../features/stampCard/components/StampCardEditPanel'
+import StampCardMemberPanel from '../features/stampCard/components/StampCardMemberPanel'
+import { fetchConfigBySpot } from '../features/stampCard/api/config'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
