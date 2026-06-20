@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase'
-import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { compressImage } from '../lib/imageCompression'
 
 export async function fetchConfigBySpot(restaurantId) {
@@ -14,14 +13,19 @@ export async function fetchConfigBySpot(restaurantId) {
     if (error.code === 'PGRST116') return null
     throw error
   }
+
   return data
 }
 
 export async function upsertConfig(restaurantId, data) {
-  const { error } = await supabaseAdmin
+  const { error } = await supabase
     .from('stamp_card_config')
     .upsert(
-      { ...data, restaurant_id: restaurantId, updated_at: new Date().toISOString() },
+      {
+        ...data,
+        restaurant_id: restaurantId,
+        updated_at: new Date().toISOString(),
+      },
       { onConflict: 'restaurant_id' }
     )
 
@@ -37,13 +41,16 @@ export async function uploadWallpaper(restaurantId, file) {
 
   const fileName = `${restaurantId}_${Date.now()}.jpg`
 
-  const { error: uploadError } = await supabaseAdmin.storage
+  const { error: uploadError } = await supabase.storage
     .from('stamp-card-wallpapers')
-    .upload(fileName, compressed, { contentType: 'image/jpeg', upsert: true })
+    .upload(fileName, compressed, {
+      contentType: 'image/jpeg',
+      upsert: true,
+    })
 
   if (uploadError) throw uploadError
 
-  const { data: urlData } = supabaseAdmin.storage
+  const { data: urlData } = supabase.storage
     .from('stamp-card-wallpapers')
     .getPublicUrl(fileName)
 
@@ -53,7 +60,7 @@ export async function uploadWallpaper(restaurantId, file) {
 export async function deleteWallpaper(wallpaperUrl) {
   const fileName = wallpaperUrl.split('/').pop()
 
-  const { error } = await supabaseAdmin.storage
+  const { error } = await supabase.storage
     .from('stamp-card-wallpapers')
     .remove([fileName])
 

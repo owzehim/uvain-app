@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase'
-import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { computeCycle, checkAlreadyStampedToday } from '../lib/stampCardUtils'
 
 export async function fetchVisits(userId, restaurantId) {
@@ -46,6 +45,7 @@ export async function insertVisit(userId, restaurantId, totalStamps) {
         card_cycle: cardCycle,
         redeemed: false,
       })
+
     if (rewardError) throw rewardError
   }
 
@@ -53,8 +53,9 @@ export async function insertVisit(userId, restaurantId, totalStamps) {
 }
 
 export async function adminInsertVisit(userId, restaurantId, totalStamps, visitedAt, adminNote) {
-  // Fetch prior visits via admin client so RLS doesn't block cross-user reads
-  const { data: priorVisits, error: fetchError } = await supabaseAdmin
+  // admin도 supabase(anon 키)로 동작하도록 변경.
+  // RLS에서 admin 유저만 이 쿼리를 허용하도록 정책을 설정해야 함.
+  const { data: priorVisits, error: fetchError } = await supabase
     .from('stamp_card_visits')
     .select('*')
     .eq('user_id', userId)
@@ -66,7 +67,7 @@ export async function adminInsertVisit(userId, restaurantId, totalStamps, visite
   const priorCount = priorVisits?.length ?? 0
   const cardCycle = computeCycle(priorCount, totalStamps)
 
-  const { error: insertError } = await supabaseAdmin
+  const { error: insertError } = await supabase
     .from('stamp_card_visits')
     .insert({
       user_id: userId,
@@ -83,7 +84,7 @@ export async function adminInsertVisit(userId, restaurantId, totalStamps, visite
   const cycleCompleted = newCount % totalStamps === 0
 
   if (cycleCompleted) {
-    const { error: rewardError } = await supabaseAdmin
+    const { error: rewardError } = await supabase
       .from('stamp_card_rewards')
       .insert({
         user_id: userId,
@@ -91,6 +92,7 @@ export async function adminInsertVisit(userId, restaurantId, totalStamps, visite
         card_cycle: cardCycle,
         redeemed: false,
       })
+
     if (rewardError) throw rewardError
   }
 
