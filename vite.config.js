@@ -52,25 +52,16 @@ export default defineConfig({
       output: {
         // Vite 8 (Rolldown) requires manualChunks as a function, not an object
         manualChunks(id) {
-          if (id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/react/') ||
-              id.includes('node_modules/react-router-dom')) {
-            return 'vendor-react'
-          }
-          if (id.includes('node_modules/@supabase')) {
-            return 'vendor-supabase'
-          }
-          if (id.includes('node_modules/@phosphor-icons')) {
-            return 'vendor-icons'
-          }
-          if (id.includes('node_modules/leaflet') ||
-              id.includes('node_modules/react-leaflet')) {
-            return 'vendor-map'
-          }
-          if (id.includes('node_modules/qrcode')) {
-            return 'vendor-qr'
-          }
-        },
+  if (id.includes('node_modules/@supabase')) {
+    return 'vendor-supabase'
+  }
+  if (id.includes('node_modules/leaflet') || id.includes('node_modules/react-leaflet')) {
+    return 'vendor-map'
+  }
+  if (id.includes('node_modules/qrcode')) {
+    return 'vendor-qr'
+  }
+},
       },
     },
   },

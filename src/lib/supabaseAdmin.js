@@ -7,6 +7,7 @@ export const supabaseAdmin = createClient(
     auth: {
       persistSession: false,
       autoRefreshToken: false,
+      storageKey: 'supabase-admin-auth',
     },
   }
 )
