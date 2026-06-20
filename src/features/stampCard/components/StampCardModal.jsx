@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { X } from '@phosphor-icons/react'
 import { useStampCardConfig } from '../hooks/useStampCardConfig'
 import { useUserStampVisits } from '../hooks/useUserStampVisits'
-import { fetchPendingReward } from '../api/stampCardRewards'
+import { fetchPendingReward } from '../api/rewards'
 import StampCard from './StampCard'
 
 export default function StampCardModal({ restaurantId, userId, onClose }) {

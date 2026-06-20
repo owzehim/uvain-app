@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Octagon, CheckCircle } from '@phosphor-icons/react'
 import { useStampCardConfig } from '../hooks/useStampCardConfig'
 import { useUserStampVisits } from '../hooks/useUserStampVisits'
-import { fetchPendingReward, redeemReward } from '../api/stampCardRewards'
+import { fetchPendingReward, redeemReward } from '../api/rewards'
 
 export default function ScanPageStampBox({
   restaurantId,

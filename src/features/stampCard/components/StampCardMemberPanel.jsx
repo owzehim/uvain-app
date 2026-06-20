@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Plus, ClockCounterClockwise } from '@phosphor-icons/react'
-import { fetchAllMemberStampData } from '../api/stampCardRewards'
-import { adminInsertVisit } from '../api/stampCardVisits'
-import { restoreReward } from '../api/stampCardRewards'
+import { fetchAllMemberStampData, restoreReward } from '../api/rewards'
+import { adminInsertVisit } from '../api/visits'
 
 export default function StampCardMemberPanel({ restaurantId, spotName, totalStamps, onClose }) {
   const [rows, setRows] = useState([])

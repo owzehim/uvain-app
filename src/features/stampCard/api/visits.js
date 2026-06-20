@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase'
-import { computeCycle, checkAlreadyStampedToday } from '../lib/stampCardUtils'
+import { supabase } from '../../../lib/supabase'
+import { computeCycle, checkAlreadyStampedToday } from '../utils'
 
 export async function fetchVisits(userId, restaurantId) {
   const { data, error } = await supabase

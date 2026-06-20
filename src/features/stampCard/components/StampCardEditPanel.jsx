@@ -6,8 +6,8 @@ import {
   fetchConfigBySpot,
   uploadWallpaper,
   upsertConfig,
-} from '../api/stampCardConfig'
-import { resetStampCardProgress } from '../api/stampCardVisits'
+} from '../api/config'
+import { resetStampCardProgress } from '../api/visits'
 import StampCard from './StampCard'
 
 const PREVIEW_VISITS = [

@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase } from '../../lib/supabase'
 
 // Returns which card cycle a new visit belongs to.
 // priorVisitCount = number of visits BEFORE the new one being inserted.

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchVisits } from '../api/stampCardVisits'
-import { computeStampState } from '../lib/stampCardUtils'
+import { fetchVisits } from '../api/visits'
+import { computeStampState } from '../utils'
 
 const EMPTY_STATE = {
   totalVisits: 0,

@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase'
-import { compressImage } from '../lib/imageCompression'
+import { supabase } from '../../../lib/supabase'
+import { compressImage } from '../../../lib/imageCompression'
 
 export const DEFAULT_STAMP_CARD_CONFIG = {
   total_stamps: 10,
