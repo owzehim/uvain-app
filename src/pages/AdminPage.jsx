@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { ImageCropper } from '../components/ImageCropper'
 import { Plus, Eye, EyeSlash, MapPin, Ticket } from '@phosphor-icons/react'
+import StampCardEditPanel from '../components/StampCardEditPanel'
+import StampCardMemberPanel from '../components/StampCardMemberPanel'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -517,23 +519,25 @@ function MembersTab() {
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
 
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    first_name: '',
-    last_name: '',
-    student_number: '',
-    major: '',
-    year_of_birth: '',
-    gender: '',
-    country_of_origin: '',
-    University: '',
-    education_level: '',
-    year_number: '',
-    is_member: true,
-    membership_valid_until: '',
-  })
+   const [form, setForm] = useState({
+  name: '',
+  map_label: '',
+  description: '',
+  address: '',
+  latitude: '',
+  longitude: '',
+  discount_info: '',
+  discount_terms: '',
+  one_line_review: '',
+  rating: '',
+  review: '',
+  reviewer_name: '',
+  category: '맛집',
+  price_range: '',
+  is_sponsored: false,
+  show_rating: true,
+  stamp_card_enabled: false,
+})
 
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [showPassword, setShowPassword] = useState(false)
@@ -1928,6 +1932,8 @@ function RestaurantForm({
   handleReorderImages,
   handleSave,
   resetForm,
+  setStampCardEditOpen,
+  setStampCardMemberOpen,
 }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 mt-2">
@@ -2115,6 +2121,9 @@ function RestaurantForm({
     rows={3}
     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
   />
+
+
+
 </div>
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
@@ -2155,29 +2164,35 @@ function RestaurantsTab() {
   const [editTarget, setEditTarget] = useState(null)
 
   const [form, setForm] = useState({
-  name: '',
-  map_label: '',
-  description: '',
-  address: '',
-  latitude: '',
-  longitude: '',
-  discount_info: '',
-  discount_terms: '',
-  one_line_review: '',
-  rating: '',
-  review: '',
-  reviewer_name: '',
-  category: '맛집',
-  price_range: '',
-  is_sponsored: false,
-  show_rating: true,
-})
+    name: '',
+    map_label: '',
+    description: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+    discount_info: '',
+    discount_terms: '',
+    one_line_review: '',
+    rating: '',
+    review: '',
+    reviewer_name: '',
+    category: '맛집',
+    price_range: '',
+    is_sponsored: false,
+    show_rating: true,
+    stamp_card_enabled: false,
+  })
 
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
   const [pendingReplacements, setPendingReplacements] = useState([])
   const [uploading, setUploading] = useState(false)
   const [richEditorKey, setRichEditorKey] = useState(0)
+
+  // Stamp card overlays
+  const [stampCardEditOpen, setStampCardEditOpen] = useState(false)
+  const [stampCardMemberOpen, setStampCardMemberOpen] = useState(false)
+  const [stampCardTotalStamps, setStampCardTotalStamps] = useState(10)
 
   const fetchRestaurants = async () => {
     const { data } = await supabase
@@ -2190,6 +2205,16 @@ function RestaurantsTab() {
   useEffect(() => {
     fetchRestaurants()
   }, [])
+
+  // When editTarget changes, load stamp card config total_stamps (for Member panel)
+  useEffect(() => {
+    if (!editTarget) return
+    fetchConfigBySpot(editTarget.id)
+      .then((config) => {
+        setStampCardTotalStamps(config?.total_stamps || 10)
+      })
+      .catch(() => setStampCardTotalStamps(10))
+  }, [editTarget])
 
   const handleAddFile = (file) => {
     setImageFiles((prev) => [...prev, file])
@@ -2235,23 +2260,24 @@ function RestaurantsTab() {
     setShowForm(false)
     setEditTarget(null)
     setForm({
-  name: '',
-  map_label: '',
-  description: '',
-  address: '',
-  latitude: '',
-  longitude: '',
-  discount_info: '',
-  discount_terms: '',
-  one_line_review: '',
-  rating: '',
-  review: '',
-  reviewer_name: '',
-  category: '맛집',
-  price_range: '',
-  is_sponsored: false,
-  show_rating: true,
-})
+      name: '',
+      map_label: '',
+      description: '',
+      address: '',
+      latitude: '',
+      longitude: '',
+      discount_info: '',
+      discount_terms: '',
+      one_line_review: '',
+      rating: '',
+      review: '',
+      reviewer_name: '',
+      category: '맛집',
+      price_range: '',
+      is_sponsored: false,
+      show_rating: true,
+      stamp_card_enabled: false,
+    })
     setImageFiles([])
     setImagePreviews([])
     setPendingReplacements([])
@@ -2266,6 +2292,7 @@ function RestaurantsTab() {
     setUploading(true)
     let image_urls = [...(editTarget?.image_urls || [])]
 
+    // Apply pending replacements
     for (const { idx, file } of pendingReplacements) {
       const oldFileName = image_urls[idx]?.split('/').pop()
       if (oldFileName) {
@@ -2289,6 +2316,7 @@ function RestaurantsTab() {
       image_urls[idx] = urlData.publicUrl
     }
 
+    // New images
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random()
@@ -2309,24 +2337,25 @@ function RestaurantsTab() {
     }
 
     const payload = {
-  name: form.name,
-  map_label: form.map_label,
-  description: form.description,
-  address: form.address,
-  latitude: form.latitude ? parseFloat(form.latitude) : null,
-  longitude: form.longitude ? parseFloat(form.longitude) : null,
-  discount_info: form.discount_info,
-  discount_terms: form.discount_terms,
-  one_line_review: form.one_line_review,
-  rating: form.rating ? parseFloat(form.rating) : 0,
-  review: form.review,
-  reviewer_name: form.reviewer_name,
-  category: form.category,
-  price_range: form.price_range,
-  is_sponsored: form.is_sponsored,
-  show_rating: form.show_rating,
-  image_urls,
-}
+      name: form.name,
+      map_label: form.map_label,
+      description: form.description,
+      address: form.address,
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
+      discount_info: form.discount_info,
+      discount_terms: form.discount_terms,
+      one_line_review: form.one_line_review,
+      rating: form.rating ? parseFloat(form.rating) : 0,
+      review: form.review,
+      reviewer_name: form.reviewer_name,
+      category: form.category,
+      price_range: form.price_range,
+      is_sponsored: form.is_sponsored,
+      show_rating: form.show_rating,
+      stamp_card_enabled: form.stamp_card_enabled,
+      image_urls,
+    }
 
     let saveError = null
     if (editTarget) {
@@ -2336,9 +2365,7 @@ function RestaurantsTab() {
         .eq('id', editTarget.id)
       saveError = error
     } else {
-      const { error } = await supabase
-        .from('restaurants')
-        .insert(payload)
+      const { error } = await supabase.from('restaurants').insert(payload)
       saveError = error
     }
 
@@ -2362,24 +2389,24 @@ function RestaurantsTab() {
   const openEdit = (r) => {
     setEditTarget(r)
     setForm({
-  name: r.name,
-  map_label: r.map_label || '',
-  description: r.description || '',
-  address: r.address || '',
-  latitude: r.latitude || '',
-  longitude: r.longitude || '',
-  discount_info: r.discount_info || '',
-  discount_terms: r.discount_terms || '',
-  one_line_review: r.one_line_review || '',
-  rating: r.rating || '',
-  review: r.review || '',
-  reviewer_name: r.reviewer_name || '',
-  category: r.category || '맛집',
-  price_range: r.price_range || '',
-  is_sponsored: r.is_sponsored || false,
-  show_rating:
-    typeof r.show_rating === 'boolean' ? r.show_rating : true,
-})
+      name: r.name,
+      map_label: r.map_label || '',
+      description: r.description || '',
+      address: r.address || '',
+      latitude: r.latitude || '',
+      longitude: r.longitude || '',
+      discount_info: r.discount_info || '',
+      discount_terms: r.discount_terms || '',
+      one_line_review: r.one_line_review || '',
+      rating: r.rating || '',
+      review: r.review || '',
+      reviewer_name: r.reviewer_name || '',
+      category: r.category || '맛집',
+      price_range: r.price_range || '',
+      is_sponsored: r.is_sponsored || false,
+      show_rating: typeof r.show_rating === 'boolean' ? r.show_rating : true,
+      stamp_card_enabled: r.stamp_card_enabled || false,
+    })
 
     setRichEditorKey((k) => k + 1)
     setImageFiles([])
@@ -2406,6 +2433,8 @@ function RestaurantsTab() {
       category: '맛집',
       price_range: '',
       is_sponsored: false,
+      show_rating: true,
+      stamp_card_enabled: false,
     })
     setRichEditorKey((k) => k + 1)
     setImageFiles([])
@@ -2432,6 +2461,8 @@ function RestaurantsTab() {
     handleReorderImages,
     handleSave,
     resetForm,
+    setStampCardEditOpen,
+    setStampCardMemberOpen,
   }
 
   return (
@@ -2488,7 +2519,11 @@ function RestaurantsTab() {
                         )}
                         {r.discount_info && (
                           <p className="text-xs text-orange-500 mt-0.5 flex items-center gap-1">
-                            <Ticket size={12} weight="fill" color="#FF5252" />{' '}
+                            <Ticket
+                              size={12}
+                              weight="fill"
+                              color="#FF5252"
+                            />{' '}
                             {r.discount_info.replace(/<[^>]+>/g, '')}
                           </p>
                         )}
@@ -2522,6 +2557,24 @@ function RestaurantsTab() {
             </div>
           ))
         })()
+      )}
+
+      {/* Stamp card overlay panels */}
+      {stampCardEditOpen && editTarget && (
+        <StampCardEditPanel
+          restaurantId={editTarget.id}
+          spotName={editTarget.name}
+          onClose={() => setStampCardEditOpen(false)}
+        />
+      )}
+
+      {stampCardMemberOpen && editTarget && (
+        <StampCardMemberPanel
+          restaurantId={editTarget.id}
+          spotName={editTarget.name}
+          totalStamps={stampCardTotalStamps}
+          onClose={() => setStampCardMemberOpen(false)}
+        />
       )}
     </div>
   )

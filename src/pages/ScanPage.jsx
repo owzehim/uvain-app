@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { logRedemption } from '../lib/redemption'
+import { fetchConfigBySpot } from '../api/stampCardConfig'
+import { insertVisit } from '../api/stampCardVisits'
 import QRScanner from '../components/QRScanner'
+import ScanPageStampBox from '../components/ScanPageStampBox'
 
 const STATE = {
   SCANNING: 'scanning',
@@ -20,6 +23,12 @@ export default function ScanPage() {
   const [scanTime, setScanTime] = useState(null)
   const navigate = useNavigate()
   const handlingRef = useRef(false)
+
+  // Stamp card state
+  const [scannedUserId, setScannedUserId] = useState(null)
+  const [stampRestaurantId, setStampRestaurantId] = useState(null)
+  const [stampCardEnabled, setStampCardEnabled] = useState(false)
+  const [stampResult, setStampResult] = useState(null)
 
   async function handleScan(rawValue) {
     if (handlingRef.current) return
@@ -58,7 +67,7 @@ export default function ScanPage() {
       // Fetch user profile from members table
       const { data: memberRow, error: memberError } = await supabase
         .from('members')
-        .select('first_name, last_name, student_number, "University", membership_valid_until')
+        .select('first_name, last_name, student_number, "University", membership_valid_until, is_member')
         .eq('user_id', user.id)
         .single()
 
@@ -73,6 +82,30 @@ export default function ScanPage() {
         setStoreName(result.storeName || '매장')
         setMember(memberRow || null)
         setScanTime(new Date())
+        setScannedUserId(user.id)
+
+        // Stamp card logic — runs after logRedemption succeeds
+        const isValid =
+          memberRow?.is_member &&
+          memberRow?.membership_valid_until &&
+          new Date(memberRow.membership_valid_until) >= new Date()
+
+        const { data: restaurant } = await supabase
+          .from('restaurants')
+          .select('id, stamp_card_enabled')
+          .eq('id', storeId)
+          .single()
+
+        if (restaurant?.stamp_card_enabled && isValid) {
+          const config = await fetchConfigBySpot(restaurant.id)
+          if (config) {
+            setStampRestaurantId(restaurant.id)
+            setStampCardEnabled(true)
+            const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
+            setStampResult(visitResult)
+          }
+        }
+
         setState(STATE.SUCCESS)
       } else {
         setState(STATE.ERROR)
@@ -93,6 +126,10 @@ export default function ScanPage() {
     setErrorMsg('')
     setMember(null)
     setScanTime(null)
+    setScannedUserId(null)
+    setStampRestaurantId(null)
+    setStampCardEnabled(false)
+    setStampResult(null)
   }
 
   const formatScanTime = (date) => {
@@ -140,7 +177,7 @@ export default function ScanPage() {
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
-        {/* Blinking orange dot – only on success, top-left with on/off blink */}
+        {/* Blinking orange dot – only on success */}
         {state === STATE.SUCCESS && (
           <>
             <style>{`
@@ -153,11 +190,7 @@ export default function ScanPage() {
             `}</style>
             <div
               className="absolute"
-              style={{
-                top: 4,
-                left: 16,
-                zIndex: 10,
-              }}
+              style={{ top: 4, left: 16, zIndex: 10 }}
             >
               <span
                 style={{
@@ -195,10 +228,10 @@ export default function ScanPage() {
             </p>
 
             <p className="text-base font-bold text-orange-500">
-  이 <span className="text-orange-600 font-extrabold">화면과 학생증</span>을 함께 직원에게 제시해 주세요
-</p>
+              이 <span className="text-orange-600 font-extrabold">화면과 학생증</span>을 함께 직원에게 제시해 주세요
+            </p>
 
-            {/* Security profile card with orange outline */}
+            {/* Member info card */}
             <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-xs font-medium text-gray-500">Scan Time</span>
@@ -238,7 +271,17 @@ export default function ScanPage() {
               </div>
             </div>
 
-            {/* Only home button on success – with extra spacing */}
+            {/* Stamp card box — shown below member card when enabled */}
+            {stampCardEnabled && scannedUserId && stampRestaurantId && (
+              <ScanPageStampBox
+                restaurantId={stampRestaurantId}
+                userId={scannedUserId}
+                scanResult={stampResult}
+                onRewardRedeemed={() => {}}
+              />
+            )}
+
+            {/* Home button */}
             <div className="w-full mt-8">
               <button
                 onClick={() => navigate('/member')}

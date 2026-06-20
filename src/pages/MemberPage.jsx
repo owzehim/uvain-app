@@ -10,6 +10,11 @@ import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
+import { fetchConfigBySpot } from '../api/stampCardConfig'
+import { insertVisit } from '../api/stampCardVisits'
+import ScanPageStampBox from '../components/ScanPageStampBox'
+import StampCardMini from '../components/StampCardMini'
+import StampCardModal from '../components/StampCardModal'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -222,8 +227,9 @@ export default function MemberPage() {
             />
           )}
           {activeTab === 'events' && <EventsTab events={events} />}
-          {activeTab === 'map' && <MapTab restaurants={restaurants} />}
-        </div>
+          {activeTab === 'map' && (
+  <MapTab restaurants={restaurants} member={member} isValid={isValid} />
+)}        </div>
       </div>
 
       {/* Bottom tab bar */}
@@ -672,6 +678,12 @@ function MembershipCard({
   )
 }
 
+// Stamp card state
+  const [scannedUserId, setScannedUserId] = useState(null)
+  const [stampRestaurantId, setStampRestaurantId] = useState(null)
+  const [stampCardEnabled, setStampCardEnabled] = useState(false)
+  const [stampResult, setStampResult] = useState(null)
+
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
@@ -787,6 +799,10 @@ function QRTab({ member, isValid, onLiftChange }) {
     setLifted(false)
     liftedRef.current = false
     if (onLiftChange) onLiftChange(false)
+    setScannedUserId(null)
+    setStampRestaurantId(null)
+    setStampCardEnabled(false)
+    setStampResult(null)
   }
 
   const handleQRScanned = useCallback(async (rawValue) => {
@@ -829,7 +845,7 @@ function QRTab({ member, isValid, onLiftChange }) {
       const { data: memberRow, error: memberError } = await supabase
         .from('members')
         .select(
-          'first_name, last_name, student_number, "University", membership_valid_until',
+          'first_name, last_name, student_number, "University", membership_valid_until, is_member',
         )
         .eq('user_id', user.id)
         .single()
@@ -844,6 +860,30 @@ function QRTab({ member, isValid, onLiftChange }) {
         setStoreName(result.storeName || '매장')
         setCheckinMember(memberRow || null)
         setScanTime(new Date())
+        setScannedUserId(user.id)
+
+        // Stamp card logic — additive, runs after logRedemption succeeds
+        const memberIsValid =
+          memberRow?.is_member &&
+          memberRow?.membership_valid_until &&
+          new Date(memberRow.membership_valid_until) >= new Date()
+
+        const { data: restaurant } = await supabase
+          .from('restaurants')
+          .select('id, stamp_card_enabled')
+          .eq('id', storeId)
+          .single()
+
+        if (restaurant?.stamp_card_enabled && memberIsValid) {
+          const config = await fetchConfigBySpot(restaurant.id)
+          if (config) {
+            setStampRestaurantId(restaurant.id)
+            setStampCardEnabled(true)
+            const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
+            setStampResult(visitResult)
+          }
+        }
+
         setState('success')
       } else {
         setState('error')
@@ -975,6 +1015,16 @@ function QRTab({ member, isValid, onLiftChange }) {
               </span>
             </div>
           </div>
+
+          {/* Stamp card box */}
+          {stampCardEnabled && scannedUserId && stampRestaurantId && (
+            <ScanPageStampBox
+              restaurantId={stampRestaurantId}
+              userId={scannedUserId}
+              scanResult={stampResult}
+              onRewardRedeemed={() => {}}
+            />
+          )}
 
           <div className="w-full mt-8">
             <button
@@ -2480,9 +2530,14 @@ function EventsTab({ events }) {
 }
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
-function MapTab({ restaurants }) {
+function MapTab({ restaurants, member, isValid }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
+  const [stampCardModalOpen, setStampCardModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (!selected) setStampCardModalOpen(false)
+  }, [selected])
 
   const filtered = useMemo(
     () =>
@@ -2545,6 +2600,24 @@ function MapTab({ restaurants }) {
         />
         {selected && (
           <SpotCard selected={selected} onClose={() => setSelected(null)} />
+        )}
+
+        {/* Stamp card mini widget — fixed top-right, only for valid members */}
+        {selected?.stamp_card_enabled && isValid && member?.user_id && (
+          <StampCardMini
+            restaurantId={selected.id}
+            userId={member.user_id}
+            onOpenModal={() => setStampCardModalOpen(true)}
+          />
+        )}
+
+        {/* Stamp card full modal */}
+        {stampCardModalOpen && selected && member?.user_id && (
+          <StampCardModal
+            restaurantId={selected.id}
+            userId={member.user_id}
+            onClose={() => setStampCardModalOpen(false)}
+          />
         )}
       </div>
     </div>
