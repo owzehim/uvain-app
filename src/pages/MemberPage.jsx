@@ -3,12 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import {
-  MAP_CATEGORIES,
-  CATEGORY_ICONS_WHITE,
-  CATEGORY_ICONS_ORANGE,
-} from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear, UserCircle } from '@phosphor-icons/react'
+import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import { QrCode, Calendar, MapPin, Gear, UserCircle, ArrowsVertical } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -1356,11 +1352,12 @@ function EventsTab({ events }) {
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
   const [isDragging, setIsDragging] = useState(false)
+  const [isTouching, setIsTouching] = useState(false) // NEW: touch state
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
-  // NEW: SpotCard-style Lightbox index
+  // SpotCard-style Lightbox index
   const [lightboxIndex, setLightboxIndex] = useState(null)
 
   const [imageAspectRatios, setImageAspectRatios] = useState({})
@@ -1461,6 +1458,7 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = currentEventIndex
     setIsDragging(true)
+    setIsTouching(true) // NEW
     setPreviewEvent(selectedEvent)
   }
 
@@ -1497,6 +1495,7 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = null
     setIsDragging(false)
+    setIsTouching(false) // NEW
     setPreviewEvent(selectedEvent)
   }
 
@@ -1589,6 +1588,7 @@ function EventsTab({ events }) {
     day: `calc(${W} * 0.06)`,
     date: `calc(${W} * 0.24)`,
     month: `calc(${W} * 0.24)`,
+    guide: `calc(${W} * 0.032)`, // NEW: match MY tab guide size
   }
 
   const eventsByDate = {}
@@ -1871,6 +1871,7 @@ function EventsTab({ events }) {
             padding: '16px',
             paddingTop: '24px',
             backgroundColor: '#ffffff',
+            position: 'relative', // for bottom-right guide
           }}
         >
           {displayEvent && (
@@ -2168,6 +2169,38 @@ function EventsTab({ events }) {
               </div>
             </div>
           )}
+
+          {/* Drag guide — bottom right, appears while touching/dragging */}
+          {allEvents.length > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '10px',
+                right: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                opacity: isTouching ? 1 : 0,
+                transition: 'opacity 0.25s ease',
+                pointerEvents: 'none',
+              }}
+            >
+              <ArrowsVertical
+                size={fs.guide}
+                weight="bold"
+                color="rgba(44,42,39,0.35)"
+              />
+              <span
+                style={{
+                  fontSize: fs.guide,
+                  color: 'rgba(44,42,39,0.35)',
+                  fontWeight: 500,
+                }}
+              >
+                드래그해서 이벤트 보기
+              </span>
+            </div>
+          )}
         </div>
 
         {/* SCROLLABLE SECTION: calendar + lists */}
@@ -2255,10 +2288,7 @@ function EventsTab({ events }) {
                     )
                   const dateKey = `${calYear}-${String(
                     calMonthIdx + 1,
-                  ).padStart(2, '0')}-${String(day).padStart(
-                    2,
-                    '0',
-                  )}`
+                  ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   const dayEvents = eventsByDate[dateKey] || []
                   const hasEvt = dayEvents.length > 0
                   const isToday =
