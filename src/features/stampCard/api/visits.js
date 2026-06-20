@@ -79,55 +79,18 @@ export async function insertVisit(userId, restaurantId, totalStamps) {
 }
 
 export async function adminInsertVisit(userId, restaurantId, totalStamps, visitedAt, adminNote) {
-  const pendingReward = await fetchPendingReward(userId, restaurantId)
-  if (pendingReward) {
-    return {
-      rewardPending: true,
-      cycleCompleted: true,
-      cardCycle: pendingReward.card_cycle,
-    }
-  }
+  const { data, error } = await supabase.functions.invoke('admin-add-stamp', {
+    body: {
+      userId,
+      restaurantId,
+      totalStamps,
+      visitedAt,
+      adminNote,
+    },
+  })
 
-  const { data: priorVisits, error: fetchError } = await supabase
-    .from('stamp_card_visits')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('restaurant_id', restaurantId)
-    .order('visited_at', { ascending: true })
+  if (error) throw new Error(data?.message || error.message || '스탬프 추가에 실패했습니다.')
+  if (!data?.success) throw new Error(data?.message || '스탬프 추가에 실패했습니다.')
 
-  if (fetchError) throw fetchError
-
-  const priorCount = priorVisits?.length ?? 0
-  const cardCycle = computeCycle(priorCount, totalStamps)
-
-  const { error: insertError } = await supabase
-    .from('stamp_card_visits')
-    .insert({
-      user_id: userId,
-      restaurant_id: restaurantId,
-      visited_at: visitedAt,
-      card_cycle: cardCycle,
-      added_by_admin: true,
-      admin_note: adminNote ?? null,
-    })
-
-  if (insertError) throw insertError
-
-  const newCount = priorCount + 1
-  const cycleCompleted = newCount % totalStamps === 0
-
-  if (cycleCompleted) {
-    const { error: rewardError } = await supabase
-      .from('stamp_card_rewards')
-      .insert({
-        user_id: userId,
-        restaurant_id: restaurantId,
-        card_cycle: cardCycle,
-        redeemed: false,
-      })
-
-    if (rewardError) throw rewardError
-  }
-
-  return { success: true, newCount, cardCycle, cycleCompleted }
+  return data
 }

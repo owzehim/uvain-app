@@ -95,22 +95,27 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
             maxHeight: '90vh',
             padding: 20,
             userSelect: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
           {!loading && config && (
-            <StampCard
-              size="full"
-              config={config}
-              visits={stampState.currentCycleVisits}
-              isCardFull={stampState.isCardFull}
-            />
+            <div style={{ width: '100%' }}>
+              <StampCard
+                size="full"
+                config={config}
+                visits={stampState.currentCycleVisits}
+                isCardFull={stampState.isCardFull}
+              />
+            </div>
           )}
           <p
             style={{
               margin: '12px 0 0',
               color: '#ffffff',
               fontSize: 14,
-              fontWeight: 800,
+              fontWeight: 500,
               textAlign: 'center',
               lineHeight: 1.2,
             }}

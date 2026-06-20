@@ -3,14 +3,14 @@ import { Octagon } from '@phosphor-icons/react'
 const SIZES = {
   mini: {
     cardWidth: 120,
-    iconSize: 11,
-    padding: 6,
-    titleFont: '10px',
-    subtitleFont: '9px',
-    rewardFont: '9px',
+    iconSize: 9,
+    padding: 5,
+    titleFont: '7px',
+    subtitleFont: '6px',
+    rewardFont: '6.5px',
     showDates: false,
     dateFont: '0px',
-    stampGap: 3,
+    stampGap: 4,
   },
   full: {
     cardWidth: '100%',
@@ -66,9 +66,10 @@ export default function StampCard({
     date: i < visits.length ? visits[i].visited_at?.slice(0, 10) : null,
   }))
 
-  const surfaceBg = hasWallpaper ? 'transparent' : '#ffffff'
-  const stampColor = hasWallpaper ? config.text_color : '#111827'
-  const secondaryTextColor = hasWallpaper ? config.text_color : '#6b7280'
+  const outerBg = hasWallpaper ? 'transparent' : (config.background_color || '#ffffff')
+  const accentBg = hasWallpaper ? 'transparent' : (config.accent_color || '#ffffff')
+  const stampColor = config.text_color || '#111827'
+  const secondaryTextColor = config.text_color || '#6b7280'
 
   const cardStyle = {
     position: 'relative',
@@ -106,7 +107,7 @@ export default function StampCard({
         style={{
           position: 'relative',
           zIndex: 1,
-          background: surfaceBg,
+          background: outerBg,
           padding: `${Math.round(s.padding * 0.7)}px ${s.padding}px`,
           minHeight: 0,
           overflow: 'hidden',
@@ -144,7 +145,7 @@ export default function StampCard({
         style={{
           position: 'relative',
           zIndex: 1,
-          background: surfaceBg,
+          background: accentBg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -183,7 +184,7 @@ export default function StampCard({
         style={{
           position: 'relative',
           zIndex: 1,
-          background: surfaceBg,
+          background: outerBg,
           padding: `${Math.round(s.padding * 0.45)}px ${s.padding}px`,
           textAlign: 'center',
           minHeight: 0,
