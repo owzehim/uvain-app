@@ -2434,36 +2434,38 @@ function EventsTab({ events }) {
 
       {/* Drag guide — fixed to bottom right of screen, like MY tab */}
       {allEvents.length > 0 && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 'calc(env(safe-area-inset-bottom) + 114px)',
-            right: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            opacity: isTouching ? 1 : 0,
-            transition: 'opacity 0.25s ease',
-            pointerEvents: 'none',
-            zIndex: 20,
-          }}
-        >
-          <ArrowsVertical
-            size={fs.guide}
-            weight="bold"
-            color="rgba(44,42,39,0.35)"
-          />
-          <span
-            style={{
-              fontSize: fs.guide,
-              color: 'rgba(44,42,39,0.35)',
-              fontWeight: 500,
-            }}
-          >
-            드래그해서 이벤트 보기
-          </span>
-        </div>
-      )}
+  <div
+    style={{
+      position: 'fixed',
+      bottom: 'calc(env(safe-area-inset-bottom) + 115px)', // your value
+      right: 0,                    // anchor to screen edge
+      paddingRight: 20,            // outer right padding (like MY tab)
+      paddingLeft: 12,             // extra inner left padding
+      display: 'flex',
+      alignItems: 'center',
+      gap: 4,
+      opacity: isTouching ? 1 : 0,
+      transition: 'opacity 0.25s ease',
+      pointerEvents: 'none',
+      zIndex: 20,
+    }}
+  >
+    <ArrowsVertical
+      size={fs.guide}
+      weight="bold"
+      color="rgba(44,42,39,0.35)"
+    />
+    <span
+      style={{
+        fontSize: fs.guide,
+        color: 'rgba(44,42,39,0.35)',
+        fontWeight: 500,
+      }}
+    >
+      드래그해서 이벤트 보기
+    </span>
+  </div>
+)}
 
       {/* SpotCard-style LIGHTBOX for event images */}
       {lightboxIndex !== null && displayImages.length > 0 && (
