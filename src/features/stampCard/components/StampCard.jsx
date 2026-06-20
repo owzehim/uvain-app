@@ -25,7 +25,13 @@ const SIZES = {
   },
 }
 
-export default function StampCard({ config, visits = [], size = 'full', isCardFull = false }) {
+export default function StampCard({
+  config,
+  visits = [],
+  size = 'full',
+  isCardFull = false,
+  highlighted = false,
+}) {
   if (!config) return null
 
   const s = SIZES[size] ?? SIZES.full
@@ -36,7 +42,7 @@ export default function StampCard({ config, visits = [], size = 'full', isCardFu
   )
 
   const slots = Array.from({ length: config.total_stamps }, (_, i) => ({
-    filled: i < visits.length,
+    filled: isCardFull || i < visits.length,
     date: i < visits.length ? visits[i].visited_at?.slice(0, 10) : null,
   }))
 
@@ -52,7 +58,7 @@ export default function StampCard({ config, visits = [], size = 'full', isCardFu
     boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
     display: 'grid',
     gridTemplateRows: '25% 55% 20%',
-    ...(isCardFull && {
+    ...((isCardFull || highlighted) && {
       boxShadow: `0 0 0 2.5px ${config.accent_color}, 0 2px 8px rgba(0,0,0,0.12)`,
     }),
   }

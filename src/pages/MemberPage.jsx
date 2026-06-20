@@ -10,8 +10,6 @@ import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
-import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../features/stampCard/api/config'
-import { insertVisit } from '../features/stampCard/api/visits'
 import ScanPageStampBox from '../features/stampCard/components/ScanPageStampBox'
 import StampCardMini from '../features/stampCard/components/StampCardMini'
 import StampCardModal from '../features/stampCard/components/StampCardModal'
@@ -871,23 +869,10 @@ function QRTab({ member, isValid, onLiftChange }) {
         setScannedUserId(user.id)
 
         // Stamp card logic — additive, runs after logRedemption succeeds
-        const memberIsValid =
-          memberRow?.is_member &&
-          memberRow?.membership_valid_until &&
-          new Date(memberRow.membership_valid_until) >= new Date()
-
-        const { data: restaurant } = await supabase
-          .from('restaurants')
-          .select('id, stamp_card_enabled')
-          .eq('id', storeId)
-          .single()
-
-        if (restaurant?.stamp_card_enabled && memberIsValid) {
-          const config = (await fetchConfigBySpot(restaurant.id)) ?? DEFAULT_STAMP_CARD_CONFIG
-          setStampRestaurantId(restaurant.id)
+        if (result.stampResult?.enabled && result.stampResult?.restaurantId) {
+          setStampRestaurantId(result.stampResult.restaurantId)
           setStampCardEnabled(true)
-          const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
-          setStampResult(visitResult)
+          setStampResult(result.stampResult)
         }
 
         setState('success')

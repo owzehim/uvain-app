@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabase'
 import { computeCycle, checkAlreadyStampedToday } from '../utils'
+import { fetchPendingReward } from './rewards'
 
 export async function fetchVisits(userId, restaurantId) {
   const { data, error } = await supabase
@@ -30,6 +31,15 @@ export async function resetStampCardProgress(restaurantId) {
 }
 
 export async function insertVisit(userId, restaurantId, totalStamps) {
+  const pendingReward = await fetchPendingReward(userId, restaurantId)
+  if (pendingReward) {
+    return {
+      rewardPending: true,
+      cycleCompleted: true,
+      cardCycle: pendingReward.card_cycle,
+    }
+  }
+
   const alreadyStamped = await checkAlreadyStampedToday(userId, restaurantId)
   if (alreadyStamped) return { alreadyStamped: true }
 

@@ -70,8 +70,9 @@ export async function fetchAllMemberStampData(restaurantId, totalStamps) {
         .order('created_at', { ascending: false })
         .limit(1)
 
-      const stampState = computeStampState(visits ?? [], totalStamps)
       const latestReward = latestRewardRows?.[0] ?? null
+      const pendingReward = latestReward?.redeemed === false ? latestReward : null
+      const stampState = computeStampState(visits ?? [], totalStamps, pendingReward)
 
       return { member, stampState, latestReward }
     })

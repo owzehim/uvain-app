@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { logRedemption } from '../lib/redemption'
-import { DEFAULT_STAMP_CARD_CONFIG, fetchConfigBySpot } from '../features/stampCard/api/config'
-import { insertVisit } from '../features/stampCard/api/visits'
 import QRScanner from '../components/QRScanner'
 import ScanPageStampBox from '../features/stampCard/components/ScanPageStampBox'
 
@@ -85,23 +83,10 @@ export default function ScanPage() {
         setScannedUserId(user.id)
 
         // Stamp card logic — runs after logRedemption succeeds
-        const isValid =
-          memberRow?.is_member &&
-          memberRow?.membership_valid_until &&
-          new Date(memberRow.membership_valid_until) >= new Date()
-
-        const { data: restaurant } = await supabase
-          .from('restaurants')
-          .select('id, stamp_card_enabled')
-          .eq('id', storeId)
-          .single()
-
-        if (restaurant?.stamp_card_enabled && isValid) {
-          const config = (await fetchConfigBySpot(restaurant.id)) ?? DEFAULT_STAMP_CARD_CONFIG
-          setStampRestaurantId(restaurant.id)
+        if (result.stampResult?.enabled && result.stampResult?.restaurantId) {
+          setStampRestaurantId(result.stampResult.restaurantId)
           setStampCardEnabled(true)
-          const visitResult = await insertVisit(user.id, restaurant.id, config.total_stamps)
-          setStampResult(visitResult)
+          setStampResult(result.stampResult)
         }
 
         setState(STATE.SUCCESS)

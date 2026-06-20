@@ -8,6 +8,136 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function findStampRestaurant(admin: any, storeId: string) {
+  const { data: byId, error: byIdError } = await admin
+    .from('restaurants')
+    .select('id, stamp_card_enabled')
+    .eq('id', storeId)
+    .maybeSingle()
+
+  if (byIdError) console.error('Stamp restaurant by id fetch error:', byIdError)
+  if (byId) return byId
+
+  const { data: byPartnership, error: byPartnershipError } = await admin
+    .from('restaurants')
+    .select('id, stamp_card_enabled')
+    .eq('partnership_id', storeId)
+    .maybeSingle()
+
+  if (byPartnershipError) {
+    console.warn('Stamp restaurant by partnership_id fetch skipped/failed:', byPartnershipError)
+  }
+
+  return byPartnership ?? null
+}
+
+async function recordStampCardVisit(admin: any, userId: string, storeId: string, now: Date) {
+  const restaurant = await findStampRestaurant(admin, storeId)
+  if (!restaurant?.stamp_card_enabled) return { enabled: false }
+
+  const restaurantId = restaurant.id
+
+  const { data: config, error: configError } = await admin
+    .from('stamp_card_config')
+    .select('total_stamps')
+    .eq('restaurant_id', restaurantId)
+    .maybeSingle()
+
+  if (configError) console.error('Stamp config fetch error:', configError)
+
+  const totalStamps = Math.max(1, Number(config?.total_stamps || 10))
+  const today = now.toISOString().slice(0, 10)
+
+  const { data: pendingReward, error: pendingRewardError } = await admin
+    .from('stamp_card_rewards')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('restaurant_id', restaurantId)
+    .eq('redeemed', false)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (pendingRewardError) throw pendingRewardError
+
+  if (pendingReward) {
+    return {
+      enabled: true,
+      restaurantId,
+      rewardPending: true,
+      cycleCompleted: true,
+      cardCycle: pendingReward.card_cycle,
+      totalStamps,
+    }
+  }
+
+  const { data: todayVisit, error: todayVisitError } = await admin
+    .from('stamp_card_visits')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('restaurant_id', restaurantId)
+    .gte('visited_at', `${today}T00:00:00.000Z`)
+    .lte('visited_at', `${today}T23:59:59.999Z`)
+    .limit(1)
+    .maybeSingle()
+
+  if (todayVisitError) throw todayVisitError
+
+  if (todayVisit) {
+    return { enabled: true, restaurantId, alreadyStamped: true, totalStamps }
+  }
+
+  const { data: priorVisits, error: priorVisitsError } = await admin
+    .from('stamp_card_visits')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('restaurant_id', restaurantId)
+
+  if (priorVisitsError) throw priorVisitsError
+
+  const priorCount = priorVisits?.length ?? 0
+  const cardCycle = Math.floor(priorCount / totalStamps) + 1
+
+  const { error: insertError } = await admin
+    .from('stamp_card_visits')
+    .insert({
+      user_id: userId,
+      restaurant_id: restaurantId,
+      visited_at: now.toISOString(),
+      card_cycle: cardCycle,
+      added_by_admin: false,
+    })
+
+  if (insertError) throw insertError
+
+  const newCount = priorCount + 1
+  const cycleCompleted = newCount % totalStamps === 0
+
+  if (cycleCompleted) {
+    const { error: rewardError } = await admin
+      .from('stamp_card_rewards')
+      .insert({
+        user_id: userId,
+        restaurant_id: restaurantId,
+        card_cycle: cardCycle,
+        redeemed: false,
+      })
+
+    if (rewardError) throw rewardError
+  }
+
+  return {
+    enabled: true,
+    restaurantId,
+    alreadyStamped: false,
+    success: true,
+    newCount,
+    cardCycle,
+    cycleCompleted,
+    totalStamps,
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -146,10 +276,21 @@ serve(async (req) => {
       }
     }
 
+    let stampResult = null
+    try {
+      stampResult = await recordStampCardVisit(admin, user.id, storeId, now)
+    } catch (stampError) {
+      console.error('Stamp card record error:', stampError)
+      stampResult = {
+        enabled: false,
+        error: stampError instanceof Error ? stampError.message : 'Stamp card record failed',
+      }
+    }
+
     if (reuseRecent) {
       // No new DB row, no Google Sheets POST — just return success
       return new Response(
-        JSON.stringify({ success: true, storeName: partnership.name }),
+        JSON.stringify({ success: true, storeName: partnership.name, stampResult }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
@@ -231,7 +372,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, storeName: partnership.name }),
+      JSON.stringify({ success: true, storeName: partnership.name, stampResult }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {

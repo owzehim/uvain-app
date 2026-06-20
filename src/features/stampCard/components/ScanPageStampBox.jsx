@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Octagon, CheckCircle } from '@phosphor-icons/react'
+import { CheckCircle, Octagon } from '@phosphor-icons/react'
 import { useStampCardConfig } from '../hooks/useStampCardConfig'
 import { useUserStampVisits } from '../hooks/useUserStampVisits'
 import { fetchPendingReward, redeemReward } from '../api/rewards'
@@ -7,21 +7,28 @@ import { fetchPendingReward, redeemReward } from '../api/rewards'
 export default function ScanPageStampBox({
   restaurantId,
   userId,
-  scanResult,   // null | { alreadyStamped, cycleCompleted, newCount, cardCycle }
+  scanResult,
   onRewardRedeemed,
 }) {
-  const { config } = useStampCardConfig(restaurantId)
-  const { stampState, refetch } = useUserStampVisits({
+  const { config } = useStampCardConfig(restaurantId, { useDefault: true })
+  const { stampState, pendingReward: hookPendingReward, refetch } = useUserStampVisits({
     userId,
     restaurantId,
     totalStamps: config?.total_stamps,
   })
 
   const [pendingReward, setPendingReward] = useState(null)
-  const [redeemed, setRedeemed] = useState(false)
   const [redeeming, setRedeeming] = useState(false)
+  const [redeemedThisSession, setRedeemedThisSession] = useState(false)
 
-  // Fetch pending reward on mount and after a scan
+  useEffect(() => {
+    setRedeemedThisSession(false)
+  }, [scanResult])
+
+  useEffect(() => {
+    setPendingReward(hookPendingReward)
+  }, [hookPendingReward])
+
   useEffect(() => {
     if (!userId || !restaurantId) return
     fetchPendingReward(userId, restaurantId)
@@ -29,160 +36,117 @@ export default function ScanPageStampBox({
       .catch(() => setPendingReward(null))
   }, [userId, restaurantId, scanResult])
 
-  // Refetch visits after a successful scan so stamp icons update
   useEffect(() => {
     if (scanResult && !scanResult.alreadyStamped) refetch()
-  }, [scanResult]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scanResult, refetch])
 
   if (!config) return null
 
-  const { total_stamps, accent_color, reward_text } = config
-  const { stampsInCurrentCycle, isCardFull } = stampState
+  const total = config.total_stamps
+  const accentColor = config.accent_color
+  const effectivePendingReward = pendingReward || stampState.pendingReward
+  const isBenefitReady = !redeemedThisSession &&
+    !!(
+      effectivePendingReward ||
+      scanResult?.rewardPending ||
+      scanResult?.cycleCompleted ||
+      stampState.hasPendingReward
+    )
+  const count = isBenefitReady ? total : stampState.stampsInCurrentCycle
+  const remaining = Math.max(total - count, 0)
 
   const handleRedeem = async () => {
-    if (!pendingReward) return
+    if (!effectivePendingReward) return
+    if (!window.confirm('혜택 적용 완료 처리할까요?')) return
+
     setRedeeming(true)
     try {
-      await redeemReward(pendingReward.id)
-      setRedeemed(true)
+      await redeemReward(effectivePendingReward.id)
       setPendingReward(null)
+      setRedeemedThisSession(true)
+      await refetch()
       onRewardRedeemed?.()
-    } catch {
-      // silent — employee can try again
+    } catch (e) {
+      console.error('redeemReward error:', e)
+      alert('혜택 적용 완료 처리에 실패했습니다.')
     } finally {
       setRedeeming(false)
     }
   }
 
-  // ── State: already stamped today ──────────────────────────────────────────
-  if (scanResult?.alreadyStamped) {
-    return (
-      <BoxShell borderColor="#e5e7eb">
-        <Row>
-          <StampIcons count={stampsInCurrentCycle} total={total_stamps} accentColor="#9ca3af" />
-          <CountLabel current={stampsInCurrentCycle} total={total_stamps} />
-        </Row>
-        <p className="text-xs text-gray-400 mt-1 text-center">
-          오늘은 이미 스탬프가 적립되었어요
-        </p>
-      </BoxShell>
-    )
-  }
+  return (
+    <div className="w-full flex flex-col items-center gap-2">
+      <button
+        type="button"
+        onClick={isBenefitReady ? handleRedeem : undefined}
+        disabled={!isBenefitReady || redeeming || !effectivePendingReward}
+        className="w-full rounded-2xl border px-4 py-3 transition-transform active:scale-[0.99]"
+        style={{
+          borderColor: isBenefitReady ? accentColor : '#e5e7eb',
+          background: isBenefitReady ? accentColor : '#ffffff',
+          cursor: isBenefitReady && effectivePendingReward ? 'pointer' : 'default',
+          opacity: redeeming ? 0.75 : 1,
+        }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <StampIcons
+            count={count}
+            total={total}
+            accentColor={accentColor}
+            inverted={isBenefitReady}
+          />
+          <div className="text-right shrink-0">
+            <p
+              className="text-sm font-bold leading-none"
+              style={{ color: isBenefitReady ? '#ffffff' : '#374151' }}
+            >
+              {count} / {total}
+            </p>
+            <p
+              className="text-[11px] mt-1 leading-none"
+              style={{ color: isBenefitReady ? 'rgba(255,255,255,0.86)' : '#9ca3af' }}
+            >
+              {isBenefitReady ? '혜택 준비 완료' : `남은 스탬프 ${remaining}개`}
+            </p>
+          </div>
+        </div>
 
-  // ── State: cycle just completed this scan ─────────────────────────────────
-  if (scanResult?.cycleCompleted) {
-    return (
-      <BoxShell borderColor={accent_color} bg="bg-orange-50">
-        <p className="text-sm font-bold text-center mb-2" style={{ color: accent_color }}>
-          🎉 스탬프 카드 완성!
-        </p>
-        <Row>
-          <StampIcons count={total_stamps} total={total_stamps} accentColor={accent_color} />
-          <CountLabel current={total_stamps} total={total_stamps} />
-        </Row>
-        {(reward_text || true) && (
-          <p className="text-xs text-center mt-1 font-medium" style={{ color: accent_color }}>
-            {reward_text || '리워드를 획득하셨습니다'}
+        {scanResult?.alreadyStamped && !isBenefitReady && (
+          <p className="text-xs text-gray-400 mt-2 text-center">
+            오늘은 이미 스탬프가 적립되었어요
           </p>
         )}
-        {!redeemed ? (
-          <button
-            onClick={handleRedeem}
-            disabled={redeeming}
-            className="mt-3 w-full py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-1.5"
-            style={{ background: accent_color, opacity: redeeming ? 0.7 : 1 }}
-          >
-            <CheckCircle size={16} weight="fill" />
-            {redeeming ? '처리 중...' : '리워드 제공 완료 ✓'}
-          </button>
-        ) : (
-          <p className="mt-3 text-xs text-center text-gray-400">리워드 사용됨</p>
+
+        {isBenefitReady && (
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
+            <CheckCircle size={15} weight="fill" />
+            {redeeming
+              ? '혜택 적용 처리 중...'
+              : effectivePendingReward
+                ? '직원 전용: 탭 해서 혜택 적용 완료 하기'
+                : '혜택 정보 불러오는 중...'}
+          </div>
         )}
-      </BoxShell>
-    )
-  }
-
-  // ── State: pending unredeemed reward from a previous cycle ────────────────
-  if (pendingReward && !redeemed) {
-    return (
-      <BoxShell borderColor={accent_color} bg="bg-orange-50">
-        <p className="text-sm font-bold text-center mb-2" style={{ color: accent_color }}>
-          미사용 리워드가 있어요!
-        </p>
-        <Row>
-          <StampIcons count={stampsInCurrentCycle} total={total_stamps} accentColor={accent_color} />
-          <CountLabel current={stampsInCurrentCycle} total={total_stamps} />
-        </Row>
-        {reward_text && (
-          <p className="text-xs text-center mt-1 font-medium" style={{ color: accent_color }}>
-            {reward_text}
-          </p>
-        )}
-        <button
-          onClick={handleRedeem}
-          disabled={redeeming}
-          className="mt-3 w-full py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-1.5"
-          style={{ background: accent_color, opacity: redeeming ? 0.7 : 1 }}
-        >
-          <CheckCircle size={16} weight="fill" />
-          {redeeming ? '처리 중...' : '리워드 제공 완료 ✓'}
-        </button>
-      </BoxShell>
-    )
-  }
-
-  // ── State: normal progress ────────────────────────────────────────────────
-  return (
-    <BoxShell borderColor={accent_color}>
-      <Row>
-        <StampIcons count={stampsInCurrentCycle} total={total_stamps} accentColor={accent_color} />
-        <CountLabel current={stampsInCurrentCycle} total={total_stamps} />
-      </Row>
-    </BoxShell>
-  )
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function BoxShell({ children, borderColor, bg = 'bg-white' }) {
-  return (
-    <div
-      className={`w-full rounded-xl px-4 py-3 border-2 ${bg}`}
-      style={{ borderColor }}
-    >
-      <p className="text-xs text-gray-400 mb-2">스탬프</p>
-      {children}
+      </button>
     </div>
   )
 }
 
-function Row({ children }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      {children}
-    </div>
-  )
-}
-
-function StampIcons({ count, total, accentColor }) {
+function StampIcons({ count, total, accentColor, inverted }) {
   return (
     <div className="flex flex-wrap gap-1">
-      {Array.from({ length: total }, (_, i) => (
-        <Octagon
-          key={i}
-          size={20}
-          weight={i < count ? 'fill' : 'regular'}
-          color={i < count ? accentColor : '#d1d5db'}
-        />
-      ))}
+      {Array.from({ length: total }, (_, i) => {
+        const filled = i < count
+        return (
+          <Octagon
+            key={i}
+            size={20}
+            weight={filled ? 'fill' : 'regular'}
+            color={inverted ? '#ffffff' : filled ? accentColor : '#d1d5db'}
+            style={{ opacity: filled || !inverted ? 1 : 0.45 }}
+          />
+        )
+      })}
     </div>
-  )
-}
-
-function CountLabel({ current, total }) {
-  return (
-    <span className="text-xs font-semibold text-gray-500 whitespace-nowrap shrink-0">
-      {current} / {total}
-    </span>
   )
 }

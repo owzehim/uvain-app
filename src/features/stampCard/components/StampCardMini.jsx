@@ -30,6 +30,14 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
 
   if (loading || !config) return null
 
+  const remaining = Math.max(config.total_stamps - stampState.stampsInCurrentCycle, 0)
+  const isBenefitReady = stampState.hasPendingReward || stampState.isCardFull
+  const statusText = isBenefitReady
+    ? '혜택 적용 가능'
+    : remaining === 1
+      ? '다음 방문 혜택'
+      : ''
+
   return (
     <button
       onClick={onOpenModal}
@@ -49,12 +57,29 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
         pointerEvents: visible ? 'auto' : 'none',
       }}
     >
-      <StampCard
-        size="mini"
-        config={config}
-        visits={stampState.currentCycleVisits}
-        isCardFull={stampState.isCardFull}
-      />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+        <StampCard
+          size="mini"
+          config={config}
+          visits={stampState.currentCycleVisits}
+          isCardFull={stampState.isCardFull}
+          highlighted={!!statusText}
+        />
+        {statusText && (
+          <span
+            style={{
+              color: config.accent_color,
+              fontSize: 11,
+              fontWeight: 700,
+              lineHeight: 1,
+              textShadow: '0 1px 2px rgba(255,255,255,0.9)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {statusText}
+          </span>
+        )}
+      </div>
     </button>
   )
 }
