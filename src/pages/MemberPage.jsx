@@ -239,7 +239,11 @@ export default function MemberPage() {
       {/* Bottom tab bar */}
       <div
         className="bg-white flex flex-shrink-0"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+        }}
       >
         {[
           { key: 'qr', label: 'MY', icon: QrCode },
@@ -253,9 +257,14 @@ export default function MemberPage() {
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
               className={
-                'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' +
+                'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors select-none ' +
                 (active ? 'text-orange-500' : 'text-gray-400')
               }
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
               <Icon size={20} weight={active ? 'fill' : 'regular'} />
               {tab.label}
@@ -1028,7 +1037,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 14,
+            gap: 12,
           }}
         >
           {/* Image */}
@@ -1037,7 +1046,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
             alt={`사진 ${index + 1}`}
             style={{
               maxWidth: '90vw',
-              maxHeight: instagramUrl ? 'calc(90vh - 58px)' : '90vh',
+              maxHeight: instagramUrl ? 'calc(90vh - 48px)' : '90vh',
               objectFit: 'contain',
               borderRadius: 12,
               boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
@@ -1055,22 +1064,23 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8,
-                minHeight: 44,
-                padding: '0 18px',
+                gap: 6,
+                minHeight: 34,
+                padding: '0 13px',
                 borderRadius: 999,
-                background: '#f97316',
+                background:
+                  'linear-gradient(135deg, #f58529 0%, #dd2a7b 45%, #8134af 75%, #515bd4 100%)',
                 color: '#fff',
                 fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                fontSize: 14,
-                fontWeight: 700,
+                fontSize: 12,
+                fontWeight: 400,
                 textDecoration: 'none',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
+                boxShadow: '0 6px 18px rgba(0,0,0,0.24)',
               }}
             >
               <svg
-                width="16"
-                height="16"
+                width="13"
+                height="13"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 aria-hidden="true"
@@ -1168,7 +1178,6 @@ function EventsTab({ events }) {
   const [isTouching, setIsTouching] = useState(false) // for guide visibility
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
-  const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
   // SpotCard-style Lightbox index
   const [lightboxIndex, setLightboxIndex] = useState(null)
@@ -1726,7 +1735,6 @@ function EventsTab({ events }) {
             flex: '0 0 auto',
             padding: '16px',
             paddingTop: '24px',
-            paddingBottom: '4px',
             backgroundColor: '#ffffff',
           }}
         >
@@ -2022,15 +2030,15 @@ function EventsTab({ events }) {
           )}
         </div>
 
-        {/* SCROLLABLE SECTION: calendar + lists */}
-        <div style={{ flex: 1, overflow: 'auto' }}>
-          <div className="px-4 pt-2 pb-28 max-w-md mx-auto">
+        {/* FIXED SECTION: calendar + lists */}
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <div className="px-4 pt-8 pb-0 max-w-md mx-auto">
             {/* CALENDAR */}
             <div
               style={{
                 backgroundColor: '#ffffff',
                 padding: '16px',
-                marginTop: 0,
+                marginTop: '8px',
                 marginBottom: '32px',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
@@ -2277,57 +2285,6 @@ function EventsTab({ events }) {
                   TBD
                 </p>
                 {tbdEvents.map((ev) => renderEvent(ev))}
-              </div>
-            )}
-
-            {/* PAST EVENTS */}
-            {pastEvents.length > 0 && (
-              <div className="mt-6">
-                <button
-                  onClick={() =>
-                    setPastEventsExpanded(!pastEventsExpanded)
-                  }
-                  className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-semibold">
-                      지난 이벤트
-                    </span>
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
-                      {pastEvents.length}
-                    </span>
-                  </div>
-                  <span className="text-gray-400 text-lg">
-                    {pastEventsExpanded ? '▲' : '▼'}
-                  </span>
-                </button>
-
-                {pastEventsExpanded && (
-                  <div className="space-y-3 mt-3">
-                    {(() => {
-                      let curMonth = null
-                      const blocks = []
-                      pastEvents.forEach((ev) => {
-                        const label = `${
-                          new Date(getPrimaryEventDateTime(ev)).getMonth() + 1
-                        }월`
-                        if (label !== curMonth) {
-                          curMonth = label
-                          blocks.push(
-                            <p
-                              key={`pm-${label}`}
-                              className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
-                            >
-                              {label}
-                            </p>,
-                          )
-                        }
-                        blocks.push(renderEvent(ev))
-                      })
-                      return blocks
-                    })()}
-                  </div>
-                )}
               </div>
             )}
 

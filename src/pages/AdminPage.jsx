@@ -33,12 +33,27 @@ function toLocalTimeString(isoString) {
   return s.length >= 16 ? s.slice(11, 16) : ''
 }
 
+function toEventEndTimeInput(event) {
+  const endTime = toLocalTimeString(event?.event_end_date)
+  if (!endTime) return ''
+
+  const startDate = toLocalDateString(event?.event_date)
+  const endDate = toLocalDateString(event?.event_end_date)
+
+  if (endTime === '00:00' && (!endDate || endDate === startDate)) {
+    return ''
+  }
+
+  return endTime
+}
+
 /**
  * Combine local date "YYYY-MM-DD" and time "HH:MM" into ISO string.
  */
-function combineDateTime(dateStr, timeStr) {
+function combineDateTime(dateStr, timeStr, fallbackTime = '00:00') {
   if (!dateStr) return null
-  const time = timeStr || '00:00'
+  const time = timeStr || fallbackTime
+  if (!time) return null
   const [y, mo, d] = dateStr.split('-').map(Number)
   const [h, mi] = time.split(':').map(Number)
   const local = new Date(y, mo - 1, d, h, mi, 0)
@@ -1685,9 +1700,7 @@ function EventsTab() {
     const eventDates = Array.from(new Set((form.eventDates || [form.eventDate]).filter(Boolean))).sort()
     const primaryDate = eventDates[0] || form.eventDate
     const event_date = combineDateTime(primaryDate, form.eventTime)
-    const event_end_date = form.eventEndTime
-      ? combineDateTime(primaryDate, form.eventEndTime)
-      : null
+    const event_end_date = combineDateTime(primaryDate, form.eventEndTime, '')
     const event_dates = eventDates
       .map((date) => combineDateTime(date, form.eventTime))
       .filter(Boolean)
@@ -1747,10 +1760,22 @@ function EventsTab() {
       image_urls,
     }
 
+    let saveError = null
     if (editTarget) {
-      await supabase.from('events').update(payload).eq('id', editTarget.id)
+      const { error } = await supabase
+        .from('events')
+        .update(payload)
+        .eq('id', editTarget.id)
+      saveError = error
     } else {
-      await supabase.from('events').insert(payload)
+      const { error } = await supabase.from('events').insert(payload)
+      saveError = error
+    }
+
+    if (saveError) {
+      alert('저장 실패: ' + saveError.message)
+      setUploading(false)
+      return
     }
 
     setUploading(false)
@@ -1785,7 +1810,7 @@ function EventsTab() {
       eventDate: toLocalDateString(event.event_date),
       eventDates: getEventDateInputs(event),
       eventTime: toLocalTimeString(event.event_date),
-      eventEndTime: toLocalTimeString(event.event_end_date),
+      eventEndTime: toEventEndTimeInput(event),
       calendarHighlightMode: event.calendar_highlight_mode || 'separate',
       location: event.location || '',
       instagram_url: event.instagram_url || '',
