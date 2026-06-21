@@ -320,6 +320,9 @@ export default function RegistrationPage() {
   const displayName =
     `${formData.lastNameKorean || ''}${formData.firstNameKorean || ''}`.trim() ||
     `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+  const greetingName = language === 'ko'
+    ? (formData.firstNameKorean || formData.firstName || '회원')
+    : (formData.firstName || 'member');
   const pastelBg = getPastelColor('registration-default-profile');
 
   useEffect(() => {
@@ -463,6 +466,7 @@ export default function RegistrationPage() {
           language={language}
           t={t}
           displayName={displayName}
+          greetingName={greetingName}
           profileHeroProps={profileHeroProps}
         />
       )}
@@ -476,6 +480,8 @@ export default function RegistrationPage() {
           goNext={goNext}
           t={t}
           displayName={displayName}
+          greetingName={greetingName}
+          language={language}
           profileHeroProps={profileHeroProps}
         />
       )}
@@ -541,7 +547,7 @@ function ProfileHero({
           </div>
           {allowUpload && (
             <span style={compact ? s.cameraBadgeCompact : s.cameraBadge}>
-              <Camera size={compact ? 12 : 16} weight="fill" color="#111827" />
+              <Camera size={compact ? 12 : 19} weight="fill" color="#111827" />
             </span>
           )}
         </button>
@@ -614,14 +620,16 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
   );
 }
 
-function PersonalStep({ formData, handleChange, goNext, language, t, displayName, profileHeroProps }) {
+function PersonalStep({ formData, handleChange, goNext, language, t, greetingName, profileHeroProps }) {
+  const greetingFirstLine = language === 'ko' ? '안녕하세요,' : 'Greetings,';
+  const greetingSecondLine = language === 'ko' ? `${greetingName}님` : greetingName;
   return (
     <div style={s.form}>
       <div style={s.formContent}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine="안녕하세요,"
-          secondLine={displayName || '회원님'}
+          firstLine={greetingFirstLine}
+          secondLine={greetingSecondLine}
         />
 
         <Row>
@@ -724,10 +732,13 @@ function AcademicStep({
   yearOptions,
   goNext,
   t,
-  displayName,
+  greetingName,
+  language,
   profileHeroProps,
 }) {
   const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
+  const greetingFirstLine = language === 'ko' ? '안녕하세요,' : 'Greetings,';
+  const greetingSecondLine = language === 'ko' ? `${greetingName}님` : greetingName;
 
   return (
     <div style={s.form}>
@@ -735,8 +746,8 @@ function AcademicStep({
         <ProfileHero
           profileHeroProps={profileHeroProps}
           variant="compact"
-          firstLine="안녕하세요,"
-          secondLine={displayName || '회원님'}
+          firstLine={greetingFirstLine}
+          secondLine={greetingSecondLine}
           allowUpload={false}
         />
         <h1 style={s.formTitle}>{t.academicInfo}</h1>
@@ -1049,11 +1060,11 @@ const s = {
     flex: 1,
     minHeight: 0,
     justifyContent: 'flex-start',
-    paddingTop: '22px',
+    paddingTop: '54px',
   },
   bottomAction: {
     flexShrink: 0,
-    paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)',
+    paddingBottom: 'calc(env(safe-area-inset-bottom) + 46px)',
   },
   formTitle: {
     fontSize: '18px',
@@ -1064,10 +1075,10 @@ const s = {
   },
   aboutTopGrid: {
     display: 'grid',
-    gridTemplateColumns: '72px 1fr',
+    gridTemplateColumns: '94px 1fr',
     gap: '14px',
     alignItems: 'center',
-    minHeight: '82px',
+    minHeight: '96px',
   },
   profilePicker: {
     display: 'flex',
@@ -1075,16 +1086,16 @@ const s = {
   },
   avatarButton: {
     position: 'relative',
-    width: '66px',
-    height: '66px',
+    width: '86px',
+    height: '86px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircle: {
-    width: '62px',
-    height: '62px',
+    width: '80px',
+    height: '80px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1102,10 +1113,10 @@ const s = {
   },
   cameraBadge: {
     position: 'absolute',
-    right: '-2px',
-    bottom: '-1px',
-    width: '24px',
-    height: '24px',
+    right: '-1px',
+    bottom: '1px',
+    width: '30px',
+    height: '30px',
     borderRadius: '50%',
     backgroundColor: '#fff',
     border: '1px solid #111827',
@@ -1122,7 +1133,7 @@ const s = {
   },
   aboutIntroEn: {
     margin: 0,
-    fontSize: '17px',
+    fontSize: '19px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
@@ -1130,7 +1141,7 @@ const s = {
   },
   aboutIntroKo: {
     margin: 0,
-    fontSize: '17px',
+    fontSize: '19px',
     lineHeight: 1.25,
     fontWeight: 600,
     color: '#111827',
@@ -1138,23 +1149,23 @@ const s = {
   },
   compactHero: {
     display: 'grid',
-    gridTemplateColumns: '52px 1fr',
-    gap: '10px',
+    gridTemplateColumns: '60px 1fr',
+    gap: '12px',
     alignItems: 'center',
     alignSelf: 'stretch',
   },
   avatarButtonCompact: {
     position: 'relative',
-    width: '46px',
-    height: '46px',
+    width: '54px',
+    height: '54px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircleCompact: {
-    width: '42px',
-    height: '42px',
+    width: '50px',
+    height: '50px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1183,7 +1194,7 @@ const s = {
   },
   compactIntroLine: {
     margin: 0,
-    fontSize: '15px',
+    fontSize: '17px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
@@ -1191,7 +1202,7 @@ const s = {
   },
   compactIntroName: {
     margin: 0,
-    fontSize: '15px',
+    fontSize: '17px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
