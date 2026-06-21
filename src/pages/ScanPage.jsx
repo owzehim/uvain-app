@@ -217,7 +217,7 @@ export default function ScanPage() {
             <h2 className="font-bold text-gray-900 text-xl">Check-IN 완료!</h2>
 
             <p className="text-gray-500 text-sm">
-              <strong>{storeName}</strong>에서의 Check-IN이 기록되었습니다
+              @{storeName}
             </p>
 
             <p className="text-base font-bold text-orange-500">

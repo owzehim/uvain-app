@@ -42,6 +42,7 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
     : remaining === 1
       ? '다음 방문 시 사용 가능'
       : ''
+  const shouldHighlight = !!statusText
   const miniWidth = 120
   const previewWidth = 360
   const scale = miniWidth / previewWidth
@@ -73,7 +74,9 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
             width: miniWidth,
             height: miniHeight,
             overflow: 'hidden',
-            boxShadow: '0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)',
+            boxShadow: shouldHighlight
+              ? `0 0 0 2px ${ORANGE}, 0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)`
+              : '0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)',
           }}
         >
           <div
@@ -88,7 +91,7 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
               config={config}
               visits={stampState.currentCycleVisits}
               isCardFull={stampState.isCardFull}
-              highlighted={!!statusText}
+              highlighted={shouldHighlight}
               highlightColor={ORANGE}
             />
           </div>

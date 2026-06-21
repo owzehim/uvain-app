@@ -82,8 +82,8 @@ export default function StampCard({
     boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
     display: 'grid',
     gridTemplateRows: '25% 55% 20%',
-    ...((isCardFull || highlighted) && {
-      boxShadow: `0 0 0 2.5px ${highlightColor || config.accent_color}, 0 2px 8px rgba(0,0,0,0.12)`,
+    ...(highlighted && {
+      boxShadow: `inset 0 0 0 3px ${highlightColor || '#f97316'}, 0 2px 8px rgba(0,0,0,0.12)`,
     }),
   }
 

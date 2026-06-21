@@ -3,6 +3,8 @@ import { useStampCardConfig } from '../hooks/useStampCardConfig'
 import { useUserStampVisits } from '../hooks/useUserStampVisits'
 import StampCard from './StampCard'
 
+const ORANGE = '#f97316'
+
 export default function StampCardModal({ restaurantId, userId, onClose }) {
   const { config, loading } = useStampCardConfig(restaurantId, { useDefault: true })
   const { stampState } = useUserStampVisits({
@@ -53,6 +55,16 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
     touchStartX.current = null
     touchStartY.current = null
   }
+
+  const remaining = config
+    ? Math.max(config.total_stamps - stampState.stampsInCurrentCycle, 0)
+    : 0
+  const isBenefitReady = !!(
+    stampState.hasPendingReward ||
+    stampState.isCardFull ||
+    (config && stampState.stampsInCurrentCycle >= config.total_stamps)
+  )
+  const shouldHighlight = isBenefitReady || remaining === 1
 
   return (
     <>
@@ -107,6 +119,8 @@ export default function StampCardModal({ restaurantId, userId, onClose }) {
                 config={config}
                 visits={stampState.currentCycleVisits}
                 isCardFull={stampState.isCardFull}
+                highlighted={shouldHighlight}
+                highlightColor={ORANGE}
               />
             </div>
           )}
