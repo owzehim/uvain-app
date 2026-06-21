@@ -255,9 +255,10 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
         onChange={handleInputChange}
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
-        style={s.input}
+        style={{ ...s.input, ...s.typeaheadInputSpacer }}
         autoComplete="off"
       />
+      <span style={s.dropdownIcon}>⌄</span>
       {open && filtered.length > 0 && (
         <div style={s.typeaheadList}>
           {filtered.map((opt) => (
@@ -491,8 +492,6 @@ export default function RegistrationPage() {
         />
       )}
 
-      <p style={s.note}>{t.requiredFields}</p>
-
       {cropImageSrc && (
         <ProfileCropModal
           imageSrc={cropImageSrc}
@@ -542,7 +541,7 @@ function ProfileHero({
           </div>
           {allowUpload && (
             <span style={compact ? s.cameraBadgeCompact : s.cameraBadge}>
-              <Camera size={compact ? 12 : 12} weight="fill" color="#111827" />
+              <Camera size={compact ? 12 : 16} weight="fill" color="#111827" />
             </span>
           )}
         </button>
@@ -559,54 +558,58 @@ function ProfileHero({
 function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps }) {
   return (
     <div style={s.form}>
-      <ProfileHero
-        profileHeroProps={profileHeroProps}
-        firstLine="지금 가입하고"
-        secondLine="새로운 경험을 하세요"
-      />
+      <div style={s.formContent}>
+        <ProfileHero
+          profileHeroProps={profileHeroProps}
+          firstLine="네덜란드 유학생들을 위한"
+          secondLine="UvA-IN."
+        />
 
-      <div style={s.nameGrid}>
-        <Field label={t.firstName}>
-          <input
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            style={s.input}
-          />
-        </Field>
-        <Field label={t.lastName}>
-          <input
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            style={s.input}
-          />
-        </Field>
-        {language === 'ko' && (
-          <>
-            <Field label={t.firstNameKorean}>
-              <input
-                name="firstNameKorean"
-                value={formData.firstNameKorean || ''}
-                onChange={handleChange}
-                style={s.input}
-              />
-            </Field>
-            <Field label={t.lastNameKorean}>
-              <input
-                name="lastNameKorean"
-                value={formData.lastNameKorean || ''}
-                onChange={handleChange}
-                style={s.input}
-              />
-            </Field>
-          </>
-        )}
+        <div style={s.nameGrid}>
+          <Field label={t.firstName}>
+            <input
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              style={s.input}
+            />
+          </Field>
+          <Field label={t.lastName}>
+            <input
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              style={s.input}
+            />
+          </Field>
+          {language === 'ko' && (
+            <>
+              <Field label={t.firstNameKorean}>
+                <input
+                  name="firstNameKorean"
+                  value={formData.firstNameKorean || ''}
+                  onChange={handleChange}
+                  style={s.input}
+                />
+              </Field>
+              <Field label={t.lastNameKorean}>
+                <input
+                  name="lastNameKorean"
+                  value={formData.lastNameKorean || ''}
+                  onChange={handleChange}
+                  style={s.input}
+                />
+              </Field>
+            </>
+          )}
+        </div>
       </div>
 
-      <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
-        {t.next}
-      </button>
+      <div style={s.bottomAction}>
+        <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
+          {t.next}
+        </button>
+      </div>
     </div>
   );
 }
@@ -614,49 +617,53 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
 function PersonalStep({ formData, handleChange, goNext, language, t, displayName, profileHeroProps }) {
   return (
     <div style={s.form}>
-      <ProfileHero
-        profileHeroProps={profileHeroProps}
-        firstLine="안녕하세요,"
-        secondLine={displayName || '회원님'}
-      />
-
-      <Row>
-        <Field label={t.yearOfBirth}>
-          <input
-            type="number"
-            name="yearOfBirth"
-            value={formData.yearOfBirth}
-            onChange={handleChange}
-            style={s.input}
-            placeholder=""
-            min="1950"
-            max="2015"
-          />
-        </Field>
-        <Field label={t.gender}>
-          <TypeaheadSelect
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
-            placeholder=""
-          />
-        </Field>
-      </Row>
-
-      <Field label={t.nationality}>
-        <TypeaheadSelect
-          name="countryOfOrigin"
-          value={formData.countryOfOrigin}
-          onChange={handleChange}
-          options={SORTED_COUNTRIES}
-          placeholder=""
+      <div style={s.formContent}>
+        <ProfileHero
+          profileHeroProps={profileHeroProps}
+          firstLine="안녕하세요,"
+          secondLine={displayName || '회원님'}
         />
-      </Field>
 
-      <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
-        {t.next}
-      </button>
+        <Row>
+          <Field label={t.yearOfBirth}>
+            <input
+              type="number"
+              name="yearOfBirth"
+              value={formData.yearOfBirth}
+              onChange={handleChange}
+              style={s.input}
+              placeholder=""
+              min="1950"
+              max="2015"
+            />
+          </Field>
+          <Field label={t.gender}>
+            <TypeaheadSelect
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
+              placeholder=""
+            />
+          </Field>
+        </Row>
+
+        <Field label={t.nationality}>
+          <TypeaheadSelect
+            name="countryOfOrigin"
+            value={formData.countryOfOrigin}
+            onChange={handleChange}
+            options={SORTED_COUNTRIES}
+            placeholder=""
+          />
+        </Field>
+      </div>
+
+      <div style={s.bottomAction}>
+        <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
+          {t.next}
+        </button>
+      </div>
     </div>
   );
 }
@@ -724,90 +731,92 @@ function AcademicStep({
 
   return (
     <div style={s.form}>
-      <ProfileHero
-        profileHeroProps={profileHeroProps}
-        variant="compact"
-        firstLine="안녕하세요,"
-        secondLine={displayName || '회원님'}
-        allowUpload={false}
-      />
-      <h1 style={s.formTitle}>{t.academicInfo}</h1>
-
-      <div style={s.academicGrid}>
-        <Field label={t.university}>
-          <TypeaheadSelect
-            name="university"
-            value={formData.university}
-            onChange={handleChange}
-            options={SORTED_UNIVERSITIES}
-            placeholder=""
-          />
-        </Field>
-        <Field label={t.major}>
-          <TypeaheadSelect
-            name="major"
-            value={formData.major}
-            onChange={handleChange}
-            options={SORTED_MAJORS}
-            placeholder=""
-          />
-        </Field>
-      </div>
-
-      <Field label={t.studentNumber}>
-        <input
-          name="studentNumber"
-          value={formData.studentNumber}
-          onChange={handleChange}
-          style={s.input}
+      <div style={s.formContent}>
+        <ProfileHero
+          profileHeroProps={profileHeroProps}
+          variant="compact"
+          firstLine="안녕하세요,"
+          secondLine={displayName || '회원님'}
+          allowUpload={false}
         />
-      </Field>
+        <h1 style={s.formTitle}>{t.academicInfo}</h1>
 
-      <Field label={t.programme}>
-        <div style={s.programmeGrid}>
-          {programmeOptions.map((level) => (
-            <label
-              key={level}
-              style={{
-                ...s.programmeOption,
-                ...(formData.educationLevel === level ? s.programmeOptionActive : {}),
-              }}
-            >
-              <input
-                type="radio"
-                name="educationLevel"
-                value={level}
-                checked={formData.educationLevel === level}
-                onChange={handleEducationLevelChange}
-                style={s.programmeRadio}
-              />
-              {t[level]}
-            </label>
-          ))}
+        <div style={s.academicGrid}>
+          <Field label={t.university}>
+            <TypeaheadSelect
+              name="university"
+              value={formData.university}
+              onChange={handleChange}
+              options={SORTED_UNIVERSITIES}
+              placeholder=""
+            />
+          </Field>
+          <Field label={t.major}>
+            <TypeaheadSelect
+              name="major"
+              value={formData.major}
+              onChange={handleChange}
+              options={SORTED_MAJORS}
+              placeholder=""
+            />
+          </Field>
         </div>
-      </Field>
 
-      {yearOptions.length > 0 && (
-        <Field label={t.academicYear}>
-          <div style={s.yearGrid}>
-            {yearOptions.map((y) => (
-              <button
-                key={y}
-                type="button"
-                onClick={() => handleChange({ target: { name: 'yearNumber', value: String(y) } })}
+        <Field label={t.studentNumber}>
+          <input
+            name="studentNumber"
+            value={formData.studentNumber}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+
+        <Field label={t.programme}>
+          <div style={s.programmeGrid}>
+            {programmeOptions.map((level) => (
+              <label
+                key={level}
                 style={{
-                  ...s.yearOption,
-                  ...(String(formData.yearNumber) === String(y) ? s.yearOptionActive : {}),
+                  ...s.programmeOption,
+                  ...(formData.educationLevel === level ? s.programmeOptionActive : {}),
                 }}
               >
-                {y}
-              </button>
+                <input
+                  type="radio"
+                  name="educationLevel"
+                  value={level}
+                  checked={formData.educationLevel === level}
+                  onChange={handleEducationLevelChange}
+                  style={s.programmeRadio}
+                />
+                {t[level]}
+              </label>
             ))}
           </div>
         </Field>
-      )}
 
-      <div style={s.stepActions}>
+        {yearOptions.length > 0 && (
+          <Field label={t.academicYear}>
+            <div style={s.yearGrid}>
+              {yearOptions.map((y) => (
+                <button
+                  key={y}
+                  type="button"
+                  onClick={() => handleChange({ target: { name: 'yearNumber', value: String(y) } })}
+                  style={{
+                    ...s.yearOption,
+                    ...(String(formData.yearNumber) === String(y) ? s.yearOptionActive : {}),
+                  }}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+          </Field>
+        )}
+      </div>
+
+      <div style={s.bottomAction}>
         <button
           type="button"
           onClick={goNext}
@@ -841,54 +850,56 @@ function AccountStep({
 
   return (
     <form onSubmit={handleSubmit} style={s.form}>
-      <ProfileHero
-        profileHeroProps={profileHeroProps}
-        firstLine="이제"
-        secondLine="마무리."
-        allowUpload={false}
-      />
-      <h1 style={s.formTitle}>{t.finalStep}</h1>
-
-      <Field label={t.email}>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          style={s.input}
-          placeholder=""
+      <div style={s.formContent}>
+        <ProfileHero
+          profileHeroProps={profileHeroProps}
+          firstLine="이제"
+          secondLine="마무리."
+          allowUpload={false}
         />
-      </Field>
+        <h1 style={s.formTitle}>{t.finalStep}</h1>
 
-      <Row>
-        <Field label={t.password}>
+        <Field label={t.email}>
           <input
-            type="password"
-            name="password"
-            value={formData.password}
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
             style={s.input}
             placeholder=""
           />
         </Field>
-        <Field label={t.confirmPassword}>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            style={s.input}
-          />
-        </Field>
-      </Row>
 
-      {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-        <p style={{ ...s.helperText, color: '#dc2626' }}>
-          {t.passwordMismatch}
-        </p>
-      )}
+        <Row>
+          <Field label={t.password}>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              style={s.input}
+              placeholder=""
+            />
+          </Field>
+          <Field label={t.confirmPassword}>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              style={s.input}
+            />
+          </Field>
+        </Row>
 
-      <div style={s.stepActions}>
+        {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+          <p style={{ ...s.helperText, color: '#dc2626' }}>
+            {t.passwordMismatch}
+          </p>
+        )}
+      </div>
+
+      <div style={s.bottomAction}>
         <button
           type="submit"
           disabled={loading || !isComplete}
@@ -931,7 +942,8 @@ const fieldStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: '5px',
-  minHeight: '52px',
+  height: '54px',
+  minHeight: '54px',
   padding: '8px 12px 7px',
   border: '1px solid #d8dde5',
   borderRadius: '8px',
@@ -1018,7 +1030,7 @@ const s = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '0',
     marginTop: '0',
     padding: '6px 0 14px',
     backgroundColor: 'white',
@@ -1028,7 +1040,20 @@ const s = {
     margin: '0 auto',
     flex: 1,
     minHeight: 0,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+  },
+  formContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    flex: 1,
+    minHeight: 0,
+    justifyContent: 'flex-start',
+    paddingTop: '22px',
+  },
+  bottomAction: {
+    flexShrink: 0,
+    paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)',
   },
   formTitle: {
     fontSize: '18px',
@@ -1039,9 +1064,10 @@ const s = {
   },
   aboutTopGrid: {
     display: 'grid',
-    gridTemplateColumns: '44px 1fr',
-    gap: '10px',
+    gridTemplateColumns: '72px 1fr',
+    gap: '14px',
     alignItems: 'center',
+    minHeight: '82px',
   },
   profilePicker: {
     display: 'flex',
@@ -1049,16 +1075,16 @@ const s = {
   },
   avatarButton: {
     position: 'relative',
-    width: '40px',
-    height: '40px',
+    width: '66px',
+    height: '66px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircle: {
-    width: '36px',
-    height: '36px',
+    width: '62px',
+    height: '62px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1078,8 +1104,8 @@ const s = {
     position: 'absolute',
     right: '-2px',
     bottom: '-1px',
-    width: '16px',
-    height: '16px',
+    width: '24px',
+    height: '24px',
     borderRadius: '50%',
     backgroundColor: '#fff',
     border: '1px solid #111827',
@@ -1096,7 +1122,7 @@ const s = {
   },
   aboutIntroEn: {
     margin: 0,
-    fontSize: '13px',
+    fontSize: '17px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
@@ -1104,7 +1130,7 @@ const s = {
   },
   aboutIntroKo: {
     margin: 0,
-    fontSize: '13px',
+    fontSize: '17px',
     lineHeight: 1.25,
     fontWeight: 600,
     color: '#111827',
@@ -1112,23 +1138,23 @@ const s = {
   },
   compactHero: {
     display: 'grid',
-    gridTemplateColumns: '44px 1fr',
+    gridTemplateColumns: '52px 1fr',
     gap: '10px',
     alignItems: 'center',
     alignSelf: 'stretch',
   },
   avatarButtonCompact: {
     position: 'relative',
-    width: '40px',
-    height: '40px',
+    width: '46px',
+    height: '46px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircleCompact: {
-    width: '36px',
-    height: '36px',
+    width: '42px',
+    height: '42px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1157,7 +1183,7 @@ const s = {
   },
   compactIntroLine: {
     margin: 0,
-    fontSize: '13px',
+    fontSize: '15px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
@@ -1165,7 +1191,7 @@ const s = {
   },
   compactIntroName: {
     margin: 0,
-    fontSize: '13px',
+    fontSize: '15px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
@@ -1341,6 +1367,19 @@ const s = {
   typeaheadContainer: {
     position: 'relative',
     width: '100%',
+  },
+  typeaheadInputSpacer: {
+    paddingRight: '20px',
+  },
+  dropdownIcon: {
+    position: 'absolute',
+    right: '0',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#9ca3af',
+    fontSize: '16px',
+    lineHeight: 1,
+    pointerEvents: 'none',
   },
   typeaheadList: {
     position: 'absolute',
