@@ -880,7 +880,7 @@ function QRTab({ member, isValid, onLiftChange }) {
         setState('error')
         setErrorMsg(
           result.message ||
-            'Check-In을 기록할 수 없습니다. 다시 시도해주세요.',
+            'Check-IN을 기록할 수 없습니다. 다시 시도해주세요.',
         )
       }
     } catch (err) {
@@ -954,12 +954,12 @@ function QRTab({ member, isValid, onLiftChange }) {
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
             <span className="text-green-600 text-4xl">✓</span>
           </div>
-          <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
+          <h2 className="font-bold text-gray-900 text-xl">Check-IN 완료!</h2>
           <p className="text-gray-500 text-sm">
-            <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다
+            <strong>{storeName}</strong>에서의 Check-IN이 기록되었습니다
           </p>
           <p className="text-base font-bold text-orange-500">
-            이 화면을 직원에게 보여주세요
+            이 <span className="text-orange-600 font-extrabold">화면과 학생증</span>을 함께 직원에게 제시해 주세요
           </p>
 
           <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
@@ -1041,7 +1041,7 @@ function QRTab({ member, isValid, onLiftChange }) {
           <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
             <span className="text-red-500 text-4xl">✕</span>
           </div>
-          <h2 className="font-bold text-gray-900 text-xl">Check-In 실패</h2>
+          <h2 className="font-bold text-gray-900 text-xl">Check-IN 실패</h2>
           <p className="text-gray-500 text-sm">{errorMsg}</p>
           <button
             onClick={reset}

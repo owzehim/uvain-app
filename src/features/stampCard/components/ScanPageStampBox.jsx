@@ -4,6 +4,8 @@ import { useStampCardConfig } from '../hooks/useStampCardConfig'
 import { useUserStampVisits } from '../hooks/useUserStampVisits'
 import { fetchPendingReward, redeemReward } from '../api/rewards'
 
+const CLAIM_ORANGE = '#f97316'
+
 export default function ScanPageStampBox({
   restaurantId,
   userId,
@@ -43,7 +45,7 @@ export default function ScanPageStampBox({
   if (!config) return null
 
   const total = config.total_stamps
-  const accentColor = config.accent_color
+  const accentColor = CLAIM_ORANGE
   const effectivePendingReward = pendingReward || stampState.pendingReward
   const isBenefitReady = !redeemedThisSession &&
     !!(
@@ -82,8 +84,8 @@ export default function ScanPageStampBox({
         disabled={!isBenefitReady || redeeming || !effectivePendingReward}
         className="w-full rounded-2xl border px-4 py-3 transition-transform active:scale-[0.99]"
         style={{
-          borderColor: isBenefitReady ? accentColor : '#e5e7eb',
-          background: isBenefitReady ? accentColor : '#ffffff',
+          borderColor: isBenefitReady ? CLAIM_ORANGE : '#e5e7eb',
+          backgroundColor: isBenefitReady ? CLAIM_ORANGE : '#ffffff',
           cursor: isBenefitReady && effectivePendingReward ? 'pointer' : 'default',
           opacity: redeeming ? 0.75 : 1,
         }}
@@ -92,7 +94,7 @@ export default function ScanPageStampBox({
           <StampIcons
             count={count}
             total={total}
-            accentColor={accentColor}
+            accentColor={isBenefitReady ? CLAIM_ORANGE : accentColor}
             inverted={isBenefitReady}
           />
           <div className="text-right shrink-0">
