@@ -12,6 +12,8 @@ import { registerMember } from '../api/memberRepository';
 const INITIAL_FORM = {
   firstName: '',
   lastName: '',
+  firstNameKorean: '',
+  lastNameKorean: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -190,6 +192,8 @@ export function useRegisterMember() {
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        firstNameKorean: formData.firstNameKorean,
+        lastNameKorean: formData.lastNameKorean,
         studentNumber: formData.studentNumber,
         yearOfBirth: formData.yearOfBirth
           ? Number(formData.yearOfBirth)

@@ -8,6 +8,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function formatStampStatus(stampResult: any) {
+  if (!stampResult?.enabled) return ''
+
+  const totalStamps = Math.max(1, Number(stampResult.totalStamps || 10))
+  const count = stampResult.rewardPending || stampResult.cycleCompleted
+    ? totalStamps
+    : Number(stampResult.newCount ?? stampResult.currentCount ?? 0)
+
+  const status = `${Math.max(0, count)}/${totalStamps}`
+  if (stampResult.rewardPending) return `${status} - reward pending`
+  if (stampResult.cycleCompleted) return `${status} - ready to claim`
+  if (stampResult.alreadyStamped) return `${status} - already stamped today`
+  if (stampResult.success) return status
+  return ''
+}
+
 async function findStampRestaurant(admin: any, storeId: string) {
   const { data: byId, error: byIdError } = await admin
     .from('restaurants')
@@ -84,7 +100,16 @@ async function recordStampCardVisit(admin: any, userId: string, storeId: string,
   if (todayVisitError) throw todayVisitError
 
   if (todayVisit) {
-    return { enabled: true, restaurantId, alreadyStamped: true, totalStamps }
+    const { data: currentVisits, error: currentVisitsError } = await admin
+      .from('stamp_card_visits')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('restaurant_id', restaurantId)
+
+    if (currentVisitsError) throw currentVisitsError
+
+    const currentCount = (currentVisits?.length ?? 0) % totalStamps || totalStamps
+    return { enabled: true, restaurantId, alreadyStamped: true, currentCount, totalStamps }
   }
 
   const { data: priorVisits, error: priorVisitsError } = await admin
@@ -193,7 +218,7 @@ serve(async (req) => {
     const { data: member, error: memberError } = await admin
       .from('members')
       .select(
-        'first_name, last_name, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, is_member',
+        'first_name, last_name, first_name_korean, last_name_korean, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, is_member',
       )
       .eq('user_id', user.id)
       .single()
@@ -331,6 +356,10 @@ serve(async (req) => {
       membership_valid_until: safe(member.membership_valid_until),
       place_name: partnership.name,
       redemption_id: redemptionId,
+      stamp_status: formatStampStatus(stampResult),
+      stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
+      first_name_korean: safe(member.first_name_korean),
+      last_name_korean: safe(member.last_name_korean),
     }
 
     // ── Partner sheet payload ──────────────────────────────────────────────
@@ -350,6 +379,8 @@ serve(async (req) => {
       gender: safe(member.gender),
       membership_valid_until: safe(member.membership_valid_until),
       redemption_id: redemptionId,
+      stamp_status: formatStampStatus(stampResult),
+      stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
     }
 
     const [masterRes, storeRes] = await Promise.all([

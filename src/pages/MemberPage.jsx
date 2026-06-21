@@ -923,7 +923,7 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 // ─── Event Lightbox (SpotCard-style) ──────────────────────────────────────────
-function EventLightbox({ imgs, startIndex = 0, onClose }) {
+function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
   const touchStartX = useRef(null)
@@ -1017,22 +1017,70 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
           touchAction: 'none',
         }}
       >
-        {/* Image */}
-        <img
-          src={imgs[index]}
-          alt={`사진 ${index + 1}`}
+        <div
           onClick={(e) => e.stopPropagation()}
           className={visible ? 'lightbox-zoom-enter' : ''}
           style={{
+            width: '100%',
             maxWidth: '90vw',
             maxHeight: '90vh',
-            objectFit: 'contain',
-            borderRadius: 12,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 14,
           }}
-        />
+        >
+          {/* Image */}
+          <img
+            src={imgs[index]}
+            alt={`사진 ${index + 1}`}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: instagramUrl ? 'calc(90vh - 58px)' : '90vh',
+              objectFit: 'contain',
+              borderRadius: 12,
+              boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+            }}
+          />
+
+          {instagramUrl && (
+            <a
+              href={instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                minHeight: 44,
+                padding: '0 18px',
+                borderRadius: 999,
+                background: '#f97316',
+                color: '#fff',
+                fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+              </svg>
+              Instagram 에서 열기
+            </a>
+          )}
+        </div>
 
         {/* Dots */}
         {imgs.length > 1 && (
@@ -1678,6 +1726,7 @@ function EventsTab({ events }) {
             flex: '0 0 auto',
             padding: '16px',
             paddingTop: '24px',
+            paddingBottom: '4px',
             backgroundColor: '#ffffff',
           }}
         >
@@ -1975,13 +2024,13 @@ function EventsTab({ events }) {
 
         {/* SCROLLABLE SECTION: calendar + lists */}
         <div style={{ flex: 1, overflow: 'auto' }}>
-          <div className="px-4 py-6 max-w-md mx-auto">
+          <div className="px-4 pt-2 pb-28 max-w-md mx-auto">
             {/* CALENDAR */}
             <div
               style={{
                 backgroundColor: '#ffffff',
                 padding: '16px',
-                marginTop: '8px',
+                marginTop: 0,
                 marginBottom: '32px',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
@@ -2335,6 +2384,7 @@ function EventsTab({ events }) {
         <EventLightbox
           imgs={displayImages}
           startIndex={lightboxIndex}
+          instagramUrl={displayEvent?.instagram_url}
           onClose={() => setLightboxIndex(null)}
         />
       )}

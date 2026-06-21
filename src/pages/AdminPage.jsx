@@ -1685,7 +1685,9 @@ function EventsTab() {
     const eventDates = Array.from(new Set((form.eventDates || [form.eventDate]).filter(Boolean))).sort()
     const primaryDate = eventDates[0] || form.eventDate
     const event_date = combineDateTime(primaryDate, form.eventTime)
-    const event_end_date = combineDateTime(primaryDate, form.eventEndTime)
+    const event_end_date = form.eventEndTime
+      ? combineDateTime(primaryDate, form.eventEndTime)
+      : null
     const event_dates = eventDates
       .map((date) => combineDateTime(date, form.eventTime))
       .filter(Boolean)
