@@ -76,7 +76,7 @@ async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.
 }
 
 export function useRegisterMember() {
-  // 'about' | 'academic' | 'account' | 'email'
+  // 'about' | 'personal' | 'academic' | 'account' | 'email'
   const [step, setStep] = useState('about');
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [profileFile, setProfileFile] = useState(null);
@@ -103,7 +103,8 @@ export function useRegisterMember() {
   // ── Step navigation ─────────────────────────────────────────────────────
   const goNext = () => {
     setStep((prev) => {
-      if (prev === 'about') return 'academic';
+      if (prev === 'about') return 'personal';
+      if (prev === 'personal') return 'academic';
       if (prev === 'academic') return 'account';
       return prev;
     });
@@ -112,7 +113,8 @@ export function useRegisterMember() {
   const goBack = () => {
     setStep((prev) => {
       if (prev === 'account') return 'academic';
-      if (prev === 'academic') return 'about';
+      if (prev === 'academic') return 'personal';
+      if (prev === 'personal') return 'about';
       return prev;
     });
   };

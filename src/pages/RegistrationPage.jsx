@@ -1,7 +1,7 @@
-// src/pages/RegistrationPage.jsx
+﻿// src/pages/RegistrationPage.jsx
 //
-// Presentation only — all logic lives in useRegisterMember hook.
-// ❌ Do NOT copy to React Native — rewrite UI with RN components.
+// Presentation only ??all logic lives in useRegisterMember hook.
+// ??Do NOT copy to React Native ??rewrite UI with RN components.
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -34,7 +34,7 @@ const COUNTRIES = [
 ];
 
 const GENDERS = ['female', 'male', 'non-binary', 'prefer not to say'];
-const GENDERS_KO = ['여성', '남성', '논바이너리', '답변 거절'];
+const GENDERS_KO = ['여성', '남성', '논바이너리', '응답 거절'];
 const UNIVERSITY_OPTIONS = ['University of Amsterdam (UvA)'];
 const MAJOR_OPTIONS = [
   'Business Administration',
@@ -112,7 +112,7 @@ async function getCroppedImgAsFile(imageSrc, pixelCrop, fileName = 'profile.jpg'
   return new File([blob], fileName, { type: 'image/jpeg' });
 }
 
-// ── Translations ────────────────────────────────────────────────────────────────
+// ?? Translations ????????????????????????????????????????????????????????????????
 const translations = {
   en: {
     title: 'Account Register',
@@ -136,12 +136,12 @@ const translations = {
     password: 'Password *',
     confirmPassword: 'Confirm password *',
     profilePicture: 'Profile picture (optional)',
-    next: 'Next →',
-    back: '← Back',
+    next: 'Next',
+    back: 'Back',
     createAccount: 'Create account',
-    creatingAccount: 'Creating account…',
+    creatingAccount: 'Creating account...',
     requiredFields: '* Required fields',
-    passwordMismatch: '⚠️ Passwords do not match',
+    passwordMismatch: 'Passwords do not match',
     checkEmail: 'Check your email',
     emailSent: 'We sent a confirmation link to',
     verifyEmail: 'Please open that email, verify your address, then come back and log in.',
@@ -162,7 +162,7 @@ const translations = {
   },
   ko: {
     title: '회원가입',
-    subtitle: '등록 후 회원 자격은 비활성 상태입니다. 임원이 확인 후 활성화됩니다.',
+    subtitle: '등록 후 회원 자격은 비활성 상태입니다. 임원 확인 후 활성화됩니다.',
     aboutYou: '당신에 대해',
     academicInfo: '학력 정보',
     finalStep: '마지막 단계',
@@ -173,7 +173,7 @@ const translations = {
     yearOfBirth: '출생 연도 (선택사항)',
     gender: '성별 *',
     nationality: '국적 *',
-    university: '대학 *',
+    university: '대학교 *',
     major: '전공 *',
     studentNumber: '학번 *',
     programme: '프로그램 *',
@@ -182,22 +182,22 @@ const translations = {
     password: '비밀번호 *',
     confirmPassword: '비밀번호 확인 *',
     profilePicture: '프로필 사진 (선택사항)',
-    next: '다음 →',
-    back: '← 뒤로',
+    next: '다음',
+    back: '뒤로',
     createAccount: '계정 만들기',
-    creatingAccount: '계정 생성 중…',
-    requiredFields: '* 필수 필드',
-    passwordMismatch: '⚠️ 비밀번호가 일치하지 않습니다',
+    creatingAccount: '계정 생성 중...',
+    requiredFields: '* 필수 항목',
+    passwordMismatch: '비밀번호가 일치하지 않습니다',
     checkEmail: '이메일 확인',
     emailSent: '확인 링크를 다음 주소로 보냈습니다',
-    verifyEmail: '해당 이메일을 열고 주소를 확인한 후 돌아와서 로그인하세요.',
+    verifyEmail: '해당 이메일을 열고 주소를 확인한 뒤 다시 로그인하세요.',
     goToLogin: '로그인으로 이동',
     alreadyHaveAccount: '이미 계정이 있으신가요?',
     logIn: '로그인',
     minCharacters: '최소 6자',
     selectGender: '성별 선택',
     selectNationality: '국적 선택',
-    selectUniversity: '대학 선택',
+    selectUniversity: '대학교 선택',
     selectMajor: '전공 선택',
     selectYear: '학년 선택',
     year: '학년',
@@ -207,8 +207,7 @@ const translations = {
     alumni: 'Alumni',
   },
 };
-
-// ── Typeahead select component ────────────────────────────────────────────────
+// ?? Typeahead select component ????????????????????????????????????????????????
 function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
   const [inputValue, setInputValue] = useState(value || '');
   const [open, setOpen] = useState(false);
@@ -279,10 +278,17 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ?? Main component ????????????????????????????????????????????????????????????
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const [language, setLanguage] = useState('ko');
+  const fileInputRef = useRef(null);
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [cropFileName, setCropFileName] = useState('profile.jpg');
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
@@ -310,6 +316,63 @@ export default function RegistrationPage() {
 
   const yearOptions = getYearOptions(formData.educationLevel);
   const t = translations[language];
+  const displayName =
+    `${formData.lastNameKorean || ''}${formData.firstNameKorean || ''}`.trim() ||
+    `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+  const pastelBg = getPastelColor('registration-default-profile');
+
+  useEffect(() => {
+    return () => {
+      if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
+    };
+  }, [profilePreviewUrl]);
+
+  const handleProfileFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropImageSrc(reader.result);
+      setCropFileName(file.name || 'profile.jpg');
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCropConfirm = async () => {
+    if (!cropImageSrc || !croppedAreaPixels) return;
+    const croppedFile = await getCroppedImgAsFile(cropImageSrc, croppedAreaPixels, cropFileName);
+    setProfileFile(croppedFile);
+    setProfilePreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return URL.createObjectURL(croppedFile);
+    });
+    setCropImageSrc(null);
+    setCroppedAreaPixels(null);
+  };
+
+  const closeCropper = () => {
+    setCropImageSrc(null);
+    setCroppedAreaPixels(null);
+  };
+
+  const profileHeroProps = {
+    fileInputRef,
+    profilePreviewUrl,
+    pastelBg,
+    onProfileClick: () => fileInputRef.current?.click(),
+    t,
+  };
+  const handleTopBack = () => {
+    if (step === 'about') {
+      navigate('/public');
+      return;
+    }
+    goBack();
+  };
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
@@ -322,7 +385,7 @@ export default function RegistrationPage() {
             style={s.backButton}
             title="Go back"
           >
-            ←
+            ??
           </button>
           <button
             onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
@@ -333,7 +396,7 @@ export default function RegistrationPage() {
         </div>
         <div style={s.emailCard}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>📧</div>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>?벁</div>
             <h1 style={s.title}>{t.checkEmail}</h1>
             <p style={s.emailText}>
               {t.emailSent} <br />
@@ -356,30 +419,50 @@ export default function RegistrationPage() {
       <div style={s.topBar}>
         <button
           type="button"
-          onClick={() => navigate('/public')}
+          onClick={handleTopBack}
           style={s.backButton}
           title="Go back"
         >
-          ←
+          ??
         </button>
         <button
           onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
           style={s.languageToggle}
         >
-          {language === 'en' ? '한국어' : 'English'}
+            {language === 'en' ? '한국어' : 'English'}
         </button>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleProfileFileChange}
+        style={{ display: 'none' }}
+      />
 
       {error && <div style={s.errorBanner}>{error}</div>}
 
       {step === 'about' && (
-        <AboutStep
+        <NameStep
           formData={formData}
           handleChange={handleChange}
           goNext={goNext}
-          setProfileFile={setProfileFile}
           language={language}
           t={t}
+          profileHeroProps={profileHeroProps}
+        />
+      )}
+
+      {step === 'personal' && (
+        <PersonalStep
+          formData={formData}
+          handleChange={handleChange}
+          goNext={goNext}
+          language={language}
+          t={t}
+          displayName={displayName}
+          profileHeroProps={profileHeroProps}
         />
       )}
 
@@ -390,8 +473,9 @@ export default function RegistrationPage() {
           handleEducationLevelChange={handleEducationLevelChange}
           yearOptions={yearOptions}
           goNext={goNext}
-          goBack={goBack}
           t={t}
+          displayName={displayName}
+          profileHeroProps={profileHeroProps}
         />
       )}
 
@@ -400,188 +484,14 @@ export default function RegistrationPage() {
           formData={formData}
           handleChange={handleChange}
           handleSubmit={handleSubmit}
-          goBack={goBack}
           loading={loading}
           navigate={navigate}
           t={t}
+          profileHeroProps={profileHeroProps}
         />
       )}
 
       <p style={s.note}>{t.requiredFields}</p>
-    </div>
-  );
-}
-
-// ── Step 1: About you ──────────────────────────────────────────────────────────
-function AboutStep({ formData, handleChange, goNext, setProfileFile, language, t }) {
-  const fileInputRef = useRef(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [cropImageSrc, setCropImageSrc] = useState(null);
-  const [cropFileName, setCropFileName] = useState('profile.jpg');
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-
-  const pastelBg = getPastelColor('registration-default-profile');
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setCropImageSrc(reader.result);
-      setCropFileName(file.name || 'profile.jpg');
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setCroppedAreaPixels(null);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const handleCropConfirm = async () => {
-    if (!cropImageSrc || !croppedAreaPixels) return;
-    const croppedFile = await getCroppedImgAsFile(cropImageSrc, croppedAreaPixels, cropFileName);
-    setProfileFile(croppedFile);
-    setPreviewUrl((current) => {
-      if (current) URL.revokeObjectURL(current);
-      return URL.createObjectURL(croppedFile);
-    });
-    setCropImageSrc(null);
-    setCroppedAreaPixels(null);
-  };
-
-  const closeCropper = () => {
-    setCropImageSrc(null);
-    setCroppedAreaPixels(null);
-  };
-
-  return (
-    <div style={s.form}>
-      <h1 style={s.formTitle}>{t.title}</h1>
-
-      <div style={s.aboutTopGrid}>
-        <div style={s.profilePicker}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            style={s.avatarButton}
-            aria-label={t.profilePicture}
-          >
-            <div
-              style={{
-                ...s.avatarCircle,
-                background: previewUrl ? 'transparent' : pastelBg,
-              }}
-            >
-              {previewUrl ? (
-                <img src={previewUrl} alt="Profile" style={s.avatarImage} />
-              ) : (
-                <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
-              )}
-            </div>
-            <span style={s.cameraBadge}>
-              <Camera size={18} weight="fill" color="#111827" />
-            </span>
-          </button>
-        </div>
-
-        <div style={s.nameGrid}>
-          <Field label={t.firstName}>
-            <input
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              style={s.input}
-            />
-          </Field>
-          <Field label={t.lastName}>
-            <input
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              style={s.input}
-            />
-          </Field>
-          {language === 'ko' && (
-            <>
-              <Field label={t.firstNameKorean}>
-                <input
-                  name="firstNameKorean"
-                  value={formData.firstNameKorean || ''}
-                  onChange={handleChange}
-                  style={s.input}
-                />
-              </Field>
-              <Field label={t.lastNameKorean}>
-                <input
-                  name="lastNameKorean"
-                  value={formData.lastNameKorean || ''}
-                  onChange={handleChange}
-                  style={s.input}
-                />
-              </Field>
-            </>
-          )}
-        </div>
-      </div>
-
-      <Row>
-        <Field label={t.yearOfBirth}>
-          <input
-            type="number"
-            name="yearOfBirth"
-            value={formData.yearOfBirth}
-            onChange={handleChange}
-            style={s.input}
-            placeholder="2004"
-            min="1950"
-            max="2015"
-          />
-        </Field>
-        <Field label={t.gender}>
-          <TypeaheadSelect
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
-            placeholder={t.selectGender}
-          />
-        </Field>
-      </Row>
-
-      <Field label={t.nationality}>
-        <TypeaheadSelect
-          name="countryOfOrigin"
-          value={formData.countryOfOrigin}
-          onChange={handleChange}
-          options={SORTED_COUNTRIES}
-          placeholder={t.selectNationality}
-        />
-      </Field>
-
-      <button
-        type="button"
-        onClick={goNext}
-        style={{
-          ...s.submitBtn,
-        }}
-      >
-        {t.next}
-      </button>
 
       {cropImageSrc && (
         <ProfileCropModal
@@ -599,6 +509,157 @@ function AboutStep({ formData, handleChange, goNext, setProfileFile, language, t
   );
 }
 
+// ?? Step 1: About you ??????????????????????????????????????????????????????????
+function ProfileHero({
+  profileHeroProps,
+  variant = 'large',
+  firstLine,
+  secondLine,
+  allowUpload = true,
+}) {
+  const { profilePreviewUrl, pastelBg, onProfileClick, t } = profileHeroProps;
+  const compact = variant === 'compact';
+  return (
+    <div style={compact ? s.compactHero : s.aboutTopGrid}>
+      <div style={s.profilePicker}>
+        <button
+          type="button"
+          onClick={allowUpload ? onProfileClick : undefined}
+          style={compact ? s.avatarButtonCompact : s.avatarButton}
+          aria-label={t.profilePicture}
+        >
+          <div
+            style={{
+              ...(compact ? s.avatarCircleCompact : s.avatarCircle),
+              background: profilePreviewUrl ? 'transparent' : pastelBg,
+            }}
+          >
+            {profilePreviewUrl ? (
+              <img src={profilePreviewUrl} alt="Profile" style={s.avatarImage} />
+            ) : (
+              <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
+            )}
+          </div>
+          {allowUpload && (
+            <span style={compact ? s.cameraBadgeCompact : s.cameraBadge}>
+              <Camera size={compact ? 16 : 26} weight="fill" color="#111827" />
+            </span>
+          )}
+        </button>
+      </div>
+
+      <div style={compact ? s.compactIntro : s.aboutIntro}>
+        <p style={compact ? s.compactIntroLine : s.aboutIntroEn}>{firstLine}</p>
+        <p style={compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
+      </div>
+    </div>
+  );
+}
+
+function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps }) {
+  return (
+    <div style={s.form}>
+      <ProfileHero
+        profileHeroProps={profileHeroProps}
+        firstLine="Connect, Share, and Enjoy. UvA-IN"
+        secondLine="네덜란드 유학생을 위한 공식 커뮤니티."
+      />
+
+      <div style={s.nameGrid}>
+        <Field label={t.firstName}>
+          <input
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+        <Field label={t.lastName}>
+          <input
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+        {language === 'ko' && (
+          <>
+            <Field label={t.firstNameKorean}>
+              <input
+                name="firstNameKorean"
+                value={formData.firstNameKorean || ''}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+            <Field label={t.lastNameKorean}>
+              <input
+                name="lastNameKorean"
+                value={formData.lastNameKorean || ''}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+          </>
+        )}
+      </div>
+
+      <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
+        {t.next}
+      </button>
+    </div>
+  );
+}
+
+function PersonalStep({ formData, handleChange, goNext, language, t, displayName, profileHeroProps }) {
+  return (
+    <div style={s.form}>
+      <ProfileHero
+        profileHeroProps={profileHeroProps}
+        firstLine="안녕하세요,"
+        secondLine={displayName || '회원님'}
+      />
+
+      <Row>
+        <Field label={t.yearOfBirth}>
+          <input
+            type="number"
+            name="yearOfBirth"
+            value={formData.yearOfBirth}
+            onChange={handleChange}
+            style={s.input}
+            placeholder=""
+            min="1950"
+            max="2015"
+          />
+        </Field>
+        <Field label={t.gender}>
+          <TypeaheadSelect
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
+            placeholder=""
+          />
+        </Field>
+      </Row>
+
+      <Field label={t.nationality}>
+        <TypeaheadSelect
+          name="countryOfOrigin"
+          value={formData.countryOfOrigin}
+          onChange={handleChange}
+          options={SORTED_COUNTRIES}
+          placeholder=""
+        />
+      </Field>
+
+      <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
+        {t.next}
+      </button>
+    </div>
+  );
+}
 function ProfileCropModal({
   imageSrc,
   crop,
@@ -648,20 +709,28 @@ function ProfileCropModal({
   );
 }
 
-// ── Step 2: Academic info ──────────────────────────────────────────────────────
+// ?? Step 2: Academic info ??????????????????????????????????????????????????????
 function AcademicStep({
   formData,
   handleChange,
   handleEducationLevelChange,
   yearOptions,
   goNext,
-  goBack,
   t,
+  displayName,
+  profileHeroProps,
 }) {
   const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
 
   return (
     <div style={s.form}>
+      <ProfileHero
+        profileHeroProps={profileHeroProps}
+        variant="compact"
+        firstLine="안녕하세요,"
+        secondLine={displayName || '회원님'}
+        allowUpload={false}
+      />
       <h1 style={s.formTitle}>{t.academicInfo}</h1>
 
       <div style={s.academicGrid}>
@@ -741,13 +810,6 @@ function AcademicStep({
       <div style={s.stepActions}>
         <button
           type="button"
-          onClick={goBack}
-          style={{ ...s.ghostBtn, flex: 1 }}
-        >
-          {t.back}
-        </button>
-        <button
-          type="button"
           onClick={goNext}
           style={{
             ...s.submitBtn,
@@ -761,15 +823,14 @@ function AcademicStep({
   );
 }
 
-// ── Step 3: Account & login info ───────────────────────────────────────────────
+// ?? Step 3: Account & login info ???????????????????????????????????????????????
 function AccountStep({
   formData,
   handleChange,
   handleSubmit,
-  goBack,
   loading,
-  navigate,
   t,
+  profileHeroProps,
 }) {
   const isComplete =
     formData.email &&
@@ -780,6 +841,12 @@ function AccountStep({
 
   return (
     <form onSubmit={handleSubmit} style={s.form}>
+      <ProfileHero
+        profileHeroProps={profileHeroProps}
+        firstLine="이제"
+        secondLine="마무리."
+        allowUpload={false}
+      />
       <h1 style={s.formTitle}>{t.finalStep}</h1>
 
       <Field label={t.email}>
@@ -789,7 +856,7 @@ function AccountStep({
           value={formData.email}
           onChange={handleChange}
           style={s.input}
-          placeholder="your.name@student.uva.nl"
+          placeholder=""
         />
       </Field>
 
@@ -801,7 +868,7 @@ function AccountStep({
             value={formData.password}
             onChange={handleChange}
             style={s.input}
-            placeholder={t.minCharacters}
+            placeholder=""
           />
         </Field>
         <Field label={t.confirmPassword}>
@@ -823,13 +890,6 @@ function AccountStep({
 
       <div style={s.stepActions}>
         <button
-          type="button"
-          onClick={goBack}
-          style={{ ...s.ghostBtn, flex: 1 }}
-        >
-          {t.back}
-        </button>
-        <button
           type="submit"
           disabled={loading || !isComplete}
           style={{
@@ -842,22 +902,11 @@ function AccountStep({
           {loading ? t.creatingAccount : t.createAccount}
         </button>
       </div>
-
-      <p style={s.loginPrompt}>
-        {t.alreadyHaveAccount}{' '}
-        <button
-          type="button"
-          onClick={() => navigate('/login')}
-          style={s.linkBtn}
-        >
-          {t.logIn}
-        </button>
-      </p>
     </form>
   );
 }
 
-// ── Small layout helpers ───────────────────────────────────────────────────────
+// ?? Small layout helpers ???????????????????????????????????????????????????????
 function Row({ children }) {
   return <div style={rowStyle}>{children}</div>;
 }
@@ -871,7 +920,7 @@ function Field({ label, children }) {
   );
 }
 
-// ── Styles ─────────────────────────────────────────────────────────────────────
+// ?? Styles ?????????????????????????????????????????????????????????????????????
 const rowStyle = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
@@ -881,13 +930,21 @@ const rowStyle = {
 const fieldStyle = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '4px',
+  gap: '6px',
+  minHeight: '58px',
+  padding: '9px 14px 8px',
+  border: '1.5px solid #111827',
+  borderRadius: '18px',
+  backgroundColor: '#fff',
+  boxSizing: 'border-box',
+  justifyContent: 'center',
 };
 
 const labelStyle = {
-  fontSize: '13px',
-  fontWeight: 500,
-  color: '#374151',
+  fontSize: '12px',
+  fontWeight: 700,
+  color: '#111827',
+  lineHeight: 1,
 };
 
 const s = {
@@ -960,9 +1017,9 @@ const s = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '14px',
     marginTop: '0',
-    padding: '8px 32px 18px',
+    padding: '4px 32px 18px',
     backgroundColor: 'white',
     borderRadius: '0',
     maxWidth: '800px',
@@ -981,8 +1038,8 @@ const s = {
   },
   aboutTopGrid: {
     display: 'grid',
-    gridTemplateColumns: '132px 1fr',
-    gap: '22px',
+    gridTemplateColumns: '210px 1fr',
+    gap: '28px',
     alignItems: 'center',
   },
   profilePicker: {
@@ -991,23 +1048,23 @@ const s = {
   },
   avatarButton: {
     position: 'relative',
-    width: '104px',
-    height: '104px',
+    width: '174px',
+    height: '174px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircle: {
-    width: '92px',
-    height: '92px',
+    width: '164px',
+    height: '164px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: '8px',
+    marginTop: '0',
     border: '1px solid rgba(44,42,39,0.08)',
   },
   avatarImage: {
@@ -1018,10 +1075,10 @@ const s = {
   },
   cameraBadge: {
     position: 'absolute',
-    top: '0',
     right: '4px',
-    width: '30px',
-    height: '30px',
+    bottom: '8px',
+    width: '52px',
+    height: '52px',
     borderRadius: '50%',
     backgroundColor: '#fff',
     border: '1px solid #111827',
@@ -1029,6 +1086,85 @@ const s = {
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: '0 2px 8px rgba(17,24,39,0.14)',
+  },
+  aboutIntro: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    justifyContent: 'center',
+  },
+  aboutIntroEn: {
+    margin: 0,
+    fontSize: '26px',
+    lineHeight: 1.2,
+    fontWeight: 800,
+    color: '#111827',
+  },
+  aboutIntroKo: {
+    margin: 0,
+    fontSize: '30px',
+    lineHeight: 1.25,
+    fontWeight: 800,
+    color: '#111827',
+  },
+  compactHero: {
+    display: 'grid',
+    gridTemplateColumns: '74px 1fr',
+    gap: '14px',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+  },
+  avatarButtonCompact: {
+    position: 'relative',
+    width: '64px',
+    height: '64px',
+    padding: 0,
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+  },
+  avatarCircleCompact: {
+    width: '58px',
+    height: '58px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid rgba(44,42,39,0.08)',
+  },
+  cameraBadgeCompact: {
+    position: 'absolute',
+    right: '0',
+    bottom: '2px',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    backgroundColor: '#fff',
+    border: '1px solid #111827',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 8px rgba(17,24,39,0.14)',
+  },
+  compactIntro: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '3px',
+  },
+  compactIntroLine: {
+    margin: 0,
+    fontSize: '14px',
+    lineHeight: 1.2,
+    fontWeight: 800,
+    color: '#111827',
+  },
+  compactIntroName: {
+    margin: 0,
+    fontSize: '18px',
+    lineHeight: 1.2,
+    fontWeight: 800,
+    color: '#111827',
   },
   nameGrid: {
     display: 'grid',
@@ -1041,25 +1177,27 @@ const s = {
     gap: '14px',
   },
   input: {
-    padding: '9px 12px',
-    borderRadius: '8px',
-    border: '1px solid #d7d2c8',
+    padding: '0',
+    borderRadius: '0',
+    border: 'none',
     fontSize: '14px',
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
     backgroundColor: '#fff',
     color: '#111827',
+    minHeight: '20px',
   },
   select: {
-    padding: '9px 12px',
-    borderRadius: '8px',
-    border: '1px solid #d7d2c8',
+    padding: '0',
+    borderRadius: '0',
+    border: 'none',
     fontSize: '14px',
     backgroundColor: 'white',
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
+    minHeight: '20px',
   },
   radioGroup: {
     display: 'flex',
@@ -1197,12 +1335,13 @@ const s = {
   },
   typeaheadContainer: {
     position: 'relative',
+    width: '100%',
   },
   typeaheadList: {
     position: 'absolute',
     top: '100%',
-    left: 0,
-    right: 0,
+    left: '-14px',
+    right: '-14px',
     maxHeight: '180px',
     overflowY: 'auto',
     backgroundColor: 'white',
@@ -1296,3 +1435,5 @@ const s = {
     cursor: 'pointer',
   },
 };
+
+
