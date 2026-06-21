@@ -35,6 +35,7 @@ const COUNTRIES = [
 
 const GENDERS = ['female', 'male', 'non-binary', 'prefer not to say'];
 const GENDERS_KO = ['여성', '남성', '논바이너리', '응답 거절'];
+const CUSTOM_TYPE_OPTION = 'Others (type)';
 const UNIVERSITY_OPTIONS = ['University of Amsterdam (UvA)'];
 const MAJOR_OPTIONS = [
   'Business Administration',
@@ -50,8 +51,8 @@ const MAJOR_OPTIONS = [
 const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS_KO = [...GENDERS_KO].sort((a, b) => a.localeCompare(b, 'ko'));
-const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b));
-const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) => a.localeCompare(b));
+const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
+const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
 
 const PASTEL_COLORS = [
   '#FFB3B3',
@@ -118,8 +119,8 @@ const translations = {
     title: 'Account Register',
     subtitle: 'Your membership will be inactive after registration. The board will activate it once verified.',
     aboutYou: 'About you',
-    academicInfo: 'Academic information',
-    finalStep: 'Final step',
+    academicInfo: 'Academic Information',
+    finalStep: 'The Final Touch',
     firstName: 'First name (English) *',
     lastName: 'Last name (English) *',
     firstNameKorean: 'First name (Korean) *',
@@ -208,7 +209,7 @@ const translations = {
   },
 };
 // ?? Typeahead select component ????????????????????????????????????????????????
-function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
+function TypeaheadSelect({ name, value, onChange, options, placeholder = '', allowCustom = false }) {
   const [inputValue, setInputValue] = useState(value || '');
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -233,6 +234,12 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
   );
 
   const handleSelect = (val) => {
+    if (allowCustom && val === CUSTOM_TYPE_OPTION) {
+      setInputValue('');
+      setOpen(false);
+      onChange({ target: { name, value: '' } });
+      return;
+    }
     setInputValue(val);
     setOpen(false);
     onChange({ target: { name, value: val } });
@@ -242,8 +249,8 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
     const val = e.target.value;
     setInputValue(val);
     setOpen(true);
-    if (val === '') {
-      onChange({ target: { name, value: '' } });
+    if (allowCustom || val === '') {
+      onChange({ target: { name, value: val } });
     }
   };
 
@@ -508,6 +515,7 @@ export default function RegistrationPage() {
             loading={loading}
             navigate={navigate}
             t={t}
+            language={language}
             profileHeroProps={profileHeroProps}
           />
         </div>
@@ -590,7 +598,7 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
       <div style={s.formContent}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine="네덜란드 유학생들을 위한"
+          firstLine={language === 'ko' ? '네덜란드 유학생들을 위한' : 'For International Students,'}
           secondLine="UvA-IN."
         />
 
@@ -781,6 +789,7 @@ function AcademicStep({
                 onChange={handleChange}
                 options={SORTED_UNIVERSITIES}
                 placeholder=""
+                allowCustom
               />
             </Field>
             <Field label={t.major}>
@@ -790,6 +799,7 @@ function AcademicStep({
                 onChange={handleChange}
                 options={SORTED_MAJORS}
                 placeholder=""
+                allowCustom
               />
             </Field>
           </div>
@@ -872,6 +882,7 @@ function AccountStep({
   handleSubmit,
   loading,
   t,
+  language,
   profileHeroProps,
 }) {
   const isComplete =
@@ -886,8 +897,8 @@ function AccountStep({
       <div style={s.formContent}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine="이제"
-          secondLine="마무리."
+          firstLine={language === 'ko' ? '이제' : 'The Final Touch'}
+          secondLine={language === 'ko' ? '마무리.' : ''}
           allowUpload={false}
         />
 
@@ -940,6 +951,9 @@ function AccountStep({
           style={{
             ...s.submitBtn,
             flex: 1,
+            background: !loading && isComplete
+              ? 'linear-gradient(135deg, #fb923c 0%, #f97316 48%, #ea580c 100%)'
+              : '#fb923c',
             opacity: loading || !isComplete ? 0.6 : 1,
             cursor: loading || !isComplete ? 'not-allowed' : 'pointer',
           }}
@@ -957,8 +971,24 @@ function Row({ children }) {
 }
 
 function Field({ label, children, variant = 'input', style }) {
+  const fieldRef = useRef(null);
+  const handleFieldClick = (event) => {
+    if (variant !== 'input') return;
+    if (event.target.closest('input, textarea, select, button')) return;
+    const input = fieldRef.current?.querySelector('input, textarea, select');
+    input?.focus();
+  };
+
   return (
-    <div style={{ ...(variant === 'group' ? groupFieldStyle : fieldStyle), ...style }}>
+    <div
+      ref={fieldRef}
+      onClick={handleFieldClick}
+      style={{
+        ...(variant === 'group' ? groupFieldStyle : fieldStyle),
+        ...(variant === 'input' ? s.touchableField : {}),
+        ...style,
+      }}
+    >
       <label style={labelStyle}>{label}</label>
       {children}
     </div>
@@ -1387,6 +1417,9 @@ const s = {
     flexDirection: 'column',
     gap: '8px',
   },
+  touchableField: {
+    cursor: 'text',
+  },
   academicGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr',
@@ -1498,7 +1531,7 @@ const s = {
     padding: '12px 10px',
     borderRadius: '9999px',
     border: 'none',
-    background: 'linear-gradient(135deg, #f97316, #ea580c)',
+    background: '#f97316',
     color: 'white',
     fontSize: '14px',
     fontWeight: 600,
