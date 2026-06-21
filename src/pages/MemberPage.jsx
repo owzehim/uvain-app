@@ -1631,10 +1631,7 @@ function EventsTab({ events }) {
           }
 
           const avgLuminance = luminanceTotal / Math.max(samples, 1)
-          const blurredPanelLuminance = avgLuminance * 0.55 + 1 * 0.45
-          const blackContrast = (blurredPanelLuminance + 0.05) / 0.05
-          const whiteContrast = 1.05 / (blurredPanelLuminance + 0.05)
-          resolve(blackContrast >= whiteContrast ? '#111827' : '#ffffff')
+          resolve(avgLuminance > 0.42 ? '#111827' : '#ffffff')
         } catch {
           resolve('#111827')
         }
@@ -1734,7 +1731,7 @@ function EventsTab({ events }) {
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-center"
+                      className="flex flex-col items-start justify-start"
                       style={{ flexShrink: 0 }}
                     >
                       <span
