@@ -1077,11 +1077,20 @@ function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
+  const getEventDates = (ev) => {
+    const dates = Array.isArray(ev.event_dates) ? ev.event_dates : []
+    const allDates = [...dates, ev.event_date].filter(Boolean)
+    const unique = Array.from(new Set(allDates.map((date) => String(date).slice(0, 10))))
+    return unique.length ? unique : []
+  }
+
+  const getPrimaryEventDate = (ev) => getEventDates(ev)[0] || ev.event_date
+
   // ── Split & sort ────────────────────────────────────────────────────────────
-  const datedEvents = events.filter((ev) => ev.event_date)
+  const datedEvents = events.filter((ev) => getPrimaryEventDate(ev))
 
   const tbdEvents = events
-    .filter((ev) => !ev.event_date)
+    .filter((ev) => !getPrimaryEventDate(ev))
     .sort((a, b) =>
       a.created_at && b.created_at
         ? new Date(a.created_at) - new Date(b.created_at)
@@ -1089,12 +1098,12 @@ function EventsTab({ events }) {
     )
 
   const futureEvents = datedEvents
-    .filter((ev) => new Date(ev.event_date) >= now)
-    .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+    .filter((ev) => new Date(getPrimaryEventDate(ev)) >= now)
+    .sort((a, b) => new Date(getPrimaryEventDate(a)) - new Date(getPrimaryEventDate(b)))
 
   const pastEvents = datedEvents
-    .filter((ev) => new Date(ev.event_date) < now)
-    .sort((a, b) => new Date(b.event_date) - new Date(a.event_date))
+    .filter((ev) => new Date(getPrimaryEventDate(ev)) < now)
+    .sort((a, b) => new Date(getPrimaryEventDate(b)) - new Date(getPrimaryEventDate(a)))
 
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
@@ -1115,8 +1124,8 @@ function EventsTab({ events }) {
   const [imageAspectRatios, setImageAspectRatios] = useState({})
   const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
   const [calMonth, setCalMonth] = useState(() => {
-    const base = initialEvent?.event_date
-      ? new Date(initialEvent.event_date)
+    const base = getPrimaryEventDate(initialEvent)
+      ? new Date(getPrimaryEventDate(initialEvent))
       : now
     return new Date(base.getFullYear(), base.getMonth(), 1)
   })
@@ -1124,8 +1133,9 @@ function EventsTab({ events }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
-    if (!selectedEvent?.event_date) return
-    const d = new Date(selectedEvent.event_date)
+    const selectedDate = getPrimaryEventDate(selectedEvent)
+    if (!selectedDate) return
+    const d = new Date(selectedDate)
     setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1))
   }, [selectedEvent])
 
@@ -1291,10 +1301,41 @@ function EventsTab({ events }) {
     return `${String(h).padStart(2, '0')}:${m} ${ampm}`
   }
 
+  const formatTimeRange = (ev) => {
+    const startDate = getPrimaryEventDate(ev)
+    if (!startDate) return ''
+    const start = new Date(startDate)
+    const end = ev.event_end_date ? new Date(ev.event_end_date) : null
+    const formatParts = (date) => {
+      let h = date.getHours()
+      const m = String(date.getMinutes()).padStart(2, '0')
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      h = h % 12 || 12
+      return { time: `${String(h).padStart(2, '0')}:${m}`, ampm }
+    }
+    const startParts = formatParts(start)
+    if (!end || Number.isNaN(end.getTime())) {
+      return `${startParts.time} ${startParts.ampm}`
+    }
+    const endParts = formatParts(end)
+    if (startParts.ampm === endParts.ampm) {
+      return `${startParts.time} - ${endParts.time} ${endParts.ampm}`
+    }
+    return `${startParts.time} ${startParts.ampm} - ${endParts.time} ${endParts.ampm}`
+  }
+
+  const plainText = (value) => {
+    if (!value) return ''
+    const el = document.createElement('div')
+    el.innerHTML = value
+    return (el.textContent || el.innerText || '').trim()
+  }
+
   const getEventStatus = (ev) => {
     if (!ev) return ''
-    if (!ev.event_date) return 'TBD'
-    const days = getDayDiff(ev.event_date)
+    const eventDate = getPrimaryEventDate(ev)
+    if (!eventDate) return 'TBD'
+    const days = getDayDiff(eventDate)
     if (days < 0) return 'PAST'
     if (nextEvent && ev.id === nextEvent.id)
       return days === 0 ? 'TODAY' : `D-${days}`
@@ -1302,9 +1343,12 @@ function EventsTab({ events }) {
   }
 
   const addToCalendar = (ev) => {
-    if (!ev?.event_date) return
-    const start = new Date(ev.event_date)
-    const end = new Date(start.getTime() + 7200000)
+    const startDate = getPrimaryEventDate(ev)
+    if (!startDate) return
+    const start = new Date(startDate)
+    const end = ev.event_end_date
+      ? new Date(ev.event_end_date)
+      : new Date(start.getTime() + 7200000)
 
     const pad = (n) => String(n).padStart(2, '0')
     const fmt = (d) =>
@@ -1321,7 +1365,7 @@ function EventsTab({ events }) {
       `DTSTART:${fmt(start)}\n` +
       `DTEND:${fmt(end)}\n` +
       `SUMMARY:${ev.title}\n` +
-      `LOCATION:${ev.location || ''}\n` +
+      `LOCATION:${plainText(ev.location)}\n` +
       `DESCRIPTION:${ev.description || ''}\n` +
       `END:VEVENT\nEND:VCALENDAR`
 
@@ -1345,20 +1389,11 @@ function EventsTab({ events }) {
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
-    const key = ev.event_date.slice(0, 10)
-    if (!eventsByDate[key]) eventsByDate[key] = []
-    eventsByDate[key].push(ev)
+    getEventDates(ev).forEach((key) => {
+      if (!eventsByDate[key]) eventsByDate[key] = []
+      eventsByDate[key].push(ev)
+    })
   })
-
-  const circleStyle = (ev) => {
-    if (nextEvent && ev.id === nextEvent.id) {
-      return { bg: '#f97316', color: '#fff' }
-    }
-    if (new Date(ev.event_date) >= now) {
-      return { bg: '#1f2937', color: '#fff' }
-    }
-    return { bg: '#6b7280', color: '#fff' }
-  }
 
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
@@ -1407,25 +1442,22 @@ function EventsTab({ events }) {
               {isExpanded ? '▲' : '▼'}
             </span>
           </div>
-          {ev.event_date && (
+          {getPrimaryEventDate(ev) && (
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
               <Calendar size={14} weight="fill" />
               <span>
-                {new Date(ev.event_date).toLocaleString('ko-KR', {
+                {new Date(getPrimaryEventDate(ev)).toLocaleString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true,
-                })}
+                })} {formatTimeRange(ev)}
               </span>
             </div>
           )}
           {ev.location && (
             <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
               <MapPin size={14} weight="fill" />
-              <span>{ev.location}</span>
+              <span>{plainText(ev.location)}</span>
             </div>
           )}
         </button>
@@ -1509,7 +1541,7 @@ function EventsTab({ events }) {
                 />
               )}
               <div className="flex gap-2 mt-3">
-                {ev.event_date && (
+                {getPrimaryEventDate(ev) && (
                   <button
                     onClick={() => addToCalendar(ev)}
                     className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5"
@@ -1554,8 +1586,8 @@ function EventsTab({ events }) {
   const DRAG_DATE_COLOR = '#9ca3af'
 
   const isPastSelected =
-    !!displayEvent?.event_date &&
-    new Date(displayEvent.event_date) < todayStart
+    !!getPrimaryEventDate(displayEvent) &&
+    new Date(getPrimaryEventDate(displayEvent)) < todayStart
   const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
   const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
 
@@ -1648,8 +1680,8 @@ function EventsTab({ events }) {
                     lineHeight: 0.85,
                   }}
                 >
-                  {displayEvent.event_date
-                    ? formatTopDate(displayEvent.event_date)?.dayName
+                  {getPrimaryEventDate(displayEvent)
+                    ? formatTopDate(getPrimaryEventDate(displayEvent))?.dayName
                     : ''}
                 </span>
                 <span
@@ -1670,8 +1702,8 @@ function EventsTab({ events }) {
               {/* Date + pile + front panel */}
               <div className="flex items-stretch mt-2">
                 {/* Left: date */}
-                {displayEvent.event_date && (() => {
-                  const t = formatTopDate(displayEvent.event_date)
+                {getPrimaryEventDate(displayEvent) && (() => {
+                  const t = formatTopDate(getPrimaryEventDate(displayEvent))
                   if (!t) return null
                   return (
                     <div
@@ -1715,9 +1747,12 @@ function EventsTab({ events }) {
                   className="flex-1"
                   onClick={() => hasImages && openLightboxAt(0)}
                   style={{
-                    paddingLeft: displayEvent.event_date ? '16px' : '0',
+                    paddingLeft: getPrimaryEventDate(displayEvent) ? '16px' : '0',
                     paddingRight: '4px',
                     position: 'relative',
+                    aspectRatio: '1/1',
+                    minWidth: 0,
+                    flexBasis: 0,
                     cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
@@ -1725,14 +1760,11 @@ function EventsTab({ events }) {
                   {hasImages &&
                     displayImages.length >= 2 &&
                     (() => {
-                      const ratio = displayImageRatios[1] || 1
-                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
                       return (
                         <div
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            aspectRatio,
                             borderRadius: '12px',
                             overflow: 'hidden',
                             backgroundColor: '#d1d5db',
@@ -1760,14 +1792,11 @@ function EventsTab({ events }) {
                   {/* Back card 1 — image[0] */}
                   {hasImages &&
                     (() => {
-                      const ratio = displayImageRatios[0] || 1
-                      const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
                       return (
                         <div
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            aspectRatio,
                             borderRadius: '12px',
                             overflow: 'hidden',
                             backgroundColor: '#e5e7eb',
@@ -1794,8 +1823,6 @@ function EventsTab({ events }) {
 
                   {/* Front: semi-transparent Gaussian blur panel */}
                   {(() => {
-                    const ratio = hasImages ? displayImageRatios[0] || 1 : 1
-                    const aspectRatio = isPortrait(ratio) ? '4/5' : '1/1'
                     return (
                       <div
                         style={{
@@ -1803,7 +1830,7 @@ function EventsTab({ events }) {
                           zIndex: 3,
                           borderRadius: '12px',
                           overflow: 'hidden',
-                          aspectRatio,
+                          height: '100%',
                           width: '100%',
                           backgroundColor: 'transparent',
                           border: 'none',
@@ -1847,7 +1874,7 @@ function EventsTab({ events }) {
                           >
                             {displayEvent.title}
                           </span>
-                          {displayEvent.event_date && (
+                          {getPrimaryEventDate(displayEvent) && (
                             <span
                               style={{
                                 fontFamily:
@@ -1858,7 +1885,7 @@ function EventsTab({ events }) {
                                 letterSpacing: '0.04em',
                               }}
                             >
-                              {formatTopTime(displayEvent.event_date)}
+                              {formatTimeRange(displayEvent)}
                             </span>
                           )}
                           {displayEvent.location && (
@@ -1872,7 +1899,7 @@ function EventsTab({ events }) {
                                 letterSpacing: '0.04em',
                               }}
                             >
-                              {displayEvent.location}
+                              {plainText(displayEvent.location)}
                             </span>
                           )}
                         </div>
@@ -2010,6 +2037,23 @@ function EventsTab({ events }) {
                   ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   const dayEvents = eventsByDate[dateKey] || []
                   const hasEvt = dayEvents.length > 0
+                  const selectedEventDates = getEventDates(selectedEvent)
+                  const isSelectedEventDate = hasEvt && selectedEventDates.includes(dateKey)
+                  const rangeEvent = dayEvents.find((ev) => {
+                    const dates = getEventDates(ev)
+                    return ev.calendar_highlight_mode === 'range' && dates.length > 1
+                  })
+                  const rangeDates = rangeEvent ? getEventDates(rangeEvent).sort() : []
+                  const rangeIndex = rangeDates.indexOf(dateKey)
+                  const rangeStart = rangeIndex === 0
+                  const rangeEnd = rangeIndex === rangeDates.length - 1
+                  const rangeColor = rangeEvent
+                    ? rangeEvent.id === nextEvent?.id
+                      ? 'rgba(249,115,22,0.18)'
+                      : new Date(getPrimaryEventDate(rangeEvent)) < todayStart
+                        ? 'rgba(107,114,128,0.18)'
+                        : 'rgba(17,24,39,0.12)'
+                    : 'transparent'
                   const isToday =
                     day === now.getDate() &&
                     calMonthIdx === now.getMonth() &&
@@ -2020,21 +2064,22 @@ function EventsTab({ events }) {
                   let color = '#1f2937'
                   let fw = 500
 
-                  if (hasEvt) {
-                    const s = circleStyle(dayEvents[0])
-                    bg = s.bg
-                    color = s.color
+                  if (isSelectedEventDate) {
+                    bg = '#d1d5db'
+                    color = '#111827'
                     fw = 700
+                  } else if (hasEvt) {
+                    bg = '#f3f4f6'
+                    color = '#9ca3af'
+                    fw = 600
                   } else if (isToday) {
                     bg = '#ffffff'
-                    border = '2px solid #1f2937'
                     fw = 700
                   }
 
-                  const ring =
-                    isToday && hasEvt
-                      ? '0 0 0 2px #ffffff, 0 0 0 3.5px #1f2937'
-                      : 'none'
+                  if (isToday) {
+                    border = '2px solid #1f2937'
+                  }
 
                   return (
                     <div
@@ -2046,8 +2091,49 @@ function EventsTab({ events }) {
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: hasEvt ? 'pointer' : 'default',
+                        position: 'relative',
                       }}
                     >
+                      {rangeEvent && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: rangeStart ? '15%' : '-3px',
+                            right: rangeEnd ? '15%' : '-3px',
+                            top: '50%',
+                            height: '38%',
+                            transform: 'translateY(-50%)',
+                            background: rangeColor,
+                            borderTopLeftRadius: rangeStart ? 999 : 0,
+                            borderBottomLeftRadius: rangeStart ? 999 : 0,
+                            borderTopRightRadius: rangeEnd ? 999 : 0,
+                            borderBottomRightRadius: rangeEnd ? 999 : 0,
+                            pointerEvents: 'none',
+                          }}
+                        />
+                      )}
+                      {isToday && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: -6,
+                            left: 0,
+                            right: 0,
+                            textAlign: 'center',
+                            fontFamily:
+                              '"Handjet", system-ui, sans-serif',
+                            fontSize: `calc(${W} * 0.022)`,
+                            fontWeight: 800,
+                            color: '#1f2937',
+                            lineHeight: 1,
+                            letterSpacing: '0.04em',
+                            pointerEvents: 'none',
+                            userSelect: 'none',
+                          }}
+                        >
+                          TODAY
+                        </span>
+                      )}
                       <div
                         style={{
                           width: '85%',
@@ -2055,7 +2141,8 @@ function EventsTab({ events }) {
                           borderRadius: '50%',
                           backgroundColor: bg,
                           border,
-                          boxShadow: ring,
+                          position: 'relative',
+                          zIndex: 1,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -2090,7 +2177,7 @@ function EventsTab({ events }) {
                   const blocks = []
                   otherUpcomingEvents.forEach((ev) => {
                     const label = `${
-                      new Date(ev.event_date).getMonth() + 1
+                      new Date(getPrimaryEventDate(ev)).getMonth() + 1
                     }월`
                     if (label !== curMonth) {
                       curMonth = label
@@ -2149,7 +2236,7 @@ function EventsTab({ events }) {
                       const blocks = []
                       pastEvents.forEach((ev) => {
                         const label = `${
-                          new Date(ev.event_date).getMonth() + 1
+                          new Date(getPrimaryEventDate(ev)).getMonth() + 1
                         }월`
                         if (label !== curMonth) {
                           curMonth = label

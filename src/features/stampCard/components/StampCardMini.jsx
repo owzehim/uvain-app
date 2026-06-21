@@ -42,14 +42,10 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
     : remaining === 1
       ? '다음 방문 시 사용 가능'
       : ''
-  const shouldHighlight = !!statusText
   const miniWidth = 108
-  const framePadding = shouldHighlight ? 5 : 0
-  const bottomBandHeight = shouldHighlight ? 24 : 0
   const previewWidth = 360
-  const viewportWidth = miniWidth - framePadding * 2
-  const viewportHeight = viewportWidth / 1.586
-  const scale = viewportWidth / previewWidth
+  const scale = miniWidth / previewWidth
+  const miniHeight = miniWidth / 1.586
 
   return (
     <button
@@ -71,23 +67,13 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
         textAlign: 'left',
       }}
     >
-      <div
-        style={{
-          width: miniWidth,
-          overflow: 'hidden',
-          borderRadius: shouldHighlight ? 9 : 0,
-          background: shouldHighlight ? ORANGE : 'transparent',
-          padding: shouldHighlight ? `${framePadding}px ${framePadding}px 0` : 0,
-          boxShadow: '0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)',
-        }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
         <div
           style={{
-            width: viewportWidth,
-            height: viewportHeight,
+            width: miniWidth,
+            height: miniHeight,
             overflow: 'hidden',
-            background: '#ffffff',
-            borderRadius: shouldHighlight ? '4px 4px 0 0' : 0,
+            boxShadow: '0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)',
           }}
         >
           <div
@@ -106,22 +92,26 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
           </div>
         </div>
         {statusText && (
-          <div
+          <span
             style={{
-              height: bottomBandHeight,
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
+              maxWidth: miniWidth,
+              minHeight: 18,
+              padding: '4px 8px',
+              borderRadius: 9999,
+              background: ORANGE,
               color: '#ffffff',
               fontSize: 10,
               fontWeight: 800,
               lineHeight: 1,
               whiteSpace: 'nowrap',
-              textAlign: 'center',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.14)',
             }}
           >
             {statusText}
-          </div>
+          </span>
         )}
       </div>
     </button>

@@ -45,6 +45,14 @@ function combineDateTime(dateStr, timeStr) {
   return local.toISOString()
 }
 
+function getEventDateInputs(event) {
+  const dates = Array.isArray(event?.event_dates) ? event.event_dates : []
+  const fromList = dates.map((value) => toLocalDateString(value)).filter(Boolean)
+  const fallback = toLocalDateString(event?.event_date)
+  const uniqueDates = Array.from(new Set([...fromList, fallback].filter(Boolean)))
+  return uniqueDates.length ? uniqueDates : ['']
+}
+
 /**
  * Validate & normalise a typed time string into "HH:MM".
  */
@@ -1425,21 +1433,55 @@ function EventForm({
           rows={2}
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="space-y-2">
         <div>
           <label className="text-sm text-gray-500 block mb-1">날짜</label>
-          <input
-            type="date"
-            value={form.eventDate}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, eventDate: e.target.value }))
+          <div className="space-y-2">
+            {(form.eventDates || ['']).map((date, idx) => (
+              <div key={idx} className="flex gap-2">
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) =>
+                    setForm((f) => {
+                      const next = [...(f.eventDates || [''])]
+                      next[idx] = e.target.value
+                      return { ...f, eventDates: next, eventDate: next[0] || '' }
+                    })
+                  }
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+                {(form.eventDates || []).length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => {
+                        const next = (f.eventDates || ['']).filter((_, i) => i !== idx)
+                        return { ...f, eventDates: next.length ? next : [''], eventDate: next[0] || '' }
+                      })
+                    }
+                    className="px-3 rounded-lg bg-gray-100 text-gray-500 text-sm"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              setForm((f) => ({ ...f, eventDates: [...(f.eventDates || ['']), ''] }))
             }
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
+            className="mt-2 text-xs text-orange-500 font-semibold"
+          >
+            + 날짜 추가
+          </button>
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <label className="text-sm text-gray-500 block mb-1">
-            시간 (HH:MM)
+            시작 시간 (HH:MM)
           </label>
           <TimeInput
             value={form.eventTime}
@@ -1447,6 +1489,43 @@ function EventForm({
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
           />
         </div>
+        <div>
+          <label className="text-sm text-gray-500 block mb-1">
+            종료 시간 (HH:MM)
+          </label>
+          <TimeInput
+            value={form.eventEndTime}
+            onChange={(v) => setForm((f) => ({ ...f, eventEndTime: v }))}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+        </div>
+        </div>
+        {(form.eventDates || []).filter(Boolean).length > 1 && (
+          <div>
+            <label className="text-sm text-gray-500 block mb-1">
+              캘린더 표시
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'separate', label: '각 날짜 따로' },
+                { value: 'range', label: '날짜 연결 강조' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, calendarHighlightMode: option.value }))}
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold ${
+                    form.calendarHighlightMode === option.value
+                      ? 'border-orange-400 bg-orange-50 text-orange-600'
+                      : 'border-gray-200 bg-white text-gray-500'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <input
         placeholder="인스타그램 URL (선택)"
@@ -1500,7 +1579,10 @@ function EventsTab() {
     title: '',
     description: '',
     eventDate: '',
+    eventDates: [''],
     eventTime: '',
+    eventEndTime: '',
+    calendarHighlightMode: 'separate',
     location: '',
     instagram_url: '',
   })
@@ -1516,7 +1598,7 @@ function EventsTab() {
       .from('events')
       .select('*')
       .eq('is_archived', false)
-      .order('event_date', { ascending: true })
+      .order('event_date', { ascending: false })
     setEvents(data || [])
   }
 
@@ -1581,7 +1663,10 @@ function EventsTab() {
       title: '',
       description: '',
       eventDate: '',
+      eventDates: [''],
       eventTime: '',
+      eventEndTime: '',
+      calendarHighlightMode: 'separate',
       location: '',
       instagram_url: '',
     })
@@ -1597,7 +1682,13 @@ function EventsTab() {
       return
     }
     setUploading(true)
-    const event_date = combineDateTime(form.eventDate, form.eventTime)
+    const eventDates = Array.from(new Set((form.eventDates || [form.eventDate]).filter(Boolean))).sort()
+    const primaryDate = eventDates[0] || form.eventDate
+    const event_date = combineDateTime(primaryDate, form.eventTime)
+    const event_end_date = combineDateTime(primaryDate, form.eventEndTime)
+    const event_dates = eventDates
+      .map((date) => combineDateTime(date, form.eventTime))
+      .filter(Boolean)
     let image_urls = [...(editTarget?.image_urls || [])]
 
     for (const { idx, file } of pendingReplacements) {
@@ -1646,6 +1737,9 @@ function EventsTab() {
       title: form.title,
       description: form.description,
       event_date: event_date || null,
+      event_end_date: event_end_date || null,
+      event_dates,
+      calendar_highlight_mode: form.calendarHighlightMode || 'separate',
       location: form.location,
       instagram_url: form.instagram_url,
       image_urls,
@@ -1687,7 +1781,10 @@ function EventsTab() {
       title: event.title,
       description: event.description || '',
       eventDate: toLocalDateString(event.event_date),
+      eventDates: getEventDateInputs(event),
       eventTime: toLocalTimeString(event.event_date),
+      eventEndTime: toLocalTimeString(event.event_end_date),
+      calendarHighlightMode: event.calendar_highlight_mode || 'separate',
       location: event.location || '',
       instagram_url: event.instagram_url || '',
     })
@@ -1704,7 +1801,10 @@ function EventsTab() {
       title: '',
       description: '',
       eventDate: '',
+      eventDates: [''],
       eventTime: '',
+      eventEndTime: '',
+      calendarHighlightMode: 'separate',
       location: '',
       instagram_url: '',
     })
@@ -1715,11 +1815,19 @@ function EventsTab() {
     setShowForm(true)
   }
 
-  const groupByMonth = (arr) => {
+  const getPrimaryEventDate = (event) => {
+    const dates = Array.isArray(event?.event_dates) ? event.event_dates : []
+    return dates[0] || event?.event_date
+  }
+
+  const groupByYearMonth = (arr) => {
     const grouped = {}
     arr.forEach((ev) => {
-      const label = ev.event_date
-        ? `${new Date(ev.event_date).getMonth() + 1}월`
+      const eventDate = getPrimaryEventDate(ev)
+      const label = eventDate
+        ? `${new Date(eventDate).getFullYear()}.${String(
+            new Date(eventDate).getMonth() + 1,
+          ).padStart(2, '0')}`
         : '날짜 미정'
       if (!grouped[label]) grouped[label] = []
       grouped[label].push(ev)
@@ -1864,7 +1972,7 @@ function EventsTab() {
               보관된 이벤트가 없어요.
             </p>
           ) : (
-            Object.entries(groupByMonth(archivedEvents)).map(
+            Object.entries(groupByYearMonth(archivedEvents)).map(
               ([month, evs]) => (
                 <div key={month} className="space-y-2">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
@@ -1883,7 +1991,7 @@ function EventsTab() {
             <p className="text-gray-500 text-sm">이벤트가 없어요.</p>
           ) : (
             <div className="space-y-3">
-              {Object.entries(groupByMonth(events)).map(
+              {Object.entries(groupByYearMonth(events)).map(
                 ([month, evs]) => (
                   <div key={month} className="space-y-2">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">
