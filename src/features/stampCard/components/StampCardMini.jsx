@@ -3,6 +3,8 @@ import { useStampCardConfig } from '../hooks/useStampCardConfig'
 import { useUserStampVisits } from '../hooks/useUserStampVisits'
 import StampCard from './StampCard'
 
+const ORANGE = '#f97316'
+
 export default function StampCardMini({ restaurantId, userId, open = true, onOpenModal, onExited }) {
   const { config, loading } = useStampCardConfig(restaurantId, { useDefault: true })
   const { stampState } = useUserStampVisits({
@@ -31,11 +33,14 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
   if (loading || !config) return null
 
   const remaining = Math.max(config.total_stamps - stampState.stampsInCurrentCycle, 0)
-  const isBenefitReady = stampState.hasPendingReward || stampState.isCardFull
+  const isBenefitReady =
+    stampState.hasPendingReward ||
+    stampState.isCardFull ||
+    stampState.stampsInCurrentCycle >= config.total_stamps
   const statusText = isBenefitReady
-    ? '혜택 적용 가능'
+    ? '사용 가능'
     : remaining === 1
-      ? '다음 방문 혜택'
+      ? '다음 방문 시 사용 가능'
       : ''
   const miniWidth = 120
   const previewWidth = 360
@@ -68,7 +73,7 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
             width: miniWidth,
             height: miniHeight,
             overflow: 'hidden',
-            boxShadow: '0 10px 22px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.18)',
+            boxShadow: '0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)',
           }}
         >
           <div
@@ -84,13 +89,14 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
               visits={stampState.currentCycleVisits}
               isCardFull={stampState.isCardFull}
               highlighted={!!statusText}
+              highlightColor={ORANGE}
             />
           </div>
         </div>
         {statusText && (
           <span
             style={{
-              color: config.accent_color,
+              color: ORANGE,
               fontSize: 11,
               fontWeight: 700,
               lineHeight: 1,

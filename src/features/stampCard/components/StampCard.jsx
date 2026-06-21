@@ -51,6 +51,7 @@ export default function StampCard({
   size = 'full',
   isCardFull = false,
   highlighted = false,
+  highlightColor,
 }) {
   if (!config) return null
 
@@ -82,7 +83,7 @@ export default function StampCard({
     display: 'grid',
     gridTemplateRows: '25% 55% 20%',
     ...((isCardFull || highlighted) && {
-      boxShadow: `0 0 0 2.5px ${config.accent_color}, 0 2px 8px rgba(0,0,0,0.12)`,
+      boxShadow: `0 0 0 2.5px ${highlightColor || config.accent_color}, 0 2px 8px rgba(0,0,0,0.12)`,
     }),
   }
 
