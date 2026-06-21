@@ -192,6 +192,9 @@ export default function MemberPage() {
           style={{
             top: 'calc(env(safe-area-inset-top) + 8px)',
             zIndex: 20,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
           }}
         >
           {isAdmin && (
@@ -200,6 +203,11 @@ export default function MemberPage() {
                 window.location.href = '/admin'
               }}
               className="text-xs text-white font-medium px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
               관리자
             </button>
@@ -208,6 +216,11 @@ export default function MemberPage() {
             onClick={() => navigate('/settings')}
             className="rounded-full bg-white p-2 text-gray-500"
             aria-label="Settings"
+            style={{
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
             <Gear size={20} weight="bold" />
           </button>
@@ -774,7 +787,14 @@ function QRTab({ member, isValid, onLiftChange }) {
   if (!isValid) {
     if (onLiftChange) onLiftChange(false)
     return (
-      <div className="h-full flex flex-col items-center justify-center px-4 py-6">
+      <div
+        className="h-full flex flex-col items-center justify-center px-4 py-6 no-highlight-zone"
+        style={{
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
         <MembershipCard member={member} isValid={false} />
       </div>
     )
@@ -783,11 +803,15 @@ function QRTab({ member, isValid, onLiftChange }) {
   // ── SCANNING STATE ──────────────────────────────────────────────────────────
   return (
     <div
+      className="no-highlight-zone"
       style={{
         position: 'relative',
         height: '100%',
         overflow: 'hidden',
         touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -2032,7 +2056,7 @@ function EventsTab({ events }) {
 
         {/* FIXED SECTION: calendar + lists */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <div className="px-4 pt-8 pb-0 max-w-md mx-auto">
+          <div className="px-4 pt-6 pb-0 max-w-md mx-auto">
             {/* CALENDAR */}
             <div
               style={{
@@ -2387,13 +2411,23 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
   )
 
   return (
-    <div className="h-full flex flex-col">
+    <div
+      className="h-full flex flex-col no-highlight-zone"
+      style={{
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
       {/* Category slider */}
 <div 
-  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0" 
+  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none" 
   style={{ 
     paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
-    zIndex: 10  // ← 이 줄 추가
+    zIndex: 10,  // ← 이 줄 추가
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    WebkitTapHighlightColor: 'transparent',
   }} 
 >
         {MAP_CATEGORIES.map((cat) => {
@@ -2409,11 +2443,16 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
                 setSelected(null)
               }}
               className={
-                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
+                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 select-none ' +
                 (isActive
                   ? 'bg-orange-500 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
               }
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
               <span
                 style={{
@@ -2431,7 +2470,14 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
         })}
       </div>
 
-      <div className="flex-1 relative overflow-hidden">
+      <div
+        className="flex-1 relative overflow-hidden"
+        style={{
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
         <MapView
           restaurants={filtered}
           selected={selected}
@@ -2469,4 +2515,18 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
       </div>
     </div>
   )
+}
+
+if (typeof document !== 'undefined' && !document.getElementById('no-highlight-zone-style')) {
+  const style = document.createElement('style')
+  style.id = 'no-highlight-zone-style'
+  style.textContent = `
+    .no-highlight-zone,
+    .no-highlight-zone * {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+  `
+  document.head.appendChild(style)
 }
