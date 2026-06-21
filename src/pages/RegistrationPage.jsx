@@ -5,6 +5,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Camera, UserCircle } from '@phosphor-icons/react';
+import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
 
@@ -51,6 +53,65 @@ const SORTED_GENDERS_KO = [...GENDERS_KO].sort((a, b) => a.localeCompare(b, 'ko'
 const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b));
 const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) => a.localeCompare(b));
 
+const PASTEL_COLORS = [
+  '#FFB3B3',
+  '#FFD9A0',
+  '#FFF3A0',
+  '#B3F0C2',
+  '#A8D8FF',
+  '#C5B3FF',
+  '#FFB3E6',
+  '#B3F0EE',
+];
+
+function getPastelColor(seed) {
+  const str = seed || 'default';
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length];
+}
+
+async function getCroppedImgAsFile(imageSrc, pixelCrop, fileName = 'profile.jpg') {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.src = imageSrc;
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+  });
+
+  const canvas = document.createElement('canvas');
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  canvas
+    .getContext('2d')
+    .drawImage(
+      img,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height
+    );
+
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob((result) => {
+      if (!result) {
+        reject(new Error('Canvas is empty'));
+        return;
+      }
+      resolve(result);
+    }, 'image/jpeg', 0.95);
+  });
+
+  return new File([blob], fileName, { type: 'image/jpeg' });
+}
+
 // ── Translations ────────────────────────────────────────────────────────────────
 const translations = {
   en: {
@@ -68,6 +129,7 @@ const translations = {
     nationality: 'Nationality *',
     university: 'University *',
     major: 'Major *',
+    studentNumber: 'Student number *',
     programme: 'Programme *',
     academicYear: 'Academic year *',
     email: 'Email *',
@@ -95,7 +157,7 @@ const translations = {
     year: 'Year',
     foundation: 'Foundation',
     bachelor: 'Bachelor',
-    master: 'Master',
+    master: 'Masters',
     alumni: 'Alumni',
   },
   ko: {
@@ -113,6 +175,7 @@ const translations = {
     nationality: '국적 *',
     university: '대학 *',
     major: '전공 *',
+    studentNumber: '학번 *',
     programme: '프로그램 *',
     academicYear: '학년 *',
     email: '이메일 *',
@@ -138,10 +201,10 @@ const translations = {
     selectMajor: '전공 선택',
     selectYear: '학년 선택',
     year: '학년',
-    foundation: '파운데이션',
-    bachelor: '학사',
-    master: '석사',
-    alumni: '졸업',
+    foundation: 'Foundation',
+    bachelor: 'Bachelor',
+    master: 'Masters',
+    alumni: 'Alumni',
   },
 };
 
@@ -219,7 +282,7 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function RegistrationPage() {
   const navigate = useNavigate();
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('ko');
 
   const {
     step,
@@ -236,7 +299,6 @@ export default function RegistrationPage() {
 
   const yearOptions = getYearOptions(formData.educationLevel);
   const t = translations[language];
-  const genderOptions = language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO;
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
@@ -297,12 +359,6 @@ export default function RegistrationPage() {
         </button>
       </div>
 
-      {/* Header */}
-      <div style={s.header}>
-        <h1 style={s.title}>{t.title}</h1>
-        <p style={s.subtitle}>{t.subtitle}</p>
-      </div>
-
       {error && <div style={s.errorBanner}>{error}</div>}
 
       {step === 'about' && (
@@ -310,6 +366,7 @@ export default function RegistrationPage() {
           formData={formData}
           handleChange={handleChange}
           goNext={goNext}
+          setProfileFile={setProfileFile}
           language={language}
           t={t}
         />
@@ -323,7 +380,6 @@ export default function RegistrationPage() {
           yearOptions={yearOptions}
           goNext={goNext}
           goBack={goBack}
-          language={language}
           t={t}
         />
       )}
@@ -336,8 +392,6 @@ export default function RegistrationPage() {
           goBack={goBack}
           loading={loading}
           navigate={navigate}
-          setProfileFile={setProfileFile}
-          language={language}
           t={t}
         />
       )}
@@ -348,50 +402,135 @@ export default function RegistrationPage() {
 }
 
 // ── Step 1: About you ──────────────────────────────────────────────────────────
-function AboutStep({ formData, handleChange, goNext, language, t }) {
+function AboutStep({ formData, handleChange, goNext, setProfileFile, language, t }) {
+  const fileInputRef = useRef(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [cropFileName, setCropFileName] = useState('profile.jpg');
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+  const avatarSeed = `${formData.firstName || ''}${formData.lastName || ''}`;
+  const pastelBg = getPastelColor(avatarSeed);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropImageSrc(reader.result);
+      setCropFileName(file.name || 'profile.jpg');
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCropConfirm = async () => {
+    if (!cropImageSrc || !croppedAreaPixels) return;
+    const croppedFile = await getCroppedImgAsFile(cropImageSrc, croppedAreaPixels, cropFileName);
+    setProfileFile(croppedFile);
+    setPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return URL.createObjectURL(croppedFile);
+    });
+    setCropImageSrc(null);
+    setCroppedAreaPixels(null);
+  };
+
+  const closeCropper = () => {
+    setCropImageSrc(null);
+    setCroppedAreaPixels(null);
+  };
+
   return (
     <div style={s.form}>
-      <SectionTitle>{t.aboutYou}</SectionTitle>
+      <h1 style={s.formTitle}>{t.title}</h1>
 
-      <Row>
-        <Field label={t.firstName}>
+      <div style={s.aboutTopGrid}>
+        <div style={s.profilePicker}>
           <input
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            style={s.input}
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
           />
-        </Field>
-        <Field label={t.lastName}>
-          <input
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            style={s.input}
-          />
-        </Field>
-      </Row>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={s.avatarButton}
+            aria-label={t.profilePicture}
+          >
+            <div
+              style={{
+                ...s.avatarCircle,
+                background: previewUrl ? 'transparent' : pastelBg,
+              }}
+            >
+              {previewUrl ? (
+                <img src={previewUrl} alt="Profile" style={s.avatarImage} />
+              ) : (
+                <>
+                  <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
+                  <span style={s.avatarText}>프로필</span>
+                </>
+              )}
+            </div>
+            <span style={s.cameraBadge}>
+              <Camera size={18} weight="fill" color="#fff" />
+            </span>
+          </button>
+        </div>
 
-      {language === 'ko' && (
-        <Row>
-          <Field label={t.firstNameKorean}>
+        <div style={s.nameGrid}>
+          <Field label={t.firstName}>
             <input
-              name="firstNameKorean"
-              value={formData.firstNameKorean || ''}
+              name="firstName"
+              value={formData.firstName}
               onChange={handleChange}
               style={s.input}
             />
           </Field>
-          <Field label={t.lastNameKorean}>
+          <Field label={t.lastName}>
             <input
-              name="lastNameKorean"
-              value={formData.lastNameKorean || ''}
+              name="lastName"
+              value={formData.lastName}
               onChange={handleChange}
               style={s.input}
             />
           </Field>
-        </Row>
-      )}
+          {language === 'ko' && (
+            <>
+              <Field label={t.firstNameKorean}>
+                <input
+                  name="firstNameKorean"
+                  value={formData.firstNameKorean || ''}
+                  onChange={handleChange}
+                  style={s.input}
+                />
+              </Field>
+              <Field label={t.lastNameKorean}>
+                <input
+                  name="lastNameKorean"
+                  value={formData.lastNameKorean || ''}
+                  onChange={handleChange}
+                  style={s.input}
+                />
+              </Field>
+            </>
+          )}
+        </div>
+      </div>
 
       <Row>
         <Field label={t.yearOfBirth}>
@@ -436,6 +575,68 @@ function AboutStep({ formData, handleChange, goNext, language, t }) {
       >
         {t.next}
       </button>
+
+      {cropImageSrc && (
+        <ProfileCropModal
+          imageSrc={cropImageSrc}
+          crop={crop}
+          zoom={zoom}
+          setCrop={setCrop}
+          setZoom={setZoom}
+          setCroppedAreaPixels={setCroppedAreaPixels}
+          onCancel={closeCropper}
+          onConfirm={handleCropConfirm}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProfileCropModal({
+  imageSrc,
+  crop,
+  zoom,
+  setCrop,
+  setZoom,
+  setCroppedAreaPixels,
+  onCancel,
+  onConfirm,
+}) {
+  return (
+    <div style={s.cropOverlay}>
+      <div style={s.cropModal}>
+        <h2 style={s.cropTitle}>프로필 사진 자르기</h2>
+        <div style={s.cropFrame}>
+          <Cropper
+            image={imageSrc}
+            crop={crop}
+            zoom={zoom}
+            aspect={1}
+            cropShape="round"
+            showGrid={false}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={(_, areaPixels) => setCroppedAreaPixels(areaPixels)}
+          />
+        </div>
+        <input
+          type="range"
+          min={1}
+          max={3}
+          step={0.1}
+          value={zoom}
+          onChange={(e) => setZoom(Number(e.target.value))}
+          style={s.zoomSlider}
+        />
+        <div style={s.cropActions}>
+          <button type="button" onClick={onCancel} style={s.cropCancelBtn}>
+            취소
+          </button>
+          <button type="button" onClick={onConfirm} style={s.cropConfirmBtn}>
+            저장
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -448,23 +649,22 @@ function AcademicStep({
   yearOptions,
   goNext,
   goBack,
-  language,
   t,
 }) {
   const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
 
   return (
     <div style={s.form}>
-      <SectionTitle>{t.academicInfo}</SectionTitle>
+      <h1 style={s.formTitle}>{t.academicInfo}</h1>
 
-      <Row>
+      <div style={s.academicGrid}>
         <Field label={t.university}>
           <TypeaheadSelect
             name="university"
             value={formData.university}
             onChange={handleChange}
             options={SORTED_UNIVERSITIES}
-            placeholder={t.selectUniversity}
+            placeholder=""
           />
         </Field>
         <Field label={t.major}>
@@ -473,21 +673,37 @@ function AcademicStep({
             value={formData.major}
             onChange={handleChange}
             options={SORTED_MAJORS}
-            placeholder={t.selectMajor}
+            placeholder=""
           />
         </Field>
-      </Row>
+      </div>
+
+      <Field label={t.studentNumber}>
+        <input
+          name="studentNumber"
+          value={formData.studentNumber}
+          onChange={handleChange}
+          style={s.input}
+        />
+      </Field>
 
       <Field label={t.programme}>
-        <div style={s.radioGroup}>
+        <div style={s.programmeGrid}>
           {programmeOptions.map((level) => (
-            <label key={level} style={s.radioLabel}>
+            <label
+              key={level}
+              style={{
+                ...s.programmeOption,
+                ...(formData.educationLevel === level ? s.programmeOptionActive : {}),
+              }}
+            >
               <input
                 type="radio"
                 name="educationLevel"
                 value={level}
                 checked={formData.educationLevel === level}
                 onChange={handleEducationLevelChange}
+                style={s.programmeRadio}
               />
               {t[level]}
             </label>
@@ -503,7 +719,7 @@ function AcademicStep({
             onChange={handleChange}
             style={s.select}
           >
-            <option value="">{t.selectYear}</option>
+            <option value=""></option>
             {yearOptions.map((y) => (
               <option key={y} value={y}>
                 {t.year} {y}
@@ -513,7 +729,7 @@ function AcademicStep({
         </Field>
       )}
 
-      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+      <div style={s.stepActions}>
         <button
           type="button"
           onClick={goBack}
@@ -544,8 +760,6 @@ function AccountStep({
   goBack,
   loading,
   navigate,
-  setProfileFile,
-  language,
   t,
 }) {
   const isComplete =
@@ -557,7 +771,7 @@ function AccountStep({
 
   return (
     <form onSubmit={handleSubmit} style={s.form}>
-      <SectionTitle>{t.finalStep}</SectionTitle>
+      <h1 style={s.formTitle}>{t.finalStep}</h1>
 
       <Field label={t.email}>
         <input
@@ -598,19 +812,7 @@ function AccountStep({
         </p>
       )}
 
-      <Field label={t.profilePicture}>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files && e.target.files[0];
-            setProfileFile(file || null);
-          }}
-          style={s.input}
-        />
-      </Field>
-
-      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+      <div style={s.stepActions}>
         <button
           type="button"
           onClick={goBack}
@@ -647,10 +849,6 @@ function AccountStep({
 }
 
 // ── Small layout helpers ───────────────────────────────────────────────────────
-function SectionTitle({ children }) {
-  return <p style={sectionTitleStyle}>{children}</p>;
-}
-
 function Row({ children }) {
   return <div style={rowStyle}>{children}</div>;
 }
@@ -665,16 +863,6 @@ function Field({ label, children }) {
 }
 
 // ── Styles ─────────────────────────────────────────────────────────────────────
-const sectionTitleStyle = {
-  fontSize: '12px',
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: '#9ca3af',
-  marginBottom: '-4px',
-  marginTop: '4px',
-};
-
 const rowStyle = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
@@ -699,7 +887,7 @@ const s = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#fff',
     padding: '0',
   },
   topBar: {
@@ -709,7 +897,7 @@ const s = {
     alignItems: 'center',
     padding: '16px 32px',
     backgroundColor: 'white',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    boxShadow: 'none',
     position: 'sticky',
     top: 0,
     zIndex: 100,
@@ -762,28 +950,103 @@ const s = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '14px',
-    marginTop: '20px',
-    padding: '32px',
+    gap: '18px',
+    marginTop: '0',
+    padding: '18px 32px 32px',
     backgroundColor: 'white',
     borderRadius: '0',
     maxWidth: '800px',
     width: '100%',
-    margin: '20px auto',
+    margin: '0 auto 20px',
+  },
+  formTitle: {
+    fontSize: '20px',
+    fontWeight: 700,
+    color: '#111827',
+    margin: '0 0 4px',
+    textAlign: 'left',
+  },
+  aboutTopGrid: {
+    display: 'grid',
+    gridTemplateColumns: '132px 1fr',
+    gap: '22px',
+    alignItems: 'center',
+  },
+  profilePicker: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  avatarButton: {
+    position: 'relative',
+    width: '108px',
+    height: '108px',
+    padding: 0,
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+  },
+  avatarCircle: {
+    width: '96px',
+    height: '96px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: '8px',
+    border: '1px solid rgba(44,42,39,0.08)',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
+  },
+  avatarText: {
+    marginTop: '-8px',
+    fontSize: '13px',
+    fontWeight: 500,
+    color: '#111827',
+  },
+  cameraBadge: {
+    position: 'absolute',
+    top: '0',
+    right: '4px',
+    width: '30px',
+    height: '30px',
+    borderRadius: '50%',
+    backgroundColor: '#ef4444',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 8px rgba(239,68,68,0.35)',
+  },
+  nameGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '10px 12px',
+  },
+  academicGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '14px',
   },
   input: {
-    padding: '9px 11px',
-    borderRadius: '6px',
-    border: '1px solid #d1d5db',
+    padding: '11px 12px',
+    borderRadius: '8px',
+    border: '1px solid #d7d2c8',
     fontSize: '14px',
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
+    backgroundColor: '#fff',
+    color: '#111827',
   },
   select: {
-    padding: '9px 11px',
-    borderRadius: '6px',
-    border: '1px solid #d1d5db',
+    padding: '11px 12px',
+    borderRadius: '8px',
+    border: '1px solid #d7d2c8',
     fontSize: '14px',
     backgroundColor: 'white',
     outline: 'none',
@@ -803,6 +1066,43 @@ const s = {
     fontSize: '14px',
     color: '#374151',
     cursor: 'pointer',
+  },
+  programmeGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
+    gap: '10px',
+    marginTop: '4px',
+  },
+  programmeOption: {
+    position: 'relative',
+    minHeight: '44px',
+    borderRadius: '9999px',
+    border: '1px solid #d7d2c8',
+    backgroundColor: '#fff',
+    color: '#4b5563',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '0 12px',
+    fontSize: '13px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'background-color 0.15s, border-color 0.15s, color 0.15s',
+  },
+  programmeOptionActive: {
+    backgroundColor: '#111827',
+    borderColor: '#111827',
+    color: '#fff',
+  },
+  programmeRadio: {
+    position: 'absolute',
+    opacity: 0,
+    pointerEvents: 'none',
+  },
+  stepActions: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '10px',
   },
   submitBtn: {
     marginTop: '8px',
@@ -903,5 +1203,67 @@ const s = {
     color: '#6b7280',
     lineHeight: 1.6,
     margin: 0,
+  },
+  cropOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 1000,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '16px',
+  },
+  cropModal: {
+    width: '100%',
+    maxWidth: '380px',
+    backgroundColor: '#fff',
+    borderRadius: '16px',
+    padding: '16px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '14px',
+  },
+  cropTitle: {
+    margin: 0,
+    fontSize: '14px',
+    fontWeight: 700,
+    color: '#111827',
+  },
+  cropFrame: {
+    position: 'relative',
+    width: '100%',
+    height: '280px',
+    borderRadius: '14px',
+    overflow: 'hidden',
+    backgroundColor: '#111827',
+  },
+  zoomSlider: {
+    width: '100%',
+  },
+  cropActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '8px',
+  },
+  cropCancelBtn: {
+    padding: '8px 14px',
+    borderRadius: '9999px',
+    border: 'none',
+    backgroundColor: '#f3f4f6',
+    color: '#4b5563',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  cropConfirmBtn: {
+    padding: '8px 16px',
+    borderRadius: '9999px',
+    border: 'none',
+    backgroundColor: '#111827',
+    color: '#fff',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
   },
 };

@@ -21,9 +21,8 @@ const INITIAL_FORM = {
   yearOfBirth: '',
   gender: '',
   countryOfOrigin: '',
-  // Defaults match the UI options
-  university: 'University of Amsterdam (UvA)',
-  major: 'Business Administration',
+  university: '',
+  major: '',
   educationLevel: '',
   yearNumber: '',
 };
