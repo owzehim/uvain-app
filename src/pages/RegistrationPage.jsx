@@ -524,18 +524,20 @@ function ProfileHero({
 }) {
   const { profilePreviewUrl, pastelBg, onProfileClick, t } = profileHeroProps;
   const compact = variant === 'compact';
+  const academic = variant === 'academic';
+  const showIntro = Boolean(firstLine || secondLine);
   return (
-    <div style={compact ? s.compactHero : s.aboutTopGrid}>
+    <div style={academic ? s.academicHero : compact ? s.compactHero : s.aboutTopGrid}>
       <div style={s.profilePicker}>
         <button
           type="button"
           onClick={allowUpload ? onProfileClick : undefined}
-          style={compact ? s.avatarButtonCompact : s.avatarButton}
+          style={academic ? s.avatarButtonAcademic : compact ? s.avatarButtonCompact : s.avatarButton}
           aria-label={t.profilePicture}
         >
           <div
             style={{
-              ...(compact ? s.avatarCircleCompact : s.avatarCircle),
+              ...(academic ? s.avatarCircleAcademic : compact ? s.avatarCircleCompact : s.avatarCircle),
               background: profilePreviewUrl ? 'transparent' : pastelBg,
             }}
           >
@@ -546,17 +548,19 @@ function ProfileHero({
             )}
           </div>
           {allowUpload && (
-            <span style={compact ? s.cameraBadgeCompact : s.cameraBadge}>
-              <Camera size={compact ? 12 : 19} weight="fill" color="#111827" />
+            <span style={academic ? s.cameraBadgeAcademic : compact ? s.cameraBadgeCompact : s.cameraBadge}>
+              <Camera size={academic || compact ? 12 : 19} weight="fill" color="#111827" />
             </span>
           )}
         </button>
       </div>
 
-      <div style={compact ? s.compactIntro : s.aboutIntro}>
-        <p style={compact ? s.compactIntroLine : s.aboutIntroEn}>{firstLine}</p>
-        <p style={compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
-      </div>
+      {showIntro && (
+        <div style={compact ? s.compactIntro : s.aboutIntro}>
+          <p style={compact ? s.compactIntroLine : s.aboutIntroEn}>{firstLine}</p>
+          <p style={compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -564,7 +568,7 @@ function ProfileHero({
 function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps }) {
   return (
     <div style={s.form}>
-      <div style={{ ...s.formContent, ...s.academicContent }}>
+      <div style={s.formContent}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
           firstLine="네덜란드 유학생들을 위한"
@@ -737,17 +741,12 @@ function AcademicStep({
   profileHeroProps,
 }) {
   const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
-  const greetingFirstLine = language === 'ko' ? '안녕하세요,' : 'Greetings,';
-  const greetingSecondLine = language === 'ko' ? `${greetingName}님` : greetingName;
-
   return (
     <div style={s.form}>
-      <div style={s.formContent}>
+      <div style={{ ...s.formContent, ...s.academicContent }}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          variant="compact"
-          firstLine={greetingFirstLine}
-          secondLine={greetingSecondLine}
+          variant="academic"
           allowUpload={false}
         />
         <h1 style={s.formTitle}>{t.academicInfo}</h1>
@@ -1077,7 +1076,7 @@ const s = {
   },
   academicContent: {
     gap: '8px',
-    paddingTop: '110px',
+    paddingTop: '118px',
   },
   bottomAction: {
     flexShrink: 0,
@@ -1095,6 +1094,7 @@ const s = {
     gridTemplateColumns: '94px 1fr',
     gap: '14px',
     alignItems: 'center',
+    height: '96px',
     minHeight: '96px',
   },
   profilePicker: {
@@ -1171,6 +1171,15 @@ const s = {
     alignItems: 'center',
     alignSelf: 'stretch',
   },
+  academicHero: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    height: '40px',
+    minHeight: '40px',
+    marginTop: '-8px',
+    alignSelf: 'stretch',
+  },
   avatarButtonCompact: {
     position: 'relative',
     width: '54px',
@@ -1216,6 +1225,28 @@ const s = {
     fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
+  },
+  avatarButtonAcademic: {
+    position: 'relative',
+    width: '38px',
+    height: '38px',
+    padding: 0,
+    border: 'none',
+    background: 'transparent',
+    cursor: 'default',
+  },
+  avatarCircleAcademic: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid rgba(44,42,39,0.08)',
+  },
+  cameraBadgeAcademic: {
+    display: 'none',
   },
   compactIntroName: {
     margin: 0,
@@ -1338,7 +1369,7 @@ const s = {
   },
   submitBtn: {
     marginTop: '2px',
-    padding: '10px',
+    padding: '12px 10px',
     borderRadius: '9999px',
     border: 'none',
     background: 'linear-gradient(135deg, #f97316, #ea580c)',
