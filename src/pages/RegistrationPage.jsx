@@ -542,7 +542,7 @@ function ProfileHero({
           </div>
           {allowUpload && (
             <span style={compact ? s.cameraBadgeCompact : s.cameraBadge}>
-              <Camera size={compact ? 16 : 26} weight="fill" color="#111827" />
+              <Camera size={compact ? 12 : 12} weight="fill" color="#111827" />
             </span>
           )}
         </button>
@@ -561,8 +561,8 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
     <div style={s.form}>
       <ProfileHero
         profileHeroProps={profileHeroProps}
-        firstLine="Connect, Share, and Enjoy. UvA-IN"
-        secondLine="네덜란드 유학생을 위한 공식 커뮤니티."
+        firstLine="지금 가입하고"
+        secondLine="새로운 경험을 하세요"
       />
 
       <div style={s.nameGrid}>
@@ -923,18 +923,18 @@ function Field({ label, children }) {
 // ?? Styles ?????????????????????????????????????????????????????????????????????
 const rowStyle = {
   display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: '12px',
+  gridTemplateColumns: '1fr',
+  gap: '8px',
 };
 
 const fieldStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: '5px',
-  minHeight: '50px',
-  padding: '8px 13px 7px',
-  border: '1.4px solid #cfd4dc',
-  borderRadius: '16px',
+  minHeight: '52px',
+  padding: '8px 12px 7px',
+  border: '1px solid #d8dde5',
+  borderRadius: '8px',
   backgroundColor: '#fff',
   boxSizing: 'border-box',
   justifyContent: 'center',
@@ -959,10 +959,11 @@ const s = {
   },
   topBar: {
     width: '100%',
+    maxWidth: '320px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '10px 32px',
+    padding: '6px 0',
     backgroundColor: 'white',
     boxShadow: 'none',
     position: 'sticky',
@@ -1017,12 +1018,12 @@ const s = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
     marginTop: '0',
-    padding: '4px 32px 18px',
+    padding: '6px 0 14px',
     backgroundColor: 'white',
     borderRadius: '0',
-    maxWidth: '800px',
+    maxWidth: '320px',
     width: '100%',
     margin: '0 auto',
     flex: 1,
@@ -1030,16 +1031,16 @@ const s = {
     justifyContent: 'center',
   },
   formTitle: {
-    fontSize: '20px',
-    fontWeight: 700,
+    fontSize: '18px',
+    fontWeight: 600,
     color: '#111827',
     margin: '0 0 4px',
     textAlign: 'left',
   },
   aboutTopGrid: {
     display: 'grid',
-    gridTemplateColumns: '146px 1fr',
-    gap: '18px',
+    gridTemplateColumns: '44px 1fr',
+    gap: '10px',
     alignItems: 'center',
   },
   profilePicker: {
@@ -1048,16 +1049,16 @@ const s = {
   },
   avatarButton: {
     position: 'relative',
-    width: '128px',
-    height: '128px',
+    width: '40px',
+    height: '40px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircle: {
-    width: '120px',
-    height: '120px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1075,10 +1076,10 @@ const s = {
   },
   cameraBadge: {
     position: 'absolute',
-    right: '2px',
-    bottom: '4px',
-    width: '38px',
-    height: '38px',
+    right: '-2px',
+    bottom: '-1px',
+    width: '16px',
+    height: '16px',
     borderRadius: '50%',
     backgroundColor: '#fff',
     border: '1px solid #111827',
@@ -1090,44 +1091,44 @@ const s = {
   aboutIntro: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '2px',
     justifyContent: 'center',
   },
   aboutIntroEn: {
     margin: 0,
-    fontSize: '17px',
+    fontSize: '13px',
     lineHeight: 1.2,
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
   },
   aboutIntroKo: {
     margin: 0,
-    fontSize: '19px',
+    fontSize: '13px',
     lineHeight: 1.25,
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
   },
   compactHero: {
     display: 'grid',
-    gridTemplateColumns: '62px 1fr',
-    gap: '12px',
+    gridTemplateColumns: '44px 1fr',
+    gap: '10px',
     alignItems: 'center',
     alignSelf: 'stretch',
   },
   avatarButtonCompact: {
     position: 'relative',
-    width: '54px',
-    height: '54px',
+    width: '40px',
+    height: '40px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircleCompact: {
-    width: '50px',
-    height: '50px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1156,35 +1157,35 @@ const s = {
   },
   compactIntroLine: {
     margin: 0,
-    fontSize: '14px',
+    fontSize: '13px',
     lineHeight: 1.2,
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
   },
   compactIntroName: {
     margin: 0,
-    fontSize: '16px',
+    fontSize: '13px',
     lineHeight: 1.2,
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
   },
   nameGrid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '10px 12px',
+    gridTemplateColumns: '1fr',
+    gap: '8px',
   },
   academicGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '14px',
+    gridTemplateColumns: '1fr',
+    gap: '8px',
   },
   input: {
     padding: '0',
     borderRadius: '0',
     border: 'none',
-    fontSize: '14px',
+    fontSize: '13px',
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
@@ -1220,12 +1221,12 @@ const s = {
   programmeGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
-    gap: '10px',
-    marginTop: '4px',
+    gap: '6px',
+    marginTop: '2px',
   },
   programmeOption: {
     position: 'relative',
-    minHeight: '44px',
+    minHeight: '34px',
     borderRadius: '9999px',
     border: '1px solid #cfd4dc',
     backgroundColor: '#fff',
@@ -1234,8 +1235,8 @@ const s = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '0 12px',
-    fontSize: '13px',
-    fontWeight: 700,
+    fontSize: '12px',
+    fontWeight: 600,
     cursor: 'pointer',
     transition: 'background-color 0.15s, border-color 0.15s, color 0.15s',
   },
@@ -1252,17 +1253,17 @@ const s = {
   yearGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(52px, 1fr))',
-    gap: '8px',
-    marginTop: '4px',
+    gap: '6px',
+    marginTop: '2px',
   },
   yearOption: {
-    minHeight: '40px',
+    minHeight: '32px',
     borderRadius: '9999px',
     border: '1px solid #cfd4dc',
     backgroundColor: '#fff',
     color: '#4b5563',
-    fontSize: '14px',
-    fontWeight: 700,
+    fontSize: '12px',
+    fontWeight: 600,
     cursor: 'pointer',
   },
   yearOptionActive: {
@@ -1273,16 +1274,16 @@ const s = {
   stepActions: {
     display: 'flex',
     gap: '10px',
-    marginTop: '10px',
+    marginTop: '8px',
   },
   submitBtn: {
-    marginTop: '4px',
+    marginTop: '2px',
     padding: '10px',
     borderRadius: '9999px',
     border: 'none',
     background: 'linear-gradient(135deg, #f97316, #ea580c)',
     color: 'white',
-    fontSize: '15px',
+    fontSize: '14px',
     fontWeight: 600,
     width: '100%',
     cursor: 'pointer',
