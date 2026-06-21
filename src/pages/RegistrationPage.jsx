@@ -564,7 +564,7 @@ function ProfileHero({
 function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps }) {
   return (
     <div style={s.form}>
-      <div style={s.formContent}>
+      <div style={{ ...s.formContent, ...s.academicContent }}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
           firstLine="네덜란드 유학생들을 위한"
@@ -782,7 +782,7 @@ function AcademicStep({
           />
         </Field>
 
-        <Field label={t.programme}>
+        <Field label={t.programme} variant="group" style={s.programmeField}>
           <div style={s.programmeGrid}>
             {programmeOptions.map((level) => (
               <label
@@ -807,7 +807,7 @@ function AcademicStep({
         </Field>
 
         {yearOptions.length > 0 && (
-          <Field label={t.academicYear}>
+          <Field label={t.academicYear} variant="group" style={s.yearField}>
             <div style={s.yearGrid}>
               {yearOptions.map((y) => (
                 <button
@@ -933,9 +933,9 @@ function Row({ children }) {
   return <div style={rowStyle}>{children}</div>;
 }
 
-function Field({ label, children }) {
+function Field({ label, children, variant = 'input', style }) {
   return (
-    <div style={fieldStyle}>
+    <div style={{ ...(variant === 'group' ? groupFieldStyle : fieldStyle), ...style }}>
       <label style={labelStyle}>{label}</label>
       {children}
     </div>
@@ -956,6 +956,19 @@ const fieldStyle = {
   height: '54px',
   minHeight: '54px',
   padding: '8px 12px 7px',
+  border: '1px solid #d8dde5',
+  borderRadius: '8px',
+  backgroundColor: '#fff',
+  boxSizing: 'border-box',
+  justifyContent: 'center',
+};
+
+const groupFieldStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '7px',
+  minHeight: '54px',
+  padding: '8px 12px',
   border: '1px solid #d8dde5',
   borderRadius: '8px',
   backgroundColor: '#fff',
@@ -1060,11 +1073,15 @@ const s = {
     flex: 1,
     minHeight: 0,
     justifyContent: 'flex-start',
-    paddingTop: '54px',
+    paddingTop: '104px',
+  },
+  academicContent: {
+    gap: '8px',
+    paddingTop: '110px',
   },
   bottomAction: {
     flexShrink: 0,
-    paddingBottom: 'calc(env(safe-area-inset-bottom) + 46px)',
+    paddingBottom: 'calc(env(safe-area-inset-bottom) + 122px)',
   },
   formTitle: {
     fontSize: '18px',
@@ -1257,13 +1274,16 @@ const s = {
   },
   programmeGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
-    gap: '6px',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '7px 8px',
     marginTop: '2px',
+  },
+  programmeField: {
+    minHeight: '104px',
   },
   programmeOption: {
     position: 'relative',
-    minHeight: '34px',
+    minHeight: '30px',
     borderRadius: '9999px',
     border: '1px solid #cfd4dc',
     backgroundColor: '#fff',
@@ -1289,12 +1309,15 @@ const s = {
   },
   yearGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(52px, 1fr))',
-    gap: '6px',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '7px',
     marginTop: '2px',
   },
+  yearField: {
+    minHeight: '72px',
+  },
   yearOption: {
-    minHeight: '32px',
+    minHeight: '30px',
     borderRadius: '9999px',
     border: '1px solid #cfd4dc',
     backgroundColor: '#fff',
