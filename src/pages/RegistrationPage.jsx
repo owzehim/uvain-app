@@ -1009,8 +1009,8 @@ const labelStyle = {
 const registrationMotionCss = `
 @keyframes registrationFadeUp {
   from {
-    opacity: 0;
-    transform: translateY(10px);
+    opacity: 0.78;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -1020,8 +1020,8 @@ const registrationMotionCss = `
 
 @keyframes registrationTitleFade {
   from {
-    opacity: 0;
-    transform: translateX(-6px);
+    opacity: 0.72;
+    transform: translateX(-4px);
   }
   to {
     opacity: 1;
@@ -1031,7 +1031,7 @@ const registrationMotionCss = `
 
 @keyframes registrationHeroShrink {
   from {
-    opacity: 0.85;
+    opacity: 0.96;
     transform: translate(38px, 22px) scale(1.65);
   }
   to {
@@ -1042,7 +1042,7 @@ const registrationMotionCss = `
 
 @keyframes registrationHeroReturn {
   from {
-    opacity: 0.9;
+    opacity: 0.96;
     transform: translate(-34px, -18px) scale(0.62);
   }
   to {
@@ -1052,29 +1052,33 @@ const registrationMotionCss = `
 }
 
 .registration-title {
-  animation: registrationTitleFade 220ms ease-out both;
+  animation: registrationTitleFade 420ms ease-out both;
 }
 
 .registration-step {
-  animation: registrationFadeUp 260ms ease-out both;
+  opacity: 1;
 }
 
 .registration-step [data-motion='hero-text'] {
-  animation: registrationFadeUp 300ms ease-out both;
+  will-change: transform, opacity;
+  animation: registrationFadeUp 620ms cubic-bezier(.2,.7,.2,1) both;
 }
 
 .registration-step [data-motion='fields'] {
-  animation: registrationFadeUp 340ms ease-out both;
+  will-change: transform, opacity;
+  animation: registrationFadeUp 680ms cubic-bezier(.2,.7,.2,1) both;
 }
 
 .registration-step-academic [data-motion='avatar'] {
   transform-origin: left top;
-  animation: registrationHeroShrink 360ms cubic-bezier(.2,.7,.2,1) both;
+  will-change: transform, opacity;
+  animation: registrationHeroShrink 720ms cubic-bezier(.2,.7,.2,1) both;
 }
 
 .registration-step-account [data-motion='avatar'] {
   transform-origin: left top;
-  animation: registrationHeroReturn 360ms cubic-bezier(.2,.7,.2,1) both;
+  will-change: transform, opacity;
+  animation: registrationHeroReturn 720ms cubic-bezier(.2,.7,.2,1) both;
 }
 `;
 
