@@ -43,10 +43,13 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
       ? '다음 방문 시 사용 가능'
       : ''
   const shouldHighlight = !!statusText
-  const miniWidth = 120
+  const miniWidth = 108
+  const framePadding = shouldHighlight ? 5 : 0
+  const bottomBandHeight = shouldHighlight ? 24 : 0
   const previewWidth = 360
-  const scale = miniWidth / previewWidth
-  const miniHeight = miniWidth / 1.586
+  const viewportWidth = miniWidth - framePadding * 2
+  const viewportHeight = viewportWidth / 1.586
+  const scale = viewportWidth / previewWidth
 
   return (
     <button
@@ -68,15 +71,23 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
         textAlign: 'left',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+      <div
+        style={{
+          width: miniWidth,
+          overflow: 'hidden',
+          borderRadius: shouldHighlight ? 9 : 0,
+          background: shouldHighlight ? ORANGE : 'transparent',
+          padding: shouldHighlight ? `${framePadding}px ${framePadding}px 0` : 0,
+          boxShadow: '0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)',
+        }}
+      >
         <div
           style={{
-            width: miniWidth,
-            height: miniHeight,
+            width: viewportWidth,
+            height: viewportHeight,
             overflow: 'hidden',
-            boxShadow: shouldHighlight
-              ? `0 0 0 2px ${ORANGE}, 0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)`
-              : '0 5px 12px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.12)',
+            background: '#ffffff',
+            borderRadius: shouldHighlight ? '4px 4px 0 0' : 0,
           }}
         >
           <div
@@ -91,24 +102,26 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
               config={config}
               visits={stampState.currentCycleVisits}
               isCardFull={stampState.isCardFull}
-              highlighted={shouldHighlight}
-              highlightColor={ORANGE}
             />
           </div>
         </div>
         {statusText && (
-          <span
+          <div
             style={{
-              color: ORANGE,
-              fontSize: 11,
-              fontWeight: 700,
+              height: bottomBandHeight,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              fontSize: 10,
+              fontWeight: 800,
               lineHeight: 1,
-              textShadow: '0 1px 2px rgba(255,255,255,0.9)',
               whiteSpace: 'nowrap',
+              textAlign: 'center',
             }}
           >
             {statusText}
-          </span>
+          </div>
         )}
       </div>
     </button>
