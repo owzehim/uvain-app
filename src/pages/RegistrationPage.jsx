@@ -284,6 +284,17 @@ export default function RegistrationPage() {
   const navigate = useNavigate();
   const [language, setLanguage] = useState('ko');
 
+  useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, []);
+
   const {
     step,
     formData,
@@ -411,8 +422,7 @@ function AboutStep({ formData, handleChange, goNext, setProfileFile, language, t
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
-  const avatarSeed = `${formData.firstName || ''}${formData.lastName || ''}`;
-  const pastelBg = getPastelColor(avatarSeed);
+  const pastelBg = getPastelColor('registration-default-profile');
 
   useEffect(() => {
     return () => {
@@ -480,14 +490,11 @@ function AboutStep({ formData, handleChange, goNext, setProfileFile, language, t
               {previewUrl ? (
                 <img src={previewUrl} alt="Profile" style={s.avatarImage} />
               ) : (
-                <>
-                  <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
-                  <span style={s.avatarText}>프로필</span>
-                </>
+                <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
               )}
             </div>
             <span style={s.cameraBadge}>
-              <Camera size={18} weight="fill" color="#fff" />
+              <Camera size={18} weight="fill" color="#111827" />
             </span>
           </button>
         </div>
@@ -713,19 +720,21 @@ function AcademicStep({
 
       {yearOptions.length > 0 && (
         <Field label={t.academicYear}>
-          <select
-            name="yearNumber"
-            value={formData.yearNumber}
-            onChange={handleChange}
-            style={s.select}
-          >
-            <option value=""></option>
+          <div style={s.yearGrid}>
             {yearOptions.map((y) => (
-              <option key={y} value={y}>
-                {t.year} {y}
-              </option>
+              <button
+                key={y}
+                type="button"
+                onClick={() => handleChange({ target: { name: 'yearNumber', value: String(y) } })}
+                style={{
+                  ...s.yearOption,
+                  ...(String(formData.yearNumber) === String(y) ? s.yearOptionActive : {}),
+                }}
+              >
+                {y}
+              </button>
             ))}
-          </select>
+          </div>
         </Field>
       )}
 
@@ -883,19 +892,20 @@ const labelStyle = {
 
 const s = {
   page: {
-    minHeight: '100vh',
+    height: '100dvh',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     backgroundColor: '#fff',
     padding: '0',
+    overflow: 'hidden',
   },
   topBar: {
     width: '100%',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '16px 32px',
+    padding: '10px 32px',
     backgroundColor: 'white',
     boxShadow: 'none',
     position: 'sticky',
@@ -950,14 +960,17 @@ const s = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '18px',
+    gap: '12px',
     marginTop: '0',
-    padding: '18px 32px 32px',
+    padding: '8px 32px 18px',
     backgroundColor: 'white',
     borderRadius: '0',
     maxWidth: '800px',
     width: '100%',
-    margin: '0 auto 20px',
+    margin: '0 auto',
+    flex: 1,
+    minHeight: 0,
+    justifyContent: 'center',
   },
   formTitle: {
     fontSize: '20px',
@@ -978,16 +991,16 @@ const s = {
   },
   avatarButton: {
     position: 'relative',
-    width: '108px',
-    height: '108px',
+    width: '104px',
+    height: '104px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircle: {
-    width: '96px',
-    height: '96px',
+    width: '92px',
+    height: '92px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1003,12 +1016,6 @@ const s = {
     objectFit: 'cover',
     display: 'block',
   },
-  avatarText: {
-    marginTop: '-8px',
-    fontSize: '13px',
-    fontWeight: 500,
-    color: '#111827',
-  },
   cameraBadge: {
     position: 'absolute',
     top: '0',
@@ -1016,11 +1023,12 @@ const s = {
     width: '30px',
     height: '30px',
     borderRadius: '50%',
-    backgroundColor: '#ef4444',
+    backgroundColor: '#fff',
+    border: '1px solid #111827',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(239,68,68,0.35)',
+    boxShadow: '0 2px 8px rgba(17,24,39,0.14)',
   },
   nameGrid: {
     display: 'grid',
@@ -1033,7 +1041,7 @@ const s = {
     gap: '14px',
   },
   input: {
-    padding: '11px 12px',
+    padding: '9px 12px',
     borderRadius: '8px',
     border: '1px solid #d7d2c8',
     fontSize: '14px',
@@ -1044,7 +1052,7 @@ const s = {
     color: '#111827',
   },
   select: {
-    padding: '11px 12px',
+    padding: '9px 12px',
     borderRadius: '8px',
     border: '1px solid #d7d2c8',
     fontSize: '14px',
@@ -1099,14 +1107,35 @@ const s = {
     opacity: 0,
     pointerEvents: 'none',
   },
+  yearGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(52px, 1fr))',
+    gap: '8px',
+    marginTop: '4px',
+  },
+  yearOption: {
+    minHeight: '40px',
+    borderRadius: '9999px',
+    border: '1px solid #d7d2c8',
+    backgroundColor: '#fff',
+    color: '#4b5563',
+    fontSize: '14px',
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  yearOptionActive: {
+    backgroundColor: '#111827',
+    borderColor: '#111827',
+    color: '#fff',
+  },
   stepActions: {
     display: 'flex',
     gap: '10px',
     marginTop: '10px',
   },
   submitBtn: {
-    marginTop: '8px',
-    padding: '11px',
+    marginTop: '4px',
+    padding: '10px',
     borderRadius: '9999px',
     border: 'none',
     background: 'linear-gradient(135deg, #f97316, #ea580c)',
@@ -1154,8 +1183,8 @@ const s = {
     fontWeight: 500,
   },
   note: {
-    marginTop: '16px',
-    marginBottom: '40px',
+    marginTop: '0',
+    marginBottom: '10px',
     fontSize: '11px',
     color: '#9ca3af',
     textAlign: 'center',
