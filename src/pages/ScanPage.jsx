@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { logRedemption } from '../lib/redemption'
@@ -20,7 +20,9 @@ export default function ScanPage() {
   const [member, setMember] = useState(null)
   const [scanTime, setScanTime] = useState(null)
   const navigate = useNavigate()
+  const location = useLocation()
   const handlingRef = useRef(false)
+  const processedInitialScanRef = useRef(null)
 
   // Stamp card state
   const [scannedUserId, setScannedUserId] = useState(null)
@@ -28,7 +30,7 @@ export default function ScanPage() {
   const [stampCardEnabled, setStampCardEnabled] = useState(false)
   const [stampResult, setStampResult] = useState(null)
 
-  async function handleScan(rawValue) {
+  const handleScan = useCallback(async (rawValue) => {
     if (handlingRef.current) return
     handlingRef.current = true
 
@@ -101,7 +103,15 @@ export default function ScanPage() {
     }
 
     handlingRef.current = false
-  }
+  }, [])
+
+  useEffect(() => {
+    const rawValue = location.state?.rawValue
+    if (!rawValue || processedInitialScanRef.current === rawValue) return
+
+    processedInitialScanRef.current = rawValue
+    handleScan(rawValue)
+  }, [handleScan, location.state])
 
   const reset = () => {
     setState(STATE.SCANNING)
