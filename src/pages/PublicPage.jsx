@@ -58,7 +58,7 @@ export default function PublicPage() {
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
-        <div key={activeTab} className="h-full animate-quick-fade-slide-up">
+        <div key={activeTab} className="h-full">
           {activeTab === 'map' && <PublicMapTab restaurants={restaurants} />}
           {activeTab === 'membership' && <MembershipTab />}
         </div>

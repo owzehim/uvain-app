@@ -1009,8 +1009,8 @@ const labelStyle = {
 const registrationMotionCss = `
 @keyframes registrationFadeUp {
   from {
-    opacity: 0.78;
-    transform: translateY(8px);
+    opacity: 0.84;
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -1031,8 +1031,8 @@ const registrationMotionCss = `
 
 @keyframes registrationHeroShrink {
   from {
-    opacity: 0.96;
-    transform: translate(38px, 22px) scale(1.65);
+    opacity: 0.98;
+    transform: translate(20px, 10px) scale(1.22);
   }
   to {
     opacity: 1;
@@ -1042,8 +1042,8 @@ const registrationMotionCss = `
 
 @keyframes registrationHeroReturn {
   from {
-    opacity: 0.96;
-    transform: translate(-34px, -18px) scale(0.62);
+    opacity: 0.98;
+    transform: translate(-14px, -8px) scale(0.82);
   }
   to {
     opacity: 1;
@@ -1061,24 +1061,24 @@ const registrationMotionCss = `
 
 .registration-step [data-motion='hero-text'] {
   will-change: transform, opacity;
-  animation: registrationFadeUp 620ms cubic-bezier(.2,.7,.2,1) both;
+  animation: registrationFadeUp 820ms cubic-bezier(.16,.72,.18,1) both;
 }
 
 .registration-step [data-motion='fields'] {
   will-change: transform, opacity;
-  animation: registrationFadeUp 680ms cubic-bezier(.2,.7,.2,1) both;
+  animation: registrationFadeUp 1120ms cubic-bezier(.16,.72,.18,1) both;
 }
 
 .registration-step-academic [data-motion='avatar'] {
   transform-origin: left top;
   will-change: transform, opacity;
-  animation: registrationHeroShrink 720ms cubic-bezier(.2,.7,.2,1) both;
+  animation: registrationHeroShrink 880ms cubic-bezier(.16,.72,.18,1) both;
 }
 
 .registration-step-account [data-motion='avatar'] {
   transform-origin: left top;
   will-change: transform, opacity;
-  animation: registrationHeroReturn 720ms cubic-bezier(.2,.7,.2,1) both;
+  animation: registrationHeroReturn 880ms cubic-bezier(.16,.72,.18,1) both;
 }
 `;
 
