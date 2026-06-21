@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Camera, UserCircle } from '@phosphor-icons/react';
+import { Camera, CaretLeft, UserCircle } from '@phosphor-icons/react';
 import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
@@ -382,6 +382,7 @@ export default function RegistrationPage() {
   if (step === 'email') {
     return (
       <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
+        <style>{registrationMotionCss}</style>
         <div style={s.topBar}>
           <button
             type="button"
@@ -389,7 +390,7 @@ export default function RegistrationPage() {
             style={s.backButton}
             title="Go back"
           >
-            <ArrowLeft size={22} weight="bold" />
+            <CaretLeft size={24} weight="bold" />
           </button>
           <button
             onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
@@ -419,6 +420,7 @@ export default function RegistrationPage() {
 
   return (
     <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
+      <style>{registrationMotionCss}</style>
       {/* Top Bar with Back Button and Language Toggle */}
       <div style={s.topBar}>
         <button
@@ -427,8 +429,13 @@ export default function RegistrationPage() {
           style={s.backButton}
           title="Go back"
         >
-          <ArrowLeft size={22} weight="bold" />
+          <CaretLeft size={24} weight="bold" />
         </button>
+        {step === 'about' && (
+          <span className="registration-title" style={s.topTitle}>
+            {t.title}
+          </span>
+        )}
         <button
           onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
           style={s.languageToggle}
@@ -448,54 +455,62 @@ export default function RegistrationPage() {
       {error && <div style={s.errorBanner}>{error}</div>}
 
       {step === 'about' && (
-        <NameStep
-          formData={formData}
-          handleChange={handleChange}
-          goNext={goNext}
-          language={language}
-          t={t}
-          profileHeroProps={profileHeroProps}
-        />
+        <div key="about" className="registration-step" style={s.stepShell}>
+          <NameStep
+            formData={formData}
+            handleChange={handleChange}
+            goNext={goNext}
+            language={language}
+            t={t}
+            profileHeroProps={profileHeroProps}
+          />
+        </div>
       )}
 
       {step === 'personal' && (
-        <PersonalStep
-          formData={formData}
-          handleChange={handleChange}
-          goNext={goNext}
-          language={language}
-          t={t}
-          displayName={displayName}
-          greetingName={greetingName}
-          profileHeroProps={profileHeroProps}
-        />
+        <div key="personal" className="registration-step" style={s.stepShell}>
+          <PersonalStep
+            formData={formData}
+            handleChange={handleChange}
+            goNext={goNext}
+            language={language}
+            t={t}
+            displayName={displayName}
+            greetingName={greetingName}
+            profileHeroProps={profileHeroProps}
+          />
+        </div>
       )}
 
       {step === 'academic' && (
-        <AcademicStep
-          formData={formData}
-          handleChange={handleChange}
-          handleEducationLevelChange={handleEducationLevelChange}
-          yearOptions={yearOptions}
-          goNext={goNext}
-          t={t}
-          displayName={displayName}
-          greetingName={greetingName}
-          language={language}
-          profileHeroProps={profileHeroProps}
-        />
+        <div key="academic" className="registration-step registration-step-academic" style={s.stepShell}>
+          <AcademicStep
+            formData={formData}
+            handleChange={handleChange}
+            handleEducationLevelChange={handleEducationLevelChange}
+            yearOptions={yearOptions}
+            goNext={goNext}
+            t={t}
+            displayName={displayName}
+            greetingName={greetingName}
+            language={language}
+            profileHeroProps={profileHeroProps}
+          />
+        </div>
       )}
 
       {step === 'account' && (
-        <AccountStep
-          formData={formData}
-          handleChange={handleChange}
-          handleSubmit={handleSubmit}
-          loading={loading}
-          navigate={navigate}
-          t={t}
-          profileHeroProps={profileHeroProps}
-        />
+        <div key="account" className="registration-step registration-step-account" style={s.stepShell}>
+          <AccountStep
+            formData={formData}
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+            loading={loading}
+            navigate={navigate}
+            t={t}
+            profileHeroProps={profileHeroProps}
+          />
+        </div>
       )}
 
       {cropImageSrc && (
@@ -528,7 +543,7 @@ function ProfileHero({
   const showIntro = Boolean(firstLine || secondLine);
   return (
     <div style={academic ? s.academicHero : compact ? s.compactHero : s.aboutTopGrid}>
-      <div style={s.profilePicker}>
+      <div style={s.profilePicker} data-motion="avatar">
         <button
           type="button"
           onClick={allowUpload ? onProfileClick : undefined}
@@ -556,9 +571,13 @@ function ProfileHero({
       </div>
 
       {showIntro && (
-        <div style={compact ? s.compactIntro : s.aboutIntro}>
-          <p style={compact ? s.compactIntroLine : s.aboutIntroEn}>{firstLine}</p>
-          <p style={compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
+        <div style={academic || compact ? s.compactIntro : s.aboutIntro} data-motion="hero-text">
+          {firstLine && (
+            <p style={academic || compact ? s.compactIntroLine : s.aboutIntroEn}>{firstLine}</p>
+          )}
+          {secondLine && (
+            <p style={academic || compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
+          )}
         </div>
       )}
     </div>
@@ -575,7 +594,7 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
           secondLine="UvA-IN."
         />
 
-        <div style={s.nameGrid}>
+        <div style={s.nameGrid} data-motion="fields">
           <Field label={t.firstName}>
             <input
               name="firstName"
@@ -636,39 +655,41 @@ function PersonalStep({ formData, handleChange, goNext, language, t, greetingNam
           secondLine={greetingSecondLine}
         />
 
-        <Row>
-          <Field label={t.yearOfBirth}>
-            <input
-              type="number"
-              name="yearOfBirth"
-              value={formData.yearOfBirth}
-              onChange={handleChange}
-              style={s.input}
-              placeholder=""
-              min="1950"
-              max="2015"
-            />
-          </Field>
-          <Field label={t.gender}>
-            <TypeaheadSelect
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
-              placeholder=""
-            />
-          </Field>
-        </Row>
+        <div style={s.fieldStack} data-motion="fields">
+          <Row>
+            <Field label={t.yearOfBirth}>
+              <input
+                type="number"
+                name="yearOfBirth"
+                value={formData.yearOfBirth}
+                onChange={handleChange}
+                style={s.input}
+                placeholder=""
+                min="1950"
+                max="2015"
+              />
+            </Field>
+            <Field label={t.gender}>
+              <TypeaheadSelect
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
+                placeholder=""
+              />
+            </Field>
+          </Row>
 
-        <Field label={t.nationality}>
-          <TypeaheadSelect
-            name="countryOfOrigin"
-            value={formData.countryOfOrigin}
-            onChange={handleChange}
-            options={SORTED_COUNTRIES}
-            placeholder=""
-          />
-        </Field>
+          <Field label={t.nationality}>
+            <TypeaheadSelect
+              name="countryOfOrigin"
+              value={formData.countryOfOrigin}
+              onChange={handleChange}
+              options={SORTED_COUNTRIES}
+              placeholder=""
+            />
+          </Field>
+        </div>
       </div>
 
       <div style={s.bottomAction}>
@@ -747,83 +768,85 @@ function AcademicStep({
         <ProfileHero
           profileHeroProps={profileHeroProps}
           variant="academic"
+          firstLine={t.academicInfo}
           allowUpload={false}
         />
-        <h1 style={s.formTitle}>{t.academicInfo}</h1>
 
-        <div style={s.academicGrid}>
-          <Field label={t.university}>
-            <TypeaheadSelect
-              name="university"
-              value={formData.university}
-              onChange={handleChange}
-              options={SORTED_UNIVERSITIES}
-              placeholder=""
-            />
-          </Field>
-          <Field label={t.major}>
-            <TypeaheadSelect
-              name="major"
-              value={formData.major}
-              onChange={handleChange}
-              options={SORTED_MAJORS}
-              placeholder=""
-            />
-          </Field>
-        </div>
-
-        <Field label={t.studentNumber}>
-          <input
-            name="studentNumber"
-            value={formData.studentNumber}
-            onChange={handleChange}
-            style={s.input}
-          />
-        </Field>
-
-        <Field label={t.programme} variant="group" style={s.programmeField}>
-          <div style={s.programmeGrid}>
-            {programmeOptions.map((level) => (
-              <label
-                key={level}
-                style={{
-                  ...s.programmeOption,
-                  ...(formData.educationLevel === level ? s.programmeOptionActive : {}),
-                }}
-              >
-                <input
-                  type="radio"
-                  name="educationLevel"
-                  value={level}
-                  checked={formData.educationLevel === level}
-                  onChange={handleEducationLevelChange}
-                  style={s.programmeRadio}
-                />
-                {t[level]}
-              </label>
-            ))}
+        <div style={s.fieldStack} data-motion="fields">
+          <div style={s.academicGrid}>
+            <Field label={t.university}>
+              <TypeaheadSelect
+                name="university"
+                value={formData.university}
+                onChange={handleChange}
+                options={SORTED_UNIVERSITIES}
+                placeholder=""
+              />
+            </Field>
+            <Field label={t.major}>
+              <TypeaheadSelect
+                name="major"
+                value={formData.major}
+                onChange={handleChange}
+                options={SORTED_MAJORS}
+                placeholder=""
+              />
+            </Field>
           </div>
-        </Field>
 
-        {yearOptions.length > 0 && (
-          <Field label={t.academicYear} variant="group" style={s.yearField}>
-            <div style={s.yearGrid}>
-              {yearOptions.map((y) => (
-                <button
-                  key={y}
-                  type="button"
-                  onClick={() => handleChange({ target: { name: 'yearNumber', value: String(y) } })}
+          <Field label={t.studentNumber}>
+            <input
+              name="studentNumber"
+              value={formData.studentNumber}
+              onChange={handleChange}
+              style={s.input}
+            />
+          </Field>
+
+          <Field label={t.programme} variant="group" style={s.programmeField}>
+            <div style={s.programmeGrid}>
+              {programmeOptions.map((level) => (
+                <label
+                  key={level}
                   style={{
-                    ...s.yearOption,
-                    ...(String(formData.yearNumber) === String(y) ? s.yearOptionActive : {}),
+                    ...s.programmeOption,
+                    ...(formData.educationLevel === level ? s.programmeOptionActive : {}),
                   }}
                 >
-                  {y}
-                </button>
+                  <input
+                    type="radio"
+                    name="educationLevel"
+                    value={level}
+                    checked={formData.educationLevel === level}
+                    onChange={handleEducationLevelChange}
+                    style={s.programmeRadio}
+                  />
+                  {t[level]}
+                </label>
               ))}
             </div>
           </Field>
-        )}
+
+          {yearOptions.length > 0 && (
+            <Field label={t.academicYear} variant="group" style={s.yearField}>
+              <div style={s.yearGrid}>
+                {yearOptions.map((y) => (
+                  <button
+                    key={y}
+                    type="button"
+                    onClick={() => handleChange({ target: { name: 'yearNumber', value: String(y) } })}
+                    style={{
+                      ...s.yearOption,
+                      ...(String(formData.yearNumber) === String(y) ? s.yearOptionActive : {}),
+                    }}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            </Field>
+          )}
+        </div>
       </div>
 
       <div style={s.bottomAction}>
@@ -867,40 +890,41 @@ function AccountStep({
           secondLine="마무리."
           allowUpload={false}
         />
-        <h1 style={s.formTitle}>{t.finalStep}</h1>
 
-        <Field label={t.email}>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            style={s.input}
-            placeholder=""
-          />
-        </Field>
-
-        <Row>
-          <Field label={t.password}>
+        <div style={s.fieldStack} data-motion="fields">
+          <Field label={t.email}>
             <input
-              type="password"
-              name="password"
-              value={formData.password}
+              type="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               style={s.input}
               placeholder=""
             />
           </Field>
-          <Field label={t.confirmPassword}>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              style={s.input}
-            />
-          </Field>
-        </Row>
+
+          <Row>
+            <Field label={t.password}>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                style={s.input}
+                placeholder=""
+              />
+            </Field>
+            <Field label={t.confirmPassword}>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+          </Row>
+        </div>
 
         {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
           <p style={{ ...s.helperText, color: '#dc2626' }}>
@@ -982,6 +1006,78 @@ const labelStyle = {
   lineHeight: 1,
 };
 
+const registrationMotionCss = `
+@keyframes registrationFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes registrationTitleFade {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes registrationHeroShrink {
+  from {
+    opacity: 0.85;
+    transform: translate(38px, 22px) scale(1.65);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes registrationHeroReturn {
+  from {
+    opacity: 0.9;
+    transform: translate(-34px, -18px) scale(0.62);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+.registration-title {
+  animation: registrationTitleFade 220ms ease-out both;
+}
+
+.registration-step {
+  animation: registrationFadeUp 260ms ease-out both;
+}
+
+.registration-step [data-motion='hero-text'] {
+  animation: registrationFadeUp 300ms ease-out both;
+}
+
+.registration-step [data-motion='fields'] {
+  animation: registrationFadeUp 340ms ease-out both;
+}
+
+.registration-step-academic [data-motion='avatar'] {
+  transform-origin: left top;
+  animation: registrationHeroShrink 360ms cubic-bezier(.2,.7,.2,1) both;
+}
+
+.registration-step-account [data-motion='avatar'] {
+  transform-origin: left top;
+  animation: registrationHeroReturn 360ms cubic-bezier(.2,.7,.2,1) both;
+}
+`;
+
 const s = {
   page: {
     height: '100dvh',
@@ -1004,6 +1100,7 @@ const s = {
     position: 'sticky',
     top: 0,
     zIndex: 100,
+    minHeight: '42px',
   },
   backButton: {
     background: 'none',
@@ -1011,11 +1108,22 @@ const s = {
     fontSize: '24px',
     cursor: 'pointer',
     color: '#374151',
-    padding: '8px',
+    padding: '8px 8px 8px 0',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'color 0.2s',
+    transform: 'translateX(-22px)',
+    width: '34px',
+  },
+  topTitle: {
+    position: 'absolute',
+    left: '4px',
+    top: '12px',
+    fontSize: '15px',
+    fontWeight: 600,
+    color: '#111827',
+    pointerEvents: 'none',
   },
   languageToggle: {
     padding: '8px 16px',
@@ -1065,6 +1173,14 @@ const s = {
     minHeight: 0,
     justifyContent: 'space-between',
   },
+  stepShell: {
+    width: '100%',
+    maxWidth: '320px',
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+  },
   formContent: {
     display: 'flex',
     flexDirection: 'column',
@@ -1075,8 +1191,8 @@ const s = {
     paddingTop: '104px',
   },
   academicContent: {
-    gap: '8px',
-    paddingTop: '118px',
+    gap: '9px',
+    paddingTop: '104px',
   },
   bottomAction: {
     flexShrink: 0,
@@ -1172,12 +1288,13 @@ const s = {
     alignSelf: 'stretch',
   },
   academicHero: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: '42px 1fr',
+    gap: '12px',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    height: '40px',
-    minHeight: '40px',
-    marginTop: '-8px',
+    height: '44px',
+    minHeight: '44px',
+    marginTop: '-4px',
     alignSelf: 'stretch',
   },
   avatarButtonCompact: {
@@ -1259,6 +1376,11 @@ const s = {
   nameGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr',
+    gap: '8px',
+  },
+  fieldStack: {
+    display: 'flex',
+    flexDirection: 'column',
     gap: '8px',
   },
   academicGrid: {
