@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, UserCircle } from '@phosphor-icons/react';
+import { ArrowLeft, Camera, UserCircle } from '@phosphor-icons/react';
 import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
@@ -385,7 +385,7 @@ export default function RegistrationPage() {
             style={s.backButton}
             title="Go back"
           >
-            ??
+            <ArrowLeft size={22} weight="bold" />
           </button>
           <button
             onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
@@ -423,7 +423,7 @@ export default function RegistrationPage() {
           style={s.backButton}
           title="Go back"
         >
-          ??
+          <ArrowLeft size={22} weight="bold" />
         </button>
         <button
           onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
@@ -930,11 +930,11 @@ const rowStyle = {
 const fieldStyle = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '6px',
-  minHeight: '58px',
-  padding: '9px 14px 8px',
-  border: '1.5px solid #111827',
-  borderRadius: '18px',
+  gap: '5px',
+  minHeight: '50px',
+  padding: '8px 13px 7px',
+  border: '1.4px solid #cfd4dc',
+  borderRadius: '16px',
   backgroundColor: '#fff',
   boxSizing: 'border-box',
   justifyContent: 'center',
@@ -942,8 +942,8 @@ const fieldStyle = {
 
 const labelStyle = {
   fontSize: '12px',
-  fontWeight: 700,
-  color: '#111827',
+  fontWeight: 400,
+  color: '#6b7280',
   lineHeight: 1,
 };
 
@@ -1017,7 +1017,7 @@ const s = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '14px',
+    gap: '12px',
     marginTop: '0',
     padding: '4px 32px 18px',
     backgroundColor: 'white',
@@ -1038,8 +1038,8 @@ const s = {
   },
   aboutTopGrid: {
     display: 'grid',
-    gridTemplateColumns: '210px 1fr',
-    gap: '28px',
+    gridTemplateColumns: '146px 1fr',
+    gap: '18px',
     alignItems: 'center',
   },
   profilePicker: {
@@ -1048,16 +1048,16 @@ const s = {
   },
   avatarButton: {
     position: 'relative',
-    width: '174px',
-    height: '174px',
+    width: '128px',
+    height: '128px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircle: {
-    width: '164px',
-    height: '164px',
+    width: '120px',
+    height: '120px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1075,10 +1075,10 @@ const s = {
   },
   cameraBadge: {
     position: 'absolute',
-    right: '4px',
-    bottom: '8px',
-    width: '52px',
-    height: '52px',
+    right: '2px',
+    bottom: '4px',
+    width: '38px',
+    height: '38px',
     borderRadius: '50%',
     backgroundColor: '#fff',
     border: '1px solid #111827',
@@ -1090,42 +1090,44 @@ const s = {
   aboutIntro: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
+    gap: '8px',
     justifyContent: 'center',
   },
   aboutIntroEn: {
     margin: 0,
-    fontSize: '26px',
+    fontSize: '17px',
     lineHeight: 1.2,
-    fontWeight: 800,
+    fontWeight: 700,
     color: '#111827',
+    whiteSpace: 'nowrap',
   },
   aboutIntroKo: {
     margin: 0,
-    fontSize: '30px',
+    fontSize: '19px',
     lineHeight: 1.25,
-    fontWeight: 800,
+    fontWeight: 700,
     color: '#111827',
+    whiteSpace: 'nowrap',
   },
   compactHero: {
     display: 'grid',
-    gridTemplateColumns: '74px 1fr',
-    gap: '14px',
+    gridTemplateColumns: '62px 1fr',
+    gap: '12px',
     alignItems: 'center',
     alignSelf: 'stretch',
   },
   avatarButtonCompact: {
     position: 'relative',
-    width: '64px',
-    height: '64px',
+    width: '54px',
+    height: '54px',
     padding: 0,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
   },
   avatarCircleCompact: {
-    width: '58px',
-    height: '58px',
+    width: '50px',
+    height: '50px',
     borderRadius: '50%',
     overflow: 'hidden',
     display: 'flex',
@@ -1137,8 +1139,8 @@ const s = {
     position: 'absolute',
     right: '0',
     bottom: '2px',
-    width: '24px',
-    height: '24px',
+    width: '20px',
+    height: '20px',
     borderRadius: '50%',
     backgroundColor: '#fff',
     border: '1px solid #111827',
@@ -1156,15 +1158,17 @@ const s = {
     margin: 0,
     fontSize: '14px',
     lineHeight: 1.2,
-    fontWeight: 800,
+    fontWeight: 700,
     color: '#111827',
+    whiteSpace: 'nowrap',
   },
   compactIntroName: {
     margin: 0,
-    fontSize: '18px',
+    fontSize: '16px',
     lineHeight: 1.2,
-    fontWeight: 800,
+    fontWeight: 700,
     color: '#111827',
+    whiteSpace: 'nowrap',
   },
   nameGrid: {
     display: 'grid',
@@ -1223,7 +1227,7 @@ const s = {
     position: 'relative',
     minHeight: '44px',
     borderRadius: '9999px',
-    border: '1px solid #d7d2c8',
+    border: '1px solid #cfd4dc',
     backgroundColor: '#fff',
     color: '#4b5563',
     display: 'flex',
@@ -1254,7 +1258,7 @@ const s = {
   yearOption: {
     minHeight: '40px',
     borderRadius: '9999px',
-    border: '1px solid #d7d2c8',
+    border: '1px solid #cfd4dc',
     backgroundColor: '#fff',
     color: '#4b5563',
     fontSize: '14px',
