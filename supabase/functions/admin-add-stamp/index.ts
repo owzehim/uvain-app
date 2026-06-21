@@ -26,6 +26,51 @@ function json(body: Record<string, unknown>, status = 200) {
   })
 }
 
+function computeStampState(visits: any[], totalStamps: number, pendingReward: any = null) {
+  const totalVisits = visits.length
+
+  if (pendingReward) {
+    const currentCycle = pendingReward.card_cycle ?? Math.floor(Math.max(totalVisits - 1, 0) / totalStamps) + 1
+    return {
+      totalVisits,
+      currentCycle,
+      stampsInCurrentCycle: totalStamps,
+      isCardFull: true,
+      hasPendingReward: true,
+      pendingReward,
+      currentCycleVisits: visits
+        .filter((visit) => visit.card_cycle === currentCycle)
+        .slice(0, totalStamps),
+    }
+  }
+
+  if (totalVisits === 0) {
+    return {
+      totalVisits: 0,
+      currentCycle: 1,
+      stampsInCurrentCycle: 0,
+      isCardFull: false,
+      hasPendingReward: false,
+      pendingReward: null,
+      currentCycleVisits: [],
+    }
+  }
+
+  const remainder = totalVisits % totalStamps
+  const currentCycle = Math.floor(totalVisits / totalStamps) + 1
+  const cycleStart = totalVisits - remainder
+
+  return {
+    totalVisits,
+    currentCycle,
+    stampsInCurrentCycle: remainder,
+    isCardFull: false,
+    hasPendingReward: false,
+    pendingReward: null,
+    currentCycleVisits: remainder === 0 ? [] : visits.slice(cycleStart, cycleStart + totalStamps),
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -40,6 +85,7 @@ serve(async (req) => {
     }
 
     const {
+      action = 'addStamp',
       userId,
       restaurantId,
       totalStamps,
@@ -47,7 +93,7 @@ serve(async (req) => {
       adminNote,
     } = await req.json().catch(() => ({}))
 
-    if (!userId || !restaurantId || !visitedAt) {
+    if (!restaurantId || (action === 'addStamp' && (!userId || !visitedAt))) {
       return json({ success: false, message: '잘못된 요청입니다.' }, 400)
     }
 
@@ -73,6 +119,7 @@ serve(async (req) => {
 
     const isAdmin =
       caller.user_metadata?.role === 'admin' ||
+      caller.app_metadata?.role === 'admin' ||
       caller.email === 'admin@uvain.nl'
 
     if (!isAdmin) {
@@ -80,6 +127,63 @@ serve(async (req) => {
     }
 
     const safeTotalStamps = Math.max(1, Number(totalStamps || 10))
+
+    if (action === 'listMembers') {
+      const { data: members, error: membersError } = await admin
+        .from('members')
+        .select('id, user_id, first_name, last_name')
+        .not('user_id', 'is', null)
+        .order('last_name', { ascending: true })
+        .order('first_name', { ascending: true })
+
+      if (membersError) throw membersError
+      if (!members?.length) return json({ success: true, rows: [] })
+
+      const rows = await Promise.all(
+        members.map(async (member) => {
+          const { data: visits, error: visitsError } = await admin
+            .from('stamp_card_visits')
+            .select('*')
+            .eq('user_id', member.user_id)
+            .eq('restaurant_id', restaurantId)
+            .order('visited_at', { ascending: true })
+
+          if (visitsError) throw visitsError
+
+          const { data: latestRewardRows, error: rewardsError } = await admin
+            .from('stamp_card_rewards')
+            .select('*')
+            .eq('user_id', member.user_id)
+            .eq('restaurant_id', restaurantId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+
+          if (rewardsError) throw rewardsError
+
+          const latestReward = latestRewardRows?.[0] ?? null
+          const pendingReward = latestReward?.redeemed === false ? latestReward : null
+
+          return {
+            member,
+            stampState: computeStampState(visits ?? [], safeTotalStamps, pendingReward),
+            latestReward,
+          }
+        }),
+      )
+
+      return json({ success: true, rows })
+    }
+
+    const { data: targetMember, error: targetMemberError } = await admin
+      .from('members')
+      .select('id, user_id')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (targetMemberError) throw targetMemberError
+    if (!targetMember) {
+      return json({ success: false, message: '멤버 계정과 연결된 사용자를 찾을 수 없습니다.' }, 404)
+    }
 
     const { data: pendingReward, error: pendingRewardError } = await admin
       .from('stamp_card_rewards')

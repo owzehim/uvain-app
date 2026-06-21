@@ -59,6 +59,7 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
         transform: visible ? 'translateX(0)' : 'translateX(130%)',
         transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
         pointerEvents: visible ? 'auto' : 'none',
+        textAlign: 'left',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
@@ -67,6 +68,7 @@ export default function StampCardMini({ restaurantId, userId, open = true, onOpe
             width: miniWidth,
             height: miniHeight,
             overflow: 'hidden',
+            boxShadow: '0 10px 22px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.18)',
           }}
         >
           <div

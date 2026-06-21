@@ -110,6 +110,7 @@ export default function StampCard({
           zIndex: 1,
           background: outerBg,
           padding: `${Math.round(s.padding * 0.7)}px ${s.padding}px`,
+          textAlign: 'left',
           minHeight: 0,
           overflow: 'hidden',
         }}
