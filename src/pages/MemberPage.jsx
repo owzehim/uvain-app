@@ -1085,6 +1085,10 @@ function EventsTab({ events }) {
   }
 
   const getPrimaryEventDate = (ev) => getEventDates(ev)[0] || ev.event_date
+  const getPrimaryEventDateTime = (ev) => {
+    const dates = Array.isArray(ev?.event_dates) ? ev.event_dates : []
+    return dates[0] || ev?.event_date
+  }
 
   // ── Split & sort ────────────────────────────────────────────────────────────
   const datedEvents = events.filter((ev) => getPrimaryEventDate(ev))
@@ -1098,12 +1102,12 @@ function EventsTab({ events }) {
     )
 
   const futureEvents = datedEvents
-    .filter((ev) => new Date(getPrimaryEventDate(ev)) >= now)
-    .sort((a, b) => new Date(getPrimaryEventDate(a)) - new Date(getPrimaryEventDate(b)))
+    .filter((ev) => new Date(getPrimaryEventDateTime(ev)) >= now)
+    .sort((a, b) => new Date(getPrimaryEventDateTime(a)) - new Date(getPrimaryEventDateTime(b)))
 
   const pastEvents = datedEvents
-    .filter((ev) => new Date(getPrimaryEventDate(ev)) < now)
-    .sort((a, b) => new Date(getPrimaryEventDate(b)) - new Date(getPrimaryEventDate(a)))
+    .filter((ev) => new Date(getPrimaryEventDateTime(ev)) < now)
+    .sort((a, b) => new Date(getPrimaryEventDateTime(b)) - new Date(getPrimaryEventDateTime(a)))
 
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
@@ -1302,7 +1306,7 @@ function EventsTab({ events }) {
   }
 
   const formatTimeRange = (ev) => {
-    const startDate = getPrimaryEventDate(ev)
+    const startDate = getPrimaryEventDateTime(ev)
     if (!startDate) return ''
     const start = new Date(startDate)
     const end = ev.event_end_date ? new Date(ev.event_end_date) : null
@@ -1333,7 +1337,7 @@ function EventsTab({ events }) {
 
   const getEventStatus = (ev) => {
     if (!ev) return ''
-    const eventDate = getPrimaryEventDate(ev)
+    const eventDate = getPrimaryEventDateTime(ev)
     if (!eventDate) return 'TBD'
     const days = getDayDiff(eventDate)
     if (days < 0) return 'PAST'
@@ -1343,7 +1347,7 @@ function EventsTab({ events }) {
   }
 
   const addToCalendar = (ev) => {
-    const startDate = getPrimaryEventDate(ev)
+    const startDate = getPrimaryEventDateTime(ev)
     if (!startDate) return
     const start = new Date(startDate)
     const end = ev.event_end_date
@@ -1446,7 +1450,7 @@ function EventsTab({ events }) {
             <div className="flex items-center gap-1.5 text-sm text-orange-500 mt-1">
               <Calendar size={14} weight="fill" />
               <span>
-                {new Date(getPrimaryEventDate(ev)).toLocaleString('ko-KR', {
+                {new Date(getPrimaryEventDateTime(ev)).toLocaleString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -1587,7 +1591,7 @@ function EventsTab({ events }) {
 
   const isPastSelected =
     !!getPrimaryEventDate(displayEvent) &&
-    new Date(getPrimaryEventDate(displayEvent)) < todayStart
+    new Date(getPrimaryEventDateTime(displayEvent)) < todayStart
   const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
   const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
 
@@ -1596,21 +1600,44 @@ function EventsTab({ events }) {
       const img = new Image()
       img.crossOrigin = 'Anonymous'
       img.onload = () => {
-        const canvas = document.createElement('canvas')
-        canvas.width = img.width
-        canvas.height = img.height
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0)
-        const imageData = ctx.getImageData(
-          Math.floor(img.width / 2),
-          Math.floor(img.height / 2),
-          1,
-          1,
-        )
-        const [r, g, b] = imageData.data
-        const luminance =
-          (0.299 * r + 0.587 * g + 0.114 * b) / 255
-        resolve(luminance > 0.5 ? '#111827' : '#ffffff')
+        try {
+          const canvas = document.createElement('canvas')
+          const size = 48
+          canvas.width = size
+          canvas.height = size
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, size, size)
+
+          const imageData = ctx.getImageData(0, 0, size, size).data
+          let luminanceTotal = 0
+          let samples = 0
+
+          for (let y = 6; y < 34; y += 4) {
+            for (let x = 6; x < 42; x += 4) {
+              const idx = (y * size + x) * 4
+              const r = imageData[idx]
+              const g = imageData[idx + 1]
+              const b = imageData[idx + 2]
+              const srgb = [r, g, b].map((value) => {
+                const channel = value / 255
+                return channel <= 0.03928
+                  ? channel / 12.92
+                  : ((channel + 0.055) / 1.055) ** 2.4
+              })
+              luminanceTotal +=
+                0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2]
+              samples += 1
+            }
+          }
+
+          const avgLuminance = luminanceTotal / Math.max(samples, 1)
+          const blurredPanelLuminance = avgLuminance * 0.55 + 1 * 0.45
+          const blackContrast = (blurredPanelLuminance + 0.05) / 0.05
+          const whiteContrast = 1.05 / (blurredPanelLuminance + 0.05)
+          resolve(blackContrast >= whiteContrast ? '#111827' : '#ffffff')
+        } catch {
+          resolve('#111827')
+        }
       }
       img.onerror = () => resolve('#111827')
       img.src = imageUrl
@@ -1841,9 +1868,9 @@ function EventsTab({ events }) {
                             position: 'absolute',
                             inset: 0,
                             backgroundColor:
-                              'rgba(255,255,255,0.35)',
-                            backdropFilter: 'blur(6px)',
-                            WebkitBackdropFilter: 'blur(6px)',
+                              'rgba(255,255,255,0.45)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
                           }}
                         />
                         <div
@@ -2050,7 +2077,7 @@ function EventsTab({ events }) {
                   const rangeColor = rangeEvent
                     ? rangeEvent.id === nextEvent?.id
                       ? 'rgba(249,115,22,0.18)'
-                      : new Date(getPrimaryEventDate(rangeEvent)) < todayStart
+                      : new Date(getPrimaryEventDateTime(rangeEvent)) < todayStart
                         ? 'rgba(107,114,128,0.18)'
                         : 'rgba(17,24,39,0.12)'
                     : 'transparent'
@@ -2177,7 +2204,7 @@ function EventsTab({ events }) {
                   const blocks = []
                   otherUpcomingEvents.forEach((ev) => {
                     const label = `${
-                      new Date(getPrimaryEventDate(ev)).getMonth() + 1
+                      new Date(getPrimaryEventDateTime(ev)).getMonth() + 1
                     }월`
                     if (label !== curMonth) {
                       curMonth = label
@@ -2236,7 +2263,7 @@ function EventsTab({ events }) {
                       const blocks = []
                       pastEvents.forEach((ev) => {
                         const label = `${
-                          new Date(getPrimaryEventDate(ev)).getMonth() + 1
+                          new Date(getPrimaryEventDateTime(ev)).getMonth() + 1
                         }월`
                         if (label !== curMonth) {
                           curMonth = label
