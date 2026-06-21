@@ -20,18 +20,17 @@ export default function LoginPage() {
   } = useLogin()
 
   return (
-    <div className="fixed inset-0 bg-white flex items-center justify-center px-4 overflow-hidden">
+    <div className="fixed inset-0 bg-white flex items-start justify-center px-4 pt-[13vh] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => navigate('/public')}
+        className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 hover:text-gray-600 transition-colors"
+        aria-label="Close login"
+      >
+        <X size={22} weight="bold" />
+      </button>
+
       <div className="w-full max-w-sm px-2">
-        <div className="flex justify-end mb-8">
-          <button
-            type="button"
-            onClick={() => navigate('/public')}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close login"
-          >
-            <X size={22} weight="bold" />
-          </button>
-        </div>
 
         <div className="flex justify-center mb-6">
           <img src="/uvain logo.png" alt="UvA-IN Logo" className="w-20 h-20" />
