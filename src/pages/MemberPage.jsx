@@ -1298,6 +1298,13 @@ function EventsTab({ events }) {
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
   )
+  const previewEventIndex = allEvents.findIndex(
+    (ev) => ev.id === previewEvent?.id,
+  )
+  const scrollProgress =
+    allEvents.length <= 1
+      ? 0
+      : Math.max(0, Math.min((previewEventIndex >= 0 ? previewEventIndex : currentEventIndex) / (allEvents.length - 1), 1))
 
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
@@ -1347,6 +1354,15 @@ function EventsTab({ events }) {
     lastIdxRef.current = null
     setIsDragging(false)
     setIsTouching(false) // hide guide
+    setPreviewEvent(selectedEvent)
+  }
+
+  const handleContainerTouchCancel = () => {
+    dragStartY.current = null
+    dragAccumulator.current = 0
+    lastIdxRef.current = null
+    setIsDragging(false)
+    setIsTouching(false)
     setPreviewEvent(selectedEvent)
   }
 
@@ -1749,6 +1765,7 @@ function EventsTab({ events }) {
         onTouchStart={handleContainerTouchStart}
         onTouchMove={handleContainerTouchMove}
         onTouchEnd={handleContainerTouchEnd}
+        onTouchCancel={handleContainerTouchCancel}
         style={{
           height: '100dvh',
           display: 'flex',
@@ -2370,6 +2387,67 @@ function EventsTab({ events }) {
     </span>
   </div>
 )}
+
+      {allEvents.length > 1 && (
+        <div
+          className="no-highlight-zone"
+          style={{
+            position: 'fixed',
+            right: 10,
+            top: '26%',
+            height: '48%',
+            width: 18,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: isTouching ? 1 : 0,
+            transition: 'opacity 0.18s ease',
+            pointerEvents: 'none',
+            zIndex: 35,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              width: 4,
+              height: '100%',
+              borderRadius: 999,
+              backgroundColor: 'rgba(17,24,39,0.10)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: 0,
+                height: `${Math.max(8, scrollProgress * 100)}%`,
+                borderRadius: 999,
+                backgroundColor: 'rgba(249,115,22,0.85)',
+                transition: isDragging ? 'height 0.08s linear' : 'height 0.18s ease',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: `${scrollProgress * 100}%`,
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                backgroundColor: '#f97316',
+                boxShadow: '0 2px 8px rgba(249,115,22,0.35)',
+                transform: 'translate(-50%, -50%)',
+                transition: isDragging ? 'top 0.08s linear' : 'top 0.18s ease',
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* SpotCard-style LIGHTBOX for event images */}
       {lightboxIndex !== null && displayImages.length > 0 && (

@@ -20,7 +20,7 @@ export default function LoginPage() {
   } = useLogin()
 
   return (
-    <div className="fixed inset-0 bg-white flex items-start justify-center px-4 pt-[13vh] overflow-hidden">
+    <div className="fixed inset-0 bg-white flex items-start justify-center px-4 pt-[16vh] overflow-hidden">
       <button
         type="button"
         onClick={() => navigate('/public')}
