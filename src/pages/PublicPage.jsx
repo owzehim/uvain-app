@@ -31,7 +31,23 @@ export default function PublicPage() {
   }, [])
 
   return (
-    <div className="flex flex-col bg-gray-50 overflow-hidden" style={{ height: '100dvh' }}>
+    <div
+      className="flex flex-col bg-gray-50 overflow-hidden no-highlight-zone"
+      style={{
+        height: '100dvh',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      <style>{`
+        .no-highlight-zone,
+        .no-highlight-zone * {
+          -webkit-user-select: none;
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+      `}</style>
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
         <h1 className="font-bold text-gray-900">UvA-IN</h1>
@@ -49,7 +65,15 @@ export default function PublicPage() {
       </div>
 
       {/* 하단 탭 */}
-      <div className="bg-white border-t border-gray-100 flex flex-shrink-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
+      <div
+        className="bg-white border-t border-gray-100 flex flex-shrink-0 select-none"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
         {[
           { key: 'map', label: 'SPOT', icon: MapPin },
           { key: 'membership', label: 'Membership', icon: Lock },
@@ -60,9 +84,14 @@ export default function PublicPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={
-                'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ' +
+                'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors select-none ' +
                 (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
               }
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
               <IconComponent size={20} weight={activeTab === tab.key ? 'fill' : 'regular'} />
               {tab.label}
@@ -88,9 +117,9 @@ function PublicMapTab({ restaurants }) {
   )
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col no-highlight-zone">
       {/* 카테고리 바 */}
-      <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
+      <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0 select-none">
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
           // ✅ NEW: Use pre-computed icon variants instead of calling getMapIconSvg
@@ -103,9 +132,14 @@ function PublicMapTab({ restaurants }) {
                 setSelected(null)
               }}
               className={
-                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ' +
+                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 select-none ' +
                 (isActive ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
               }
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
               <span
                 style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -135,7 +169,7 @@ function PublicMapTab({ restaurants }) {
           </div>
         </div>
       ) : (
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden no-highlight-zone">
           <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
           {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
         </div>
@@ -147,7 +181,7 @@ function PublicMapTab({ restaurants }) {
 function MembershipTab() {
   const navigate = useNavigate()
   return (
-    <div className="h-full overflow-y-auto flex items-center justify-center">
+    <div className="h-full overflow-y-auto flex items-center justify-center no-highlight-zone">
       <div className="px-4 py-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">

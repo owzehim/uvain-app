@@ -1034,6 +1034,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
         }
       `}</style>
       <div
+        className="no-highlight-zone"
         onClick={handleClose}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -1048,6 +1049,9 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.25s ease',
           touchAction: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
         }}
       >
         <div
@@ -1740,6 +1744,7 @@ function EventsTab({ events }) {
   return (
     <>
       <div
+        className="no-highlight-zone"
         ref={containerRef}
         onTouchStart={handleContainerTouchStart}
         onTouchMove={handleContainerTouchMove}
@@ -1751,6 +1756,8 @@ function EventsTab({ events }) {
           overflow: 'hidden',
           touchAction: 'none',
           userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
         }}
       >
         {/* TOP SECTION */}
@@ -2328,6 +2335,7 @@ function EventsTab({ events }) {
       {/* Drag guide — fixed to bottom right of screen, like MY tab */}
       {allEvents.length > 0 && (
   <div
+    className="no-highlight-zone"
     style={{
       position: 'fixed',
       bottom: 'calc(env(safe-area-inset-bottom) + 115px)', // your value
@@ -2341,6 +2349,9 @@ function EventsTab({ events }) {
       transition: 'opacity 0.25s ease',
       pointerEvents: 'none',
       zIndex: 20,
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      WebkitTapHighlightColor: 'transparent',
     }}
   >
     <ArrowsVertical

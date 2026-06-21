@@ -182,7 +182,23 @@ export default function SettingsPage() {
   const pastelBg = getPastelColor(avatarSeed)
 
   return (
-    <div className="flex flex-col bg-gray-50" style={{ minHeight: '100dvh' }}>
+    <div
+      className="flex flex-col bg-gray-50 no-highlight-zone"
+      style={{
+        minHeight: '100dvh',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      <style>{`
+        .no-highlight-zone,
+        .no-highlight-zone * {
+          -webkit-user-select: none;
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+      `}</style>
       {/* Header */}
       <div
         className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0"
