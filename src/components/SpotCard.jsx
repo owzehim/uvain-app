@@ -21,6 +21,10 @@ const TAG_ICON_COMPONENTS = {
   CoinVertical,
 }
 
+function isDarkMode() {
+  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+}
+
 // ── Read-only star row ──────────────────────────────────────────
 function StarDisplay({ averageRating, showWhenZero = false }) {
   if (averageRating == null || Number.isNaN(averageRating)) return null
@@ -305,6 +309,7 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
   const [closing, setClosing] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [darkMode, setDarkMode] = useState(isDarkMode)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -339,6 +344,20 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
       requestAnimationFrame(() => setIsVisible(true))
     }
   }, [selected, MIN_HEIGHT])
+
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return undefined
+
+    const syncDarkMode = () => setDarkMode(isDarkMode())
+    const observer = new MutationObserver(syncDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+    syncDarkMode()
+
+    return () => observer.disconnect()
+  }, [])
 
   const triggerClose = () => {
     onClosingStart?.()
@@ -667,7 +686,7 @@ const hasReviews = summary && summary.review_count > 0
             height: '72px',
             background: isMax
               ? 'transparent'
-              : 'linear-gradient(to bottom, transparent, white)',
+              : `linear-gradient(to bottom, transparent, ${darkMode ? '#000000' : 'white'})`,
             zIndex: 10,
           }}
         >

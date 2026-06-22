@@ -48,22 +48,26 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const mapReadyRef = useRef(false)
   const activeStyleRef = useRef(null)
   const [isTrackingLocation, setIsTrackingLocation] = useState(false)
+  const [darkMapControls, setDarkMapControls] = useState(isDarkMode)
 
   // ─── Helper: Create marker element ──────────────────────────────────────
   const createMarkerElement = useCallback((r, isSelected = false) => {
+    const dark = isDarkMode()
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
-    const bg = isSponsored ? '#f97316' : 'white'
+    const bg = isSponsored ? '#f97316' : dark ? '#000000' : 'white'
     const border = isSponsored
-      ? '3px solid white'
+      ? `3px solid ${dark ? '#000000' : 'white'}`
       : isSelected
         ? '3px solid #f97316'
-        : '2px solid #e5e7eb'
+        : `2px solid ${dark ? '#f97316' : '#e5e7eb'}`
     const shadow = isSelected
       ? '0 3px 12px rgba(249,115,22,0.5)'
       : isSponsored
         ? '0 3px 12px rgba(249,115,22,0.4)'
-        : '0 2px 6px rgba(0,0,0,0.15)'
+        : dark
+          ? '0 2px 10px rgba(0,0,0,0.55)'
+          : '0 2px 6px rgba(0,0,0,0.15)'
     const displayName = r.map_label || r.name || ''
     const name =
       displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
@@ -111,14 +115,15 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     const label = document.createElement('div')
     label.style.cssText = `
-      background: white;
-      color: #374151;
+      background: ${dark ? '#000000' : 'white'};
+      color: ${dark ? '#ffffff' : '#374151'};
       font-size: 9px;
       font-weight: 600;
       padding: 1px 4px;
       border-radius: 4px;
       white-space: nowrap;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: ${dark ? '1px solid #2c2c2e' : 'none'};
+      box-shadow: ${dark ? '0 2px 8px rgba(0,0,0,0.5)' : '0 1px 3px rgba(0,0,0,0.1)'};
       max-width: 90px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -209,6 +214,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     if (!map.current || typeof MutationObserver === 'undefined') return undefined
 
     const syncMapStyle = () => {
+      setDarkMapControls(isDarkMode())
       const nextStyle = getMapStyleUrl(isDarkMode())
       if (activeStyleRef.current === nextStyle) return
 
@@ -242,6 +248,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
   // ─── Update selection styling using data attributes ──────────────────────
 useEffect(() => {
   if (!mapReadyRef.current) return
+  const dark = isDarkMode()
 
   // Remove selection from all markers
   markersRef.current.forEach(({ element, isSponsored }) => {
@@ -251,12 +258,14 @@ useEffect(() => {
 
     if (isSponsored) {
       // 제휴 spot: keep orange bg + white outline when not selected
-      circle.style.border = '3px solid white'
+      circle.style.border = `3px solid ${dark ? '#000000' : 'white'}`
       circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.4)'
     } else {
       // Normal spot: grey outline when not selected
-      circle.style.border = '2px solid #e5e7eb'
-      circle.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)'
+      circle.style.border = `2px solid ${dark ? '#f97316' : '#e5e7eb'}`
+      circle.style.boxShadow = dark
+        ? '0 2px 10px rgba(0,0,0,0.55)'
+        : '0 2px 6px rgba(0,0,0,0.15)'
     }
   })
 
@@ -274,7 +283,7 @@ useEffect(() => {
       }
     }
   }
-}, [selected])
+}, [selected, darkMapControls])
 
   // ─── Pan to selected spot ──────────────────────────────────────────────
   useEffect(() => {
@@ -306,12 +315,13 @@ useEffect(() => {
     if (!map.current) return
 
     if (!userLocationMarkerRef.current) {
+      const dark = isDarkMode()
       const el = document.createElement('div')
       el.style.cssText = `
         width: 16px;
         height: 16px;
         background: #f97316;
-        border: 2px solid white;
+        border: 2px solid ${dark ? '#000000' : 'white'};
         border-radius: 50%;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       `
@@ -397,13 +407,19 @@ useEffect(() => {
           bottom: '80px',
           right: '10px',
           zIndex: 1000,
-          background: isTrackingLocation ? '#f97316' : 'white',
-          border: isTrackingLocation ? '1px solid #f97316' : 'none',
+          background: isTrackingLocation ? '#f97316' : darkMapControls ? '#000000' : 'white',
+          border: isTrackingLocation
+            ? '1px solid #f97316'
+            : darkMapControls
+              ? '1px solid #2c2c2e'
+              : 'none',
           borderRadius: '8px',
           padding: '8px 10px',
           boxShadow: isTrackingLocation
             ? '0 3px 12px rgba(249,115,22,0.35)'
-            : '0 2px 8px rgba(0,0,0,0.15)',
+            : darkMapControls
+              ? '0 2px 10px rgba(0,0,0,0.55)'
+              : '0 2px 8px rgba(0,0,0,0.15)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
