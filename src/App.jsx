@@ -13,8 +13,15 @@ import EmailConfirmedPage from './pages/EmailConfirmedPage'
 import SettingsPage from './pages/SettingsPage'
 import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
 
+const OTP_PENDING_KEY = 'uvain_otp_pending_email'
+const OTP_PENDING_EVENT = 'uvain-otp-pending-change'
+
 function App() {
   const [session, setSession] = useState(undefined)
+  const [isOtpPending, setIsOtpPending] = useState(() =>
+    typeof window !== 'undefined' &&
+    Boolean(window.sessionStorage.getItem(OTP_PENDING_KEY))
+  )
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -28,7 +35,21 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  useSingleDeviceSession(session)
+  useEffect(() => {
+    const updateOtpPending = () => {
+      setIsOtpPending(Boolean(window.sessionStorage.getItem(OTP_PENDING_KEY)))
+    }
+
+    window.addEventListener(OTP_PENDING_EVENT, updateOtpPending)
+    window.addEventListener('storage', updateOtpPending)
+
+    return () => {
+      window.removeEventListener(OTP_PENDING_EVENT, updateOtpPending)
+      window.removeEventListener('storage', updateOtpPending)
+    }
+  }, [])
+
+  useSingleDeviceSession(isOtpPending ? null : session)
 
   if (session === undefined) {
     return (
@@ -55,22 +76,22 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={!session ? <LoginPage /> : <Navigate to="/member" />}
+          element={!session || isOtpPending ? <LoginPage /> : <Navigate to="/member" />}
         />
 
         <Route
           path="/member"
-          element={session ? <MemberPage /> : <Navigate to="/public" />}
+          element={session && !isOtpPending ? <MemberPage /> : <Navigate to={isOtpPending ? '/login' : '/public'} />}
         />
         <Route
   path="/settings"
-  element={session ? <SettingsPage /> : <Navigate to="/login" />}
+  element={session && !isOtpPending ? <SettingsPage /> : <Navigate to="/login" />}
 />
 
         <Route
           path="/admin"
           element={
-            isAdmin
+            isAdmin && !isOtpPending
               ? <AdminPage />
               : <Navigate to={session ? '/member' : '/login'} />
           }
@@ -78,7 +99,7 @@ function App() {
 
         <Route
           path="/scan"
-          element={session ? <ScanPage /> : <Navigate to="/login" />}
+          element={session && !isOtpPending ? <ScanPage /> : <Navigate to="/login" />}
         />
 
         <Route path="/verify/:token" element={<VerifyPage />} />
@@ -90,13 +111,13 @@ function App() {
           element={
             isEmailConfirmationLink
               ? <EmailConfirmedPage />
-              : <Navigate to={session ? '/member' : '/public'} />
+              : <Navigate to={session && !isOtpPending ? '/member' : '/public'} />
           }
         />
 
         <Route
           path="*"
-          element={<Navigate to={session ? '/member' : '/public'} />}
+          element={<Navigate to={session && !isOtpPending ? '/member' : '/public'} />}
         />
       </Routes>
     </BrowserRouter>

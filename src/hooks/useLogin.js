@@ -19,6 +19,31 @@ import {
 } from '../api/authRepository'
 
 const SKIP_OTP_EMAIL_KEY = 'uvain_skip_otp_once_email'
+const OTP_PENDING_KEY = 'uvain_otp_pending_email'
+const OTP_PENDING_EVENT = 'uvain-otp-pending-change'
+
+function emitOtpPendingChange() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(OTP_PENDING_EVENT))
+  }
+}
+
+function setOtpPendingEmail(email) {
+  if (typeof window === 'undefined') return
+  window.sessionStorage.setItem(OTP_PENDING_KEY, email.trim().toLowerCase())
+  emitOtpPendingChange()
+}
+
+function getOtpPendingEmail() {
+  if (typeof window === 'undefined') return ''
+  return window.sessionStorage.getItem(OTP_PENDING_KEY) || ''
+}
+
+function clearOtpPendingEmail() {
+  if (typeof window === 'undefined') return
+  window.sessionStorage.removeItem(OTP_PENDING_KEY)
+  emitOtpPendingChange()
+}
 
 function shouldSkipOtpOnce(email) {
   if (typeof window === 'undefined') return false
@@ -39,9 +64,10 @@ function shouldSkipOtpOnce(email) {
  * 'unconfirmed' — email not confirmed yet, show resend button
  */
 export function useLogin() {
-  const [step, setStep] = useState('credentials') // 'credentials' | 'otp' | 'unconfirmed'
+  const pendingEmail = getOtpPendingEmail()
+  const [step, setStep] = useState(pendingEmail ? 'otp' : 'credentials') // 'credentials' | 'otp' | 'unconfirmed'
 
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(pendingEmail)
   const [password, setPassword] = useState('')
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
@@ -55,18 +81,22 @@ export function useLogin() {
     setLoading(true)
 
     try {
+      setOtpPendingEmail(email)
+
       // Always verify credentials first
       await signInWithPassword(email, password)
 
       // Right after first signup email confirmation, let the user into the app
       // once without asking for an OTP again.
       if (shouldSkipOtpOnce(email)) {
+        clearOtpPendingEmail()
         return
       }
 
       // OTP-exempt accounts (e.g. admin/test) are fully logged in now.
       // App.jsx onAuthStateChange will handle navigation.
       if (isOtpExempt(email)) {
+        clearOtpPendingEmail()
         return
       }
 
@@ -81,6 +111,7 @@ export function useLogin() {
       await sendLoginOtp(email)
       setStep('otp')
     } catch (err) {
+      clearOtpPendingEmail()
       const mapped = mapAuthError(err.message)
 
       if (mapped === 'EMAIL_NOT_CONFIRMED') {
@@ -108,6 +139,7 @@ export function useLogin() {
     setLoading(true)
     try {
       await verifyLoginOtp(email, otp)
+      clearOtpPendingEmail()
       // On success, Supabase sets the session automatically.
       // App.jsx onAuthStateChange will redirect to /member or /admin.
     } catch (err) {
@@ -152,6 +184,7 @@ export function useLogin() {
 
   // ── Go back to credentials screen ────────────────────────────────────────
   const handleBack = () => {
+    clearOtpPendingEmail()
     setStep('credentials')
     setOtp('')
     setError('')
