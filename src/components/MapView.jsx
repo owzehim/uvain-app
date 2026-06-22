@@ -25,7 +25,18 @@ import { MapPin } from '@phosphor-icons/react'
 
 // Set your API key
 const API_KEY = import.meta.env.VITE_MAPTILER_API_KEY
+const LIGHT_MAP_STYLE_ID = '019eb88d-92dc-70b4-b9c2-008b7e4a977d'
+const DARK_MAP_STYLE_ID = '019e33af-3185-79df-9f26-1bc6d896eeee'
 maptilersdk.config.apiKey = API_KEY
+
+function getMapStyleUrl(isDark) {
+  const styleId = isDark ? DARK_MAP_STYLE_ID : LIGHT_MAP_STYLE_ID
+  return `https://api.maptiler.com/maps/${styleId}/style.json?key=${API_KEY}`
+}
+
+function isDarkMode() {
+  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+}
 
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapContainer = useRef(null)
@@ -35,6 +46,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const locationWatchIdRef = useRef(null)
   const initializedRef = useRef(false)
   const mapReadyRef = useRef(false)
+  const activeStyleRef = useRef(null)
   const [isTrackingLocation, setIsTrackingLocation] = useState(false)
 
   // ─── Helper: Create marker element ──────────────────────────────────────
@@ -171,7 +183,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     map.current = new maptilersdk.Map({
       container: mapContainer.current,
-      style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${API_KEY}`,
+      style: getMapStyleUrl(isDarkMode()),
       center: [4.9041, 52.3676],
       zoom: 13,
       attributionControl: false,
@@ -184,6 +196,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     // Wait for map to be fully loaded before rendering markers
     map.current.on('load', () => {
       mapReadyRef.current = true
+      activeStyleRef.current = getMapStyleUrl(isDarkMode())
       renderMarkers(restaurants)
     })
 
@@ -191,6 +204,33 @@ export default function MapView({ restaurants, selected, onSelect }) {
       // Cleanup if needed
     }
   }, [])
+
+  useEffect(() => {
+    if (!map.current || typeof MutationObserver === 'undefined') return undefined
+
+    const syncMapStyle = () => {
+      const nextStyle = getMapStyleUrl(isDarkMode())
+      if (activeStyleRef.current === nextStyle) return
+
+      activeStyleRef.current = nextStyle
+      mapReadyRef.current = false
+      map.current.setStyle(nextStyle)
+      map.current.once('style.load', () => {
+        mapReadyRef.current = true
+        renderMarkers(restaurants)
+      })
+    }
+
+    const observer = new MutationObserver(syncMapStyle)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+
+    syncMapStyle()
+
+    return () => observer.disconnect()
+  }, [restaurants, renderMarkers])
 
   // ─── Re-render markers only when restaurants list changes ──────────────
   useEffect(() => {
