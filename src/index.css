@@ -81,49 +81,49 @@ body {
 }
 
 .dark body {
-  background: #0f172a;
-  color: #f8fafc;
+  background: #000000;
+  color: #f5f5f7;
 }
 
 .dark .bg-white {
-  background-color: #0f172a;
+  background-color: #000000;
 }
 
 .dark .bg-gray-50,
 .dark .bg-gray-100 {
-  background-color: #1e293b;
+  background-color: #1c1c1e;
 }
 
 .dark .bg-gray-200 {
-  background-color: #334155;
+  background-color: #2c2c2e;
 }
 
 .dark .border-gray-100,
 .dark .border-gray-200,
 .dark .border-gray-300 {
-  border-color: #334155;
+  border-color: #2c2c2e;
 }
 
 .dark .text-gray-900,
 .dark .text-gray-800,
 .dark .text-gray-700 {
-  color: #f8fafc;
+  color: #f5f5f7;
 }
 
 .dark .text-gray-600,
 .dark .text-gray-500 {
-  color: #cbd5e1;
+  color: #c7c7cc;
 }
 
 .dark .text-gray-400 {
-  color: #94a3b8;
+  color: #8e8e93;
 }
 
 .dark input,
 .dark textarea,
 .dark select {
-  background-color: #0f172a;
-  color: #f8fafc;
+  background-color: #000000;
+  color: #f5f5f7;
 }
 
 @keyframes spin {

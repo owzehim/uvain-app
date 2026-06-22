@@ -120,7 +120,7 @@ export default function MemberPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
       </div>
     )
@@ -133,7 +133,7 @@ export default function MemberPage() {
 
   return (
     <div
-      className="relative flex flex-col bg-white overflow-hidden dark:bg-slate-950"
+      className="relative flex flex-col bg-white overflow-hidden dark:bg-black"
       style={{ height: '100dvh' }}
     >
       {/* Review modal */}
@@ -156,7 +156,7 @@ export default function MemberPage() {
       {/* Header: only on EVENTS tab */}
       {activeTab === 'events' && (
         <div
-          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-slate-950"
+          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-black"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
         >
           <div className="w-[60px]" />
@@ -214,7 +214,7 @@ export default function MemberPage() {
           )}
           <button
             onClick={() => navigate('/settings')}
-            className="rounded-full bg-white p-2 text-gray-500 shadow-sm dark:bg-slate-900 dark:text-gray-300"
+            className="rounded-full bg-white p-2 text-gray-500 shadow-sm dark:bg-[#111111] dark:text-gray-300"
             aria-label="Settings"
             style={{
               userSelect: 'none',
@@ -251,7 +251,7 @@ export default function MemberPage() {
 
       {/* Bottom tab bar */}
       <div
-        className="bg-white flex flex-shrink-0 border-t border-gray-100 dark:border-gray-800 dark:bg-slate-950"
+        className="bg-white flex flex-shrink-0 border-t border-gray-100 dark:border-[#2c2c2e] dark:bg-black"
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
           userSelect: 'none',
@@ -1619,7 +1619,7 @@ function EventsTab({ events }) {
     return (
       <div
         key={ev.id}
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden dark:border-gray-800 dark:bg-slate-900"
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden dark:border-[#2c2c2e] dark:bg-[#111111]"
       >
         <button
           onClick={() => setExpandedId(isExpanded ? null : ev.id)}
@@ -1846,7 +1846,7 @@ function EventsTab({ events }) {
       <button
         type="button"
         onClick={() => setEventListOpen(true)}
-        className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 dark:bg-slate-900 dark:text-gray-300 dark:hover:bg-gray-800"
+        className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-[#1c1c1e]"
         aria-label="Open event list"
         style={{
           left: '12px',
@@ -2441,7 +2441,7 @@ function EventsTab({ events }) {
 
             {/* EMPTY STATE */}
             {allEvents.length === 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center dark:border-gray-800 dark:bg-slate-900">
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center dark:border-[#2c2c2e] dark:bg-[#111111]">
                 <p className="text-2xl mb-2">📅</p>
                 <p className="text-gray-500 text-sm dark:text-gray-400">
                   예정된 이벤트가 없어요
@@ -2809,7 +2809,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
     >
       {/* Category slider */}
 <div 
-  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none dark:bg-slate-950" 
+  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none dark:bg-black" 
   style={{ 
     paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
     zIndex: 10,  // Keep category slider above the map

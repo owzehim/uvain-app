@@ -215,7 +215,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <p className="text-gray-500 text-sm dark:text-gray-400">로딩 중...</p>
       </div>
     )
@@ -227,7 +227,7 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="flex flex-col bg-white no-highlight-zone dark:bg-slate-950"
+      className="flex flex-col bg-white no-highlight-zone dark:bg-black"
       style={{
         minHeight: '100dvh',
         userSelect: 'none',
@@ -245,7 +245,7 @@ export default function SettingsPage() {
       `}</style>
       {/* Header */}
       <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:border-gray-800 dark:bg-slate-950"
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:border-[#2c2c2e] dark:bg-black"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800">
@@ -259,7 +259,7 @@ export default function SettingsPage() {
         <div className="px-4 py-6 max-w-md mx-auto space-y-6">
 
           {/* Profile card */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center gap-4 dark:border-gray-800 dark:bg-slate-900">
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center gap-4 dark:border-[#2c2c2e] dark:bg-[#111111]">
 
             <button
               type="button"
@@ -349,7 +349,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-3 pt-2 pb-6">
-            <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-gray-800 dark:bg-slate-900">
+            <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-[#2c2c2e] dark:bg-[#111111]">
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">화면 모드</p>
               </div>
@@ -359,7 +359,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={handlePasswordPanelToggle}
-              className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 text-center shadow-sm dark:border-gray-800 dark:bg-slate-900 dark:text-gray-200"
+              className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 text-center shadow-sm dark:border-[#2c2c2e] dark:bg-[#111111] dark:text-gray-200"
             >
               비밀번호 바꾸기
             </button>
@@ -367,26 +367,26 @@ export default function SettingsPage() {
             {passwordPanelOpen && (
               <form
                 onSubmit={handlePasswordChange}
-                className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 dark:border-gray-800 dark:bg-slate-900"
+                className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 dark:border-[#2c2c2e] dark:bg-[#111111]"
               >
-                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 dark:bg-slate-950">
+                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-[#2c2c2e] dark:bg-black">
                   <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">새 비밀번호</span>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-slate-950 dark:text-white"
+                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-black dark:text-white"
                     required
                   />
                 </label>
 
-                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 dark:bg-slate-950">
+                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-[#2c2c2e] dark:bg-black">
                   <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">새 비밀번호 확인</span>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-slate-950 dark:text-white"
+                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-black dark:text-white"
                     required
                   />
                 </label>
@@ -418,7 +418,7 @@ export default function SettingsPage() {
       {/* Crop modal */}
       {cropModalOpen && cropImageSrc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-white rounded-2xl p-4 w-full max-w-sm flex flex-col gap-4 dark:bg-slate-900">
+          <div className="bg-white rounded-2xl p-4 w-full max-w-sm flex flex-col gap-4 dark:bg-[#111111]">
             <h2 className="text-sm font-semibold text-gray-900 mb-1 dark:text-white">프로필 사진 자르기</h2>
             <div className="relative w-full h-64 rounded-xl overflow-hidden bg-gray-900">
               <Cropper

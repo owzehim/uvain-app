@@ -29,7 +29,7 @@ export default function LoginPage() {
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-slate-950">
+    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-black">
       {isStandaloneStep ? (
         <button
           type="button"
@@ -256,7 +256,7 @@ export default function LoginPage() {
 
 function LoginField({ label, children }) {
   return (
-    <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 dark:bg-slate-900">
+    <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-[#2c2c2e] dark:bg-[#111111]">
       <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">{label}</span>
       {children}
     </label>
@@ -264,4 +264,4 @@ function LoginField({ label, children }) {
 }
 
 const inputClass =
-  'w-full border-none bg-white p-0 text-sm text-gray-900 outline-none placeholder:text-transparent focus:outline-none dark:bg-slate-900 dark:text-white'
+  'w-full border-none bg-white p-0 text-sm text-gray-900 outline-none placeholder:text-transparent focus:outline-none dark:bg-[#111111] dark:text-white'

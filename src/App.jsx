@@ -56,7 +56,7 @@ function App() {
 
   if (session === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
       </div>
     )
