@@ -1801,7 +1801,7 @@ function EventsTab({ events }) {
     ? DRAG_DATE_COLOR
     : darkMode
       ? isPastSelected
-        ? '#FAFAFA'
+        ? '#F7F8F9'
         : '#ffffff'
       : baseDateColor
 
@@ -2233,7 +2233,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: `calc(${W} * 0.045)`,
                     fontWeight: 700,
-                    color: darkMode ? '#ffffff' : '#4b5563',
+                    color: darkMode ? '#F8F9FA' : '#4b5563',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                   }}
