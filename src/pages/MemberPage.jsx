@@ -579,7 +579,7 @@ function MembershipCard({
           flexShrink: 0,
           borderRadius: '16px',
           border: '2px dashed #d1d5db',
-          background: '#ffffff',
+          background: '#F6F4F1',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
