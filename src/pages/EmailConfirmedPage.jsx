@@ -42,6 +42,10 @@ export default function EmailConfirmedPage() {
         }
 
         if (session) {
+          const verifiedEmail = session.user?.email?.trim().toLowerCase()
+          if (verifiedEmail && typeof window !== 'undefined') {
+            window.localStorage.setItem('uvain_skip_otp_once_email', verifiedEmail)
+          }
           await supabase.auth.signOut()
           if (!cancelled) setStatus('success')
           return

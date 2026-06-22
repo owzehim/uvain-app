@@ -18,6 +18,20 @@ import {
   resendConfirmationEmail,
 } from '../api/authRepository'
 
+const SKIP_OTP_EMAIL_KEY = 'uvain_skip_otp_once_email'
+
+function shouldSkipOtpOnce(email) {
+  if (typeof window === 'undefined') return false
+
+  const normalizedEmail = email.trim().toLowerCase()
+  const storedEmail = window.localStorage.getItem(SKIP_OTP_EMAIL_KEY)
+
+  if (storedEmail !== normalizedEmail) return false
+
+  window.localStorage.removeItem(SKIP_OTP_EMAIL_KEY)
+  return true
+}
+
 /**
  * Login flow states:
  * 'credentials' — user enters email + password
@@ -43,6 +57,12 @@ export function useLogin() {
     try {
       // Always verify credentials first
       await signInWithPassword(email, password)
+
+      // Right after first signup email confirmation, let the user into the app
+      // once without asking for an OTP again.
+      if (shouldSkipOtpOnce(email)) {
+        return
+      }
 
       // OTP-exempt accounts (e.g. admin/test) are fully logged in now.
       // App.jsx onAuthStateChange will handle navigation.

@@ -6,9 +6,12 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const {
     step,
-    email, setEmail,
-    password, setPassword,
-    otp, setOtp,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    otp,
+    setOtp,
     loading,
     error,
     resendSuccess,
@@ -20,25 +23,26 @@ export default function LoginPage() {
   } = useLogin()
 
   return (
-    <div className="fixed inset-0 bg-white flex items-start justify-center px-4 pt-[16vh] overflow-hidden">
+    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh]">
       <button
         type="button"
         onClick={() => navigate('/public')}
-        className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 hover:text-gray-600 transition-colors"
+        className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 transition-colors hover:text-gray-600"
         aria-label="Close login"
       >
         <X size={22} weight="bold" />
       </button>
 
       <div className="w-full max-w-sm px-2">
-
-        <div className="flex justify-center mb-6">
-          <img src="/uvain logo.png" alt="UvA-IN Logo" className="w-20 h-20" />
+        <div className="mb-6 flex justify-center">
+          <img src="/uvain logo.png" alt="UvA-IN Logo" className="h-20 w-20" />
         </div>
 
-        <div className="text-center mb-8">
+        <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold text-gray-900">UvA-IN</h1>
-          <p className="text-gray-500 text-sm mt-1">네덜란드 유학생을 위한 공식 커뮤니티</p>
+          <p className="mt-1 text-sm text-gray-500">
+            네덜란드 유학생을 위한 공식 커뮤니티
+          </p>
         </div>
 
         {step === 'credentials' && (
@@ -65,22 +69,22 @@ export default function LoginPage() {
               />
             </LoginField>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full py-3 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-50 transition-colors mt-5"
+              className="mt-5 w-full rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
             >
               {loading ? '확인 중...' : '로그인'}
             </button>
 
-            <p className="text-center text-xs text-gray-400 pt-2">
+            <p className="pt-2 text-center text-xs text-gray-400">
               계정이 없으신가요?{' '}
               <button
                 type="button"
                 onClick={() => navigate('/register')}
-                className="text-orange-500 font-medium hover:underline"
+                className="font-medium text-orange-500 hover:underline"
               >
                 회원가입
               </button>
@@ -90,10 +94,13 @@ export default function LoginPage() {
 
         {step === 'otp' && (
           <form onSubmit={handleOtpSubmit} className="space-y-3">
-            <p className="text-sm text-gray-600 text-center mb-3">
-              <span className="font-medium text-gray-900">{email}</span>로<br />
-              6자리 인증 코드를 전송했습니다.
-            </p>
+            <div className="mb-4 text-center">
+              <h2 className="text-xl font-semibold text-gray-900">이메일 인증 코드</h2>
+              <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                <span className="font-medium text-gray-900">{email}</span>로<br />
+                6자리 인증 코드를 보냈습니다.
+              </p>
+            </div>
 
             <LoginField label="인증 코드">
               <input
@@ -102,27 +109,29 @@ export default function LoginPage() {
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className={`${inputClass} text-center tracking-widest font-mono`}
+                className={`${inputClass} text-center font-mono tracking-[0.35em]`}
                 placeholder=""
                 autoFocus
                 required
               />
             </LoginField>
 
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-center text-sm text-red-500">{error}</p>}
             {resendSuccess && (
-              <p className="text-green-600 text-sm text-center">코드를 다시 보냈습니다.</p>
+              <p className="text-center text-sm text-green-600">
+                인증 코드를 다시 보냈습니다.
+              </p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full py-3 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-50 transition-colors mt-5"
+              className="mt-5 w-full rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
             >
-              {loading ? '확인 중...' : '인증 확인'}
+              {loading ? '확인 중...' : '인증하고 로그인'}
             </button>
 
-            <div className="flex justify-between text-xs text-gray-400 pt-2">
+            <div className="flex justify-between pt-2 text-xs text-gray-400">
               <button type="button" onClick={handleBack} className="hover:text-gray-600">
                 뒤로
               </button>
@@ -140,22 +149,22 @@ export default function LoginPage() {
 
         {step === 'unconfirmed' && (
           <div className="space-y-4 text-center">
-            <p className="text-sm font-medium text-gray-900">이메일 인증이 필요합니다.</p>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              <span className="font-medium">{email}</span>로 전송된<br />
+            <h2 className="text-xl font-semibold text-gray-900">이메일 확인이 필요합니다</h2>
+            <p className="text-sm leading-relaxed text-gray-500">
+              <span className="font-medium text-gray-900">{email}</span>로 보낸<br />
               인증 링크를 열고 다시 로그인해주세요.
             </p>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
             {resendSuccess && (
-              <p className="text-green-600 text-sm">인증 이메일을 다시 보냈습니다.</p>
+              <p className="text-sm text-green-600">인증 이메일을 다시 보냈습니다.</p>
             )}
 
             <button
               type="button"
               onClick={handleResendConfirmation}
               disabled={loading}
-              className="w-full rounded-full py-3 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-50 transition-colors"
+              className="w-full rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
             >
               {loading ? '전송 중...' : '인증 이메일 다시 보내기'}
             </button>
@@ -163,7 +172,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleBack}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 pt-1"
+              className="w-full pt-1 text-xs text-gray-400 hover:text-gray-600"
             >
               뒤로
             </button>
