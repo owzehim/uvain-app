@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { UserCircle, ArrowLeft } from '@phosphor-icons/react'
+import { UserCircle, ArrowLeft, Camera } from '@phosphor-icons/react'
 import Cropper from 'react-easy-crop'
 
 // ─── Pastel avatar (must match MemberPage) ───────────────────────────────────
@@ -171,7 +171,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <p className="text-gray-500 text-sm">로딩 중...</p>
       </div>
     )
@@ -183,7 +183,7 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="flex flex-col bg-gray-50 no-highlight-zone"
+      className="flex flex-col bg-white no-highlight-zone"
       style={{
         minHeight: '100dvh',
         userSelect: 'none',
@@ -217,36 +217,80 @@ export default function SettingsPage() {
           {/* Profile card */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center gap-4">
 
-            {/* Avatar — matches MembershipCard exactly */}
-            <div
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              aria-label="프로필 사진 변경"
               style={{
                 width: '96px',
                 height: '96px',
-                borderRadius: '50%',
-                background: hasProfileImage ? 'transparent' : pastelBg,
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                position: 'relative',
+                padding: 0,
+                border: 'none',
+                background: 'transparent',
+                cursor: uploading ? 'not-allowed' : 'pointer',
+                opacity: uploading ? 0.7 : 1,
                 flexShrink: 0,
               }}
             >
-              {hasProfileImage ? (
-                <img
-                  src={member.profile_image_url}
-                  alt="Profile"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              ) : (
-                <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
-              )}
-            </div>
+              <div
+                style={{
+                  width: '96px',
+                  height: '96px',
+                  borderRadius: '50%',
+                  background: hasProfileImage ? 'transparent' : pastelBg,
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {hasProfileImage ? (
+                  <img
+                    src={member.profile_image_url}
+                    alt="Profile"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
+                )}
+              </div>
+              <span
+                style={{
+                  position: 'absolute',
+                  right: '-1px',
+                  bottom: '1px',
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '50%',
+                  backgroundColor: '#fff',
+                  border: '1px solid #111827',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(17,24,39,0.14)',
+                }}
+              >
+                <Camera size={19} weight="fill" color="#111827" />
+              </span>
+            </button>
 
             <div className="text-center">
               <p className="text-sm font-medium text-gray-900">
                 {member?.first_name} {member?.last_name}
               </p>
               <p className="text-xs text-gray-400 mt-1">{member?.email}</p>
+              {hasProfileImage && (
+                <button
+                  type="button"
+                  onClick={handleDeleteProfileImage}
+                  disabled={uploading}
+                  className="mt-3 px-4 py-2 rounded-full border border-gray-300 text-gray-600 text-xs font-medium disabled:opacity-60"
+                >
+                  프로필 사진 지우기
+                </button>
+              )}
             </div>
 
             <input
@@ -256,17 +300,6 @@ export default function SettingsPage() {
               className="hidden"
               onChange={handleFileChange}
             />
-
-            {hasProfileImage && (
-              <button
-                type="button"
-                onClick={handleDeleteProfileImage}
-                disabled={uploading}
-                className="px-4 py-2 rounded-full border border-gray-300 text-gray-600 text-xs font-medium disabled:opacity-60"
-              >
-                프로필 사진 삭제
-              </button>
-            )}
 
             {error && <p className="text-xs text-red-500 text-center mt-1">{error}</p>}
           </div>
