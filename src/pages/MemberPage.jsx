@@ -578,8 +578,8 @@ function MembershipCard({
           margin: '0 auto',
           flexShrink: 0,
           borderRadius: '16px',
-          border: '2px dashed #cbd5b1',
-          background: '#F6F4F1',
+          border: '2px dashed #d1d5db',
+          background: '#ffffff',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -591,19 +591,7 @@ function MembershipCard({
           fontFamily: '"Handjet", system-ui, sans-serif',
         }}
       >
-        <span
-          style={{
-            fontSize: fs.brand,
-            fontWeight: 600,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            fontFamily: '"Alien Block", system-ui, sans-serif',
-            color: '#2C2A27',
-          }}
-        >
-          UvA-IN MEMBERSHIP
-        </span>
-        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
+        <span style={{ fontSize: fs.valid, fontWeight: 500 }}>
           활성화된 멤버십이 없습니다
         </span>
         {member?.first_name && (
@@ -624,7 +612,7 @@ function MembershipCard({
             color: '#9ca3af',
           }}
         >
-          멤버십 갱신은 운영진에게 문의해주세요
+          멤버십 갱신은 임원에게 문의해주세요
         </span>
       </div>
     )
