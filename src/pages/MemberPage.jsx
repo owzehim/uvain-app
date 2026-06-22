@@ -1152,10 +1152,32 @@ function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
+  const toLocalDateKey = (value) => {
+    if (!value) return ''
+    const s = String(value)
+    if (s.includes('T') || s.includes('Z') || /[+-]\d{2}:\d{2}$/.test(s)) {
+      const d = new Date(s)
+      if (!Number.isNaN(d.getTime())) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+          2,
+          '0',
+        )}-${String(d.getDate()).padStart(2, '0')}`
+      }
+    }
+    return s.slice(0, 10)
+  }
+
+  const parseLocalDate = (value) => {
+    if (!value) return new Date(NaN)
+    const key = toLocalDateKey(value)
+    const [year, month, day] = key.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+
   const getEventDates = (ev) => {
     const dates = Array.isArray(ev.event_dates) ? ev.event_dates : []
     const allDates = [...dates, ev.event_date].filter(Boolean)
-    const unique = Array.from(new Set(allDates.map((date) => String(date).slice(0, 10))))
+    const unique = Array.from(new Set(allDates.map((date) => toLocalDateKey(date))))
     return unique.length ? unique : []
   }
 
@@ -1205,7 +1227,7 @@ function EventsTab({ events }) {
   const [frontPanelTextColor, setFrontPanelTextColor] = useState('#1f2937')
   const [calMonth, setCalMonth] = useState(() => {
     const base = getPrimaryEventDate(initialEvent)
-      ? new Date(getPrimaryEventDate(initialEvent))
+      ? parseLocalDate(getPrimaryEventDate(initialEvent))
       : now
     return new Date(base.getFullYear(), base.getMonth(), 1)
   })
@@ -1215,7 +1237,7 @@ function EventsTab({ events }) {
   useEffect(() => {
     const selectedDate = getPrimaryEventDate(selectedEvent)
     if (!selectedDate) return
-    const d = new Date(selectedDate)
+    const d = parseLocalDate(selectedDate)
     setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1))
   }, [selectedEvent])
 
@@ -1357,7 +1379,7 @@ function EventsTab({ events }) {
 
   // Formatting helpers
   const getDayDiff = (s) => {
-    const d = new Date(s)
+    const d = parseLocalDate(s)
     return Math.round(
       (new Date(d.getFullYear(), d.getMonth(), d.getDate()) - todayStart) /
         86400000,
@@ -1366,7 +1388,7 @@ function EventsTab({ events }) {
 
   const formatTopDate = (dateStr) => {
     if (!dateStr) return null
-    const date = new Date(dateStr)
+    const date = parseLocalDate(dateStr)
     return {
       dayName: date
         .toLocaleDateString('en-US', { weekday: 'short' })

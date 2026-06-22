@@ -14,7 +14,17 @@ import { fetchConfigBySpot } from '../features/stampCard/api/config'
  */
 function toLocalDateString(isoString) {
   if (!isoString) return ''
-  return String(isoString).slice(0, 10)
+  const s = String(isoString)
+  if (s.includes('T') || s.includes('Z') || /[+-]\d{2}:\d{2}$/.test(s)) {
+    const d = new Date(s)
+    if (!Number.isNaN(d.getTime())) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+        2,
+        '0',
+      )}-${String(d.getDate()).padStart(2, '0')}`
+    }
+  }
+  return s.slice(0, 10)
 }
 
 /**
