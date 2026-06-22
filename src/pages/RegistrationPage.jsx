@@ -600,8 +600,8 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
       <div style={s.formContent}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine="UvA-IN for"
-          secondLine="International Students"
+          firstLine={language === 'ko' ? '네덜란드 유학생을 위한' : 'For International Students,'}
+          secondLine="UvA-IN."
         />
 
         <div style={s.nameGrid} data-motion="fields">
@@ -1299,24 +1299,28 @@ const s = {
   aboutIntro: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: '5px',
     justifyContent: 'center',
+    minWidth: 0,
+    maxWidth: '100%',
   },
   aboutIntroEn: {
     margin: 0,
-    fontSize: '19px',
+    fontSize: '16px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
+    maxWidth: '100%',
   },
   aboutIntroKo: {
     margin: 0,
-    fontSize: '19px',
+    fontSize: '20px',
     lineHeight: 1.25,
     fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
+    maxWidth: '100%',
   },
   compactHero: {
     display: 'grid',
@@ -1371,15 +1375,18 @@ const s = {
   compactIntro: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '3px',
+    gap: '5px',
+    minWidth: 0,
+    maxWidth: '100%',
   },
   compactIntroLine: {
     margin: 0,
-    fontSize: '17px',
+    fontSize: '16px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
+    maxWidth: '100%',
   },
   avatarButtonAcademic: {
     position: 'relative',
@@ -1405,11 +1412,12 @@ const s = {
   },
   compactIntroName: {
     margin: 0,
-    fontSize: '17px',
+    fontSize: '20px',
     lineHeight: 1.2,
     fontWeight: 600,
     color: '#111827',
     whiteSpace: 'nowrap',
+    maxWidth: '100%',
   },
   nameGrid: {
     display: 'grid',

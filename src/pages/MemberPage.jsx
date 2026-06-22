@@ -24,7 +24,7 @@ export default function MemberPage() {
   const [qrCardLifted, setQrCardLifted] = useState(false)
   const navigate = useNavigate()
 
-  // ── Review prompt hook ───────────────────────────────────────────────────────
+  // ?�?� Review prompt hook ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   const {
     open: reviewOpen,
     storeName,
@@ -41,7 +41,7 @@ export default function MemberPage() {
     skipReview,
   } = useReviewPrompt()
 
-  // ── Load user, member, events, restaurants ──────────────────────────────────
+  // ?�?� Load user, member, events, restaurants ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   useEffect(() => {
     const fetchData = async () => {
       const {
@@ -121,7 +121,7 @@ export default function MemberPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
+        <p className="text-gray-500">로딩 �?..</p>
       </div>
     )
   }
@@ -289,7 +289,7 @@ export default function MemberPage() {
   )
 }
 
-// ─── Pastel avatar colors ─────────────────────────────────────────────────────
+// ?�?�?� Pastel avatar colors ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const PASTEL_COLORS = [
   '#FFB3B3',
   '#FFD9A0',
@@ -308,7 +308,7 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
-// ─── Membership Card ─────────────────────────────────────────────────────────
+// ?�?�?� Membership Card ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function MembershipCard({
   member,
   isValid,
@@ -544,7 +544,7 @@ function MembershipCard({
                 letterSpacing: '0.05em',
               }}
             >
-              탭 해서 Check-IN 하기
+              ???�서 Check-IN ?�기
             </span>
           </div>
         </div>
@@ -604,7 +604,7 @@ function MembershipCard({
           UvA-IN MEMBERSHIP
         </span>
         <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
-          활성화된 멤버십이 없습니다
+          ?�성?�된 멤버??�� ?�습?�다
         </span>
         {member?.first_name && (
           <span
@@ -624,7 +624,7 @@ function MembershipCard({
             color: '#9ca3af',
           }}
         >
-          멤버십 갱신은 임원에게 문의해주세요
+          멤버??갱신?� ?�원?�게 문의?�주?�요
         </span>
       </div>
     )
@@ -655,7 +655,7 @@ function MembershipCard({
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* ── Front face ── */}
+        {/* ?�?� Front face ?�?� */}
         <div
           style={{
             position: 'absolute',
@@ -670,7 +670,7 @@ function MembershipCard({
           {cardFront}
         </div>
 
-        {/* ── Back face (camera) ── */}
+        {/* ?�?� Back face (camera) ?�?� */}
         <div
           style={{
             position: 'absolute',
@@ -704,7 +704,7 @@ function MembershipCard({
   )
 }
 
-// ─── QR Tab ───────────────────────────────────────────────────────────────────
+// ?�?�?� QR Tab ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
@@ -800,7 +800,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     )
   }
 
-  // ── SCANNING STATE ──────────────────────────────────────────────────────────
+  // ?�?� SCANNING STATE ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   return (
     <div
       className="no-highlight-zone"
@@ -817,7 +817,7 @@ function QRTab({ member, isValid, onLiftChange }) {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* 이번 달 활동 + long fade when lifted */}
+      {/* ?�번 ???�동 + long fade when lifted */}
       <div
         ref={activityRef}
         style={{
@@ -882,8 +882,8 @@ function QRTab({ member, isValid, onLiftChange }) {
               }}
             >
               {lifted
-                ? '내려서 Check-IN 하기'
-                : '위로 올려서 이번 달 활동 보기'}
+                ? '?�려??Check-IN ?�기'
+                : '?�로 ?�려???�번 ???�동 보기'}
             </span>
           )}
           {cardFlipped && (
@@ -894,13 +894,13 @@ function QRTab({ member, isValid, onLiftChange }) {
                 fontWeight: 500,
               }}
             >
-              탭 해서 뒤돌아가기
+              ???�서 ?�돌?��?�?
             </span>
           )}
         </div>
       </div>
 
-      {/* Top fade – soften the safe-area/card line when lifted */}
+      {/* Top fade ??soften the safe-area/card line when lifted */}
       {lifted && (
         <div
           className="pointer-events-none"
@@ -920,7 +920,7 @@ function QRTab({ member, isValid, onLiftChange }) {
   )
 }
 
-// ─── Nav Button (not currently used, but kept for future) ─────────────────────
+// ?�?�?� Nav Button (not currently used, but kept for future) ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function NavBtn({ onClick, children, style = {} }) {
   return (
     <button
@@ -955,7 +955,7 @@ function NavBtn({ onClick, children, style = {} }) {
   )
 }
 
-// ─── Event Lightbox (SpotCard-style) ──────────────────────────────────────────
+// ?�?�?� Event Lightbox (SpotCard-style) ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
@@ -1001,17 +1001,17 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
-    // Vertical swipe (up or down) → close
+    // Vertical swipe (up or down) ??close
     if (absDy > absDx && absDy > 60) {
       handleClose()
     }
-    // Horizontal swipe → next / prev
+    // Horizontal swipe ??next / prev
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
-        // swipe left → next
+        // swipe left ??next
         setIndex((i) => Math.min(i + 1, imgs.length - 1))
       } else {
-        // swipe right → prev
+        // swipe right ??prev
         setIndex((i) => Math.max(i - 1, 0))
       }
     }
@@ -1071,7 +1071,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
           {/* Image */}
           <img
             src={imgs[index]}
-            alt={`사진 ${index + 1}`}
+            alt={`?�진 ${index + 1}`}
             style={{
               maxWidth: '90vw',
               maxHeight: instagramUrl ? 'calc(90vh - 48px)' : '90vh',
@@ -1115,7 +1115,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
               >
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
               </svg>
-              Instagram 에서 열기
+              Instagram ?�서 ?�기
             </a>
           )}
         </div>
@@ -1158,7 +1158,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
   )
 }
 
-// ─── Events Tab ───────────────────────────────────────────────────────────────
+// ?�?�?� Events Tab ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -1176,7 +1176,7 @@ function EventsTab({ events }) {
     return dates[0] || ev?.event_date
   }
 
-  // ── Split & sort ────────────────────────────────────────────────────────────
+  // ?�?� Split & sort ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   const datedEvents = events.filter((ev) => getPrimaryEventDate(ev))
 
   const tbdEvents = events
@@ -1203,6 +1203,7 @@ function EventsTab({ events }) {
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
   const [isDragging, setIsDragging] = useState(false)
+  const [isTouching, setIsTouching] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
   const [eventListOpen, setEventListOpen] = useState(false)
@@ -1235,7 +1236,7 @@ function EventsTab({ events }) {
       [id]: idx,
     }))
 
-  // ── Load image dimensions to detect aspect ratio ────────────────────────────
+  // ?�?� Load image dimensions to detect aspect ratio ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   useEffect(() => {
     const loadImageDimensions = (url) =>
       new Promise((resolve) => {
@@ -1268,7 +1269,7 @@ function EventsTab({ events }) {
   const isPortrait = (aspectRatio) =>
     aspectRatio >= 0.75 && aspectRatio <= 0.85
 
-  // ── Keyboard nav for image slider in expanded cards ─────────────────────────
+  // ?�?� Keyboard nav for image slider in expanded cards ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   useEffect(() => {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
@@ -1291,7 +1292,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
 
-  // ── Vertical drag between events in header ───────────────────────────────────
+  // ?�?� Vertical drag between events in header ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
@@ -1300,7 +1301,6 @@ function EventsTab({ events }) {
     (ev) => ev.id === selectedEvent?.id,
   )
   const scrollProgress = 0
-  const isTouching = false
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
@@ -1311,6 +1311,7 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = currentEventIndex
     setIsDragging(true)
+    setIsTouching(true)
     setPreviewEvent(selectedEvent)
   }
 
@@ -1347,6 +1348,7 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = null
     setIsDragging(false)
+    setIsTouching(false)
     setPreviewEvent(selectedEvent)
   }
 
@@ -1355,15 +1357,16 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = null
     setIsDragging(false)
+    setIsTouching(false)
     setPreviewEvent(selectedEvent)
   }
 
-  // ── Helper to open lightbox at specific index ───────────────────────────────
+  // ?�?� Helper to open lightbox at specific index ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   const openLightboxAt = (index) => {
     setLightboxIndex(index)
   }
 
-  // ── Formatting helpers ──────────────────────────────────────────────────────
+  // ?�?� Formatting helpers ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   const getDayDiff = (s) => {
     const d = new Date(s)
     return Math.round(
@@ -1563,7 +1566,7 @@ function EventsTab({ events }) {
           <div className="flex items-center justify-between">
             <p className="font-semibold text-gray-900">{ev.title}</p>
             <span className="text-gray-400 text-sm ml-2">
-              {isExpanded ? '▲' : '▼'}
+              {isExpanded ? '-' : '+'}
             </span>
           </div>
           {getPrimaryEventDate(ev) && (
@@ -1671,7 +1674,7 @@ function EventsTab({ events }) {
                     className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5"
                   >
                     <Calendar size={14} weight="fill" />
-                    캘린더에 추가
+                    캘린?�에 추�?
                   </button>
                 )}
                 {instaUrl && (
@@ -1689,7 +1692,7 @@ function EventsTab({ events }) {
                     >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
-                    Instagram 에서 열기
+                    Instagram ?�서 ?�기
                   </a>
                 )}
               </div>
@@ -1700,7 +1703,7 @@ function EventsTab({ events }) {
     )
   }
 
-  // ── First-panel image + color logic ─────────────────────────────────────────
+  // ?�?� First-panel image + color logic ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
@@ -1920,7 +1923,7 @@ function EventsTab({ events }) {
                     cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
-                  {/* Back card 2 — image[1] */}
+                  {/* Back card 2 ??image[1] */}
                   {hasImages &&
                     displayImages.length >= 2 &&
                     (() => {
@@ -1953,7 +1956,7 @@ function EventsTab({ events }) {
                       )
                     })()}
 
-                  {/* Back card 1 — image[0] */}
+                  {/* Back card 1 ??image[0] */}
                   {hasImages &&
                     (() => {
                       return (
@@ -2342,7 +2345,7 @@ function EventsTab({ events }) {
                   otherUpcomingEvents.forEach((ev) => {
                     const label = `${
                       new Date(getPrimaryEventDateTime(ev)).getMonth() + 1
-                    }월`
+                    }M`
                     if (label !== curMonth) {
                       curMonth = label
                       blocks.push(
@@ -2374,9 +2377,9 @@ function EventsTab({ events }) {
             {/* EMPTY STATE */}
             {allEvents.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <p className="text-2xl mb-2">📅</p>
+                <p className="text-2xl mb-2">?��</p>
                 <p className="text-gray-500 text-sm">
-                  예정된 이벤트가 없어요
+                  ?�정???�벤?��? ?�어??
                 </p>
               </div>
             )}
@@ -2384,8 +2387,8 @@ function EventsTab({ events }) {
         </div>
       </div>
 
-      {/* Drag guide — fixed to bottom right of screen, like MY tab */}
-      {false && (
+      {/* Drag guide ??fixed to bottom right of screen, like MY tab */}
+      {allEvents.length > 0 && (
   <div
     className="no-highlight-zone"
     style={{
@@ -2418,7 +2421,7 @@ function EventsTab({ events }) {
         fontWeight: 500,
       }}
     >
-      드래그해서 이벤트 보기
+      ?�래그해???�벤??보기
     </span>
   </div>
 )}
@@ -2573,10 +2576,10 @@ function EventsTab({ events }) {
   )
 }
 
-// ─── Map Tab ──────────────────────────────────────────────────────────────────
+// ?�?�?� Map Tab ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
   const [selected, setSelected] = useState(null)
-  const [activeCategory, setActiveCategory] = useState('전체')
+  const [activeCategory, setActiveCategory] = useState('?�체')
   const [stampCardModalOpen, setStampCardModalOpen] = useState(false)
   const [stampCardSpot, setStampCardSpot] = useState(null)
   const [spotCardClosing, setSpotCardClosing] = useState(false)
@@ -2604,7 +2607,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
 
   const filtered = useMemo(
     () =>
-      activeCategory === '전체'
+      activeCategory === '?�체'
         ? restaurants
         : restaurants.filter((r) => r.category === activeCategory),
     [restaurants, activeCategory],
@@ -2624,7 +2627,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
   className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none" 
   style={{ 
     paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
-    zIndex: 10,  // ← 이 줄 추가
+    zIndex: 10,  // ????�?추�?
     userSelect: 'none',
     WebkitUserSelect: 'none',
     WebkitTapHighlightColor: 'transparent',
@@ -2691,7 +2694,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
           />
         )}
 
-        {/* Stamp card mini widget — fixed top-right, only for valid members */}
+        {/* Stamp card mini widget ??fixed top-right, only for valid members */}
         {stampCardSpot && stampCardUserId && (
           <StampCardMini
             restaurantId={stampCardSpot.id}
