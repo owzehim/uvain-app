@@ -686,7 +686,7 @@ const hasReviews = summary && summary.review_count > 0
             height: '72px',
             background: isMax
               ? 'transparent'
-              : `linear-gradient(to bottom, transparent, ${darkMode ? '#000000' : 'white'})`,
+              : `linear-gradient(to bottom, transparent, ${darkMode ? '#121212' : 'white'})`,
             zIndex: 10,
           }}
         >

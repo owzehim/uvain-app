@@ -55,9 +55,9 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const dark = isDarkMode()
     const isSponsored = r.is_sponsored
     const size = isSponsored ? 42 : 34
-    const bg = isSponsored ? '#f97316' : dark ? '#000000' : 'white'
+    const bg = isSponsored ? '#f97316' : dark ? '#121212' : 'white'
     const border = isSponsored
-      ? `3px solid ${dark ? '#000000' : 'white'}`
+      ? `3px solid ${dark ? '#121212' : 'white'}`
       : isSelected
         ? '3px solid #f97316'
         : `2px solid ${dark ? '#f97316' : '#e5e7eb'}`
@@ -71,7 +71,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const displayName = r.map_label || r.name || ''
     const name =
       displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
-    const iconColor = isSponsored ? 'white' : '#f97316'
+    const iconColor = isSponsored ? (dark ? '#121212' : 'white') : '#f97316'
     const iconSvg = getMapIconSvg(r.category, iconColor)
 
     const el = document.createElement('div')
@@ -115,7 +115,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     const label = document.createElement('div')
     label.style.cssText = `
-      background: ${dark ? '#000000' : 'white'};
+      background: ${dark ? '#121212' : 'white'};
       color: ${dark ? '#ffffff' : '#374151'};
       font-size: 9px;
       font-weight: 600;
@@ -258,7 +258,7 @@ useEffect(() => {
 
     if (isSponsored) {
       // 제휴 spot: keep orange bg + white outline when not selected
-      circle.style.border = `3px solid ${dark ? '#000000' : 'white'}`
+      circle.style.border = `3px solid ${dark ? '#121212' : 'white'}`
       circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.4)'
     } else {
       // Normal spot: grey outline when not selected
@@ -321,7 +321,7 @@ useEffect(() => {
         width: 16px;
         height: 16px;
         background: #f97316;
-        border: 2px solid ${dark ? '#000000' : 'white'};
+        border: 2px solid ${dark ? '#121212' : 'white'};
         border-radius: 50%;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       `
@@ -407,7 +407,7 @@ useEffect(() => {
           bottom: '80px',
           right: '10px',
           zIndex: 1000,
-          background: isTrackingLocation ? '#f97316' : darkMapControls ? '#000000' : 'white',
+          background: isTrackingLocation ? '#f97316' : darkMapControls ? '#121212' : 'white',
           border: isTrackingLocation
             ? '1px solid #f97316'
             : darkMapControls
@@ -427,7 +427,11 @@ useEffect(() => {
         }}
         title={isTrackingLocation ? '현재 위치 끄기' : '현재 위치 켜기'}
       >
-        <MapPin size={20} weight="fill" color={isTrackingLocation ? 'white' : '#f97316'} />
+        <MapPin
+          size={20}
+          weight="fill"
+          color={isTrackingLocation ? (darkMapControls ? '#121212' : 'white') : '#f97316'}
+        />
       </button>
     </div>
   )

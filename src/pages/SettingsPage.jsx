@@ -215,7 +215,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#121212]">
         <p className="text-gray-500 text-sm dark:text-gray-400">로딩 중...</p>
       </div>
     )
@@ -227,7 +227,7 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="flex flex-col bg-white no-highlight-zone dark:bg-black"
+      className="flex flex-col bg-white no-highlight-zone dark:bg-[#121212]"
       style={{
         minHeight: '100dvh',
         userSelect: 'none',
@@ -245,7 +245,7 @@ export default function SettingsPage() {
       `}</style>
       {/* Header */}
       <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:border-[#2c2c2e] dark:bg-black"
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:border-[#2c2c2e] dark:bg-[#121212]"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800">
@@ -369,24 +369,24 @@ export default function SettingsPage() {
                 onSubmit={handlePasswordChange}
                 className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 dark:border-[#2c2c2e] dark:bg-[#111111]"
               >
-                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-[#2c2c2e] dark:bg-black">
+                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-[#2c2c2e] dark:bg-[#121212]">
                   <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">새 비밀번호</span>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-black dark:text-white"
+                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-[#121212] dark:text-white"
                     required
                   />
                 </label>
 
-                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-[#2c2c2e] dark:bg-black">
+                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-[#2c2c2e] dark:bg-[#121212]">
                   <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">새 비밀번호 확인</span>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-black dark:text-white"
+                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-[#121212] dark:text-white"
                     required
                   />
                 </label>

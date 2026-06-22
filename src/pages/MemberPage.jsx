@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
@@ -120,7 +120,7 @@ export default function MemberPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#121212]">
         <p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
       </div>
     )
@@ -133,7 +133,7 @@ export default function MemberPage() {
 
   return (
     <div
-      className="relative flex flex-col bg-white overflow-hidden dark:bg-black"
+      className="relative flex flex-col bg-white overflow-hidden dark:bg-[#121212]"
       style={{ height: '100dvh' }}
     >
       {/* Review modal */}
@@ -156,7 +156,7 @@ export default function MemberPage() {
       {/* Header: only on EVENTS tab */}
       {activeTab === 'events' && (
         <div
-          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-black"
+          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-[#121212]"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
         >
           <div className="w-[60px]" />
@@ -251,7 +251,7 @@ export default function MemberPage() {
 
       {/* Bottom tab bar */}
       <div
-        className="bg-white flex flex-shrink-0 border-t border-gray-100 dark:border-[#2c2c2e] dark:bg-black"
+        className="bg-white flex flex-shrink-0 border-t border-gray-100 dark:border-[#2c2c2e] dark:bg-[#121212]"
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
           userSelect: 'none',
@@ -2768,6 +2768,9 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
   const [stampCardModalOpen, setStampCardModalOpen] = useState(false)
   const [stampCardSpot, setStampCardSpot] = useState(null)
   const [spotCardClosing, setSpotCardClosing] = useState(false)
+  const [darkMode, setDarkMode] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+  )
 
   useEffect(() => {
     if (!selected) setStampCardModalOpen(false)
@@ -2790,6 +2793,22 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
     setSpotCardClosing(false)
   }, [selected?.id])
 
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return undefined
+
+    const syncDarkMode = () => {
+      setDarkMode(document.documentElement.classList.contains('dark'))
+    }
+    const observer = new MutationObserver(syncDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+    syncDarkMode()
+
+    return () => observer.disconnect()
+  }, [])
+
   const filtered = useMemo(
     () =>
       activeCategory === '전체'
@@ -2809,7 +2828,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
     >
       {/* Category slider */}
 <div 
-  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none dark:bg-black" 
+  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none dark:bg-[#121212]" 
   style={{ 
     paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
     zIndex: 10,  // Keep category slider above the map
@@ -2821,7 +2840,9 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
           const iconSvg = isActive
-            ? CATEGORY_ICONS_WHITE[cat]
+            ? darkMode
+              ? CATEGORY_ICONS_BLACK[cat]
+              : CATEGORY_ICONS_WHITE[cat]
             : CATEGORY_ICONS_ORANGE[cat]
           return (
             <button

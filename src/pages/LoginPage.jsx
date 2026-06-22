@@ -29,7 +29,7 @@ export default function LoginPage() {
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-black">
+    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-[#121212]">
       {isStandaloneStep ? (
         <button
           type="button"

@@ -37,10 +37,12 @@ export const CATEGORY_ICONS = PHOSPHOR_ICONS
 // ✅ NEW: Pre-computed icon variants (orange and white) — no runtime string replacement
 export const CATEGORY_ICONS_ORANGE = {}
 export const CATEGORY_ICONS_WHITE = {}
+export const CATEGORY_ICONS_BLACK = {}
 
 MAP_CATEGORIES.forEach((cat) => {
   CATEGORY_ICONS_ORANGE[cat] = PHOSPHOR_ICONS[cat].replace('fill="currentColor"', 'fill="#f97316"')
   CATEGORY_ICONS_WHITE[cat] = PHOSPHOR_ICONS[cat].replace('fill="currentColor"', 'fill="white"')
+  CATEGORY_ICONS_BLACK[cat] = PHOSPHOR_ICONS[cat].replace('fill="currentColor"', 'fill="#121212"')
 })
 
 // SVG strings for map markers
