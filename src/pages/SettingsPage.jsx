@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { updatePassword } from '../api/authRepository'
 import { UserCircle, ArrowLeft, Camera } from '@phosphor-icons/react'
 import Cropper from 'react-easy-crop'
+import ThemeToggle from '../components/ThemeToggle'
 
 // ─── Pastel avatar (must match MemberPage) ───────────────────────────────────
 const PASTEL_COLORS = [
@@ -214,8 +215,8 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="text-gray-500 text-sm">로딩 중...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <p className="text-gray-500 text-sm dark:text-gray-400">로딩 중...</p>
       </div>
     )
   }
@@ -226,7 +227,7 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="flex flex-col bg-white no-highlight-zone"
+      className="flex flex-col bg-white no-highlight-zone dark:bg-slate-950"
       style={{
         minHeight: '100dvh',
         userSelect: 'none',
@@ -244,13 +245,13 @@ export default function SettingsPage() {
       `}</style>
       {/* Header */}
       <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0"
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:border-gray-800 dark:bg-slate-950"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500">
+        <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800">
           <ArrowLeft size={18} weight="bold" />
         </button>
-        <h1 className="font-semibold text-gray-900 text-sm">설정</h1>
+        <h1 className="font-semibold text-gray-900 text-sm dark:text-white">설정</h1>
       </div>
 
       {/* Content */}
@@ -258,7 +259,7 @@ export default function SettingsPage() {
         <div className="px-4 py-6 max-w-md mx-auto space-y-6">
 
           {/* Profile card */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center gap-4">
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center gap-4 dark:border-gray-800 dark:bg-slate-900">
 
             <button
               type="button"
@@ -320,16 +321,16 @@ export default function SettingsPage() {
             </button>
 
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {member?.first_name} {member?.last_name}
               </p>
-              <p className="text-xs text-gray-400 mt-1">{member?.email}</p>
+              <p className="text-xs text-gray-400 mt-1 dark:text-gray-500">{member?.email}</p>
               {hasProfileImage && (
                 <button
                   type="button"
                   onClick={handleDeleteProfileImage}
                   disabled={uploading}
-                  className="mt-3 px-4 py-2 rounded-full border border-gray-300 text-gray-600 text-xs font-medium disabled:opacity-60"
+                  className="mt-3 px-4 py-2 rounded-full border border-gray-300 text-gray-600 text-xs font-medium disabled:opacity-60 dark:border-gray-700 dark:text-gray-300"
                 >
                   프로필 사진 지우기
                 </button>
@@ -348,10 +349,17 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-3 pt-2 pb-6">
+            <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-gray-800 dark:bg-slate-900">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">화면 모드</p>
+              </div>
+              <ThemeToggle />
+            </div>
+
             <button
               type="button"
               onClick={handlePasswordPanelToggle}
-              className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 text-center shadow-sm"
+              className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 text-center shadow-sm dark:border-gray-800 dark:bg-slate-900 dark:text-gray-200"
             >
               비밀번호 바꾸기
             </button>
@@ -359,26 +367,26 @@ export default function SettingsPage() {
             {passwordPanelOpen && (
               <form
                 onSubmit={handlePasswordChange}
-                className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4"
+                className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 dark:border-gray-800 dark:bg-slate-900"
               >
-                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2">
-                  <span className="text-xs font-normal leading-none text-gray-500">새 비밀번호</span>
+                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 dark:bg-slate-950">
+                  <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">새 비밀번호</span>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none"
+                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-slate-950 dark:text-white"
                     required
                   />
                 </label>
 
-                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2">
-                  <span className="text-xs font-normal leading-none text-gray-500">새 비밀번호 확인</span>
+                <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 dark:bg-slate-950">
+                  <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">새 비밀번호 확인</span>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none"
+                    className="w-full border-none bg-white p-0 text-sm text-gray-900 outline-none focus:outline-none dark:bg-slate-950 dark:text-white"
                     required
                   />
                 </label>
@@ -399,7 +407,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white text-center shadow-sm"
+              className="w-full rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white text-center shadow-sm dark:bg-gray-100 dark:text-gray-950"
             >
               로그아웃
             </button>
@@ -410,8 +418,8 @@ export default function SettingsPage() {
       {/* Crop modal */}
       {cropModalOpen && cropImageSrc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-white rounded-2xl p-4 w-full max-w-sm flex flex-col gap-4">
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">프로필 사진 자르기</h2>
+          <div className="bg-white rounded-2xl p-4 w-full max-w-sm flex flex-col gap-4 dark:bg-slate-900">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1 dark:text-white">프로필 사진 자르기</h2>
             <div className="relative w-full h-64 rounded-xl overflow-hidden bg-gray-900">
               <Cropper
                 image={cropImageSrc}
@@ -436,7 +444,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => { setCropModalOpen(false); setCropImageSrc(null); setCroppedAreaPixels(null) }}
-                className="px-3 py-1.5 rounded-full text-xs text-gray-500 hover:bg-gray-100"
+                className="px-3 py-1.5 rounded-full text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               >
                 취소
               </button>
@@ -444,7 +452,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleCropConfirm}
                 disabled={uploading}
-                className="px-4 py-1.5 rounded-full bg-gray-900 text-white text-xs font-medium disabled:opacity-60"
+                className="px-4 py-1.5 rounded-full bg-gray-900 text-white text-xs font-medium disabled:opacity-60 dark:bg-gray-100 dark:text-gray-950"
               >
                 {uploading ? '저장 중...' : '저장'}
               </button>

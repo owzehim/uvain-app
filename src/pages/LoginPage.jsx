@@ -29,12 +29,12 @@ export default function LoginPage() {
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh]">
+    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-slate-950">
       {isStandaloneStep ? (
         <button
           type="button"
           onClick={handleBack}
-          className="fixed left-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-700 transition-colors hover:text-gray-900"
+          className="fixed left-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           aria-label="Back to login"
         >
           <CaretLeft size={30} weight="regular" />
@@ -43,7 +43,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => navigate('/public')}
-          className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 transition-colors hover:text-gray-600"
+          className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-200"
           aria-label="Close login"
         >
           <X size={22} weight="bold" />
@@ -58,8 +58,8 @@ export default function LoginPage() {
             </div>
 
             <div className="mb-8 text-center">
-              <h1 className="text-2xl font-semibold text-gray-900">UvA-IN</h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">UvA-IN</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 네덜란드 유학생을 위한 공식 커뮤니티
               </p>
             </div>
@@ -94,7 +94,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-xs font-medium text-gray-400 hover:text-orange-500"
+                className="text-xs font-medium text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400"
               >
                 비밀번호를 잊으셨나요?
               </button>
@@ -110,7 +110,7 @@ export default function LoginPage() {
               {loading ? '확인 중...' : '로그인'}
             </button>
 
-            <p className="pt-2 text-center text-xs text-gray-400">
+            <p className="pt-2 text-center text-xs text-gray-400 dark:text-gray-500">
               계정이 없으신가요?{' '}
               <button
                 type="button"
@@ -126,8 +126,8 @@ export default function LoginPage() {
         {step === 'forgot' && (
           <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
             <div className="mb-8 min-h-[176px] pt-[54px] text-left">
-              <h2 className="text-2xl font-semibold text-gray-900">비밀번호 재설정</h2>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">비밀번호 재설정</h2>
+              <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                 가입한 이메일을 입력하면 새 비밀번호를 설정할 수 있는 링크를 보내드립니다.
               </p>
             </div>
@@ -161,7 +161,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleBack}
-              className="w-full pt-1 text-xs text-gray-400 hover:text-gray-600"
+              className="w-full pt-1 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
             >
               로그인으로 돌아가기
             </button>
@@ -171,9 +171,9 @@ export default function LoginPage() {
         {step === 'otp' && (
           <form onSubmit={handleOtpSubmit} className="space-y-4">
             <div className="mb-8 min-h-[176px] pt-[54px] text-left">
-              <h2 className="text-2xl font-semibold text-gray-900">이메일 인증 코드</h2>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500">
-                <span className="font-medium text-gray-900">{email}</span>로<br />
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">이메일 인증 코드</h2>
+              <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                <span className="font-medium text-gray-900 dark:text-white">{email}</span>로<br />
                 6자리 인증 코드를 보냈습니다.
               </p>
             </div>
@@ -220,9 +220,9 @@ export default function LoginPage() {
 
         {step === 'unconfirmed' && (
           <div className="space-y-4 text-center">
-            <h2 className="text-xl font-semibold text-gray-900">이메일 확인이 필요합니다</h2>
-            <p className="text-sm leading-relaxed text-gray-500">
-              <span className="font-medium text-gray-900">{email}</span>로 보낸<br />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">이메일 확인이 필요합니다</h2>
+            <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+              <span className="font-medium text-gray-900 dark:text-white">{email}</span>로 보낸<br />
               인증 링크를 열고 다시 로그인해주세요.
             </p>
 
@@ -243,7 +243,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleBack}
-              className="w-full pt-1 text-xs text-gray-400 hover:text-gray-600"
+              className="w-full pt-1 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
             >
               뒤로
             </button>
@@ -256,12 +256,12 @@ export default function LoginPage() {
 
 function LoginField({ label, children }) {
   return (
-    <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2">
-      <span className="text-xs font-normal leading-none text-gray-500">{label}</span>
+    <label className="flex h-[54px] cursor-text flex-col justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 dark:bg-slate-900">
+      <span className="text-xs font-normal leading-none text-gray-500 dark:text-gray-400">{label}</span>
       {children}
     </label>
   )
 }
 
 const inputClass =
-  'w-full border-none bg-white p-0 text-sm text-gray-900 outline-none placeholder:text-transparent focus:outline-none'
+  'w-full border-none bg-white p-0 text-sm text-gray-900 outline-none placeholder:text-transparent focus:outline-none dark:bg-slate-900 dark:text-white'

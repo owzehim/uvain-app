@@ -13,11 +13,13 @@ import EmailConfirmedPage from './pages/EmailConfirmedPage'
 import SettingsPage from './pages/SettingsPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
+import { useTheme } from './hooks/useTheme'
 
 const OTP_PENDING_KEY = 'uvain_otp_pending_email'
 const OTP_PENDING_EVENT = 'uvain-otp-pending-change'
 
 function App() {
+  useTheme()
   const [session, setSession] = useState(undefined)
   const [isOtpPending, setIsOtpPending] = useState(() =>
     typeof window !== 'undefined' &&
@@ -54,8 +56,8 @@ function App() {
 
   if (session === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
       </div>
     )
   }

@@ -120,8 +120,8 @@ export default function MemberPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
       </div>
     )
   }
@@ -133,7 +133,7 @@ export default function MemberPage() {
 
   return (
     <div
-      className="relative flex flex-col bg-white overflow-hidden"
+      className="relative flex flex-col bg-white overflow-hidden dark:bg-slate-950"
       style={{ height: '100dvh' }}
     >
       {/* Review modal */}
@@ -156,7 +156,7 @@ export default function MemberPage() {
       {/* Header: only on EVENTS tab */}
       {activeTab === 'events' && (
         <div
-          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0"
+          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-slate-950"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
         >
           <div className="w-[60px]" />
@@ -173,7 +173,7 @@ export default function MemberPage() {
             )}
             <button
               onClick={() => navigate('/settings')}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800"
               aria-label="Settings"
             >
               <Gear size={20} weight="bold" />
@@ -214,7 +214,7 @@ export default function MemberPage() {
           )}
           <button
             onClick={() => navigate('/settings')}
-            className="rounded-full bg-white p-2 text-gray-500"
+            className="rounded-full bg-white p-2 text-gray-500 shadow-sm dark:bg-slate-900 dark:text-gray-300"
             aria-label="Settings"
             style={{
               userSelect: 'none',
@@ -251,7 +251,7 @@ export default function MemberPage() {
 
       {/* Bottom tab bar */}
       <div
-        className="bg-white flex flex-shrink-0"
+        className="bg-white flex flex-shrink-0 border-t border-gray-100 dark:border-gray-800 dark:bg-slate-950"
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
           userSelect: 'none',
@@ -271,7 +271,7 @@ export default function MemberPage() {
               onClick={() => handleTabChange(tab.key)}
               className={
                 'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors select-none ' +
-                (active ? 'text-orange-500' : 'text-gray-400')
+                (active ? 'text-orange-500' : 'text-gray-400 dark:text-gray-500')
               }
               style={{
                 userSelect: 'none',
@@ -1619,15 +1619,15 @@ function EventsTab({ events }) {
     return (
       <div
         key={ev.id}
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden dark:border-gray-800 dark:bg-slate-900"
       >
         <button
           onClick={() => setExpandedId(isExpanded ? null : ev.id)}
           className="w-full text-left p-5"
         >
           <div className="flex items-center justify-between">
-            <p className="font-semibold text-gray-900">{ev.title}</p>
-            <span className="text-gray-400 text-sm ml-2">
+            <p className="font-semibold text-gray-900 dark:text-white">{ev.title}</p>
+            <span className="text-gray-400 text-sm ml-2 dark:text-gray-500">
               {isExpanded ? '-' : '+'}
             </span>
           </div>
@@ -1644,7 +1644,7 @@ function EventsTab({ events }) {
             </div>
           )}
           {ev.location && (
-            <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
+            <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5 dark:text-gray-400">
               <MapPin size={14} weight="fill" />
               <span>{plainText(ev.location)}</span>
             </div>
@@ -1670,7 +1670,7 @@ function EventsTab({ events }) {
                   }}
                 >
                   <div
-                    className="relative rounded-2xl overflow-hidden bg-gray-100"
+                    className="relative rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800"
                     style={{ aspectRatio: '1/1' }}
                   >
                     <div
@@ -1685,7 +1685,7 @@ function EventsTab({ events }) {
                       {imgs.map((url, i) => (
                         <div
                           key={i}
-                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
+                          className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800"
                         >
                           <img
                             src={url}
@@ -1726,14 +1726,14 @@ function EventsTab({ events }) {
               {ev.description && (
                 <RichText
                   text={ev.description}
-                  className="text-sm text-gray-600 mt-3 leading-relaxed block"
+                  className="text-sm text-gray-600 mt-3 leading-relaxed block dark:text-gray-300"
                 />
               )}
               <div className="flex gap-2 mt-3">
                 {getPrimaryEventDate(ev) && (
                   <button
                     onClick={() => addToCalendar(ev)}
-                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5"
+                    className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 dark:bg-gray-800 dark:text-gray-200"
                   >
                     <Calendar size={14} weight="fill" />
                     캘린더에 추가
@@ -1846,7 +1846,7 @@ function EventsTab({ events }) {
       <button
         type="button"
         onClick={() => setEventListOpen(true)}
-        className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100"
+        className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 dark:bg-slate-900 dark:text-gray-300 dark:hover:bg-gray-800"
         aria-label="Open event list"
         style={{
           left: '12px',
@@ -2416,7 +2416,7 @@ function EventsTab({ events }) {
                       blocks.push(
                         <p
                           key={`m-${label}`}
-                          className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2"
+                          className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2 dark:text-gray-500"
                         >
                           {label}
                         </p>,
@@ -2432,7 +2432,7 @@ function EventsTab({ events }) {
             {/* TBD EVENTS */}
             {tbdEvents.length > 0 && (
               <div className="mb-8 space-y-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide dark:text-gray-500">
                   TBD
                 </p>
                 {tbdEvents.map((ev) => renderEvent(ev))}
@@ -2441,9 +2441,9 @@ function EventsTab({ events }) {
 
             {/* EMPTY STATE */}
             {allEvents.length === 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center dark:border-gray-800 dark:bg-slate-900">
                 <p className="text-2xl mb-2">📅</p>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 text-sm dark:text-gray-400">
                   예정된 이벤트가 없어요
                 </p>
               </div>
@@ -2809,7 +2809,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
     >
       {/* Category slider */}
 <div 
-  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none" 
+  className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none dark:bg-slate-950" 
   style={{ 
     paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
     zIndex: 10,  // Keep category slider above the map
@@ -2834,7 +2834,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
                 'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 select-none ' +
                 (isActive
                   ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700')
               }
               style={{
                 userSelect: 'none',
