@@ -1208,8 +1208,8 @@ function EventsTab({ events }) {
 
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
-  const allEvents = [...futureEvents, ...tbdEvents, ...pastEvents]
-  const initialEvent = allEvents[0] || null
+  const allEvents = [...pastEvents.slice().reverse(), ...futureEvents, ...tbdEvents]
+  const initialEvent = nextEvent || allEvents[0] || null
 
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
@@ -1233,6 +1233,14 @@ function EventsTab({ events }) {
   })
 
   const containerRef = useRef(null)
+
+  useEffect(() => {
+    if (!initialEvent) return
+    const selectedStillExists = selectedEvent && allEvents.some((ev) => ev.id === selectedEvent.id)
+    if (selectedStillExists) return
+    setSelectedEvent(initialEvent)
+    setPreviewEvent(initialEvent)
+  }, [initialEvent, selectedEvent, allEvents])
 
   useEffect(() => {
     const selectedDate = getPrimaryEventDate(selectedEvent)
@@ -1311,6 +1319,9 @@ function EventsTab({ events }) {
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
   )
+  const activeEventIndex = currentEventIndex >= 0
+    ? currentEventIndex
+    : Math.max(0, allEvents.findIndex((ev) => ev.id === initialEvent?.id))
   const scrollProgress = 0
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
@@ -1320,7 +1331,7 @@ function EventsTab({ events }) {
 
     dragStartY.current = touch.clientY
     dragAccumulator.current = 0
-    lastIdxRef.current = currentEventIndex
+    lastIdxRef.current = activeEventIndex
     setIsDragging(true)
     setIsTouching(true)
     setPreviewEvent(selectedEvent)
@@ -1348,9 +1359,9 @@ function EventsTab({ events }) {
     if (delta !== 0) {
       const newIdx = Math.max(
         0,
-        Math.min((currentEventIndex ?? 0) + delta, allEvents.length - 1),
+        Math.min(activeEventIndex + delta, allEvents.length - 1),
       )
-      if (newIdx !== currentEventIndex) {
+      if (newIdx !== activeEventIndex) {
         setSelectedEvent(allEvents[newIdx])
       }
     }
