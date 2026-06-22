@@ -1219,6 +1219,9 @@ function EventsTab({ events }) {
   const [slideIndexes, setSlideIndexes] = useState({})
   const [eventListOpen, setEventListOpen] = useState(false)
   const [eventListClosing, setEventListClosing] = useState(false)
+  const [darkMode, setDarkMode] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+  )
 
   // SpotCard-style Lightbox index
   const [lightboxIndex, setLightboxIndex] = useState(null)
@@ -1233,6 +1236,22 @@ function EventsTab({ events }) {
   })
 
   const containerRef = useRef(null)
+
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return undefined
+
+    const syncDarkMode = () => {
+      setDarkMode(document.documentElement.classList.contains('dark'))
+    }
+    const observer = new MutationObserver(syncDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+    syncDarkMode()
+
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (!initialEvent) return
@@ -1778,7 +1797,11 @@ function EventsTab({ events }) {
     !!getPrimaryEventDate(displayEvent) &&
     new Date(getPrimaryEventDateTime(displayEvent)) < todayStart
   const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
-  const effectiveDateColor = isDragging ? DRAG_DATE_COLOR : baseDateColor
+  const effectiveDateColor = darkMode
+    ? '#ffffff'
+    : isDragging
+      ? DRAG_DATE_COLOR
+      : baseDateColor
 
   const getTextColorFromImage = (imageUrl) =>
     new Promise((resolve) => {
@@ -1884,7 +1907,7 @@ function EventsTab({ events }) {
             flex: '0 0 auto',
             padding: '16px',
             paddingTop: '24px',
-            backgroundColor: '#ffffff',
+            backgroundColor: darkMode ? '#121212' : '#ffffff',
           }}
         >
           {displayEvent && (
@@ -1904,7 +1927,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: fs.day,
                     fontWeight: 500,
-                    color: '#9ca3af',
+                    color: darkMode ? '#ffffff' : '#9ca3af',
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     lineHeight: 0.85,
@@ -1919,7 +1942,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: fs.day,
                     fontWeight: 500,
-                    color: '#9ca3af',
+                    color: darkMode ? '#ffffff' : '#9ca3af',
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     lineHeight: 0.85,
@@ -2070,8 +2093,9 @@ function EventsTab({ events }) {
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            backgroundColor:
-                              'rgba(255,255,255,0.45)',
+                            backgroundColor: darkMode
+                              ? 'rgba(18,18,18,0.45)'
+                              : 'rgba(255,255,255,0.45)',
                             backdropFilter: 'blur(12px)',
                             WebkitBackdropFilter: 'blur(12px)',
                           }}
@@ -2185,7 +2209,7 @@ function EventsTab({ events }) {
             {/* CALENDAR */}
             <div
               style={{
-                backgroundColor: '#ffffff',
+                backgroundColor: darkMode ? '#121212' : '#ffffff',
                 padding: '16px',
                 marginTop: '8px',
                 marginBottom: '32px',
@@ -2207,7 +2231,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: `calc(${W} * 0.045)`,
                     fontWeight: 700,
-                    color: '#4b5563',
+                    color: darkMode ? '#ffffff' : '#4b5563',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                   }}
@@ -2237,7 +2261,7 @@ function EventsTab({ events }) {
                         '"Handjet", system-ui, sans-serif',
                       fontSize: `calc(${W} * 0.032)`,
                       fontWeight: 600,
-                      color: '#9ca3af',
+                      color: darkMode ? '#ffffff' : '#9ca3af',
                       paddingBottom: '4px',
                     }}
                   >
@@ -2292,24 +2316,24 @@ function EventsTab({ events }) {
 
                   let bg = 'transparent'
                   let border = 'none'
-                  let color = '#1f2937'
+                  let color = darkMode ? '#ffffff' : '#1f2937'
                   let fw = 500
 
                   if (isSelectedEventDate) {
-                    bg = '#d1d5db'
-                    color = '#111827'
+                    bg = darkMode ? '#2c2c2e' : '#d1d5db'
+                    color = darkMode ? '#ffffff' : '#111827'
                     fw = 700
                   } else if (hasEvt) {
-                    bg = '#f3f4f6'
-                    color = '#9ca3af'
+                    bg = darkMode ? '#1c1c1e' : '#f3f4f6'
+                    color = darkMode ? '#ffffff' : '#9ca3af'
                     fw = 600
                   } else if (isToday) {
-                    bg = '#ffffff'
+                    bg = darkMode ? '#121212' : '#ffffff'
                     fw = 700
                   }
 
                   if (isToday) {
-                    border = '2px solid #1f2937'
+                    border = `2px solid ${darkMode ? '#ffffff' : '#1f2937'}`
                   }
 
                   return (
@@ -2355,7 +2379,7 @@ function EventsTab({ events }) {
                               '"Handjet", system-ui, sans-serif',
                             fontSize: `calc(${W} * 0.022)`,
                             fontWeight: 800,
-                            color: '#1f2937',
+                            color: darkMode ? '#ffffff' : '#1f2937',
                             lineHeight: 1,
                             letterSpacing: '0.04em',
                             pointerEvents: 'none',
@@ -2468,8 +2492,8 @@ function EventsTab({ events }) {
             className={
               'mx-auto block w-[82%] max-w-md rounded-full px-5 py-3 text-sm font-semibold shadow-xl transition-opacity ' +
               (nextEvent.is_registration_closed
-                ? 'bg-gray-200 text-gray-500'
-                : 'bg-black text-white hover:opacity-90')
+                ? 'bg-gray-200 text-gray-500 dark:bg-[#2c2c2e] dark:text-white'
+                : 'bg-[#121212] text-white hover:opacity-90 dark:bg-[#ffffff] dark:text-[#121212]')
             }
             style={{ pointerEvents: 'auto' }}
           >
