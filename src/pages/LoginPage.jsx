@@ -25,7 +25,7 @@ export default function LoginPage() {
   const isOtpStep = step === 'otp'
 
   return (
-    <div className={`fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 ${isOtpStep ? 'pt-[13vh]' : 'pt-[16vh]'}`}>
+    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh]">
       {isOtpStep ? (
         <button
           type="button"
@@ -49,8 +49,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm px-2">
         {!isOtpStep && (
           <>
-            <div className="mb-6 flex justify-center">
-              <img src="/uvain logo.png" alt="UvA-IN Logo" className="h-20 w-20" />
+            <div className="mb-3 flex justify-center">
+              <img src="/uvain logo.png" alt="UvA-IN Logo" className="h-24 w-24" />
             </div>
 
             <div className="mb-8 text-center">
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
         {step === 'otp' && (
           <form onSubmit={handleOtpSubmit} className="space-y-4">
-            <div className="mb-5 text-left">
+            <div className="mb-8 min-h-[176px] pt-[54px] text-left">
               <h2 className="text-2xl font-semibold text-gray-900">이메일 인증 코드</h2>
               <p className="mt-3 text-sm leading-relaxed text-gray-500">
                 <span className="font-medium text-gray-900">{email}</span>로<br />
