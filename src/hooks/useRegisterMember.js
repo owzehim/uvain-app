@@ -27,6 +27,22 @@ const INITIAL_FORM = {
   yearNumber: '',
 };
 
+const normalizeGenderForDb = (gender) => {
+  const normalized = String(gender || '').trim().toLowerCase();
+  const map = {
+    female: 'female',
+    male: 'male',
+    other: 'other',
+    'non-binary': 'other',
+    'prefer not to say': 'other',
+    '\uC5EC\uC131': 'female',
+    '\uB0A8\uC131': 'male',
+    '\uB17C\uBC14\uC774\uB108\uB9AC': 'other',
+    '\uC751\uB2F5 \uAC70\uC808': 'other',
+  };
+  return map[normalized] || 'other';
+};
+
 // ── Helper: compress image in browser ───────────────────────────────────────
 async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.75) {
   return new Promise((resolve, reject) => {
@@ -134,12 +150,14 @@ export function useRegisterMember() {
       return;
     }
 
+    const genderForDb = normalizeGenderForDb(formData.gender);
+
     const validationError = validateRegistrationForm({
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
       studentNumber: formData.studentNumber,
-      gender: formData.gender,
+      gender: genderForDb,
       countryOfOrigin: formData.countryOfOrigin,
       educationLevel: formData.educationLevel,
       yearNumber: formData.yearNumber || null,
@@ -199,7 +217,7 @@ export function useRegisterMember() {
         yearOfBirth: formData.yearOfBirth
           ? Number(formData.yearOfBirth)
           : null,
-        gender: formData.gender,
+        gender: genderForDb,
         countryOfOrigin: formData.countryOfOrigin,
         university: formData.university,
         major: formData.major,
