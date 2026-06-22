@@ -1342,7 +1342,7 @@ function EventsTab({ events }) {
     const dy = dragStartY.current - e.touches[0].clientY
     dragAccumulator.current = dy
     const delta =
-      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+      dy > 0 ? -Math.floor(dy / 60) : dy < 0 ? -Math.ceil(dy / 60) : 0
     const idx = Math.max(
       0,
       Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
@@ -1354,7 +1354,7 @@ function EventsTab({ events }) {
     if (dragStartY.current == null) return
     const dy = dragAccumulator.current
     const delta =
-      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+      dy > 0 ? -Math.floor(dy / 60) : dy < 0 ? -Math.ceil(dy / 60) : 0
 
     if (delta !== 0) {
       const newIdx = Math.max(

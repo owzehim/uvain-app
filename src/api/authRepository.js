@@ -82,6 +82,36 @@ export async function resendConfirmationEmail(email) {
 }
 
 /**
+ * Sends a password reset link to the user's email.
+ *
+ * @param {string} email
+ * @returns {Promise<void>}
+ */
+export async function sendPasswordResetEmail(email) {
+  const redirectTo =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/reset-password`
+      : undefined
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  })
+
+  if (error) throw new Error(error.message)
+}
+
+/**
+ * Updates the password for the active password recovery session.
+ *
+ * @param {string} password
+ * @returns {Promise<void>}
+ */
+export async function updatePassword(password) {
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) throw new Error(error.message)
+}
+
+/**
  * Signs the current user out.
  *
  * @returns {Promise<void>}

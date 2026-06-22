@@ -15,10 +15,13 @@ export default function LoginPage() {
     loading,
     error,
     resendSuccess,
+    resetSuccess,
     handleCredentialsSubmit,
     handleOtpSubmit,
     handleResendOtp,
     handleResendConfirmation,
+    handleForgotPassword,
+    handlePasswordResetSubmit,
     handleBack,
   } = useLogin()
 
@@ -86,6 +89,16 @@ export default function LoginPage() {
               />
             </LoginField>
 
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-xs font-medium text-gray-400 hover:text-orange-500"
+              >
+                비밀번호를 잊으셨나요?
+              </button>
+            </div>
+
             {error && <p className="text-sm text-red-500">{error}</p>}
 
             <button
@@ -106,6 +119,51 @@ export default function LoginPage() {
                 회원가입
               </button>
             </p>
+          </form>
+        )}
+
+        {step === 'forgot' && (
+          <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
+            <div className="mb-7 text-left">
+              <h2 className="text-2xl font-semibold text-gray-900">비밀번호 재설정</h2>
+              <p className="mt-3 text-sm leading-relaxed text-gray-500">
+                가입한 이메일을 입력하면 새 비밀번호를 설정할 수 있는 링크를 보내드립니다.
+              </p>
+            </div>
+
+            <LoginField label="이메일">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                placeholder=""
+                required
+              />
+            </LoginField>
+
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            {resetSuccess && (
+              <p className="text-sm leading-relaxed text-green-600">
+                비밀번호 재설정 링크를 이메일로 보냈습니다.
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-5 w-full rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+            >
+              {loading ? '전송 중...' : '재설정 링크 보내기'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBack}
+              className="w-full pt-1 text-xs text-gray-400 hover:text-gray-600"
+            >
+              로그인으로 돌아가기
+            </button>
           </form>
         )}
 

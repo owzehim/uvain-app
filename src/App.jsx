@@ -11,6 +11,7 @@ import InstallBanner from './components/InstallBanner'
 import RegistrationPage from './pages/RegistrationPage'
 import EmailConfirmedPage from './pages/EmailConfirmedPage'
 import SettingsPage from './pages/SettingsPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
 
 const OTP_PENDING_KEY = 'uvain_otp_pending_email'
@@ -106,6 +107,7 @@ function App() {
         <Route path="/public" element={<PublicPage />} />
         <Route path="/register" element={<RegistrationPage />} />
         <Route path="/email-confirmed" element={<EmailConfirmedPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route
           path="/"
           element={

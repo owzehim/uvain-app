@@ -16,6 +16,7 @@ import {
   sendLoginOtp,
   verifyLoginOtp,
   resendConfirmationEmail,
+  sendPasswordResetEmail,
 } from '../api/authRepository'
 
 const SKIP_OTP_EMAIL_KEY = 'uvain_skip_otp_once_email'
@@ -62,6 +63,7 @@ function shouldSkipOtpOnce(email) {
  * 'credentials' — user enters email + password
  * 'otp'         — user enters the 6-digit code sent to their email
  * 'unconfirmed' — email not confirmed yet, show resend button
+ * 'forgot'      — user requests a password reset email
  */
 export function useLogin() {
   const pendingEmail = getOtpPendingEmail()
@@ -73,6 +75,7 @@ export function useLogin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [resendSuccess, setResendSuccess] = useState(false)
+  const [resetSuccess, setResetSuccess] = useState(false)
 
   // ── Step 1: submit email + password ──────────────────────────────────────
   const handleCredentialsSubmit = async (e) => {
@@ -182,6 +185,34 @@ export function useLogin() {
     }
   }
 
+  const handleForgotPassword = () => {
+    setStep('forgot')
+    setError('')
+    setResendSuccess(false)
+    setResetSuccess(false)
+  }
+
+  const handlePasswordResetSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setResetSuccess(false)
+
+    if (!email.trim()) {
+      setError('이메일을 입력해주세요.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await sendPasswordResetEmail(email.trim().toLowerCase())
+      setResetSuccess(true)
+    } catch (err) {
+      setError(mapAuthError(err.message))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // ── Go back to credentials screen ────────────────────────────────────────
   const handleBack = () => {
     clearOtpPendingEmail()
@@ -189,6 +220,7 @@ export function useLogin() {
     setOtp('')
     setError('')
     setResendSuccess(false)
+    setResetSuccess(false)
   }
 
   return {
@@ -203,11 +235,14 @@ export function useLogin() {
     loading,
     error,
     resendSuccess,
+    resetSuccess,
     // Actions
     handleCredentialsSubmit,
     handleOtpSubmit,
     handleResendOtp,
     handleResendConfirmation,
+    handleForgotPassword,
+    handlePasswordResetSubmit,
     handleBack,
   }
 }
