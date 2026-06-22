@@ -24,7 +24,7 @@ export default function MemberPage() {
   const [qrCardLifted, setQrCardLifted] = useState(false)
   const navigate = useNavigate()
 
-  // ?�?� Review prompt hook ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Review prompt hook
   const {
     open: reviewOpen,
     storeName,
@@ -41,7 +41,7 @@ export default function MemberPage() {
     skipReview,
   } = useReviewPrompt()
 
-  // ?�?� Load user, member, events, restaurants ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Load user, member, events, restaurants
   useEffect(() => {
     const fetchData = async () => {
       const {
@@ -121,7 +121,7 @@ export default function MemberPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 �?..</p>
+        <p className="text-gray-500">로딩 중...</p>
       </div>
     )
   }
@@ -289,7 +289,7 @@ export default function MemberPage() {
   )
 }
 
-// ?�?�?� Pastel avatar colors ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// Pastel avatar colors
 const PASTEL_COLORS = [
   '#FFB3B3',
   '#FFD9A0',
@@ -308,7 +308,7 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
-// ?�?�?� Membership Card ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// Membership Card
 function MembershipCard({
   member,
   isValid,
@@ -544,7 +544,7 @@ function MembershipCard({
                 letterSpacing: '0.05em',
               }}
             >
-              ???�서 Check-IN ?�기
+              여기서 Check-IN 하기
             </span>
           </div>
         </div>
@@ -604,7 +604,7 @@ function MembershipCard({
           UvA-IN MEMBERSHIP
         </span>
         <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
-          ?�성?�된 멤버??�� ?�습?�다
+          활성화된 멤버십이 없습니다
         </span>
         {member?.first_name && (
           <span
@@ -624,7 +624,7 @@ function MembershipCard({
             color: '#9ca3af',
           }}
         >
-          멤버??갱신?� ?�원?�게 문의?�주?�요
+          멤버십 갱신은 운영진에게 문의해주세요
         </span>
       </div>
     )
@@ -655,7 +655,7 @@ function MembershipCard({
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* ?�?� Front face ?�?� */}
+        {/* Front face */}
         <div
           style={{
             position: 'absolute',
@@ -670,7 +670,7 @@ function MembershipCard({
           {cardFront}
         </div>
 
-        {/* ?�?� Back face (camera) ?�?� */}
+        {/* Back face (camera) */}
         <div
           style={{
             position: 'absolute',
@@ -704,7 +704,7 @@ function MembershipCard({
   )
 }
 
-// ?�?�?� QR Tab ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// QR Tab
 function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
@@ -800,7 +800,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     )
   }
 
-  // ?�?� SCANNING STATE ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Scanning state
   return (
     <div
       className="no-highlight-zone"
@@ -817,7 +817,7 @@ function QRTab({ member, isValid, onLiftChange }) {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ?�번 ???�동 + long fade when lifted */}
+      {/* Recent activity + long fade when lifted */}
       <div
         ref={activityRef}
         style={{
@@ -882,8 +882,8 @@ function QRTab({ member, isValid, onLiftChange }) {
               }}
             >
               {lifted
-                ? '?�려??Check-IN ?�기'
-                : '?�로 ?�려???�번 ???�동 보기'}
+                ? '내려서 Check-IN 하기'
+                : '위로 올려서 최근 활동 보기'}
             </span>
           )}
           {cardFlipped && (
@@ -894,7 +894,7 @@ function QRTab({ member, isValid, onLiftChange }) {
                 fontWeight: 500,
               }}
             >
-              ???�서 ?�돌?��?�?
+              눌러서 뒤집기
             </span>
           )}
         </div>
@@ -920,7 +920,7 @@ function QRTab({ member, isValid, onLiftChange }) {
   )
 }
 
-// ?�?�?� Nav Button (not currently used, but kept for future) ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// Nav Button (not currently used, but kept for future)
 function NavBtn({ onClick, children, style = {} }) {
   return (
     <button
@@ -955,7 +955,7 @@ function NavBtn({ onClick, children, style = {} }) {
   )
 }
 
-// ?�?�?� Event Lightbox (SpotCard-style) ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// Event Lightbox (SpotCard-style)
 function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
@@ -1071,7 +1071,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
           {/* Image */}
           <img
             src={imgs[index]}
-            alt={`?�진 ${index + 1}`}
+            alt={`사진 ${index + 1}`}
             style={{
               maxWidth: '90vw',
               maxHeight: instagramUrl ? 'calc(90vh - 48px)' : '90vh',
@@ -1115,7 +1115,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
               >
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
               </svg>
-              Instagram ?�서 ?�기
+              Instagram에서 열기
             </a>
           )}
         </div>
@@ -1158,7 +1158,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
   )
 }
 
-// ?�?�?� Events Tab ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// Events Tab
 function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -1176,7 +1176,7 @@ function EventsTab({ events }) {
     return dates[0] || ev?.event_date
   }
 
-  // ?�?� Split & sort ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Split & sort
   const datedEvents = events.filter((ev) => getPrimaryEventDate(ev))
 
   const tbdEvents = events
@@ -1236,7 +1236,7 @@ function EventsTab({ events }) {
       [id]: idx,
     }))
 
-  // ?�?� Load image dimensions to detect aspect ratio ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Load image dimensions to detect aspect ratio
   useEffect(() => {
     const loadImageDimensions = (url) =>
       new Promise((resolve) => {
@@ -1269,7 +1269,7 @@ function EventsTab({ events }) {
   const isPortrait = (aspectRatio) =>
     aspectRatio >= 0.75 && aspectRatio <= 0.85
 
-  // ?�?� Keyboard nav for image slider in expanded cards ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Keyboard nav for image slider in expanded cards
   useEffect(() => {
     if (!expandedId) return
     const ev = events.find((e) => e.id === expandedId)
@@ -1292,7 +1292,7 @@ function EventsTab({ events }) {
     return () => window.removeEventListener('keydown', h)
   }, [expandedId, slideIndexes, events])
 
-  // ?�?� Vertical drag between events in header ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Vertical drag between events in header
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
@@ -1361,12 +1361,12 @@ function EventsTab({ events }) {
     setPreviewEvent(selectedEvent)
   }
 
-  // ?�?� Helper to open lightbox at specific index ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Helper to open lightbox at specific index
   const openLightboxAt = (index) => {
     setLightboxIndex(index)
   }
 
-  // ?�?� Formatting helpers ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // Formatting helpers
   const getDayDiff = (s) => {
     const d = new Date(s)
     return Math.round(
@@ -1528,21 +1528,71 @@ function EventsTab({ events }) {
     }, 220)
   }
 
-  const selectEventFromList = (ev) => {
-    setSelectedEvent(ev)
-    setPreviewEvent(ev)
+  const animateToEvent = (ev) => {
+    const targetIndex = allEvents.findIndex((event) => event.id === ev.id)
+    const startIndex = Math.max(0, currentEventIndex)
+    if (targetIndex < 0 || targetIndex === startIndex) {
+      setSelectedEvent(ev)
+      setPreviewEvent(ev)
+      return
+    }
+
+    const direction = targetIndex > startIndex ? 1 : -1
+    let nextIndex = startIndex
     setExpandedId(null)
     setLightboxIndex(null)
-    closeEventList()
+    setIsDragging(true)
+    setIsTouching(true)
+    setPreviewEvent(allEvents[startIndex])
+
+    const timer = window.setInterval(() => {
+      nextIndex += direction
+      setPreviewEvent(allEvents[nextIndex])
+
+      if (nextIndex === targetIndex) {
+        window.clearInterval(timer)
+        window.setTimeout(() => {
+          setSelectedEvent(ev)
+          setPreviewEvent(ev)
+          setIsDragging(false)
+          setIsTouching(false)
+        }, 120)
+      }
+    }, 90)
+  }
+
+  const selectEventFromList = (ev) => {
+    setEventListClosing(true)
+    window.setTimeout(() => {
+      setEventListOpen(false)
+      setEventListClosing(false)
+      animateToEvent(ev)
+    }, 220)
   }
 
   const formatListDate = (ev) => {
     const date = getPrimaryEventDateTime(ev)
     if (!date) return 'TBD'
 
+    const d = new Date(date)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      '0',
+    )}-${String(d.getDate()).padStart(2, '0')}`
+  }
+
+  const groupedListEvents = allEvents.reduce((groups, ev) => {
+    const label = formatListDate(ev)
+    if (!groups[label]) groups[label] = []
+    groups[label].push(ev)
+    return groups
+  }, {})
+
+  const formatListTime = (ev) => {
+    const date = getPrimaryEventDateTime(ev)
+    if (!date) return ''
+
     return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
       weekday: 'short',
     })
   }
@@ -1674,7 +1724,7 @@ function EventsTab({ events }) {
                     className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5"
                   >
                     <Calendar size={14} weight="fill" />
-                    캘린?�에 추�?
+                    캘린더에 추가
                   </button>
                 )}
                 {instaUrl && (
@@ -1692,7 +1742,7 @@ function EventsTab({ events }) {
                     >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
-                    Instagram ?�서 ?�기
+                    Instagram에서 열기
                   </a>
                 )}
               </div>
@@ -1703,7 +1753,7 @@ function EventsTab({ events }) {
     )
   }
 
-  // ?�?� First-panel image + color logic ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  // First-panel image + color logic
   const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
@@ -2377,9 +2427,9 @@ function EventsTab({ events }) {
             {/* EMPTY STATE */}
             {allEvents.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <p className="text-2xl mb-2">?��</p>
+                <p className="text-2xl mb-2">📅</p>
                 <p className="text-gray-500 text-sm">
-                  ?�정???�벤?��? ?�어??
+                  예정된 이벤트가 없어요
                 </p>
               </div>
             )}
@@ -2421,7 +2471,7 @@ function EventsTab({ events }) {
         fontWeight: 500,
       }}
     >
-      ?�래그해???�벤??보기
+      드래그해서 이벤트 보기
     </span>
   </div>
 )}
@@ -2489,10 +2539,10 @@ function EventsTab({ events }) {
 
       {eventListOpen && (
         <div
-          className="fixed inset-0"
+          className="fixed inset-0 animate-fade-in"
           style={{
             zIndex: 80,
-            backgroundColor: 'rgba(0,0,0,0.76)',
+            backgroundColor: '#303236',
             backdropFilter: 'blur(22px)',
             WebkitBackdropFilter: 'blur(22px)',
             opacity: eventListClosing ? 0 : 1,
@@ -2501,55 +2551,85 @@ function EventsTab({ events }) {
           onClick={closeEventList}
         >
           <div
-            className="h-full overflow-y-auto px-6 pb-10"
+            className="absolute left-0 right-0 top-0 px-6"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 76px)',
+              zIndex: 2,
+              paddingTop: 'calc(env(safe-area-inset-top) + 18px)',
+              paddingBottom: '18px',
+              backgroundColor: '#303236',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto flex w-full max-w-md items-center justify-between">
+              <h2 className="text-2xl font-semibold text-white">
+                Events
+              </h2>
+              <button
+                type="button"
+                onClick={closeEventList}
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/75"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="pointer-events-none absolute left-0 right-0"
+            style={{
+              top: 'calc(env(safe-area-inset-top) + 74px)',
+              height: 36,
+              zIndex: 2,
+              background:
+                'linear-gradient(180deg, #303236 0%, rgba(48,50,54,0.82) 42%, rgba(48,50,54,0) 100%)',
+            }}
+          />
+
+          <div
+            className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
+            style={{
+              paddingTop: 'calc(env(safe-area-inset-top) + 112px)',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto w-full max-w-md">
-              <div className="mb-6 flex items-end justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                    Events
-                  </p>
-                  <h2 className="mt-1 text-2xl font-semibold text-white">
-                    Event List
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeEventList}
-                  className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/75"
-                >
-                  Close
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                {allEvents.map((ev) => (
-                  <button
-                    key={ev.id}
-                    type="button"
-                    onClick={() => selectEventFromList(ev)}
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.08] px-4 py-4 text-left transition-colors hover:bg-white/[0.14]"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="truncate text-base font-semibold text-white">
-                          {ev.title || 'Untitled event'}
-                        </p>
-                        {ev.location && (
-                          <p className="mt-1 truncate text-sm text-white/55">
-                            {plainText(ev.location)}
-                          </p>
-                        )}
-                      </div>
-                      <span className="shrink-0 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
-                        {formatListDate(ev)}
-                      </span>
+              <div className="space-y-6">
+                {Object.entries(groupedListEvents).map(([dateLabel, dateEvents]) => (
+                  <section key={dateLabel}>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                      {dateLabel}
+                    </p>
+                    <div className="space-y-2">
+                      {dateEvents.map((ev) => (
+                        <button
+                          key={ev.id}
+                          type="button"
+                          onClick={() => selectEventFromList(ev)}
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.08] px-4 py-4 text-left transition-colors hover:bg-white/[0.14]"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="truncate text-base font-semibold text-white">
+                                {ev.title || 'Untitled event'}
+                              </p>
+                              {ev.location && (
+                                <p className="mt-1 truncate text-sm text-white/55">
+                                  {plainText(ev.location)}
+                                </p>
+                              )}
+                            </div>
+                            {formatListTime(ev) && (
+                              <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-white/45">
+                                {formatListTime(ev)}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  </button>
+                  </section>
                 ))}
 
                 {allEvents.length === 0 && (
@@ -2576,10 +2656,10 @@ function EventsTab({ events }) {
   )
 }
 
-// ?�?�?� Map Tab ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// Map Tab
 function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
   const [selected, setSelected] = useState(null)
-  const [activeCategory, setActiveCategory] = useState('?�체')
+  const [activeCategory, setActiveCategory] = useState('전체')
   const [stampCardModalOpen, setStampCardModalOpen] = useState(false)
   const [stampCardSpot, setStampCardSpot] = useState(null)
   const [spotCardClosing, setSpotCardClosing] = useState(false)
@@ -2607,7 +2687,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
 
   const filtered = useMemo(
     () =>
-      activeCategory === '?�체'
+      activeCategory === '전체'
         ? restaurants
         : restaurants.filter((r) => r.category === activeCategory),
     [restaurants, activeCategory],
@@ -2627,7 +2707,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
   className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none" 
   style={{ 
     paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
-    zIndex: 10,  // ????�?추�?
+    zIndex: 10,  // Keep category slider above the map
     userSelect: 'none',
     WebkitUserSelect: 'none',
     WebkitTapHighlightColor: 'transparent',

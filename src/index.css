@@ -48,6 +48,10 @@ body {
   animation: slideUp 0.25s ease-in-out forwards;
 }
 
+.event-list-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 html {
   height: -webkit-fill-available;
 }
