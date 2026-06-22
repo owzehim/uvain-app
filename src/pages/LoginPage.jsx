@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { X } from '@phosphor-icons/react'
+import { CaretLeft, X } from '@phosphor-icons/react'
 import { useLogin } from '../hooks/useLogin'
 
 export default function LoginPage() {
@@ -22,28 +22,45 @@ export default function LoginPage() {
     handleBack,
   } = useLogin()
 
+  const isOtpStep = step === 'otp'
+
   return (
-    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh]">
-      <button
-        type="button"
-        onClick={() => navigate('/public')}
-        className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 transition-colors hover:text-gray-600"
-        aria-label="Close login"
-      >
-        <X size={22} weight="bold" />
-      </button>
+    <div className={`fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 ${isOtpStep ? 'pt-[13vh]' : 'pt-[16vh]'}`}>
+      {isOtpStep ? (
+        <button
+          type="button"
+          onClick={handleBack}
+          className="fixed left-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-700 transition-colors hover:text-gray-900"
+          aria-label="Back to login"
+        >
+          <CaretLeft size={30} weight="regular" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => navigate('/public')}
+          className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 transition-colors hover:text-gray-600"
+          aria-label="Close login"
+        >
+          <X size={22} weight="bold" />
+        </button>
+      )}
 
       <div className="w-full max-w-sm px-2">
-        <div className="mb-6 flex justify-center">
-          <img src="/uvain logo.png" alt="UvA-IN Logo" className="h-20 w-20" />
-        </div>
+        {!isOtpStep && (
+          <>
+            <div className="mb-6 flex justify-center">
+              <img src="/uvain logo.png" alt="UvA-IN Logo" className="h-20 w-20" />
+            </div>
 
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-gray-900">UvA-IN</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            네덜란드 유학생을 위한 공식 커뮤니티
-          </p>
-        </div>
+            <div className="mb-8 text-center">
+              <h1 className="text-2xl font-semibold text-gray-900">UvA-IN</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                네덜란드 유학생을 위한 공식 커뮤니티
+              </p>
+            </div>
+          </>
+        )}
 
         {step === 'credentials' && (
           <form onSubmit={handleCredentialsSubmit} className="space-y-3">
@@ -93,10 +110,10 @@ export default function LoginPage() {
         )}
 
         {step === 'otp' && (
-          <form onSubmit={handleOtpSubmit} className="space-y-3">
-            <div className="mb-4 text-center">
-              <h2 className="text-xl font-semibold text-gray-900">이메일 인증 코드</h2>
-              <p className="mt-2 text-sm leading-relaxed text-gray-500">
+          <form onSubmit={handleOtpSubmit} className="space-y-4">
+            <div className="mb-5 text-left">
+              <h2 className="text-2xl font-semibold text-gray-900">이메일 인증 코드</h2>
+              <p className="mt-3 text-sm leading-relaxed text-gray-500">
                 <span className="font-medium text-gray-900">{email}</span>로<br />
                 6자리 인증 코드를 보냈습니다.
               </p>
@@ -109,7 +126,7 @@ export default function LoginPage() {
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className={`${inputClass} text-center font-mono tracking-[0.35em]`}
+                className={`${inputClass} text-center font-mono text-base tracking-[0.35em]`}
                 placeholder=""
                 autoFocus
                 required
@@ -126,24 +143,19 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-5 w-full rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+              className="mt-6 w-full rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
             >
               {loading ? '확인 중...' : '인증하고 로그인'}
             </button>
 
-            <div className="flex justify-between pt-2 text-xs text-gray-400">
-              <button type="button" onClick={handleBack} className="hover:text-gray-600">
-                뒤로
-              </button>
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={loading}
-                className="text-orange-500 hover:underline disabled:opacity-50"
-              >
-                코드 다시 보내기
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={loading}
+              className="w-full pt-1 text-center text-xs font-medium text-orange-500 hover:underline disabled:opacity-50"
+            >
+              코드 다시 보내기
+            </button>
           </form>
         )}
 

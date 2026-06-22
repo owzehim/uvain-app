@@ -151,12 +151,12 @@ export default function ScanPage() {
 
   return (
     <div
-      className="flex flex-col bg-gray-50 overflow-hidden"
+      className="flex flex-col bg-white overflow-hidden"
       style={{ height: '100dvh' }}
     >
       {/* Header – white */}
       <div
-        className="bg-white border-b border-gray-100 px-2 py-3 flex items-center flex-shrink-0"
+        className="bg-white px-2 py-3 flex items-center flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button
@@ -169,7 +169,7 @@ export default function ScanPage() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
+      <div className="flex-1 overflow-y-auto flex flex-col items-center bg-white px-4 pt-3 pb-6 gap-4 relative">
         {/* Blinking orange dot – only on success */}
         {state === STATE.SUCCESS && (
           <>
@@ -202,14 +202,14 @@ export default function ScanPage() {
         {state === STATE.SCANNING && <QRScanner onScan={handleScan} />}
 
         {state === STATE.LOADING && (
-          <div className="flex flex-col items-center gap-4 mt-20">
+          <div className="flex flex-col items-center gap-4 mt-12">
             <div className="w-12 h-12 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
             <p className="text-gray-500 text-sm">멤버십 확인 중...</p>
           </div>
         )}
 
         {state === STATE.SUCCESS && (
-          <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
+          <div className="flex flex-col items-center gap-4 mt-2 text-center max-w-sm w-full">
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
               <span className="text-green-600 text-4xl">✓</span>
             </div>
@@ -275,7 +275,7 @@ export default function ScanPage() {
             )}
 
             {/* Home button */}
-            <div className="w-full mt-8">
+            <div className="w-full mt-5">
               <button
                 onClick={() => navigate('/member')}
                 className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
@@ -287,7 +287,7 @@ export default function ScanPage() {
         )}
 
         {state === STATE.ERROR && (
-          <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-xs">
+          <div className="flex flex-col items-center gap-4 mt-8 text-center max-w-xs">
             <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
               <span className="text-red-500 text-4xl">✕</span>
             </div>
