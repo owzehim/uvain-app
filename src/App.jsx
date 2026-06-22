@@ -11,6 +11,7 @@ import InstallBanner from './components/InstallBanner'
 import RegistrationPage from './pages/RegistrationPage'
 import EmailConfirmedPage from './pages/EmailConfirmedPage'
 import SettingsPage from './pages/SettingsPage'
+import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
 
 function App() {
   const [session, setSession] = useState(undefined)
@@ -26,6 +27,8 @@ function App() {
     })
     return () => subscription.unsubscribe()
   }, [])
+
+  useSingleDeviceSession(session)
 
   if (session === undefined) {
     return (
