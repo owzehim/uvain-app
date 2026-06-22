@@ -304,12 +304,11 @@ export default function SettingsPage() {
             {error && <p className="text-xs text-red-500 text-center mt-1">{error}</p>}
           </div>
 
-          {/* Logout */}
           <div className="pt-4 pb-6">
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full text-sm font-semibold text-red-500 text-center"
+              className="w-full rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white text-center shadow-sm"
             >
               로그아웃
             </button>

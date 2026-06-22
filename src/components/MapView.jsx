@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import * as maptilersdk from '@maptiler/sdk'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
 
@@ -31,8 +31,11 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const mapContainer = useRef(null)
   const map = useRef(null)
   const markersRef = useRef(new Map())
+  const userLocationMarkerRef = useRef(null)
+  const locationWatchIdRef = useRef(null)
   const initializedRef = useRef(false)
   const mapReadyRef = useRef(false)
+  const [isTrackingLocation, setIsTrackingLocation] = useState(false)
 
   // ─── Helper: Create marker element ──────────────────────────────────────
   const createMarkerElement = useCallback((r, isSelected = false) => {
@@ -243,43 +246,97 @@ useEffect(() => {
     })
   }, [selected])
 
-  // ─── Locate me button ──────────────────────────────────────────────────
-  const locateMe = () => {
+  const removeUserLocationMarker = useCallback(() => {
+    if (userLocationMarkerRef.current) {
+      userLocationMarkerRef.current.remove()
+      userLocationMarkerRef.current = null
+    }
+  }, [])
+
+  const stopLocationTracking = useCallback(() => {
+    if (locationWatchIdRef.current != null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(locationWatchIdRef.current)
+      locationWatchIdRef.current = null
+    }
+    removeUserLocationMarker()
+    setIsTrackingLocation(false)
+  }, [removeUserLocationMarker])
+
+  const updateUserLocationMarker = useCallback((latitude, longitude, shouldCenter = false) => {
     if (!map.current) return
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          map.current.flyTo({
-            center: [longitude, latitude],
-            zoom: 16,
-            duration: 1000,
-          })
-
-          // Add a marker for current location
-          const el = document.createElement('div')
-          el.style.cssText = `
-            width: 16px;
-            height: 16px;
-            background: #f97316;
-            border: 2px solid white;
-            border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-          `
-          new maptilersdk.Marker({ element: el })
-            .setLngLat([longitude, latitude])
-            .setPopup(new maptilersdk.Popup().setText('현재 위치'))
-            .addTo(map.current)
-            .getPopup()
-            .addTo(map.current)
-        },
-        () => {
-          alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
-        }
-      )
+    if (!userLocationMarkerRef.current) {
+      const el = document.createElement('div')
+      el.style.cssText = `
+        width: 16px;
+        height: 16px;
+        background: #f97316;
+        border: 2px solid white;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      `
+      userLocationMarkerRef.current = new maptilersdk.Marker({ element: el })
+        .setLngLat([longitude, latitude])
+        .addTo(map.current)
+    } else {
+      userLocationMarkerRef.current.setLngLat([longitude, latitude])
     }
+
+    if (shouldCenter) {
+      map.current.flyTo({
+        center: [longitude, latitude],
+        zoom: 16,
+        duration: 700,
+      })
+    }
+  }, [])
+
+  // ─── Locate me toggle ──────────────────────────────────────────────────
+  const toggleLocationTracking = () => {
+    if (!map.current || !navigator.geolocation) {
+      alert('현재 위치 기능을 사용할 수 없어요.')
+      return
+    }
+
+    if (isTrackingLocation) {
+      stopLocationTracking()
+      return
+    }
+
+    const handlePosition = (position, shouldCenter = false) => {
+      const { latitude, longitude } = position.coords
+      updateUserLocationMarker(latitude, longitude, shouldCenter)
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        handlePosition(position, true)
+        const watchId = navigator.geolocation.watchPosition(
+          (nextPosition) => handlePosition(nextPosition, false),
+          () => {
+            stopLocationTracking()
+            alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
+          },
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+        )
+        locationWatchIdRef.current = watchId
+        setIsTrackingLocation(true)
+      },
+      () => {
+        alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    )
   }
+
+  useEffect(() => {
+    return () => {
+      if (locationWatchIdRef.current != null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(locationWatchIdRef.current)
+      }
+      removeUserLocationMarker()
+    }
+  }, [removeUserLocationMarker])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '300px' }}>
@@ -293,25 +350,28 @@ useEffect(() => {
         }}
       />
       <button
-        onClick={locateMe}
+        onClick={toggleLocationTracking}
+        aria-pressed={isTrackingLocation}
         style={{
           position: 'absolute',
           bottom: '80px',
           right: '10px',
           zIndex: 1000,
-          background: 'white',
-          border: 'none',
+          background: isTrackingLocation ? '#f97316' : 'white',
+          border: isTrackingLocation ? '1px solid #f97316' : 'none',
           borderRadius: '8px',
           padding: '8px 10px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          boxShadow: isTrackingLocation
+            ? '0 3px 12px rgba(249,115,22,0.35)'
+            : '0 2px 8px rgba(0,0,0,0.15)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        title="현재 위치"
+        title={isTrackingLocation ? '현재 위치 끄기' : '현재 위치 켜기'}
       >
-        <MapPin size={20} weight="fill" color="#f97316" />
+        <MapPin size={20} weight="fill" color={isTrackingLocation ? 'white' : '#f97316'} />
       </button>
     </div>
   )
