@@ -1824,10 +1824,11 @@ function EventsTab({ events }) {
       <button
         type="button"
         onClick={() => setEventListOpen(true)}
-        className="fixed left-4 rounded-full bg-white p-2 text-gray-500 hover:bg-gray-100"
+        className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100"
         aria-label="Open event list"
         style={{
-          top: 'calc(env(safe-area-inset-top) + 8px)',
+          left: '12px',
+          top: 'calc(env(safe-area-inset-top) + 4px)',
           zIndex: 30,
           userSelect: 'none',
           WebkitUserSelect: 'none',
@@ -2580,10 +2581,11 @@ function EventsTab({ events }) {
             <button
               type="button"
               onClick={closeEventList}
-              className="fixed left-4 rounded-full p-2 text-white/70 hover:text-white"
+              className="fixed flex h-11 w-11 items-center justify-center rounded-full text-white/70 hover:text-white"
               aria-label="Close event list"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 8px)',
+                left: '12px',
+                top: 'calc(env(safe-area-inset-top) + 4px)',
                 zIndex: 5,
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
