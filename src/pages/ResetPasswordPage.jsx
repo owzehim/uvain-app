@@ -36,9 +36,9 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[18vh]">
+    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh]">
       <div className="w-full max-w-sm px-2">
-        <div className="mb-8 text-left">
+        <div className="mb-8 min-h-[176px] pt-[54px] text-left">
           <h1 className="text-2xl font-semibold text-gray-900">새 비밀번호 설정</h1>
           <p className="mt-3 text-sm leading-relaxed text-gray-500">
             앞으로 사용할 새 비밀번호를 입력해주세요.
@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
 
         {success ? (
           <div className="space-y-4">
-            <p className="text-sm leading-relaxed text-green-600">
+            <p className="text-center text-sm leading-relaxed text-green-600">
               비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.
             </p>
             <button
