@@ -2378,22 +2378,6 @@ function EventsTab({ events }) {
                 })}
               </div>
 
-              {nextEvent?.participation_url && displayEvent?.id === nextEvent.id && (
-                <button
-                  type="button"
-                  disabled={nextEvent.is_registration_closed}
-                  onClick={() => openParticipationForm(nextEvent)}
-                  className={
-                    'absolute left-1/2 top-[68%] block w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full px-5 py-3 text-sm font-semibold shadow-lg transition-opacity ' +
-                    (nextEvent.is_registration_closed
-                      ? 'bg-gray-200 text-gray-500'
-                      : 'bg-black text-white hover:opacity-90')
-                  }
-                  style={{ zIndex: 5 }}
-                >
-                  {nextEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
-                </button>
-              )}
             </div>
 
             {/* UPCOMING LIST */}
@@ -2446,6 +2430,32 @@ function EventsTab({ events }) {
           </div>
         </div>
       </div>
+
+      {nextEvent?.participation_url && displayEvent?.id === nextEvent.id && (
+        <div
+          className="event-participation-float fixed left-0 right-0 px-4"
+          style={{
+            bottom: 'calc(env(safe-area-inset-bottom) + 146px)',
+            zIndex: 45,
+            pointerEvents: 'none',
+          }}
+        >
+          <button
+            type="button"
+            disabled={nextEvent.is_registration_closed}
+            onClick={() => openParticipationForm(nextEvent)}
+            className={
+              'mx-auto block w-[82%] max-w-md rounded-full px-5 py-3 text-sm font-semibold shadow-xl transition-opacity ' +
+              (nextEvent.is_registration_closed
+                ? 'bg-gray-200 text-gray-500'
+                : 'bg-black text-white hover:opacity-90')
+            }
+            style={{ pointerEvents: 'auto' }}
+          >
+            {nextEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
+          </button>
+        </div>
+      )}
 
       {/* Drag guide ??fixed to bottom right of screen, like MY tab */}
       {allEvents.length > 0 && (
