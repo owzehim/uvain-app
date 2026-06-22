@@ -8,6 +8,23 @@
 
 import { supabase } from '../lib/supabase';
 
+export const ALREADY_REGISTERED_MESSAGE =
+  '\uC774\uBBF8 \uAC00\uC785\uB41C \uD68C\uC6D0\uC785\uB2C8\uB2E4. \uB85C\uADF8\uC778\uD558\uAC70\uB098 \uC774\uBA54\uC77C \uC778\uC99D\uC744 \uD655\uC778\uD574\uC8FC\uC138\uC694.';
+
+function isAlreadyRegisteredError(error) {
+  const message = String(error?.message || '').toLowerCase();
+  const code = String(error?.code || '').toLowerCase();
+
+  return (
+    code === '23505' ||
+    message.includes('duplicate key') ||
+    message.includes('already registered') ||
+    message.includes('already exists') ||
+    message.includes('members_user_id_key') ||
+    message.includes('members_use_id_key')
+  );
+}
+
 /**
  * Creates a Supabase Auth account AND inserts a members row.
  * The member starts with is_member = false (pending activation).
@@ -51,9 +68,31 @@ export async function registerMember(payload) {
     profileImageUrl,
   } = payload;
 
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Preflight with the submitted password. If this succeeds, or Supabase says
+  // the email exists but is not confirmed, stop before sending another signup email.
+  const { data: existingLogin, error: existingLoginError } =
+    await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
+
+  if (existingLogin?.user) {
+    await supabase.auth.signOut();
+    throw new Error(ALREADY_REGISTERED_MESSAGE);
+  }
+
+  if (
+    existingLoginError &&
+    String(existingLoginError.message || '').toLowerCase().includes('email not confirmed')
+  ) {
+    throw new Error(ALREADY_REGISTERED_MESSAGE);
+  }
+
   // Step 1: Create Supabase Auth user
   const { data: authData, error: authError } = await supabase.auth.signUp({
-    email,
+    email: normalizedEmail,
     password,
     options: {
       emailRedirectTo:
@@ -69,6 +108,9 @@ export async function registerMember(payload) {
   });
 
   if (authError) {
+    if (isAlreadyRegisteredError(authError)) {
+      throw new Error(ALREADY_REGISTERED_MESSAGE);
+    }
     throw new Error(authError.message);
   }
 
@@ -77,6 +119,25 @@ export async function registerMember(payload) {
     throw new Error(
       'Account was created but user ID is missing. Please contact support.'
     );
+  }
+
+  const identities = authData.user?.identities;
+  if (Array.isArray(identities) && identities.length === 0) {
+    throw new Error(ALREADY_REGISTERED_MESSAGE);
+  }
+
+  const { data: existingMember, error: existingMemberError } = await supabase
+    .from('members')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existingMemberError) {
+    throw new Error(existingMemberError.message);
+  }
+
+  if (existingMember) {
+    throw new Error(ALREADY_REGISTERED_MESSAGE);
   }
 
   // Step 2: Insert members row linked to the auth user
@@ -112,6 +173,9 @@ export async function registerMember(payload) {
       'Members insert failed after auth signup:',
       memberError
     );
+    if (isAlreadyRegisteredError(memberError)) {
+      throw new Error(ALREADY_REGISTERED_MESSAGE);
+    }
     throw new Error(memberError.message);
   }
 
