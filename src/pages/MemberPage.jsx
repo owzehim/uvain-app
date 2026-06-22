@@ -1575,32 +1575,45 @@ function EventsTab({ events }) {
     }, 220)
   }
 
-  const formatListDate = (ev) => {
+  const getListDateParts = (ev) => {
     const date = getPrimaryEventDateTime(ev)
-    if (!date) return 'TBD'
+    if (!date) {
+      return {
+        year: 'TBD',
+        month: 'TBD',
+        day: '--',
+        weekday: 'TBD',
+      }
+    }
 
     const d = new Date(date)
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-      2,
-      '0',
-    )}-${String(d.getDate()).padStart(2, '0')}`
+    return {
+      year: String(d.getFullYear()),
+      month: `${d.getMonth() + 1}월`,
+      day: String(d.getDate()),
+      weekday: d
+        .toLocaleDateString('en-US', { weekday: 'short' })
+        .toUpperCase(),
+    }
   }
 
-  const groupedListEvents = allEvents.reduce((groups, ev) => {
-    const label = formatListDate(ev)
-    if (!groups[label]) groups[label] = []
-    groups[label].push(ev)
-    return groups
-  }, {})
+  const groupedListEvents = allEvents.reduce((years, ev) => {
+    const parts = getListDateParts(ev)
+    let yearGroup = years.find((group) => group.year === parts.year)
+    if (!yearGroup) {
+      yearGroup = { year: parts.year, months: [] }
+      years.push(yearGroup)
+    }
 
-  const formatListTime = (ev) => {
-    const date = getPrimaryEventDateTime(ev)
-    if (!date) return ''
+    let monthGroup = yearGroup.months.find((group) => group.month === parts.month)
+    if (!monthGroup) {
+      monthGroup = { month: parts.month, events: [] }
+      yearGroup.months.push(monthGroup)
+    }
 
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'short',
-    })
-  }
+    monthGroup.events.push(ev)
+    return years
+  }, [])
 
   const renderEvent = (ev) => {
     if (!ev) return null
@@ -2577,30 +2590,38 @@ function EventsTab({ events }) {
             className="absolute left-0 right-0 top-0 px-6"
             style={{
               zIndex: 2,
-              paddingTop: 'calc(env(safe-area-inset-top) + 18px)',
-              paddingBottom: '18px',
+              paddingTop: 'calc(env(safe-area-inset-top) + 56px)',
+              paddingBottom: '16px',
               backgroundColor: '#303236',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto flex w-full max-w-md items-center justify-between">
+            <button
+              type="button"
+              onClick={closeEventList}
+              className="fixed left-4 rounded-full bg-white/10 p-2 text-white/70 hover:bg-white/15"
+              aria-label="Close event list"
+              style={{
+                top: 'calc(env(safe-area-inset-top) + 16px)',
+                zIndex: 3,
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <List size={20} weight="bold" />
+            </button>
+            <div className="mx-auto w-full max-w-md">
               <h2 className="text-2xl font-semibold text-white">
                 Events
               </h2>
-              <button
-                type="button"
-                onClick={closeEventList}
-                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/75"
-              >
-                Close
-              </button>
             </div>
           </div>
 
           <div
             className="pointer-events-none absolute left-0 right-0"
             style={{
-              top: 'calc(env(safe-area-inset-top) + 74px)',
+              top: 'calc(env(safe-area-inset-top) + 112px)',
               height: 36,
               zIndex: 2,
               background:
@@ -2611,45 +2632,96 @@ function EventsTab({ events }) {
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 112px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 146px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto w-full max-w-md">
-              <div className="space-y-6">
-                {Object.entries(groupedListEvents).map(([dateLabel, dateEvents]) => (
-                  <section key={dateLabel}>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                      {dateLabel}
+              <div className="space-y-9">
+                {groupedListEvents.map((yearGroup) => (
+                  <section key={yearGroup.year}>
+                    <p
+                      className="mb-5 text-white"
+                      style={{
+                        fontFamily: '"Handjet", system-ui, sans-serif',
+                        fontSize: `calc(${W} * 0.13)`,
+                        fontWeight: 700,
+                        lineHeight: 0.8,
+                      }}
+                    >
+                      {yearGroup.year}
                     </p>
-                    <div className="space-y-2">
-                      {dateEvents.map((ev) => (
-                        <button
-                          key={ev.id}
-                          type="button"
-                          onClick={() => selectEventFromList(ev)}
-                          className="w-full rounded-xl border border-white/10 bg-white/[0.08] px-4 py-4 text-left transition-colors hover:bg-white/[0.14]"
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <p className="truncate text-base font-semibold text-white">
-                                {ev.title || 'Untitled event'}
-                              </p>
-                              {ev.location && (
-                                <p className="mt-1 truncate text-sm text-white/55">
-                                  {plainText(ev.location)}
-                                </p>
-                              )}
-                            </div>
-                            {formatListTime(ev) && (
-                              <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-white/45">
-                                {formatListTime(ev)}
-                              </span>
-                            )}
+                    <div className="space-y-5">
+                      {yearGroup.months.map((monthGroup) => (
+                        <div key={`${yearGroup.year}-${monthGroup.month}`}>
+                          <p
+                            className="mb-2 text-white/75"
+                            style={{
+                              fontFamily: '"Handjet", system-ui, sans-serif',
+                              fontSize: `calc(${W} * 0.065)`,
+                              fontWeight: 700,
+                              lineHeight: 0.9,
+                            }}
+                          >
+                            {monthGroup.month}
+                          </p>
+                          <div className="space-y-2">
+                            {monthGroup.events.map((ev) => {
+                              const parts = getListDateParts(ev)
+                              return (
+                                <button
+                                  key={ev.id}
+                                  type="button"
+                                  onClick={() => selectEventFromList(ev)}
+                                  className="w-full rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3 text-left transition-colors hover:bg-white/[0.14]"
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <div
+                                      className="shrink-0 text-white"
+                                      style={{
+                                        width: `calc(${W} * 0.16)`,
+                                        fontFamily: '"Handjet", system-ui, sans-serif',
+                                      }}
+                                    >
+                                      <p
+                                        style={{
+                                          fontSize: `calc(${W} * 0.095)`,
+                                          fontWeight: 700,
+                                          lineHeight: 0.75,
+                                        }}
+                                      >
+                                        {parts.day}
+                                      </p>
+                                      <p
+                                        className="text-white/70"
+                                        style={{
+                                          fontSize: `calc(${W} * 0.045)`,
+                                          fontWeight: 700,
+                                          lineHeight: 0.9,
+                                          marginTop: 5,
+                                        }}
+                                      >
+                                        {parts.weekday}
+                                      </p>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="truncate text-base font-semibold text-white">
+                                        {ev.title || 'Untitled event'}
+                                      </p>
+                                      {ev.location && (
+                                        <p className="mt-1 truncate text-sm text-white/55">
+                                          {plainText(ev.location)}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </button>
+                              )
+                            })}
                           </div>
-                        </button>
+                        </div>
                       ))}
                     </div>
                   </section>
