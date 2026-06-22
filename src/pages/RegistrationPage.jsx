@@ -621,6 +621,7 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
           </Field>
           {language === 'ko' && (
             <>
+              <div style={s.nameGroupGap} />
               <Field label={t.firstNameKorean}>
                 <input
                   name="firstNameKorean"
@@ -1169,6 +1170,7 @@ const s = {
     fontWeight: 600,
     cursor: 'pointer',
     transition: 'all 0.2s',
+    transform: 'translate(14px, 3px)',
   },
   header: {
     width: '100%',
@@ -1411,6 +1413,9 @@ const s = {
     display: 'grid',
     gridTemplateColumns: '1fr',
     gap: '8px',
+  },
+  nameGroupGap: {
+    height: '4px',
   },
   fieldStack: {
     display: 'flex',
