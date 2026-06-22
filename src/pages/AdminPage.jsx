@@ -1550,6 +1550,14 @@ function EventForm({
         }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
+      <input
+        placeholder="Google Form 참가 링크 (선택)"
+        value={form.participation_url}
+        onChange={(e) =>
+          setForm((f) => ({ ...f, participation_url: e.target.value }))
+        }
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+      />
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
         <ImageUploadPanel
@@ -1600,6 +1608,7 @@ function EventsTab() {
     calendarHighlightMode: 'separate',
     location: '',
     instagram_url: '',
+    participation_url: '',
   })
 
   const [imageFiles, setImageFiles] = useState([])
@@ -1684,6 +1693,7 @@ function EventsTab() {
       calendarHighlightMode: 'separate',
       location: '',
       instagram_url: '',
+      participation_url: '',
     })
     setImageFiles([])
     setImagePreviews([])
@@ -1757,6 +1767,7 @@ function EventsTab() {
       calendar_highlight_mode: form.calendarHighlightMode || 'separate',
       location: form.location,
       instagram_url: form.instagram_url,
+      participation_url: form.participation_url,
       image_urls,
     }
 
@@ -1814,6 +1825,7 @@ function EventsTab() {
       calendarHighlightMode: event.calendar_highlight_mode || 'separate',
       location: event.location || '',
       instagram_url: event.instagram_url || '',
+      participation_url: event.participation_url || '',
     })
     setImageFiles([])
     setImagePreviews([])
@@ -1834,6 +1846,7 @@ function EventsTab() {
       calendarHighlightMode: 'separate',
       location: '',
       instagram_url: '',
+      participation_url: '',
     })
     setImageFiles([])
     setImagePreviews([])

@@ -1479,6 +1479,11 @@ function EventsTab({ events }) {
     URL.revokeObjectURL(url)
   }
 
+  const openParticipationForm = (ev) => {
+    if (!ev?.participation_url) return
+    window.open(ev.participation_url, '_blank', 'noopener,noreferrer')
+  }
+
   const W = 'calc(100vw - 32px)'
   const fs = {
     day: `calc(${W} * 0.06)`,
@@ -2173,9 +2178,9 @@ function EventsTab({ events }) {
             <div
               style={{
                 backgroundColor: '#ffffff',
-                padding: '16px',
-                marginTop: '8px',
-                marginBottom: '32px',
+                padding: '10px 16px 12px',
+                marginTop: '4px',
+                marginBottom: '12px',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
               }}
@@ -2185,13 +2190,13 @@ function EventsTab({ events }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginBottom: '12px',
+                  marginBottom: '4px',
                 }}
               >
                 <span
                   style={{
                     fontFamily: '"Handjet", system-ui, sans-serif',
-                    fontSize: `calc(${W} * 0.045)`,
+                    fontSize: `calc(${W} * 0.04)`,
                     fontWeight: 700,
                     color: '#4b5563',
                     letterSpacing: '0.04em',
@@ -2209,7 +2214,7 @@ function EventsTab({ events }) {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(7, 1fr)',
-                  marginBottom: '4px',
+                  marginBottom: '0',
                   userSelect: 'none',
                   WebkitUserSelect: 'none',
                 }}
@@ -2221,10 +2226,10 @@ function EventsTab({ events }) {
                       textAlign: 'center',
                       fontFamily:
                         '"Handjet", system-ui, sans-serif',
-                      fontSize: `calc(${W} * 0.032)`,
+                      fontSize: `calc(${W} * 0.029)`,
                       fontWeight: 600,
                       color: '#9ca3af',
-                      paddingBottom: '4px',
+                      paddingBottom: '0',
                     }}
                   >
                     {d}
@@ -2236,7 +2241,7 @@ function EventsTab({ events }) {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(7, 1fr)',
-                  gap: '3px',
+                  gap: '1px',
                   userSelect: 'none',
                   WebkitUserSelect: 'none',
                 }}
@@ -2246,7 +2251,7 @@ function EventsTab({ events }) {
                     return (
                       <div
                         key={`e-${idx}`}
-                        style={{ aspectRatio: '1/1' }}
+                        style={{ height: `calc(${W} * 0.085)` }}
                       />
                     )
                   const dateKey = `${calYear}-${String(
@@ -2303,7 +2308,7 @@ function EventsTab({ events }) {
                       key={dateKey}
                       onClick={() => handleDayPress(day)}
                       style={{
-                        aspectRatio: '1/1',
+                        height: `calc(${W} * 0.085)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -2353,8 +2358,8 @@ function EventsTab({ events }) {
                       )}
                       <div
                         style={{
-                          width: '85%',
-                          aspectRatio: '1/1',
+                          width: `calc(${W} * 0.07)`,
+                          height: `calc(${W} * 0.07)`,
                           borderRadius: '50%',
                           backgroundColor: bg,
                           border,
@@ -2370,7 +2375,7 @@ function EventsTab({ events }) {
                           style={{
                             fontFamily:
                               '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.036)`,
+                            fontSize: `calc(${W} * 0.032)`,
                             fontWeight: fw,
                             color,
                             lineHeight: 1,
@@ -2385,6 +2390,16 @@ function EventsTab({ events }) {
                 })}
               </div>
             </div>
+
+            {displayEvent?.participation_url && (
+              <button
+                type="button"
+                onClick={() => openParticipationForm(displayEvent)}
+                className="mb-6 w-full rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                이벤트 참가하기
+              </button>
+            )}
 
             {/* UPCOMING LIST */}
             {otherUpcomingEvents.length > 0 && (
