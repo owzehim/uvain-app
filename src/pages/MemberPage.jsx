@@ -2160,7 +2160,7 @@ function EventsTab({ events }) {
 
         {/* FIXED SECTION: calendar + lists */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <div className="px-4 pt-6 pb-0 max-w-md mx-auto">
+          <div className="px-4 pt-2 pb-0 max-w-md mx-auto">
             {/* CALENDAR */}
             <div
               style={{
@@ -2378,13 +2378,13 @@ function EventsTab({ events }) {
                 })}
               </div>
 
-              {nextEvent?.participation_url && (
+              {nextEvent?.participation_url && displayEvent?.id === nextEvent.id && (
                 <button
                   type="button"
                   disabled={nextEvent.is_registration_closed}
                   onClick={() => openParticipationForm(nextEvent)}
                   className={
-                    'absolute left-1/2 top-1/2 block w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full px-5 py-3 text-sm font-semibold shadow-lg transition-opacity ' +
+                    'absolute left-1/2 top-[68%] block w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full px-5 py-3 text-sm font-semibold shadow-lg transition-opacity ' +
                     (nextEvent.is_registration_closed
                       ? 'bg-gray-200 text-gray-500'
                       : 'bg-black text-white hover:opacity-90')
