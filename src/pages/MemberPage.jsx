@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear, UserCircle, ArrowsVertical } from '@phosphor-icons/react'
+import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -1203,9 +1203,10 @@ function EventsTab({ events }) {
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
   const [previewEvent, setPreviewEvent] = useState(initialEvent)
   const [isDragging, setIsDragging] = useState(false)
-  const [isTouching, setIsTouching] = useState(false) // for guide visibility
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
+  const [eventListOpen, setEventListOpen] = useState(false)
+  const [eventListClosing, setEventListClosing] = useState(false)
 
   // SpotCard-style Lightbox index
   const [lightboxIndex, setLightboxIndex] = useState(null)
@@ -1298,14 +1299,8 @@ function EventsTab({ events }) {
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
   )
-  const previewEventIndex = allEvents.findIndex(
-    (ev) => ev.id === previewEvent?.id,
-  )
-  const scrollProgress =
-    allEvents.length <= 1
-      ? 0
-      : Math.max(0, Math.min((previewEventIndex >= 0 ? previewEventIndex : currentEventIndex) / (allEvents.length - 1), 1))
-
+  const scrollProgress = 0
+  const isTouching = false
   const handleContainerTouchStart = (e) => {
     const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
@@ -1316,7 +1311,6 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = currentEventIndex
     setIsDragging(true)
-    setIsTouching(true) // show guide
     setPreviewEvent(selectedEvent)
   }
 
@@ -1353,7 +1347,6 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = null
     setIsDragging(false)
-    setIsTouching(false) // hide guide
     setPreviewEvent(selectedEvent)
   }
 
@@ -1362,7 +1355,6 @@ function EventsTab({ events }) {
     dragAccumulator.current = 0
     lastIdxRef.current = null
     setIsDragging(false)
-    setIsTouching(false)
     setPreviewEvent(selectedEvent)
   }
 
@@ -1523,6 +1515,33 @@ function EventsTab({ events }) {
     const dayEvents = eventsByDate[key]
     if (!dayEvents?.length) return
     setSelectedEvent(dayEvents[0])
+  }
+
+  const closeEventList = () => {
+    setEventListClosing(true)
+    window.setTimeout(() => {
+      setEventListOpen(false)
+      setEventListClosing(false)
+    }, 220)
+  }
+
+  const selectEventFromList = (ev) => {
+    setSelectedEvent(ev)
+    setPreviewEvent(ev)
+    setExpandedId(null)
+    setLightboxIndex(null)
+    closeEventList()
+  }
+
+  const formatListDate = (ev) => {
+    const date = getPrimaryEventDateTime(ev)
+    if (!date) return 'TBD'
+
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short',
+    })
   }
 
   const renderEvent = (ev) => {
@@ -1759,6 +1778,22 @@ function EventsTab({ events }) {
 
   return (
     <>
+      <button
+        type="button"
+        onClick={() => setEventListOpen(true)}
+        className="fixed left-4 rounded-full bg-white p-2 text-gray-500 hover:bg-gray-100"
+        aria-label="Open event list"
+        style={{
+          top: 'calc(env(safe-area-inset-top) + 16px)',
+          zIndex: 30,
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
+        <List size={20} weight="bold" />
+      </button>
+
       <div
         className="no-highlight-zone"
         ref={containerRef}
@@ -2350,7 +2385,7 @@ function EventsTab({ events }) {
       </div>
 
       {/* Drag guide — fixed to bottom right of screen, like MY tab */}
-      {allEvents.length > 0 && (
+      {false && (
   <div
     className="no-highlight-zone"
     style={{
@@ -2388,7 +2423,7 @@ function EventsTab({ events }) {
   </div>
 )}
 
-      {allEvents.length > 1 && (
+      {false && (
         <div
           className="no-highlight-zone"
           style={{
@@ -2445,6 +2480,82 @@ function EventsTab({ events }) {
                 transition: isDragging ? 'top 0.08s linear' : 'top 0.18s ease',
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {eventListOpen && (
+        <div
+          className="fixed inset-0"
+          style={{
+            zIndex: 80,
+            backgroundColor: 'rgba(0,0,0,0.76)',
+            backdropFilter: 'blur(22px)',
+            WebkitBackdropFilter: 'blur(22px)',
+            opacity: eventListClosing ? 0 : 1,
+            transition: 'opacity 0.22s ease',
+          }}
+          onClick={closeEventList}
+        >
+          <div
+            className="h-full overflow-y-auto px-6 pb-10"
+            style={{
+              paddingTop: 'calc(env(safe-area-inset-top) + 76px)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto w-full max-w-md">
+              <div className="mb-6 flex items-end justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                    Events
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold text-white">
+                    Event List
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeEventList}
+                  className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/75"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {allEvents.map((ev) => (
+                  <button
+                    key={ev.id}
+                    type="button"
+                    onClick={() => selectEventFromList(ev)}
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.08] px-4 py-4 text-left transition-colors hover:bg-white/[0.14]"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="truncate text-base font-semibold text-white">
+                          {ev.title || 'Untitled event'}
+                        </p>
+                        {ev.location && (
+                          <p className="mt-1 truncate text-sm text-white/55">
+                            {plainText(ev.location)}
+                          </p>
+                        )}
+                      </div>
+                      <span className="shrink-0 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+                        {formatListDate(ev)}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+
+                {allEvents.length === 0 && (
+                  <div className="rounded-xl border border-white/10 bg-white/[0.08] px-4 py-8 text-center text-sm text-white/60">
+                    No events yet.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
