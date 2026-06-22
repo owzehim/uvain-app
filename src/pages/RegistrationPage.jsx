@@ -116,11 +116,11 @@ async function getCroppedImgAsFile(imageSrc, pixelCrop, fileName = 'profile.jpg'
 // ?? Translations ????????????????????????????????????????????????????????????????
 const translations = {
   en: {
-    title: 'Account Register',
+    title: 'Sign up',
     subtitle: 'Your membership will be inactive after registration. The board will activate it once verified.',
     aboutYou: 'About you',
     academicInfo: 'Academic Information',
-    finalStep: 'The Final Touch',
+    finalStep: 'And That',
     firstName: 'First name (English) *',
     lastName: 'Last name (English) *',
     firstNameKorean: 'First name (Korean) *',
@@ -162,7 +162,7 @@ const translations = {
     alumni: 'Alumni',
   },
   ko: {
-    title: '회원가입',
+    title: 'Sign up',
     subtitle: '등록 후 회원 자격은 비활성 상태입니다. 임원 확인 후 활성화됩니다.',
     aboutYou: '당신에 대해',
     academicInfo: '학력 정보',
@@ -600,8 +600,8 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
       <div style={s.formContent}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine={language === 'ko' ? '네덜란드 유학생들을 위한' : 'For International Students,'}
-          secondLine="UvA-IN."
+          firstLine="UvA-IN for"
+          secondLine="International Students"
         />
 
         <div style={s.nameGrid} data-motion="fields">
@@ -900,8 +900,8 @@ function AccountStep({
       <div style={s.formContent}>
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine={language === 'ko' ? '이제' : 'The Final Touch'}
-          secondLine={language === 'ko' ? '마무리.' : ''}
+          firstLine={language === 'ko' ? '이제' : 'And That'}
+          secondLine={language === 'ko' ? '마무리.' : 'Concludes It.'}
           allowUpload={false}
         />
 
@@ -1415,6 +1415,7 @@ const s = {
     display: 'grid',
     gridTemplateColumns: '1fr',
     gap: '8px',
+    marginTop: '8px',
   },
   nameGroupGap: {
     height: '4px',
