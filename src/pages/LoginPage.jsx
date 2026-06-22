@@ -26,10 +26,11 @@ export default function LoginPage() {
   } = useLogin()
 
   const isOtpStep = step === 'otp'
+  const isStandaloneStep = step === 'otp' || step === 'forgot'
 
   return (
     <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh]">
-      {isOtpStep ? (
+      {isStandaloneStep ? (
         <button
           type="button"
           onClick={handleBack}
@@ -50,7 +51,7 @@ export default function LoginPage() {
       )}
 
       <div className="w-full max-w-sm px-2">
-        {!isOtpStep && (
+        {!isStandaloneStep && (
           <>
             <div className="mb-3 flex justify-center">
               <img src="/uvain logo.png" alt="UvA-IN Logo" className="h-24 w-24" />
@@ -124,7 +125,7 @@ export default function LoginPage() {
 
         {step === 'forgot' && (
           <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
-            <div className="mb-7 text-left">
+            <div className="mb-8 min-h-[176px] pt-[54px] text-left">
               <h2 className="text-2xl font-semibold text-gray-900">비밀번호 재설정</h2>
               <p className="mt-3 text-sm leading-relaxed text-gray-500">
                 가입한 이메일을 입력하면 새 비밀번호를 설정할 수 있는 링크를 보내드립니다.
