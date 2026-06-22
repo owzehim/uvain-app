@@ -1074,7 +1074,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
             alt={`사진 ${index + 1}`}
             style={{
               maxWidth: '90vw',
-              maxHeight: instagramUrl ? 'calc(90vh - 48px)' : '90vh',
+              maxHeight: '90vh',
               objectFit: 'contain',
               borderRadius: 12,
               boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
@@ -1088,34 +1088,35 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
               href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Open Instagram"
               style={{
+                position: 'fixed',
+                top: 'calc(env(safe-area-inset-top) + 8px)',
+                right: '16px',
+                zIndex: 10000,
+                width: 36,
+                height: 36,
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 6,
-                minHeight: 34,
-                padding: '0 13px',
                 borderRadius: 999,
                 background:
                   'linear-gradient(135deg, #f58529 0%, #dd2a7b 45%, #8134af 75%, #515bd4 100%)',
                 color: '#fff',
-                fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                fontSize: 12,
-                fontWeight: 400,
                 textDecoration: 'none',
                 boxShadow: '0 6px 18px rgba(0,0,0,0.24)',
               }}
             >
               <svg
-                width="13"
-                height="13"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 aria-hidden="true"
               >
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
               </svg>
-              Instagram에서 열기
             </a>
           )}
         </div>
@@ -2164,9 +2165,10 @@ function EventsTab({ events }) {
             <div
               style={{
                 backgroundColor: '#ffffff',
-                padding: '10px 16px 12px',
-                marginTop: '4px',
-                marginBottom: '12px',
+                padding: '16px',
+                marginTop: '8px',
+                marginBottom: '32px',
+                position: 'relative',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
               }}
@@ -2176,13 +2178,13 @@ function EventsTab({ events }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginBottom: '4px',
+                  marginBottom: '12px',
                 }}
               >
                 <span
                   style={{
                     fontFamily: '"Handjet", system-ui, sans-serif',
-                    fontSize: `calc(${W} * 0.04)`,
+                    fontSize: `calc(${W} * 0.045)`,
                     fontWeight: 700,
                     color: '#4b5563',
                     letterSpacing: '0.04em',
@@ -2200,7 +2202,7 @@ function EventsTab({ events }) {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(7, 1fr)',
-                  marginBottom: '0',
+                  marginBottom: '4px',
                   userSelect: 'none',
                   WebkitUserSelect: 'none',
                 }}
@@ -2212,10 +2214,10 @@ function EventsTab({ events }) {
                       textAlign: 'center',
                       fontFamily:
                         '"Handjet", system-ui, sans-serif',
-                      fontSize: `calc(${W} * 0.029)`,
+                      fontSize: `calc(${W} * 0.032)`,
                       fontWeight: 600,
                       color: '#9ca3af',
-                      paddingBottom: '0',
+                      paddingBottom: '4px',
                     }}
                   >
                     {d}
@@ -2227,7 +2229,7 @@ function EventsTab({ events }) {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(7, 1fr)',
-                  gap: '1px',
+                  gap: '3px',
                   userSelect: 'none',
                   WebkitUserSelect: 'none',
                 }}
@@ -2237,7 +2239,7 @@ function EventsTab({ events }) {
                     return (
                       <div
                         key={`e-${idx}`}
-                        style={{ height: `calc(${W} * 0.085)` }}
+                        style={{ aspectRatio: '1/1' }}
                       />
                     )
                   const dateKey = `${calYear}-${String(
@@ -2294,7 +2296,7 @@ function EventsTab({ events }) {
                       key={dateKey}
                       onClick={() => handleDayPress(day)}
                       style={{
-                        height: `calc(${W} * 0.085)`,
+                        aspectRatio: '1/1',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -2344,8 +2346,8 @@ function EventsTab({ events }) {
                       )}
                       <div
                         style={{
-                          width: `calc(${W} * 0.07)`,
-                          height: `calc(${W} * 0.07)`,
+                          width: '85%',
+                          aspectRatio: '1/1',
                           borderRadius: '50%',
                           backgroundColor: bg,
                           border,
@@ -2361,7 +2363,7 @@ function EventsTab({ events }) {
                           style={{
                             fontFamily:
                               '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.032)`,
+                            fontSize: `calc(${W} * 0.036)`,
                             fontWeight: fw,
                             color,
                             lineHeight: 1,
@@ -2375,25 +2377,24 @@ function EventsTab({ events }) {
                   )
                 })}
               </div>
-            </div>
 
-            {displayEvent && (
-              <button
-                type="button"
-                disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
-                onClick={() => openParticipationForm(displayEvent)}
-                className={
-                  'mx-auto mb-6 block w-[82%] rounded-full px-5 py-3 text-sm font-semibold transition-opacity ' +
-                  (displayEvent.is_registration_closed
-                    ? 'bg-gray-200 text-gray-500'
-                    : displayEvent.participation_url
-                      ? 'bg-black text-white hover:opacity-90'
-                      : 'bg-gray-100 text-gray-400')
-                }
-              >
-                {displayEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
-              </button>
-            )}
+              {nextEvent?.participation_url && (
+                <button
+                  type="button"
+                  disabled={nextEvent.is_registration_closed}
+                  onClick={() => openParticipationForm(nextEvent)}
+                  className={
+                    'absolute left-1/2 top-1/2 block w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full px-5 py-3 text-sm font-semibold shadow-lg transition-opacity ' +
+                    (nextEvent.is_registration_closed
+                      ? 'bg-gray-200 text-gray-500'
+                      : 'bg-black text-white hover:opacity-90')
+                  }
+                  style={{ zIndex: 5 }}
+                >
+                  {nextEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
+                </button>
+              )}
+            </div>
 
             {/* UPCOMING LIST */}
             {otherUpcomingEvents.length > 0 && (

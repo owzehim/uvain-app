@@ -546,6 +546,7 @@ function ProfileHero({
   firstLine,
   secondLine,
   allowUpload = true,
+  equalIntroTextSize = false,
 }) {
   const { profilePreviewUrl, pastelBg, onProfileClick, t } = profileHeroProps;
   const compact = variant === 'compact';
@@ -583,7 +584,7 @@ function ProfileHero({
       {showIntro && (
         <div style={academic || compact ? s.compactIntro : s.aboutIntro} data-motion="hero-text">
           {firstLine && (
-            <p style={academic || compact ? s.compactIntroLine : s.aboutIntroEn}>{firstLine}</p>
+            <p style={academic || compact ? s.compactIntroLine : equalIntroTextSize ? s.aboutIntroKo : s.aboutIntroEn}>{firstLine}</p>
           )}
           {secondLine && (
             <p style={academic || compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
@@ -903,6 +904,7 @@ function AccountStep({
           firstLine={language === 'ko' ? '이제' : 'And That'}
           secondLine={language === 'ko' ? '마무리.' : 'Concludes It.'}
           allowUpload={false}
+          equalIntroTextSize
         />
 
         <div style={s.fieldStack} data-motion="fields">
