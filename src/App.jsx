@@ -41,6 +41,10 @@ function App() {
   const isAdmin =
     user?.user_metadata?.role === 'admin' ||
     user?.email === 'admin@uvain.nl' // fallback, just in case
+  const isEmailConfirmationLink =
+    typeof window !== 'undefined' &&
+    (new URLSearchParams(window.location.search).has('code') ||
+      window.location.hash.includes('access_token'))
 
   return (
     <BrowserRouter>
@@ -78,6 +82,14 @@ function App() {
         <Route path="/public" element={<PublicPage />} />
         <Route path="/register" element={<RegistrationPage />} />
         <Route path="/email-confirmed" element={<EmailConfirmedPage />} />
+        <Route
+          path="/"
+          element={
+            isEmailConfirmationLink
+              ? <EmailConfirmedPage />
+              : <Navigate to={session ? '/member' : '/public'} />
+          }
+        />
 
         <Route
           path="*"

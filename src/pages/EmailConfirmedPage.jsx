@@ -1,69 +1,110 @@
 // src/pages/EmailConfirmedPage.jsx
 //
-// Landing page for the Supabase email confirmation link.
-// Opens in the external browser — intentionally has NO navigation to the app.
-// Just confirms the email is verified and tells the user to return to the PWA.
+// Landing page for Supabase email confirmation links.
 
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { CheckCircle, XCircle, SpinnerGap } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 
 export default function EmailConfirmedPage() {
-  const [status, setStatus] = useState('verifying') // 'verifying' | 'success' | 'error'
+  const navigate = useNavigate()
+  const [status, setStatus] = useState('verifying')
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
-    // Supabase puts the token in the URL hash as #access_token=...&type=signup
-    // Calling getSession() triggers Supabase to process the hash automatically.
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (error) {
-        setErrorMsg(error.message)
-        setStatus('error')
-        return
-      }
-      if (data?.session) {
-        // Session established = email confirmed successfully.
-        // Immediately sign out — we don't want to log them in via the browser.
-        // They should log in properly through the PWA.
-        supabase.auth.signOut().then(() => setStatus('success'))
-      } else {
-        // No session means the link was already used or expired.
-        setStatus('error')
+    let cancelled = false
+
+    const verifyEmail = async () => {
+      try {
+        const url = new URL(window.location.href)
+        const code = url.searchParams.get('code')
+
+        let session = null
+        let error = null
+
+        if (code) {
+          const result = await supabase.auth.exchangeCodeForSession(code)
+          session = result.data?.session
+          error = result.error
+        } else {
+          const result = await supabase.auth.getSession()
+          session = result.data?.session
+          error = result.error
+        }
+
+        if (cancelled) return
+
+        if (error) {
+          setErrorMsg(error.message)
+          setStatus('error')
+          return
+        }
+
+        if (session) {
+          await supabase.auth.signOut()
+          if (!cancelled) setStatus('success')
+          return
+        }
+
         setErrorMsg('This link has already been used or has expired.')
+        setStatus('error')
+      } catch (err) {
+        if (!cancelled) {
+          setErrorMsg(err.message || 'Something went wrong.')
+          setStatus('error')
+        }
       }
-    })
+    }
+
+    verifyEmail()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
+
+  const isSuccess = status === 'success'
+  const isError = status === 'error'
 
   return (
     <div style={styles.page}>
-      <div style={styles.card}>
+      <div style={styles.panel}>
         {status === 'verifying' && (
           <>
-            <div style={styles.spinner} />
-            <p style={styles.message}>Verifying your email…</p>
+            <SpinnerGap size={54} weight="bold" color="#f97316" style={styles.spinnerIcon} />
+            <h1 style={styles.title}>이메일 확인 중</h1>
+            <p style={styles.message}>잠시만 기다려주세요.</p>
           </>
         )}
 
-        {status === 'success' && (
+        {isSuccess && (
           <>
-            <div style={styles.icon}>✅</div>
-            <h1 style={styles.title}>Email verified!</h1>
+            <CheckCircle size={64} weight="fill" color="#f97316" />
+            <h1 style={styles.title}>이메일 확인 완료</h1>
             <p style={styles.message}>
-              Your email address has been confirmed.
+              이메일 주소가 확인되었습니다.<br />
+              이제 UvA-IN 앱으로 돌아가 로그인해주세요.
             </p>
-            <p style={styles.instruction}>
-              You can close this tab and return to the <strong>UvA-IN app</strong> on your home screen to log in.
-            </p>
+            <button type="button" onClick={() => navigate('/login')} style={styles.primaryButton}>
+              로그인으로 이동
+            </button>
           </>
         )}
 
-        {status === 'error' && (
+        {isError && (
           <>
-            <div style={styles.icon}>❌</div>
-            <h1 style={{ ...styles.title, color: '#b91c1c' }}>Verification failed</h1>
-            <p style={styles.message}>{errorMsg || 'Something went wrong.'}</p>
-            <p style={styles.instruction}>
-              Please return to the app and request a new confirmation email.
+            <XCircle size={64} weight="fill" color="#ef4444" />
+            <h1 style={styles.title}>이메일 확인 실패</h1>
+            <p style={styles.message}>
+              {errorMsg || '확인 링크를 처리할 수 없습니다.'}
             </p>
+            <p style={styles.note}>
+              링크가 만료되었거나 이미 사용되었을 수 있습니다. 앱에서 새 확인 이메일을 요청해주세요.
+            </p>
+            <button type="button" onClick={() => navigate('/login')} style={styles.primaryButton}>
+              로그인으로 이동
+            </button>
           </>
         )}
       </div>
@@ -73,55 +114,60 @@ export default function EmailConfirmedPage() {
 
 const styles = {
   page: {
-    minHeight: '100vh',
+    minHeight: '100dvh',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
-    backgroundColor: '#f9fafb',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    padding: '24px',
+    backgroundColor: '#ffffff',
+    fontFamily: '"Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    padding: 'calc(env(safe-area-inset-top) + 120px) 16px 24px',
+    boxSizing: 'border-box',
   },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: '16px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06)',
-    padding: '48px 32px',
-    maxWidth: '380px',
+  panel: {
     width: '100%',
+    maxWidth: '360px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     textAlign: 'center',
-  },
-  icon: {
-    fontSize: '48px',
-    marginBottom: '16px',
+    gap: '14px',
   },
   title: {
-    fontSize: '22px',
+    margin: '8px 0 0',
+    fontSize: '24px',
+    lineHeight: 1.25,
     fontWeight: 700,
     color: '#111827',
-    margin: '0 0 12px',
   },
   message: {
-    fontSize: '15px',
-    color: '#374151',
-    margin: '0 0 12px',
-    lineHeight: 1.5,
-  },
-  instruction: {
-    fontSize: '13px',
-    color: '#6b7280',
     margin: 0,
-    lineHeight: 1.6,
-    backgroundColor: '#f3f4f6',
-    borderRadius: '8px',
-    padding: '12px',
+    fontSize: '14px',
+    lineHeight: 1.65,
+    color: '#6b7280',
   },
-  spinner: {
-    width: '36px',
-    height: '36px',
-    border: '3px solid #e5e7eb',
-    borderTop: '3px solid #f97316',
-    borderRadius: '50%',
+  note: {
+    margin: '2px 0 4px',
+    padding: '12px 14px',
+    borderRadius: '8px',
+    backgroundColor: '#f9fafb',
+    border: '1px solid #e5e7eb',
+    fontSize: '13px',
+    lineHeight: 1.55,
+    color: '#6b7280',
+  },
+  primaryButton: {
+    width: '100%',
+    marginTop: '8px',
+    border: 'none',
+    borderRadius: '9999px',
+    padding: '13px 16px',
+    background: '#f97316',
+    color: '#ffffff',
+    fontSize: '14px',
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  spinnerIcon: {
     animation: 'spin 0.8s linear infinite',
-    margin: '0 auto 16px',
   },
 }

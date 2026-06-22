@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, CaretLeft, UserCircle } from '@phosphor-icons/react';
+import { Camera, CaretLeft, EnvelopeSimple, UserCircle } from '@phosphor-icons/react';
 import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
@@ -407,8 +407,10 @@ export default function RegistrationPage() {
           </button>
         </div>
         <div style={s.emailCard}>
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>?벁</div>
+          <div style={{ textAlign: 'center', marginBottom: '22px' }}>
+            <div style={s.emailIcon}>
+              <EnvelopeSimple size={28} weight="fill" color="#f97316" />
+            </div>
             <h1 style={s.title}>{t.checkEmail}</h1>
             <p style={s.emailText}>
               {t.emailSent} <br />
@@ -1632,15 +1634,26 @@ const s = {
   },
   emailCard: {
     backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06)',
-    padding: '32px',
-    maxWidth: '420px',
+    borderRadius: '0',
+    boxShadow: 'none',
+    padding: '0 0 14px',
+    maxWidth: '320px',
     width: '100%',
-    margin: '60px auto',
+    margin: '122px auto 0',
+  },
+  emailIcon: {
+    width: '64px',
+    height: '64px',
+    borderRadius: '50%',
+    margin: '0 auto 18px',
+    backgroundColor: '#fff7ed',
+    border: '1px solid #fed7aa',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emailText: {
-    fontSize: '13px',
+    fontSize: '14px',
     color: '#6b7280',
     lineHeight: 1.6,
     margin: 0,

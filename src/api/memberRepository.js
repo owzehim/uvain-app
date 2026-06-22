@@ -56,6 +56,10 @@ export async function registerMember(payload) {
     email,
     password,
     options: {
+      emailRedirectTo:
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/email-confirmed`
+          : undefined,
       // You can pass extra metadata here if needed
       data: {
         first_name: firstName,
