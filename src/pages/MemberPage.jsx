@@ -1802,7 +1802,7 @@ function EventsTab({ events }) {
     : darkMode
       ? isPastSelected
         ? '#F7F8F9'
-        : '#ffffff'
+        : '#F7F8F9'
       : baseDateColor
 
   const getTextColorFromImage = (imageUrl) =>
@@ -2233,7 +2233,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: `calc(${W} * 0.045)`,
                     fontWeight: 700,
-                    color: darkMode ? '#F8F9FA' : '#4b5563',
+                    color: darkMode ? '#F1F3F5' : '#4b5563',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                   }}
@@ -2318,16 +2318,16 @@ function EventsTab({ events }) {
 
                   let bg = 'transparent'
                   let border = 'none'
-                  let color = darkMode ? '#ffffff' : '#1f2937'
+                  let color = darkMode ? '#EDEDED' : '#1f2937'
                   let fw = 500
 
                   if (isSelectedEventDate) {
                     bg = darkMode ? '#2c2c2e' : '#d1d5db'
-                    color = darkMode ? '#ffffff' : '#111827'
+                    color = darkMode ? '#EDEDED' : '#111827'
                     fw = 700
                   } else if (hasEvt) {
                     bg = darkMode ? '#1c1c1e' : '#f3f4f6'
-                    color = darkMode ? '#ffffff' : '#9ca3af'
+                    color = darkMode ? '#EDEDED' : '#9ca3af'
                     fw = 600
                   } else if (isToday) {
                     bg = darkMode ? '#121212' : '#ffffff'
