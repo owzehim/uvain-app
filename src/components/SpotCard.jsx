@@ -700,7 +700,7 @@ const hasReviews = summary && summary.review_count > 0
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="pointer-events-auto bg-orange-500 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-1.5"
+              className="pointer-events-auto bg-orange-500 text-gray-500 dark:text-[#9CA3AF] text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-1.5"
               onTouchStart={(e) => e.stopPropagation()}
             >
               <MapPin size={14} weight="fill" />

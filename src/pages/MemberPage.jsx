@@ -2294,6 +2294,8 @@ function EventsTab({ events }) {
                   ).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   const dayEvents = eventsByDate[dateKey] || []
                   const hasEvt = dayEvents.length > 0
+                  const isPastEventDate =
+                    hasEvt && parseLocalDate(dateKey) < todayStart
                   const selectedEventDates = getEventDates(selectedEvent)
                   const isSelectedEventDate = hasEvt && selectedEventDates.includes(dateKey)
                   const rangeEvent = dayEvents.find((ev) => {
@@ -2327,7 +2329,11 @@ function EventsTab({ events }) {
                     fw = 700
                   } else if (hasEvt) {
                     bg = darkMode ? '#1c1c1e' : '#f3f4f6'
-                    color = darkMode ? '#EDEDED' : '#9ca3af'
+                    color = darkMode
+                      ? isPastEventDate
+                        ? '#A8A8A8'
+                        : '#EDEDED'
+                      : '#9ca3af'
                     fw = 600
                   } else if (isToday) {
                     bg = darkMode ? '#121212' : '#ffffff'
