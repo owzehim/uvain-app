@@ -2590,8 +2590,8 @@ function EventsTab({ events }) {
             className="absolute left-0 right-0 top-0 px-6"
             style={{
               zIndex: 2,
-              paddingTop: 'calc(env(safe-area-inset-top) + 56px)',
-              paddingBottom: '16px',
+              paddingTop: 'calc(env(safe-area-inset-top) + 48px)',
+              paddingBottom: '10px',
               backgroundColor: '#303236',
             }}
             onClick={(e) => e.stopPropagation()}
@@ -2611,17 +2611,12 @@ function EventsTab({ events }) {
             >
               <List size={20} weight="bold" />
             </button>
-            <div className="mx-auto w-full max-w-md">
-              <h2 className="text-2xl font-semibold text-white">
-                Events
-              </h2>
-            </div>
           </div>
 
           <div
             className="pointer-events-none absolute left-0 right-0"
             style={{
-              top: 'calc(env(safe-area-inset-top) + 112px)',
+              top: 'calc(env(safe-area-inset-top) + 58px)',
               height: 36,
               zIndex: 2,
               background:
@@ -2632,7 +2627,7 @@ function EventsTab({ events }) {
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 146px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 86px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
@@ -2646,7 +2641,7 @@ function EventsTab({ events }) {
                       className="mb-5 text-white"
                       style={{
                         fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: `calc(${W} * 0.13)`,
+                        fontSize: `calc(${W} * 0.10)`,
                         fontWeight: 700,
                         lineHeight: 0.8,
                       }}
@@ -2660,7 +2655,7 @@ function EventsTab({ events }) {
                             className="mb-2 text-white/75"
                             style={{
                               fontFamily: '"Handjet", system-ui, sans-serif',
-                              fontSize: `calc(${W} * 0.065)`,
+                              fontSize: `calc(${W} * 0.04)`,
                               fontWeight: 700,
                               lineHeight: 0.9,
                             }}
@@ -2687,7 +2682,7 @@ function EventsTab({ events }) {
                                     >
                                       <p
                                         style={{
-                                          fontSize: `calc(${W} * 0.095)`,
+                                          fontSize: `calc(${W} * 0.075)`,
                                           fontWeight: 700,
                                           lineHeight: 0.75,
                                         }}
