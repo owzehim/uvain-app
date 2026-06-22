@@ -1533,45 +1533,17 @@ function EventsTab({ events }) {
     }, 220)
   }
 
-  const animateToEvent = (ev) => {
-    const targetIndex = allEvents.findIndex((event) => event.id === ev.id)
-    const startIndex = Math.max(0, currentEventIndex)
-    if (targetIndex < 0 || targetIndex === startIndex) {
-      setSelectedEvent(ev)
-      setPreviewEvent(ev)
-      return
-    }
-
-    const direction = targetIndex > startIndex ? 1 : -1
-    let nextIndex = startIndex
+  const selectEventFromList = (ev) => {
+    setSelectedEvent(ev)
+    setPreviewEvent(ev)
     setExpandedId(null)
     setLightboxIndex(null)
-    setIsDragging(true)
-    setIsTouching(true)
-    setPreviewEvent(allEvents[startIndex])
-
-    const timer = window.setInterval(() => {
-      nextIndex += direction
-      setPreviewEvent(allEvents[nextIndex])
-
-      if (nextIndex === targetIndex) {
-        window.clearInterval(timer)
-        window.setTimeout(() => {
-          setSelectedEvent(ev)
-          setPreviewEvent(ev)
-          setIsDragging(false)
-          setIsTouching(false)
-        }, 120)
-      }
-    }, 90)
-  }
-
-  const selectEventFromList = (ev) => {
+    setIsDragging(false)
+    setIsTouching(false)
     setEventListClosing(true)
     window.setTimeout(() => {
       setEventListOpen(false)
       setEventListClosing(false)
-      animateToEvent(ev)
     }, 220)
   }
 
@@ -2575,7 +2547,7 @@ function EventsTab({ events }) {
 
       {eventListOpen && (
         <div
-          className="fixed inset-0 animate-fade-in"
+          className="fixed inset-0"
           style={{
             zIndex: 80,
             backgroundColor: '#303236',
@@ -2583,9 +2555,18 @@ function EventsTab({ events }) {
             WebkitBackdropFilter: 'blur(22px)',
             opacity: eventListClosing ? 0 : 1,
             transition: 'opacity 0.22s ease',
+            animation: eventListClosing ? 'none' : 'fadeIn 0.2s ease-out',
           }}
           onClick={closeEventList}
         >
+          <div
+            className="fixed left-0 right-0 top-0"
+            style={{
+              height: 'env(safe-area-inset-top)',
+              backgroundColor: '#303236',
+              zIndex: 4,
+            }}
+          />
           <div
             className="absolute left-0 right-0 top-0 px-6"
             style={{
@@ -2599,11 +2580,11 @@ function EventsTab({ events }) {
             <button
               type="button"
               onClick={closeEventList}
-              className="fixed left-4 rounded-full bg-white/10 p-2 text-white/70 hover:bg-white/15"
+              className="fixed left-2 flex h-11 w-11 items-center justify-center rounded-full text-white/70 hover:text-white"
               aria-label="Close event list"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 16px)',
-                zIndex: 3,
+                top: 'calc(env(safe-area-inset-top) + 10px)',
+                zIndex: 5,
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 WebkitTapHighlightColor: 'transparent',
