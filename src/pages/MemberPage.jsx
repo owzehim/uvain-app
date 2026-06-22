@@ -1480,7 +1480,7 @@ function EventsTab({ events }) {
   }
 
   const openParticipationForm = (ev) => {
-    if (!ev?.participation_url) return
+    if (!ev?.participation_url || ev?.is_registration_closed) return
     window.open(ev.participation_url, '_blank', 'noopener,noreferrer')
   }
 
@@ -2391,13 +2391,21 @@ function EventsTab({ events }) {
               </div>
             </div>
 
-            {displayEvent?.participation_url && (
+            {displayEvent && (
               <button
                 type="button"
+                disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
                 onClick={() => openParticipationForm(displayEvent)}
-                className="mb-6 w-full rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                className={
+                  'mx-auto mb-6 block w-[82%] rounded-full px-5 py-3 text-sm font-semibold transition-opacity ' +
+                  (displayEvent.is_registration_closed
+                    ? 'bg-gray-200 text-gray-500'
+                    : displayEvent.participation_url
+                      ? 'bg-black text-white hover:opacity-90'
+                      : 'bg-gray-100 text-gray-400')
+                }
               >
-                이벤트 참가하기
+                {displayEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
               </button>
             )}
 

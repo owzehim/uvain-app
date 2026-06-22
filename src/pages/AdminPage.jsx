@@ -1558,6 +1558,25 @@ function EventForm({
         }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
       />
+      <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+        <span className="text-sm text-gray-600">참가 마감</span>
+        <button
+          type="button"
+          onClick={() =>
+            setForm((f) => ({
+              ...f,
+              is_registration_closed: !f.is_registration_closed,
+            }))
+          }
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+            form.is_registration_closed
+              ? 'bg-gray-900 text-white border-gray-900'
+              : 'bg-white text-gray-500 border-gray-200'
+          }`}
+        >
+          {form.is_registration_closed ? '마감' : '접수중'}
+        </button>
+      </div>
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
         <ImageUploadPanel
@@ -1609,6 +1628,7 @@ function EventsTab() {
     location: '',
     instagram_url: '',
     participation_url: '',
+    is_registration_closed: false,
   })
 
   const [imageFiles, setImageFiles] = useState([])
@@ -1694,6 +1714,7 @@ function EventsTab() {
       location: '',
       instagram_url: '',
       participation_url: '',
+      is_registration_closed: false,
     })
     setImageFiles([])
     setImagePreviews([])
@@ -1768,6 +1789,7 @@ function EventsTab() {
       location: form.location,
       instagram_url: form.instagram_url,
       participation_url: form.participation_url,
+      is_registration_closed: form.is_registration_closed,
       image_urls,
     }
 
@@ -1826,6 +1848,7 @@ function EventsTab() {
       location: event.location || '',
       instagram_url: event.instagram_url || '',
       participation_url: event.participation_url || '',
+      is_registration_closed: !!event.is_registration_closed,
     })
     setImageFiles([])
     setImagePreviews([])
@@ -1847,6 +1870,7 @@ function EventsTab() {
       location: '',
       instagram_url: '',
       participation_url: '',
+      is_registration_closed: false,
     })
     setImageFiles([])
     setImagePreviews([])
