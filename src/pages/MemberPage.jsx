@@ -1797,10 +1797,12 @@ function EventsTab({ events }) {
     !!getPrimaryEventDate(displayEvent) &&
     new Date(getPrimaryEventDateTime(displayEvent)) < todayStart
   const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
-  const effectiveDateColor = darkMode
-    ? '#ffffff'
-    : isDragging
-      ? DRAG_DATE_COLOR
+  const effectiveDateColor = isDragging
+    ? DRAG_DATE_COLOR
+    : darkMode
+      ? isPastSelected
+        ? '#FAFAFA'
+        : '#ffffff'
       : baseDateColor
 
   const getTextColorFromImage = (imageUrl) =>
@@ -1927,7 +1929,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: fs.day,
                     fontWeight: 500,
-                    color: darkMode ? '#ffffff' : '#9ca3af',
+                    color: '#9ca3af',
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     lineHeight: 0.85,
@@ -1942,7 +1944,7 @@ function EventsTab({ events }) {
                     fontFamily: '"Handjet", system-ui, sans-serif',
                     fontSize: fs.day,
                     fontWeight: 500,
-                    color: darkMode ? '#ffffff' : '#9ca3af',
+                    color: '#9ca3af',
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     lineHeight: 0.85,
@@ -2094,7 +2096,7 @@ function EventsTab({ events }) {
                             position: 'absolute',
                             inset: 0,
                             backgroundColor: darkMode
-                              ? 'rgba(18,18,18,0.45)'
+                              ? 'rgba(255,255,255,0.58)'
                               : 'rgba(255,255,255,0.45)',
                             backdropFilter: 'blur(12px)',
                             WebkitBackdropFilter: 'blur(12px)',
@@ -2261,7 +2263,7 @@ function EventsTab({ events }) {
                         '"Handjet", system-ui, sans-serif',
                       fontSize: `calc(${W} * 0.032)`,
                       fontWeight: 600,
-                      color: darkMode ? '#ffffff' : '#9ca3af',
+                      color: '#9ca3af',
                       paddingBottom: '4px',
                     }}
                   >
@@ -2527,12 +2529,12 @@ function EventsTab({ events }) {
     <ArrowsVertical
       size={fs.guide}
       weight="bold"
-      color="rgba(44,42,39,0.35)"
+      color="#FAFAFA"
     />
     <span
       style={{
         fontSize: fs.guide,
-        color: 'rgba(44,42,39,0.35)',
+        color: '#FAFAFA',
         fontWeight: 500,
       }}
     >
