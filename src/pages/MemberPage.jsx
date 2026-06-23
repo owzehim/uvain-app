@@ -2541,7 +2541,7 @@ const effectiveDateColor = isDragging
   <div
     className="event-participation-float fixed left-0 right-0 px-4"
     style={{
-      bottom: 'calc(env(safe-area-inset-bottom) + 104px)',
+      bottom: 'calc(env(safe-area-inset-bottom) + 120px)',
       zIndex: 35,           // lower than the tab bar so it slides out from behind it
       pointerEvents: 'none',
       animation: 'slideUpFromTabBar 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards',
