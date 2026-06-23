@@ -345,7 +345,7 @@ function MembershipCard({
   const mutedText = darkMode ? '#6F6F76' : 'rgba(44,42,39,0.4)'
   const faintText = darkMode ? '#5F5F66' : 'rgba(44,42,39,0.25)'
   const scannerLine = darkMode ? '#8E8E93' : 'rgba(44,42,39,0.3)'
-  const avatarIconColor = darkMode ? 'rgba(247,248,249,0.52)' : 'rgba(44,42,39,0.55)'
+  const avatarIconColor = 'rgba(44,42,39,0.55)'
 
   useEffect(() => {
     if (onFlipChange) onFlipChange(flipped)
@@ -569,7 +569,7 @@ function MembershipCard({
             fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
             fontSize: fs.wordmark,
             fontWeight: 900,
-            color: darkMode ? '#E7E7E7' : '#2C2A27',
+            color: darkMode ? '#A1A1AA' : '#2C2A27',
             letterSpacing: '-0.01em',
             lineHeight: 1,
             textTransform: 'uppercase',
@@ -696,7 +696,7 @@ function MembershipCard({
               justifyContent: 'center',
             }}
           >
-            {flipped && <QRScanner onScan={onQRScanned} />}
+            {flipped && <QRScanner onScan={onQRScanned} darkMode={darkMode} />}
           </div>
         </div>
       </div>
