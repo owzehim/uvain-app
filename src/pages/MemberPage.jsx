@@ -251,7 +251,7 @@ export default function MemberPage() {
 
       {/* Bottom tab bar */}
       <div
-        className="bg-white flex flex-shrink-0 border-t border-gray-100 dark:border-[#2c2c2e] dark:bg-[#121212]"
+        className="bg-white flex flex-shrink-0 dark:bg-[#121212]"
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
           userSelect: 'none',
@@ -697,6 +697,9 @@ function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
   const [cardFlipped, setCardFlipped] = useState(false)
+  const [darkMode, setDarkMode] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+  )
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
   const touchStartY = useRef(null)
@@ -759,6 +762,22 @@ function QRTab({ member, isValid, onLiftChange }) {
     setTranslate(lifted ? getMaxLift() : 0)
     if (onLiftChange) onLiftChange(lifted)
   }, [lifted, onLiftChange])
+
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return undefined
+
+    const syncDarkMode = () => {
+      setDarkMode(document.documentElement.classList.contains('dark'))
+    }
+    const observer = new MutationObserver(syncDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+    syncDarkMode()
+
+    return () => observer.disconnect()
+  }, [])
 
   const handleQRScanned = (rawValue) => {
     setLifted(false)
@@ -833,7 +852,7 @@ function QRTab({ member, isValid, onLiftChange }) {
           left: 0,
           right: 0,
           top: 0,
-          backgroundColor: '#ffffff',
+          backgroundColor: darkMode ? '#121212' : '#ffffff',
           zIndex: 10,
           display: 'flex',
           flexDirection: 'column',
@@ -864,7 +883,7 @@ function QRTab({ member, isValid, onLiftChange }) {
             <span
               style={{
                 fontSize: fs.guide,
-                color: 'rgba(44,42,39,0.35)',
+                color: '#FAFAFA',
                 fontWeight: 500,
                 transition: 'color 0.25s ease',
               }}
@@ -878,11 +897,11 @@ function QRTab({ member, isValid, onLiftChange }) {
             <span
               style={{
                 fontSize: fs.guide,
-                color: 'rgba(44,42,39,0.35)',
+                color: '#FAFAFA',
                 fontWeight: 500,
               }}
             >
-              눌러서 뒤집기
+              눌러서 돌아가기
             </span>
           )}
         </div>
@@ -899,7 +918,9 @@ function QRTab({ member, isValid, onLiftChange }) {
             right: 0,
             height: 24,
             background:
-              'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))',
+              darkMode
+                ? 'linear-gradient(to bottom, rgba(18,18,18,1), rgba(18,18,18,0))'
+                : 'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))',
             zIndex: 30,
           }}
         />
@@ -2331,7 +2352,7 @@ function EventsTab({ events }) {
                     bg = darkMode ? '#1c1c1e' : '#f3f4f6'
                     color = darkMode
                       ? isPastEventDate
-                        ? '#B8B8B8'
+                        ? '#E7E7E7'
                         : '#EDEDED'
                       : '#9ca3af'
                     fw = 600
