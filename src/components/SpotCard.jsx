@@ -3,11 +3,7 @@ import { MapPin, Ticket, Star } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
-import {
-  computeStarDisplay,
-  getSortedTagsForDisplay,
-  formatAverageRating,
-} from '../domain/reviewDomain'
+import { computeStarDisplay, getSortedTagsForDisplay, formatAverageRating } from '../domain/reviewDomain'
 
 export function RichText({ text, className = '' }) {
   if (!text) return null
@@ -22,13 +18,17 @@ const TAG_ICON_COMPONENTS = {
 }
 
 function isDarkMode() {
-  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  return (
+    typeof document !== 'undefined' &&
+    document.documentElement.classList.contains('dark')
+  )
 }
 
-// ── Read-only star row ────────────────────────────────────────── 
-// Accept darkMode as a prop so the grey colour adapts to the theme.
+// ── Read-only star row ──────────────────────────────────────────
+
 function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) {
   if (averageRating == null || Number.isNaN(averageRating)) return null
+
   const formatted = showWhenZero
     ? averageRating.toFixed(1)
     : formatAverageRating(averageRating)
@@ -36,8 +36,8 @@ function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) 
 
   const { filled, half, empty } = computeStarDisplay(averageRating)
 
-  // Use a darker grey in dark mode so the empty stars don't glare
-  const emptyColor = darkMode ? '#4b5563' : '#d1d5db'  // gray-600 vs gray-300
+  // Only change grey in dark mode; keep original grey in light mode
+  const emptyColor = darkMode ? '#4b5563' : '#d1d5db' // gray-600 vs gray-300
 
   return (
     <div className="flex items-center gap-1">
@@ -46,6 +46,7 @@ function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) 
         {Array.from({ length: filled }).map((_, i) => (
           <Star key={'f' + i} size={12} weight="fill" color="#f97316" />
         ))}
+
         {/* half star: 50% orange, 50% grey */}
         {half && (
           <span key="half" className="relative inline-flex">
@@ -60,6 +61,7 @@ function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) 
             </span>
           </span>
         )}
+
         {/* empty grey stars */}
         {Array.from({ length: empty }).map((_, i) => (
           <Star key={'e' + i} size={12} weight="fill" color={emptyColor} />
@@ -70,32 +72,21 @@ function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) 
   )
 }
 
-// ── Inside SpotCard JSX, pass darkMode to StarDisplay ────────────
-// Find this block and add darkMode={darkMode}:
-{showRating && (
-  <div className="flex items-center gap-1 mt-1">
-    <StarDisplay
-      averageRating={summary?.average_rating ?? 0}
-      showWhenZero
-      darkMode={darkMode}   // ← ADD THIS
-    />
-    <span className="text-xs text-gray-400">
-      ({summary?.review_count ?? 0})
-    </span>
-  </div>
-)}
-
 // ── Tag bar chart ───────────────────────────────────────────────
+
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
   if (sorted.length === 0) return null
+
   const maxCount = sorted[0].count
+
   return (
     <div className="pb-4">
       <div className="pt-3">
         <div className="mb-3">
-  <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
-</div>
+          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
+        </div>
+
         <div className="flex flex-col gap-2.5">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
@@ -138,6 +129,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
 }
 
 // ── Lightbox ────────────────────────────────────────────────────
+
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
@@ -155,6 +147,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
       if (e.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, imgs.length - 1))
       if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
     }
+
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [imgs.length])
@@ -174,6 +167,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
 
     const dx = e.changedTouches[0].clientX - touchStartX.current
     const dy = e.changedTouches[0].clientY - touchStartY.current
+
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
@@ -200,12 +194,8 @@ function Lightbox({ imgs, startIndex, onClose }) {
     <>
       <style>{`
         @keyframes lightboxZoomIn {
-          from {
-            transform: scale(0.9);
-          }
-          to {
-            transform: scale(1);
-          }
+          from { transform: scale(0.9); }
+          to   { transform: scale(1);   }
         }
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
@@ -228,7 +218,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
           transition: 'opacity 0.25s ease',
         }}
       >
-        {/* Image — full opacity, no drag tracking */}
+        {/* Image */}
         <img
           src={imgs[index]}
           alt={'사진 ' + (index + 1)}
@@ -283,6 +273,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
 }
 
 // ── Thumbnail grid (same on mobile + desktop) ───────────────────
+
 function ImageThumbnails({ imgs, onTap }) {
   return (
     <div
@@ -323,7 +314,7 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
   const [closing, setClosing] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [isVisible, setIsVisible] = useState(false)
-  const [darkMode, setDarkMode] = useState(isDarkMode)
+  const [darkMode, setDarkMode] = useState(() => isDarkMode())
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -344,9 +335,9 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
     [],
   )
 
-const isDesktop = WIN_W >= 768
-const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
+  const isDesktop = WIN_W >= 768
+  const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
+  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
 
   // Trigger animation on mount
   useEffect(() => {
@@ -359,17 +350,19 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
     }
   }, [selected, MIN_HEIGHT])
 
+  // Watch dark mode changes
   useEffect(() => {
     if (typeof MutationObserver === 'undefined') return undefined
 
     const syncDarkMode = () => setDarkMode(isDarkMode())
+
     const observer = new MutationObserver(syncDarkMode)
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class'],
     })
-    syncDarkMode()
 
+    syncDarkMode()
     return () => observer.disconnect()
   }, [])
 
@@ -384,13 +377,15 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
-    startHeightRef.current =
-      hasImages ? cardHeight : cardRef.current?.offsetHeight || MIN_HEIGHT
+    startHeightRef.current = hasImages
+      ? cardHeight
+      : cardRef.current?.offsetHeight || MIN_HEIGHT
     setIsDragging(true)
   }
 
   const handleTouchMove = (e) => {
     if (!isDragging) return
+
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
 
@@ -398,14 +393,15 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
     if (Math.abs(delta) > 10) {
       e.preventDefault()
     }
-
     // Snapping happens in handleTouchEnd.
   }
 
   const handleTouchEnd = () => {
     setIsDragging(false)
+
     const delta = startYRef.current - lastYRef.current
     const startH = startHeightRef.current
+
     const wasMax = startH >= MAX_HEIGHT * 0.85
     const wasMin = startH <= MIN_HEIGHT * 1.15
 
@@ -427,10 +423,12 @@ const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
   }
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
-const iconSvg = CATEGORY_ICONS[selected.category]
-// default: show stars unless admin explicitly turned them off
-const showRating = selected.show_rating !== false
-const hasReviews = summary && summary.review_count > 0
+  const iconSvg = CATEGORY_ICONS[selected.category]
+
+  // default: show stars unless admin explicitly turned them off
+  const showRating = selected.show_rating !== false
+
+  const hasReviews = summary && summary.review_count > 0
 
   // treat empty / whitespace / HTML-only as empty (no ※)
   const rawTerms = selected.discount_terms ?? ''
@@ -508,7 +506,7 @@ const hasReviews = summary && summary.review_count > 0
         <div className="flex-1 px-5" style={{ overflowY: 'hidden' }}>
           {/* ── Place info ── */}
           <div className="pt-1 pb-3">
-            {/* Category, price, sponsored badges (kept but not rendered) */}
+            {/* Category / price / sponsored (currently hidden with false) */}
             {false && (
               <div className="flex items-center gap-1.5 flex-wrap mb-1">
                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -547,28 +545,29 @@ const hasReviews = summary && summary.review_count > 0
             )}
 
             {/* Store name */}
-<p className="font-semibold text-gray-900 text-lg">
-  {selected.name}
-</p>
+            <p className="font-semibold text-gray-900 text-lg">
+              {selected.name}
+            </p>
 
-{/* Star review - always visible, even when there are 0 reviews */}
-{showRating && (
-  <div className="flex items-center gap-1 mt-1">
-    <StarDisplay
-      averageRating={summary?.average_rating ?? 0} // 0 when no reviews
-      showWhenZero
-    />
-    <span className="text-xs text-gray-400">
-      ({summary?.review_count ?? 0})  {/* shows (0) when no reviews */}
-    </span>
-  </div>
-)}
+            {/* Star review - always visible, even when there are 0 reviews */}
+            {showRating && (
+              <div className="flex items-center gap-1 mt-1">
+                <StarDisplay
+                  averageRating={summary?.average_rating ?? 0} // 0 when no reviews
+                  showWhenZero
+                  darkMode={darkMode}
+                />
+                <span className="text-xs text-gray-400">
+                  ({summary?.review_count ?? 0})
+                </span>
+              </div>
+            )}
 
-{showRating && summaryLoading && (
-  <span className="text-xs text-gray-300 mt-1 block">로딩 중...</span>
-)}
+            {showRating && summaryLoading && (
+              <span className="text-xs text-gray-300 mt-1 block">로딩 중...</span>
+            )}
 
-            {/* Description, address, discount info */}
+            {/* Description, discount, address */}
             {selected.description && (
               <RichText
                 text={selected.description}
@@ -597,7 +596,7 @@ const hasReviews = summary && summary.review_count > 0
             )}
           </div>
 
-          {/* ── Images: same thumbnail grid on mobile + desktop ── */}
+          {/* Images */}
           {hasImages && (
             <div className="mb-3">
               <ImageThumbnails
@@ -607,89 +606,78 @@ const hasReviews = summary && summary.review_count > 0
             </div>
           )}
 
-{/* ── 한 줄 평가 ── */}
-{selected.one_line_review && (
-  <div className="mt-8 mb-3">
-    {/* 타이틀: 말풍선 밖, 왼쪽 정렬 */}
-    <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
-      한 줄 평가
-    </p>
+          {/* 한 줄 평가 */}
+          {selected.one_line_review && (
+            <div className="mt-8 mb-3">
+              <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
+                한 줄 평가
+              </p>
+              <div className="relative w-full">
+                <svg
+                  className="w-full"
+                  viewBox="0 0 360 80"
+                  preserveAspectRatio="xMidYMid meet"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ minHeight: '56px' }}
+                >
+                  <rect
+                    x="0"
+                    y="0"
+                    width="360"
+                    height="56"
+                    rx="16"
+                    ry="16"
+                    fill="#f97316"
+                  />
+                  <path
+                    d="M 40 56 C 30 60 20 65 15 75 C 18 70 22 62 25 56 Z"
+                    fill="#f97316"
+                  />
+                </svg>
 
-    <div className="relative w-full">
-      {/* 네모 말풍선 + 아래에서 왼쪽으로 휘어나가는 꼬리 */}
-      <svg
-        className="w-full"
-        viewBox="0 0 360 80"
-        preserveAspectRatio="xMidYMid meet"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ minHeight: '56px' }}
-      >
-        {/* 본체: 부드러운 직사각형 */}
-        <rect
-          x="0"
-          y="0"
-          width="360"
-          height="56"
-          rx="16"
-          ry="16"
-          fill="#f97316"
-        />
+                <div
+                  className="absolute left-0 right-0 top-0 flex items-center justify-center px-3 sm:px-4 md:px-6"
+                  style={{ height: '56px' }}
+                >
+                  <RichText
+                    text={selected.one_line_review}
+                    className="font-semibold text-white text-base sm:text-lg text-center block"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
-        {/* 아래에서 시작해서 왼쪽으로 휘어나가는 꼬리 */}
-        <path
-          d="
-            M 40 56
-            C 30 60 20 65 15 75
-            C 18 70 22 62 25 56
-            Z
-          "
-          fill="#f97316"
-        />
-      </svg>
+          {/* Member review bar chart */}
+          {hasReviews && (
+            <TagBarChart
+              tagCounts={summary.tag_counts}
+              reviewCount={summary.review_count}
+            />
+          )}
 
-      {/* 텍스트: 직사각형 영역 안에서 수직 중앙 정렬 */}
-      <div
-        className="absolute left-0 right-0 top-0 flex items-center justify-center px-3 sm:px-4 md:px-6"
-        style={{ height: '56px' }}
-      >
-        <RichText
-          text={selected.one_line_review}
-          className="font-semibold text-white text-base sm:text-lg text-center block"
-        />
-      </div>
-    </div>
-  </div>
-)}
+          {/* 임원 리뷰 */}
+          {(selected.review || selected.reviewer_name) && (
+            <div className="pb-4">
+              <div className="pt-3">
+                <p className="text-xs font-semibold text-gray-500 mb-1.5">
+                  임원 리뷰
+                </p>
+                {selected.review && (
+                  <RichText
+                    text={selected.review}
+                    className="text-xs text-gray-600 block"
+                  />
+                )}
+                {selected.reviewer_name && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {'— ' + selected.reviewer_name}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
-          {/* ── Member review bar chart ── */}
-{hasReviews && (
-  <TagBarChart
-    tagCounts={summary.tag_counts}
-    reviewCount={summary.review_count}
-  />
-)}
-
-          {/* ── 임원 리뷰 ── */}
-{(selected.review || selected.reviewer_name) && (
-  <div className="pb-4">
-    <div className="pt-3">
-      <p className="text-xs font-semibold text-gray-500 mb-1.5">
-        임원 리뷰
-      </p>
-      {selected.review && (
-        <RichText
-          text={selected.review}
-          className="text-xs text-gray-600 block"
-        />
-      )}
-      {selected.reviewer_name && (
-        <p className="text-xs text-gray-400 mt-0.5">
-          {'— ' + selected.reviewer_name}
-        </p>
-      )}
-    </div>
-  </div>
-)}
           <div className="pb-16" />
         </div>
 
@@ -700,7 +688,9 @@ const hasReviews = summary && summary.review_count > 0
             height: '72px',
             background: isMax
               ? 'transparent'
-              : `linear-gradient(to bottom, transparent, ${darkMode ? '#121212' : 'white'})`,
+              : `linear-gradient(to bottom, transparent, ${
+                  darkMode ? '#121212' : 'white'
+                })`,
             zIndex: 10,
           }}
         >
