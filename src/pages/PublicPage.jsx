@@ -248,11 +248,19 @@ function MembershipTab() {
         </button>
 
         <button
-          onClick={() => navigate('/register')}
-          className="w-full bg-gray-900 text-white font-semibold py-3 rounded-2xl hover:bg-gray-800 transition-colors"
-        >
-          Register as Member
-        </button>
+  onClick={() => navigate('/register')}
+  className="
+    w-full
+    font-semibold
+    py-3
+    rounded-2xl
+    transition-colors
+    bg-gray-200 text-gray-900 hover:bg-gray-300
+    dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700
+  "
+>
+  Register as Member
+</button>
       </div>
     </div>
   )
