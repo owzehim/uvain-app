@@ -52,19 +52,23 @@ export default function LoginPage() {
 
       <div className="w-full max-w-sm px-2">
         {!isStandaloneStep && (
-          <>
-            <div className="mb-3 flex justify-center">
-              <img src="/uvain logo.png" alt="UvA-IN Logo" className="h-24 w-24" />
-            </div>
+  <>
+    <div className="mb-3 flex justify-center">
+      <img
+        src="https://npvcghdzrtqrlliprtnw.supabase.co/storage/v1/object/public/public-assets/UvA-IN-logo-transparent.png"
+        alt="UvA-IN Logo"
+        className="h-24 w-24 object-contain"
+      />
+    </div>
 
-            <div className="mb-8 text-center">
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">UvA-IN</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                네덜란드 유학생을 위한 공식 커뮤니티
-              </p>
-            </div>
-          </>
-        )}
+    <div className="mb-8 text-center">
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">UvA-IN</h1>
+      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        네덜란드 유학생을 위한 공식 커뮤니티
+      </p>
+    </div>
+  </>
+)}
 
         {step === 'credentials' && (
           <form onSubmit={handleCredentialsSubmit} className="space-y-3">
