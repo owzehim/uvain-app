@@ -2577,7 +2577,7 @@ const effectiveDateColor = isDragging
       display: 'flex',
       alignItems: 'center',
       gap: 4,
-      opacity: isTouching ? 1 : 0,
+      opacity: 0,
       transition: 'opacity 0.25s ease',
       pointerEvents: 'none',
       zIndex: 20,
