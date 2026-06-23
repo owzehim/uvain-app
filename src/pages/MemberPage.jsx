@@ -2537,7 +2537,7 @@ const effectiveDateColor = isDragging
         </div>
       </div>
 
-      {nextEvent?.participation_url && displayEvent?.id === nextEvent.id && (
+      {displayEvent?.participation_url && new Date(displayEvent?.event_date) >= new Date() && (
   <div
     className="event-participation-float fixed left-0 right-0 px-4"
     style={{
@@ -2549,8 +2549,8 @@ const effectiveDateColor = isDragging
   >
           <button
             type="button"
-            disabled={nextEvent.is_registration_closed}
-            onClick={() => openParticipationForm(nextEvent)}
+            disabled={displayEvent.is_registration_closed}
+onClick={() => openParticipationForm(displayEvent)}
             className={
               'mx-auto block w-[82%] max-w-md rounded-full px-5 py-3 text-sm font-semibold shadow-xl transition-opacity ' +
               (nextEvent.is_registration_closed
@@ -2559,7 +2559,7 @@ const effectiveDateColor = isDragging
             }
             style={{ pointerEvents: 'auto' }}
           >
-            {nextEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
+            {displayEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
           </button>
         </div>
       )}
