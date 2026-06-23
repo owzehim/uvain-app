@@ -1825,18 +1825,20 @@ function EventsTab({ events }) {
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
 
   const PAST_DATE_COLOR = '#4b5563'
-  const DRAG_DATE_COLOR = '#9ca3af'
+const PAST_DARK_DATE_COLOR = '#E7E7E7'
+const DRAG_DATE_COLOR = '#9ca3af'
 
-  const isPastSelected =
-    !!getPrimaryEventDate(displayEvent) &&
-    new Date(getPrimaryEventDateTime(displayEvent)) < todayStart
-  const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
-  const effectiveDateColor = isDragging
-    ? DRAG_DATE_COLOR
+const isPastSelected =
+  getEventStatus(displayEvent) === 'PAST'
+
+const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
+
+const effectiveDateColor = isDragging
+  ? DRAG_DATE_COLOR
+  : darkMode && isPastSelected
+    ? PAST_DARK_DATE_COLOR
     : darkMode
-      ? isPastSelected
-        ? '#F7F8F9'
-        : '#F7F8F9'
+      ? '#F7F8F9'
       : baseDateColor
 
   const getTextColorFromImage = (imageUrl) =>
