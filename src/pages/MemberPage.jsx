@@ -315,6 +315,7 @@ function MembershipCard({
   onQRScanned,
   disabled = false,
   onFlipChange,
+  darkMode = false,
 }) {
   const [flipped, setFlipped] = useState(false)
 
@@ -334,6 +335,17 @@ function MembershipCard({
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
+  const cardBg = darkMode ? '#1C1C1E' : '#F6F4F1'
+  const cardBorder = darkMode ? '#2C2C2E' : '#d6d3c0'
+  const cardShadow = darkMode
+    ? '0 18px 38px rgba(0,0,0,0.34)'
+    : '0 14px 35px rgba(15,23,42,0.09)'
+  const primaryText = darkMode ? '#F7F8F9' : '#2C2A27'
+  const secondaryText = darkMode ? '#A1A1AA' : '#6b6a5e'
+  const mutedText = darkMode ? '#6F6F76' : 'rgba(44,42,39,0.4)'
+  const faintText = darkMode ? '#5F5F66' : 'rgba(44,42,39,0.25)'
+  const scannerLine = darkMode ? '#8E8E93' : 'rgba(44,42,39,0.3)'
+  const avatarIconColor = darkMode ? 'rgba(247,248,249,0.52)' : 'rgba(44,42,39,0.55)'
 
   useEffect(() => {
     if (onFlipChange) onFlipChange(flipped)
@@ -345,9 +357,9 @@ function MembershipCard({
         width: '100%',
         height: '100%',
         borderRadius: '16px',
-        background: '#F6F4F1',
-        border: '1px solid #d6d3c0',
-        boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
+        background: cardBg,
+        border: `1px solid ${cardBorder}`,
+        boxShadow: cardShadow,
         padding: `calc(${W} * 0.07)`,
         boxSizing: 'border-box',
         display: 'flex',
@@ -392,7 +404,7 @@ function MembershipCard({
             <UserCircle
               size="72%"
               weight="fill"
-              color="rgba(44,42,39,0.55)"
+              color={avatarIconColor}
             />
           )}
         </div>
@@ -411,7 +423,7 @@ function MembershipCard({
               fontFamily: '"Handjet", system-ui, sans-serif',
               fontSize: fs.brand,
               fontWeight: 700,
-              color: '#2C2A27',
+              color: primaryText,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
             }}
@@ -423,7 +435,7 @@ function MembershipCard({
               fontFamily: '"Handjet", system-ui, sans-serif',
               fontSize: fs.valid,
               fontWeight: 500,
-              color: '#6b6a5e',
+              color: secondaryText,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
               marginTop: `calc(${W} * 0.012)`,
@@ -477,8 +489,8 @@ function MembershipCard({
               left: 0,
               width: BRACKET,
               height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
+              borderTop: `2.5px solid ${scannerLine}`,
+              borderLeft: `2.5px solid ${scannerLine}`,
               borderRadius: '4px 0 0 0',
             }}
           />
@@ -489,8 +501,8 @@ function MembershipCard({
               right: 0,
               width: BRACKET,
               height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
+              borderTop: `2.5px solid ${scannerLine}`,
+              borderRight: `2.5px solid ${scannerLine}`,
               borderRadius: '0 4px 0 0',
             }}
           />
@@ -501,8 +513,8 @@ function MembershipCard({
               left: 0,
               width: BRACKET,
               height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
+              borderBottom: `2.5px solid ${scannerLine}`,
+              borderLeft: `2.5px solid ${scannerLine}`,
               borderRadius: '0 0 0 4px',
             }}
           />
@@ -513,8 +525,8 @@ function MembershipCard({
               right: 0,
               width: BRACKET,
               height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
+              borderBottom: `2.5px solid ${scannerLine}`,
+              borderRight: `2.5px solid ${scannerLine}`,
               borderRadius: '0 0 4px 0',
             }}
           />
@@ -533,14 +545,14 @@ function MembershipCard({
             <QrCode
               size={`calc(${W} * 0.1)`}
               weight="bold"
-              color="rgba(44,42,39,0.25)"
+              color={faintText}
             />
             <span
               style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
                 fontSize: `calc(${W} * 0.034)`,
                 fontWeight: 600,
-                color: 'rgba(44,42,39,0.4)',
+                color: mutedText,
                 letterSpacing: '0.05em',
               }}
             >
@@ -557,7 +569,7 @@ function MembershipCard({
             fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
             fontSize: fs.wordmark,
             fontWeight: 900,
-            color: '#2C2A27',
+            color: darkMode ? '#E7E7E7' : '#2C2A27',
             letterSpacing: '-0.01em',
             lineHeight: 1,
             textTransform: 'uppercase',
@@ -578,14 +590,14 @@ function MembershipCard({
           margin: '0 auto',
           flexShrink: 0,
           borderRadius: '16px',
-          border: '2px dashed #d1d5db',
-          background: '#F6F4F1',
+          border: `2px dashed ${darkMode ? '#2C2C2E' : '#d1d5db'}`,
+          background: cardBg,
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#4b5563',
+          color: darkMode ? '#F7F8F9' : '#4b5563',
           textAlign: 'center',
           padding: '16px',
           fontFamily: '"Handjet", system-ui, sans-serif',
@@ -599,7 +611,7 @@ function MembershipCard({
             style={{
               marginTop: '4px',
               fontSize: fs.valid,
-              color: '#6b7280',
+              color: darkMode ? '#A1A1AA' : '#6b7280',
             }}
           >
             {member.first_name} {member.last_name}
@@ -609,7 +621,7 @@ function MembershipCard({
           style={{
             marginTop: '10px',
             fontSize: `calc(${W} * 0.028)`,
-            color: '#9ca3af',
+            color: darkMode ? '#6F6F76' : '#9ca3af',
           }}
         >
           멤버십 갱신은 임원에게 문의해주세요
@@ -675,8 +687,8 @@ function MembershipCard({
             style={{
               width: '100%',
               height: '100%',
-              background: '#F6F4F1',
-              border: '1px solid #d6d3c0',
+              background: cardBg,
+              border: `1px solid ${cardBorder}`,
               borderRadius: '16px',
               boxSizing: 'border-box',
               display: 'flex',
@@ -802,7 +814,7 @@ function QRTab({ member, isValid, onLiftChange }) {
           WebkitTapHighlightColor: 'transparent',
         }}
       >
-        <MembershipCard member={member} isValid={false} />
+        <MembershipCard member={member} isValid={false} darkMode={darkMode} />
       </div>
     )
   }
@@ -867,6 +879,7 @@ function QRTab({ member, isValid, onLiftChange }) {
           onQRScanned={handleQRScanned}
           disabled={lifted}
           onFlipChange={setCardFlipped}
+          darkMode={darkMode}
         />
         <div
           style={{
