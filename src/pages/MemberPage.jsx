@@ -2533,7 +2533,7 @@ const effectiveDateColor = isDragging
         <div
           className="event-participation-float fixed left-0 right-0 px-4"
           style={{
-            bottom: 'calc(env(safe-area-inset-bottom) + 146px)',
+            bottom: 'calc(env(safe-area-inset-bottom) + 72px)',
             zIndex: 45,
             pointerEvents: 'none',
           }}
@@ -2561,7 +2561,7 @@ const effectiveDateColor = isDragging
     className="no-highlight-zone"
     style={{
       position: 'fixed',
-      bottom: 'calc(env(safe-area-inset-bottom) + 115px)', // your value
+      bottom: 'calc(env(safe-area-inset-bottom) + 120px)',
       right: 0,                    // anchor to screen edge
       paddingRight: 38,            // outer right padding (like MY tab)
       paddingLeft: 12,             // extra inner left padding
