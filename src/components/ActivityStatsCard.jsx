@@ -1,10 +1,55 @@
+import { useEffect, useState } from 'react'
 import { ChartLine, Money, Star, FireSimple, MapPin } from '@phosphor-icons/react'
+
 import { useActivityStats } from '../hooks/useActivityStats'
 import { useRecentVisits } from '../hooks/useRecentVisits'
 
 const W = 'calc(100vw - 56px)'
 
+function useDarkMode() {
+  const [darkMode, setDarkMode] = useState(() =>
+    typeof document !== 'undefined' &&
+    document.documentElement.classList.contains('dark'),
+  )
+
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return undefined
+
+    const syncDarkMode = () => {
+      setDarkMode(document.documentElement.classList.contains('dark'))
+    }
+
+    const observer = new MutationObserver(syncDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+
+    syncDarkMode()
+    return () => observer.disconnect()
+  }, [])
+
+  return darkMode
+}
+
+function getTheme(darkMode) {
+  return {
+    // Match UvA-IN wordmark color on MembershipCard
+    cardBg: darkMode ? '#A1A1AA' : '#2C2A27',
+
+    // Dark mode requested: black + dark grey text on the boxes
+    titleText: darkMode ? '#111111' : '#F6F4F1',
+    mainText: darkMode ? '#111111' : '#F6F4F1',
+    subText: darkMode ? 'rgba(17,17,17,0.68)' : 'rgba(246,244,241,0.72)',
+    mutedText: darkMode ? 'rgba(17,17,17,0.48)' : 'rgba(246,244,241,0.48)',
+    skeleton: darkMode ? 'rgba(17,17,17,0.12)' : 'rgba(246,244,241,0.12)',
+  }
+}
+
 export default function ActivityStatsCard({ userId }) {
+  const darkMode = useDarkMode()
+  const theme = getTheme(darkMode)
+
   const { stats, loading } = useActivityStats(userId)
   const { visits, loading: visitsLoading } = useRecentVisits(userId)
 
@@ -15,7 +60,7 @@ export default function ActivityStatsCard({ userId }) {
         style={{
           width: W,
           margin: '0 auto',
-          background: '#111827',
+          background: theme.cardBg,
           borderRadius: '16px',
           padding: '20px 24px',
           boxSizing: 'border-box',
@@ -30,13 +75,14 @@ export default function ActivityStatsCard({ userId }) {
             marginBottom: '14px',
           }}
         >
-          <ChartLine size={16} color="#F6F4F1" />
+          <ChartLine size={16} color={theme.titleText} />
+
           <h3
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
               fontWeight: 700,
               fontSize: '15px',
-              color: '#F6F4F1',
+              color: theme.titleText,
               letterSpacing: '0.04em',
               margin: 0,
             }}
@@ -53,7 +99,7 @@ export default function ActivityStatsCard({ userId }) {
                 style={{
                   height: '14px',
                   width: `${w}%`,
-                  background: 'rgba(246,244,241,0.1)',
+                  background: theme.skeleton,
                   borderRadius: '6px',
                 }}
               />
@@ -61,20 +107,39 @@ export default function ActivityStatsCard({ userId }) {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <StatRow icon={Money}      label="받은 할인" value={stats.discountCount} unit="회" />
-            <StatRow icon={Star}       label="남긴 리뷰" value={stats.reviewCount}   unit="개" />
-            <StatRow icon={FireSimple} label="연속 방문" value={stats.streakDays}    unit="일" highlight={stats.streakDays >= 3} />
+            <StatRow
+              icon={Money}
+              label="받은 할인"
+              value={stats.discountCount}
+              unit="회"
+              theme={theme}
+            />
+            <StatRow
+              icon={Star}
+              label="남긴 리뷰"
+              value={stats.reviewCount}
+              unit="개"
+              theme={theme}
+            />
+            <StatRow
+              icon={FireSimple}
+              label="연속 방문"
+              value={stats.streakDays}
+              unit="일"
+              highlight={stats.streakDays >= 3}
+              theme={theme}
+            />
           </div>
         )}
       </div>
 
       {/* 새로운 "최근 방문" 카드 */}
-      <RecentVisitsCard visits={visits} loading={visitsLoading} />
+      <RecentVisitsCard visits={visits} loading={visitsLoading} theme={theme} />
     </>
   )
 }
 
-function StatRow({ icon: Icon, label, value, unit, highlight = false }) {
+function StatRow({ icon: Icon, label, value, unit, highlight = false, theme }) {
   return (
     <div
       style={{
@@ -85,10 +150,11 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Icon size={15} color="rgba(246,244,241,0.6)" />
+        <Icon size={15} color={theme.subText} />
+
         <span
           style={{
-            color: 'rgba(246,244,241,0.7)',
+            color: theme.subText,
             fontFamily: '"Handjet", system-ui, sans-serif',
             letterSpacing: '0.03em',
           }}
@@ -96,12 +162,13 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false }) {
           {label}
         </span>
       </div>
+
       <span
         style={{
           fontWeight: 700,
           fontFamily: '"Handjet", system-ui, sans-serif',
           letterSpacing: '0.04em',
-          color: highlight ? '#f97316' : '#F6F4F1',
+          color: highlight ? theme.mainText : theme.mainText,
         }}
       >
         {value}{' '}
@@ -109,7 +176,7 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false }) {
           style={{
             fontWeight: 400,
             fontFamily: '"Handjet", system-ui, sans-serif',
-            color: 'rgba(246,244,241,0.4)',
+            color: theme.mutedText,
           }}
         >
           {unit}
@@ -119,13 +186,13 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false }) {
   )
 }
 
-function RecentVisitsCard({ visits, loading }) {
+function RecentVisitsCard({ visits, loading, theme }) {
   return (
     <div
       style={{
         width: W,
         margin: '12px auto 0',
-        background: '#111827',
+        background: theme.cardBg,
         borderRadius: '16px',
         padding: '16px 20px',
         boxSizing: 'border-box',
@@ -140,13 +207,14 @@ function RecentVisitsCard({ visits, loading }) {
           marginBottom: '10px',
         }}
       >
-        <MapPin size={16} color="#F6F4F1" />
+        <MapPin size={16} color={theme.titleText} />
+
         <h3
           style={{
             fontFamily: '"Handjet", system-ui, sans-serif',
             fontWeight: 700,
             fontSize: '15px',
-            color: '#F6F4F1',
+            color: theme.titleText,
             letterSpacing: '0.04em',
             margin: 0,
           }}
@@ -163,7 +231,7 @@ function RecentVisitsCard({ visits, loading }) {
               style={{
                 height: '12px',
                 width: `${w}%`,
-                background: 'rgba(246,244,241,0.1)',
+                background: theme.skeleton,
                 borderRadius: '6px',
               }}
             />
@@ -173,7 +241,7 @@ function RecentVisitsCard({ visits, loading }) {
         <p
           style={{
             fontSize: '13px',
-            color: 'rgba(246,244,241,0.6)',
+            color: theme.subText,
             margin: 0,
           }}
         >
@@ -199,7 +267,7 @@ function RecentVisitsCard({ visits, loading }) {
             >
               <span
                 style={{
-                  color: '#F6F4F1',
+                  color: theme.mainText,
                   fontFamily: '"Handjet", system-ui, sans-serif',
                   letterSpacing: '0.03em',
                   whiteSpace: 'nowrap',
@@ -210,9 +278,10 @@ function RecentVisitsCard({ visits, loading }) {
               >
                 {v.placeName}
               </span>
+
               <span
                 style={{
-                  color: 'rgba(246,244,241,0.5)',
+                  color: theme.mutedText,
                   fontFamily: '"Handjet", system-ui, sans-serif',
                   letterSpacing: '0.03em',
                   flexShrink: 0,
@@ -230,11 +299,13 @@ function RecentVisitsCard({ visits, loading }) {
 
 function formatVisitDate(dateStr) {
   if (!dateStr) return ''
+
   const d = new Date(dateStr)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   const h = String(d.getHours()).padStart(2, '0')
   const min = String(d.getMinutes()).padStart(2, '0')
+
   return `${y}-${m}-${day} ${h}:${min}`
 }
