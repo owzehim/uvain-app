@@ -25,17 +25,19 @@ function isDarkMode() {
   return typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
 }
 
-// ── Read-only star row ──────────────────────────────────────────
-function StarDisplay({ averageRating, showWhenZero = false }) {
+// ── Read-only star row ────────────────────────────────────────── 
+// Accept darkMode as a prop so the grey colour adapts to the theme.
+function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) {
   if (averageRating == null || Number.isNaN(averageRating)) return null
-
   const formatted = showWhenZero
     ? averageRating.toFixed(1)
     : formatAverageRating(averageRating)
-
   if (!formatted) return null
 
   const { filled, half, empty } = computeStarDisplay(averageRating)
+
+  // Use a darker grey in dark mode so the empty stars don't glare
+  const emptyColor = darkMode ? '#4b5563' : '#d1d5db'  // gray-600 vs gray-300
 
   return (
     <div className="flex items-center gap-1">
@@ -44,12 +46,11 @@ function StarDisplay({ averageRating, showWhenZero = false }) {
         {Array.from({ length: filled }).map((_, i) => (
           <Star key={'f' + i} size={12} weight="fill" color="#f97316" />
         ))}
-
         {/* half star: 50% orange, 50% grey */}
         {half && (
           <span key="half" className="relative inline-flex">
             {/* grey full star underneath */}
-            <Star size={12} weight="fill" color="#d1d5db" />
+            <Star size={12} weight="fill" color={emptyColor} />
             {/* left half orange on top */}
             <span
               className="absolute inset-0 overflow-hidden"
@@ -59,17 +60,30 @@ function StarDisplay({ averageRating, showWhenZero = false }) {
             </span>
           </span>
         )}
-
         {/* empty grey stars */}
         {Array.from({ length: empty }).map((_, i) => (
-          <Star key={'e' + i} size={12} weight="fill" color="#d1d5db" />
+          <Star key={'e' + i} size={12} weight="fill" color={emptyColor} />
         ))}
       </div>
-
       <span className="text-xs text-amber-500 font-medium">{formatted}</span>
     </div>
   )
 }
+
+// ── Inside SpotCard JSX, pass darkMode to StarDisplay ────────────
+// Find this block and add darkMode={darkMode}:
+{showRating && (
+  <div className="flex items-center gap-1 mt-1">
+    <StarDisplay
+      averageRating={summary?.average_rating ?? 0}
+      showWhenZero
+      darkMode={darkMode}   // ← ADD THIS
+    />
+    <span className="text-xs text-gray-400">
+      ({summary?.review_count ?? 0})
+    </span>
+  </div>
+)}
 
 // ── Tag bar chart ───────────────────────────────────────────────
 function TagBarChart({ tagCounts, reviewCount }) {

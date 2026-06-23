@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { MapPin, Lock, ForkKnife, Calendar, Users } from '@phosphor-icons/react'
 
 export default function PublicPage() {
@@ -110,6 +110,28 @@ export default function PublicPage() {
 function PublicMapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
+  const [darkMode, setDarkMode] = useState(
+    () =>
+      typeof document !== 'undefined' &&
+      document.documentElement.classList.contains('dark'),
+  )
+
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return undefined
+
+    const syncDarkMode = () => {
+      setDarkMode(document.documentElement.classList.contains('dark'))
+    }
+
+    const observer = new MutationObserver(syncDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+
+    syncDarkMode()
+    return () => observer.disconnect()
+  }, [])
 
   const filtered = useMemo(
     () =>
@@ -122,35 +144,51 @@ function PublicMapTab({ restaurants }) {
   return (
     <div className="h-full flex flex-col no-highlight-zone">
       <div className="bg-white px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0 select-none">
-        {MAP_CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat
-          const iconSvg = isActive ? CATEGORY_ICONS_WHITE[cat] : CATEGORY_ICONS_ORANGE[cat]
-          return (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat)
-                setSelected(null)
-              }}
-              className={
-                'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 select-none ' +
-                (isActive ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
-              }
-              style={{
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              <span
-                style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                dangerouslySetInnerHTML={{ __html: iconSvg }}
-              />
-              {cat}
-            </button>
-          )
-        })}
-      </div>
+  {MAP_CATEGORIES.map((cat) => {
+    const isActive = activeCategory === cat
+
+    const iconSvg = isActive
+      ? darkMode
+        ? CATEGORY_ICONS_BLACK[cat]   // dark mode: black icon
+        : CATEGORY_ICONS_WHITE[cat]   // light mode: white icon (as before)
+      : CATEGORY_ICONS_ORANGE[cat]
+
+    const activeTextClass = darkMode ? 'text-[#121212]' : 'text-white'
+
+    return (
+      <button
+        key={cat}
+        onClick={() => {
+          setActiveCategory(cat)
+          setSelected(null)
+        }}
+        className={
+          'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 select-none ' +
+          (isActive
+            ? `bg-orange-500 ${activeTextClass}`
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+        }
+        style={{
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
+        <span
+          style={{
+            width: 16,
+            height: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          dangerouslySetInnerHTML={{ __html: iconSvg }}
+        />
+        {cat}
+      </button>
+    )
+  })}
+</div>
 
       {filtered.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
