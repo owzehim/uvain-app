@@ -1014,9 +1014,9 @@ const fieldStyle = {
   height: '54px',
   minHeight: '54px',
   padding: '8px 12px 7px',
-  border: '1px solid #d8dde5',
+  border: `1px solid ${theme.border}`,
   borderRadius: '8px',
-  backgroundColor: '#fff',
+  backgroundColor: theme.fieldBg,
   boxSizing: 'border-box',
   justifyContent: 'center',
 };
@@ -1027,9 +1027,9 @@ const groupFieldStyle = {
   gap: '7px',
   minHeight: '54px',
   padding: '8px 12px',
-  border: '1px solid #d8dde5',
+  border: `1px solid ${theme.border}`,
   borderRadius: '8px',
-  backgroundColor: '#fff',
+  backgroundColor: theme.fieldBg,
   boxSizing: 'border-box',
   justifyContent: 'center',
 };
@@ -1037,7 +1037,7 @@ const groupFieldStyle = {
 const labelStyle = {
   fontSize: '12px',
   fontWeight: 400,
-  color: '#6b7280',
+  color: theme.subText,
   lineHeight: 1,
 };
 
@@ -1117,13 +1117,32 @@ const registrationMotionCss = `
 }
 `;
 
+const isDarkMode =
+  typeof document !== 'undefined' &&
+  document.documentElement.classList.contains('dark')
+
+const theme = {
+  pageBg: isDarkMode ? '#121212' : '#ffffff',
+  cardBg: isDarkMode ? '#111111' : '#ffffff',
+  fieldBg: isDarkMode ? '#111111' : '#ffffff',
+  text: isDarkMode ? '#F5F5F7' : '#111827',
+  subText: isDarkMode ? '#C7C7CC' : '#6b7280',
+  mutedText: isDarkMode ? '#8E8E93' : '#9ca3af',
+  border: isDarkMode ? '#2C2C2E' : '#d8dde5',
+  softBorder: isDarkMode ? '#2C2C2E' : '#e5e7eb',
+  ghostBg: isDarkMode ? '#1C1C1E' : '#f3f4f6',
+  errorBg: isDarkMode ? '#3B1D1D' : '#fef2f2',
+  errorText: isDarkMode ? '#FCA5A5' : '#b91c1c',
+  errorBorder: isDarkMode ? '#7F1D1D' : '#fecaca',
+}
+
 const s = {
   page: {
     height: '100dvh',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.pageBg,
     padding: '0',
     overflow: 'hidden',
   },
@@ -1134,7 +1153,7 @@ const s = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '6px 0',
-    backgroundColor: 'white',
+    backgroundColor: theme.pageBg,
     boxShadow: 'none',
     position: 'sticky',
     top: 0,
@@ -1168,7 +1187,7 @@ const s = {
     padding: '8px 16px',
     borderRadius: '6px',
     border: '1px solid #d1d5db',
-    backgroundColor: 'white',
+    backgroundColor: theme.pageBg,
     color: '#374151',
     fontSize: '13px',
     fontWeight: 600,
@@ -1180,7 +1199,7 @@ const s = {
     width: '100%',
     textAlign: 'center',
     padding: '40px 32px 20px',
-    backgroundColor: 'white',
+    backgroundColor: theme.pageBg,
     borderBottom: '1px solid #e5e7eb',
   },
   title: {
@@ -1204,7 +1223,7 @@ const s = {
     gap: '0',
     marginTop: '0',
     padding: '6px 0 14px',
-    backgroundColor: 'white',
+    backgroundColor: theme.pageBg,
     borderRadius: '0',
     maxWidth: '320px',
     width: '100%',
@@ -1291,7 +1310,7 @@ const s = {
     width: '30px',
     height: '30px',
     borderRadius: '50%',
-    backgroundColor: '#fff',
+    backgroundColor: theme.pageBg,
     border: '1px solid #111827',
     display: 'flex',
     alignItems: 'center',
@@ -1367,7 +1386,7 @@ const s = {
     width: '20px',
     height: '20px',
     borderRadius: '50%',
-    backgroundColor: '#fff',
+    backgroundColor: theme.pageBg,
     border: '1px solid #111827',
     display: 'flex',
     alignItems: 'center',
@@ -1451,7 +1470,7 @@ const s = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
-    backgroundColor: '#fff',
+    backgroundColor: theme.pageBg,
     color: '#111827',
     minHeight: '20px',
   },
@@ -1460,7 +1479,7 @@ const s = {
     borderRadius: '0',
     border: 'none',
     fontSize: '14px',
-    backgroundColor: 'white',
+    backgroundColor: theme.pageBg,
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
@@ -1494,7 +1513,7 @@ const s = {
     minHeight: '30px',
     borderRadius: '9999px',
     border: '1px solid #cfd4dc',
-    backgroundColor: '#fff',
+    backgroundColor: theme.pageBg,
     color: '#4b5563',
     display: 'flex',
     alignItems: 'center',
@@ -1528,7 +1547,7 @@ const s = {
     minHeight: '30px',
     borderRadius: '9999px',
     border: '1px solid #cfd4dc',
-    backgroundColor: '#fff',
+    backgroundColor: theme.pageBg,
     color: '#4b5563',
     fontSize: '12px',
     fontWeight: 600,
@@ -1630,7 +1649,7 @@ const s = {
     right: '-14px',
     maxHeight: '180px',
     overflowY: 'auto',
-    backgroundColor: 'white',
+    backgroundColor: theme.pageBg,
     borderRadius: '6px',
     boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
     marginTop: '4px',
@@ -1644,7 +1663,7 @@ const s = {
     color: '#374151',
   },
   emailCard: {
-    backgroundColor: 'white',
+    backgroundColor: theme.pageBg,
     borderRadius: '0',
     boxShadow: 'none',
     padding: '0 0 14px',
@@ -1682,7 +1701,7 @@ const s = {
   cropModal: {
     width: '100%',
     maxWidth: '380px',
-    backgroundColor: '#fff',
+    backgroundColor: theme.pageBg,
     borderRadius: '16px',
     padding: '16px',
     display: 'flex',
