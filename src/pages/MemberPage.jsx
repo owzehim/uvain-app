@@ -2262,7 +2262,7 @@ const effectiveDateColor = isDragging
               style={{
                 backgroundColor: darkMode ? '#121212' : '#ffffff',
                 padding: '16px',
-                marginTop: '8px',
+                marginTop: '-8px',
                 marginBottom: '32px',
                 position: 'relative',
                 userSelect: 'none',
