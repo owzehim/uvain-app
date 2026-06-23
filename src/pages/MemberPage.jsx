@@ -155,32 +155,33 @@ export default function MemberPage() {
 
       {/* Header: only on EVENTS tab */}
       {activeTab === 'events' && (
-        <div
-          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-[#121212]"
-          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+  <div
+    className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-[#121212]"
+    style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+  >
+    <div className="w-[60px]" />
+    <div className="flex gap-2 items-center">
+      {isAdmin && (
+        <button
+          onClick={() => {
+            window.location.href = '/admin'
+          }}
+          className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
         >
-          <div className="w-[60px]" />
-          <div className="flex gap-2 items-center">
-            {isAdmin && (
-              <button
-                onClick={() => {
-                  window.location.href = '/admin'
-                }}
-                className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
-              >
-                관리자
-              </button>
-            )}
-            <button
-              onClick={() => navigate('/settings')}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800"
-              aria-label="Settings"
-            >
-              <Gear size={20} weight="bold" />
-            </button>
-          </div>
-        </div>
+          관리자
+        </button>
       )}
+      <button
+        onClick={() => navigate('/settings')}
+        className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800"
+        aria-label="Settings"
+      >
+        {/* CHANGED: size={20} → size={22} to match the MY tab gear icon */}
+        <Gear size={22} weight="bold" />
+      </button>
+    </div>
+  </div>
+)}
 
             {/* Floating admin + settings buttons for MY tab (no header) */}
       {activeTab === 'qr' && (
