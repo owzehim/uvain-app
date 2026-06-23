@@ -1825,7 +1825,7 @@ function EventsTab({ events }) {
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
 
   const PAST_DATE_COLOR = '#4b5563'
-const PAST_DARK_DATE_COLOR = '#E7E7E7'
+const PAST_DARK_DATE_COLOR = '#BDBDBD'
 const DRAG_DATE_COLOR = '#9ca3af'
 
 const isPastSelected =
