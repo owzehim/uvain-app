@@ -899,7 +899,7 @@ function QRTab({ member, isValid, onLiftChange }) {
             <span
               style={{
                 fontSize: fs.guide,
-                color: '#FAFAFA',
+                color: darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)',
                 fontWeight: 500,
                 transition: 'color 0.25s ease',
               }}
@@ -913,7 +913,7 @@ function QRTab({ member, isValid, onLiftChange }) {
             <span
               style={{
                 fontSize: fs.guide,
-                color: '#FAFAFA',
+                color: darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)',
                 fontWeight: 500,
               }}
             >
@@ -2578,12 +2578,12 @@ const effectiveDateColor = isDragging
     <ArrowsVertical
       size={fs.guide}
       weight="bold"
-      color="#FAFAFA"
+      color={darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)'}
     />
     <span
       style={{
         fontSize: fs.guide,
-        color: '#FAFAFA',
+        color: darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)',
         fontWeight: 500,
       }}
     >
