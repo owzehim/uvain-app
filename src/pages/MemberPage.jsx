@@ -2402,13 +2402,13 @@ const effectiveDateColor = isDragging
   key={dateKey}
   onClick={() => handleDayPress(day)}
   style={{
-    aspectRatio: '7/4',
-display: 'flex',
-alignItems: 'center',
-justifyContent: 'center',
-cursor: hasEvt ? 'pointer' : 'default',
-position: 'relative',
-transform: 'scale(0.82)',
+    aspectRatio: '1/1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: hasEvt ? 'pointer' : 'default',
+    position: 'relative',
+    transform: 'scale(0.82)',
   }}
 >
                       {rangeEvent && (
