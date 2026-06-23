@@ -213,17 +213,20 @@ export default function MemberPage() {
             </button>
           )}
           <button
-            onClick={() => navigate('/settings')}
-            className="rounded-full bg-white p-2 text-gray-500 shadow-sm dark:bg-[#111111] dark:text-gray-300"
-            aria-label="Settings"
-            style={{
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            <Gear size={20} weight="bold" />
-          </button>
+  onClick={() => navigate('/settings')}
+  className="p-2 text-gray-500 dark:text-gray-300"
+  aria-label="Settings"
+  style={{
+    background: 'transparent',
+    boxShadow: 'none',
+    borderRadius: 0,
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    WebkitTapHighlightColor: 'transparent',
+  }}
+>
+  <Gear size={24} weight="bold" />
+</button>
         </div>
       )}
 

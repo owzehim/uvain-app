@@ -348,7 +348,7 @@ export default function SettingsPage() {
             {error && <p className="text-xs text-red-500 text-center mt-1">{error}</p>}
           </div>
 
-          <div className="space-y-3 pt-2 pb-6">
+          <div className="space-y-6 pb-6">
             <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-[#2c2c2e] dark:bg-[#111111]">
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">화면 모드</p>
