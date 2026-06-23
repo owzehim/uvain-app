@@ -2295,14 +2295,14 @@ const effectiveDateColor = isDragging
               </div>
 
               <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(7, 1fr)',
-                  marginBottom: '4px',
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none',
-                }}
-              >
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)',
+    gap: '0px',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+  }}
+>
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
                   <div
                     key={d}
@@ -2399,17 +2399,18 @@ const effectiveDateColor = isDragging
 
                   return (
                     <div
-                      key={dateKey}
-                      onClick={() => handleDayPress(day)}
-                      style={{
-                        aspectRatio: '1/1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: hasEvt ? 'pointer' : 'default',
-                        position: 'relative',
-                      }}
-                    >
+  key={dateKey}
+  onClick={() => handleDayPress(day)}
+  style={{
+    aspectRatio: '1/1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: hasEvt ? 'pointer' : 'default',
+    position: 'relative',
+    transform: 'scale(0.82)',
+  }}
+>
                       {rangeEvent && (
                         <div
                           style={{
@@ -2451,10 +2452,10 @@ const effectiveDateColor = isDragging
                         </span>
                       )}
                       <div
-                        style={{
-                          width: '85%',
-                          aspectRatio: '1/1',
-                          borderRadius: '50%',
+  style={{
+    width: '70%',
+    aspectRatio: '1/1',
+    borderRadius: '50%',
                           backgroundColor: bg,
                           border,
                           position: 'relative',
@@ -2552,19 +2553,12 @@ const effectiveDateColor = isDragging
             disabled={displayEvent.is_registration_closed}
 onClick={() => openParticipationForm(displayEvent)}
             className={
-  'mx-auto block w-[82%] max-w-md rounded-full px-5 py-3 text-sm font-semibold shadow-xl transition-opacity ' +
-  (displayEvent.is_registration_closed
-    ? 'text-gray-400 dark:text-gray-400'
-    : 'text-white dark:text-black')
-}
-style={{
-  pointerEvents: 'auto',
-  backgroundColor: displayEvent.is_registration_closed
-    ? 'rgba(100,100,100,0.5)'
-    : darkMode
-      ? 'rgba(255,255,255,0.85)'
-      : 'rgba(0,0,0,0.80)',
-}}
+              'mx-auto block w-[82%] max-w-md rounded-full px-5 py-3 text-sm font-semibold shadow-xl transition-opacity ' +
+              (displayEvent.is_registration_closed
+  ? 'bg-gray-200 text-gray-500 dark:bg-[#2c2c2e] dark:text-white'
+  : 'bg-[#121212] text-white hover:opacity-90 dark:bg-[#ffffff] dark:text-[#121212]')
+            }
+            style={{ pointerEvents: 'auto' }}
           >
             {displayEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
           </button>
