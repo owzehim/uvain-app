@@ -255,13 +255,15 @@ export default function MemberPage() {
 
       {/* Bottom tab bar */}
       <div
-        className="bg-white flex flex-shrink-0 dark:bg-[#121212]"
-        style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-        }}
-      >
+  className="bg-white flex flex-shrink-0 dark:bg-[#121212]"
+  style={{
+    paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    position: 'relative',
+    zIndex: 40,           // sits above the button (zIndex: 35) so button slides from behind
+  }}
+>
         {[
           { key: 'qr', label: 'MY', icon: QrCode },
           { key: 'events', label: 'EVENTS', icon: Calendar },
@@ -1907,10 +1909,16 @@ const effectiveDateColor = isDragging
   }, [displayImages])
 
   return (
-    <>
-      <button
-  type="button"
-  onClick={() => setEventListOpen(true)}
+  <>
+    <style>{`
+      @keyframes slideUpFromTabBar {
+        from { transform: translateY(100%); opacity: 0; }
+        to   { transform: translateY(0);   opacity: 1; }
+      }
+    `}</style>
+    <button
+      type="button"
+      onClick={() => setEventListOpen(true)}
   className="fixed flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-[#1c1c1e]"
   aria-label="Open event list"
   style={{
@@ -2530,14 +2538,15 @@ const effectiveDateColor = isDragging
       </div>
 
       {nextEvent?.participation_url && displayEvent?.id === nextEvent.id && (
-        <div
-          className="event-participation-float fixed left-0 right-0 px-4"
-          style={{
-            bottom: 'calc(env(safe-area-inset-bottom) + 72px)',
-            zIndex: 45,
-            pointerEvents: 'none',
-          }}
-        >
+  <div
+    className="event-participation-float fixed left-0 right-0 px-4"
+    style={{
+      bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
+      zIndex: 35,           // lower than the tab bar so it slides out from behind it
+      pointerEvents: 'none',
+      animation: 'slideUpFromTabBar 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards',
+    }}
+  >
           <button
             type="button"
             disabled={nextEvent.is_registration_closed}
@@ -2561,7 +2570,7 @@ const effectiveDateColor = isDragging
     className="no-highlight-zone"
     style={{
       position: 'fixed',
-      bottom: 'calc(env(safe-area-inset-bottom) + 120px)',
+      bottom: 'calc(env(safe-area-inset-bottom) + 136px)',
       right: 0,                    // anchor to screen edge
       paddingRight: 38,            // outer right padding (like MY tab)
       paddingLeft: 12,             // extra inner left padding
