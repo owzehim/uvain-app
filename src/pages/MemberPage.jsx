@@ -2553,9 +2553,9 @@ const effectiveDateColor = isDragging
 onClick={() => openParticipationForm(displayEvent)}
             className={
               'mx-auto block w-[82%] max-w-md rounded-full px-5 py-3 text-sm font-semibold shadow-xl transition-opacity ' +
-              (nextEvent.is_registration_closed
-                ? 'bg-gray-200 text-gray-500 dark:bg-[#2c2c2e] dark:text-white'
-                : 'bg-[#121212] text-white hover:opacity-90 dark:bg-[#ffffff] dark:text-[#121212]')
+              (displayEvent.is_registration_closed
+  ? 'bg-gray-200 text-gray-500 dark:bg-[#2c2c2e] dark:text-white'
+  : 'bg-[#121212] text-white hover:opacity-90 dark:bg-[#ffffff] dark:text-[#121212]')
             }
             style={{ pointerEvents: 'auto' }}
           >
