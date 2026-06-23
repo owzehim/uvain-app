@@ -1,6 +1,6 @@
 // src/components/InstallBanner.jsx
 import { useEffect, useState } from "react";
-import { X, DeviceMobile, Export, PlusSquare } from '@phosphor-icons/react'
+import { X, DeviceMobile, Export, PlusSquare } from '@phosphor-icons/react';
 
 const STORAGE_KEY = "uvain_install_banner_dismissed";
 const DISMISS_DAYS = 7;
@@ -23,6 +23,7 @@ function isInStandaloneMode() {
 function wasDismissedRecently() {
   const ts = localStorage.getItem(STORAGE_KEY);
   if (!ts) return false;
+
   const diff = Date.now() - parseInt(ts, 10);
   return diff < DISMISS_DAYS * 24 * 60 * 60 * 1000;
 }
@@ -30,6 +31,7 @@ function wasDismissedRecently() {
 export default function InstallBanner() {
   const [show, setShow] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+
   const ios = isIOS();
   const iosChrome = isIOSChrome();
 
@@ -42,12 +44,18 @@ export default function InstallBanner() {
         setDeferredPrompt(e);
         setShow(true);
       };
+
       window.addEventListener("beforeinstallprompt", handler);
       return () => window.removeEventListener("beforeinstallprompt", handler);
     } else {
       setShow(true);
     }
   }, [ios]);
+
+  const dismiss = () => {
+    localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    setShow(false);
+  };
 
   const handleInstall = async () => {
     if (deferredPrompt) {
@@ -57,31 +65,27 @@ export default function InstallBanner() {
     }
   };
 
-  const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, Date.now().toString());
-    setShow(false);
-  };
-
   if (!show) return null;
 
   return (
-  <div style={styles.overlay}>
-    <style>{installBannerThemeCss}</style>
+    <div style={styles.overlay}>
+      <style>{installBannerThemeCss}</style>
+
       <div style={styles.banner}>
-        <button onClick={dismiss} style={styles.closeBtn} aria-label="닫기">
-          <X size={20} color="#999" />
+        <button type="button" onClick={dismiss} style={styles.closeBtn} aria-label="Close">
+          <X size={22} weight="bold" />
         </button>
 
         <div style={styles.iconWrapper}>
-          <img src="/icon-192.png" alt="uvain" style={styles.icon} />
+          <img src="/uvain logo.png" alt="uvain" style={styles.icon} />
         </div>
 
         <div style={styles.titleRow}>
-          <p style={styles.title}>앱으로 더 편하게 사용하세요</p>
+          <DeviceMobile size={22} weight="fill" color="#f97316" />
+          <h2 style={styles.title}>앱으로 더 편하게 사용하세요</h2>
         </div>
-        <p style={styles.subtitle}>
-          홈 화면에 추가하면 앱처럼 빠르게 실행할 수 있어요.
-        </p>
+
+        <p style={styles.subtitle}>홈 화면에 추가하면 앱처럼 빠르게 실행할 수 있어요.</p>
 
         {ios ? (
           <div style={styles.iosGuide}>
@@ -89,36 +93,35 @@ export default function InstallBanner() {
               <span style={styles.stepNum}>1</span>
               <span style={styles.stepContent}>
                 {iosChrome ? "상단" : "하단"}의{" "}
-                <strong style={styles.stepText}>
-                  공유 버튼 <Export size={14} weight="bold" style={{ verticalAlign: "middle" }} />
-                </strong>
+                <span style={styles.stepText}>
+                  <Export size={17} weight="bold" color="#f97316" /> 공유 버튼
+                </span>{" "}
                 을 탭하세요
               </span>
 
               <span style={styles.stepNum}>2</span>
               <span style={styles.stepContent}>
-                <strong style={styles.stepText}>
-                  홈 화면에 추가 <PlusSquare size={14} weight="bold" style={{ verticalAlign: "middle" }} />
-                </strong>
+                <span style={styles.stepText}>
+                  <PlusSquare size={17} weight="bold" color="#f97316" /> 홈 화면에 추가
+                </span>{" "}
                 를 선택하세요
               </span>
 
               <span style={styles.stepNum}>3</span>
               <span style={styles.stepContent}>
                 오른쪽 상단의{" "}
-                <strong style={styles.stepText}>추가</strong>
+                <strong style={styles.strongText}>추가</strong>
                 를 탭하세요
               </span>
             </div>
           </div>
         ) : (
-          <button onClick={handleInstall} style={styles.installBtn}>
-            <DeviceMobile size={18} weight="bold" />
-            홈 화면에 추가하기
+          <button type="button" onClick={handleInstall} style={styles.installBtn}>
+            <DeviceMobile size={18} weight="bold" /> 홈 화면에 추가하기
           </button>
         )}
 
-        <button onClick={dismiss} style={styles.laterBtn}>
+        <button type="button" onClick={dismiss} style={styles.laterBtn}>
           나중에 할게요
         </button>
       </div>
@@ -131,6 +134,7 @@ const installBannerThemeCss = `
     --install-bg: #ffffff;
     --install-text: #111111;
     --install-subtext: #555555;
+    --install-step-content: #333333;
     --install-muted: #999999;
     --install-guide-bg: #f5f5f5;
     --install-step-bg: #000000;
@@ -144,6 +148,7 @@ const installBannerThemeCss = `
     --install-bg: #121212;
     --install-text: #f5f5f7;
     --install-subtext: #c7c7cc;
+    --install-step-content: #d1d1d6;
     --install-muted: #8e8e93;
     --install-guide-bg: #1c1c1e;
     --install-step-bg: #f5f5f7;
@@ -201,6 +206,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    gap: "6px",
     marginBottom: "6px",
   },
   title: {
@@ -244,7 +250,7 @@ const styles = {
   },
   stepContent: {
     fontSize: "14px",
-    color: "var(--install-subtext)",
+    color: "var(--install-step-content)",
     display: "flex",
     alignItems: "center",
     flexWrap: "wrap",
@@ -255,6 +261,9 @@ const styles = {
     display: "inline-flex",
     alignItems: "center",
     gap: "3px",
+  },
+  strongText: {
+    color: "var(--install-text)",
   },
   installBtn: {
     width: "100%",
