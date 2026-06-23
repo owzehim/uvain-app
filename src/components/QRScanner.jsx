@@ -94,6 +94,42 @@ export default function QRScanner({ onScan, darkMode = false }) {
           id="qr-scanner-container"
           className="h-full w-full overflow-hidden rounded-2xl"
         />
+
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            top: '50%',
+            left: '50%',
+            width: QR_BOX_SIZE,
+            height: QR_BOX_SIZE,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          {[
+            { top: 0, left: 0, borderTop: true, borderLeft: true, radius: '4px 0 0 0' },
+            { top: 0, right: 0, borderTop: true, borderRight: true, radius: '0 4px 0 0' },
+            { bottom: 0, left: 0, borderBottom: true, borderLeft: true, radius: '0 0 0 4px' },
+            { bottom: 0, right: 0, borderBottom: true, borderRight: true, radius: '0 0 4px 0' },
+          ].map((corner, i) => (
+            <span
+              key={i}
+              style={{
+                position: 'absolute',
+                width: 28,
+                height: 28,
+                ...(corner.top !== undefined && { top: corner.top }),
+                ...(corner.bottom !== undefined && { bottom: corner.bottom }),
+                ...(corner.left !== undefined && { left: corner.left }),
+                ...(corner.right !== undefined && { right: corner.right }),
+                ...(corner.borderTop && { borderTop: '3px solid #F6F4F1' }),
+                ...(corner.borderBottom && { borderBottom: '3px solid #F6F4F1' }),
+                ...(corner.borderLeft && { borderLeft: '3px solid #F6F4F1' }),
+                ...(corner.borderRight && { borderRight: '3px solid #F6F4F1' }),
+                borderRadius: corner.radius,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col items-center gap-1 px-4 text-center">
