@@ -2453,7 +2453,7 @@ const effectiveDateColor = isDragging
                       )}
                       <div
   style={{
-    width: '70%',
+    width: '82%',
     aspectRatio: '1/1',
     borderRadius: '50%',
                           backgroundColor: bg,
