@@ -2344,11 +2344,15 @@ function EventsTab({ events }) {
                   let color = darkMode ? '#EDEDED' : '#1f2937'
                   let fw = 500
 
-                  if (isSelectedEventDate) {
-                    bg = darkMode ? '#2c2c2e' : '#d1d5db'
-                    color = darkMode ? '#EDEDED' : '#111827'
-                    fw = 700
-                  } else if (hasEvt) {
+      if (isSelectedEventDate) {
+        bg = darkMode ? '#2c2c2e' : '#d1d5db'
+        color = darkMode
+          ? isPastEventDate
+            ? '#E7E7E7'
+            : '#EDEDED'
+          : '#111827'
+        fw = 700
+      } else if (hasEvt) {
                     bg = darkMode ? '#1c1c1e' : '#f3f4f6'
                     color = darkMode
                       ? isPastEventDate
