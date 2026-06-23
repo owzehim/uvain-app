@@ -1,42 +1,219 @@
 ﻿// src/pages/RegistrationPage.jsx
-//
-// Presentation only ??all logic lives in useRegisterMember hook.
-// ??Do NOT copy to React Native ??rewrite UI with RN components.
+// Presentation only — all logic lives in useRegisterMember hook.
 
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Camera, CaretLeft, EnvelopeSimple, UserCircle } from '@phosphor-icons/react';
-import Cropper from 'react-easy-crop';
-import { useRegisterMember } from '../hooks/useRegisterMember';
-import { getYearOptions } from '../domain/member/memberRegistration';
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Camera, CaretLeft, EnvelopeSimple, UserCircle } from '@phosphor-icons/react'
+import Cropper from 'react-easy-crop'
+
+import { useRegisterMember } from '../hooks/useRegisterMember'
+import { getYearOptions } from '../domain/member/memberRegistration'
 
 const COUNTRIES = [
-  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
-  'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia',
-  'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada',
-  'Cape Verde', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Croatia',
-  'Cuba', 'Cyprus', 'Czech Republic', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt',
-  'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon',
-  'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
-  'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel',
-  'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan',
-  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar',
-  'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia',
-  'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal',
-  'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman', 'Pakistan',
-  'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar',
-  'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino',
-  'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia',
-  'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden',
-  'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago',
-  'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States',
-  'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe',
-];
+  'Afghanistan',
+  'Albania',
+  'Algeria',
+  'Andorra',
+  'Angola',
+  'Argentina',
+  'Armenia',
+  'Australia',
+  'Austria',
+  'Azerbaijan',
+  'Bahamas',
+  'Bahrain',
+  'Bangladesh',
+  'Barbados',
+  'Belarus',
+  'Belgium',
+  'Belize',
+  'Benin',
+  'Bhutan',
+  'Bolivia',
+  'Bosnia and Herzegovina',
+  'Botswana',
+  'Brazil',
+  'Brunei',
+  'Bulgaria',
+  'Burkina Faso',
+  'Burundi',
+  'Cambodia',
+  'Cameroon',
+  'Canada',
+  'Cape Verde',
+  'Central African Republic',
+  'Chad',
+  'Chile',
+  'China',
+  'Colombia',
+  'Comoros',
+  'Congo',
+  'Costa Rica',
+  'Croatia',
+  'Cuba',
+  'Cyprus',
+  'Czech Republic',
+  'Czechia',
+  'Denmark',
+  'Djibouti',
+  'Dominica',
+  'Dominican Republic',
+  'Ecuador',
+  'Egypt',
+  'El Salvador',
+  'Equatorial Guinea',
+  'Eritrea',
+  'Estonia',
+  'Eswatini',
+  'Ethiopia',
+  'Fiji',
+  'Finland',
+  'France',
+  'Gabon',
+  'Gambia',
+  'Georgia',
+  'Germany',
+  'Ghana',
+  'Greece',
+  'Grenada',
+  'Guatemala',
+  'Guinea',
+  'Guinea-Bissau',
+  'Guyana',
+  'Haiti',
+  'Honduras',
+  'Hungary',
+  'Iceland',
+  'India',
+  'Indonesia',
+  'Iran',
+  'Iraq',
+  'Ireland',
+  'Israel',
+  'Italy',
+  'Jamaica',
+  'Japan',
+  'Jordan',
+  'Kazakhstan',
+  'Kenya',
+  'Kiribati',
+  'Kosovo',
+  'Kuwait',
+  'Kyrgyzstan',
+  'Laos',
+  'Latvia',
+  'Lebanon',
+  'Lesotho',
+  'Liberia',
+  'Libya',
+  'Liechtenstein',
+  'Lithuania',
+  'Luxembourg',
+  'Madagascar',
+  'Malawi',
+  'Malaysia',
+  'Maldives',
+  'Mali',
+  'Malta',
+  'Marshall Islands',
+  'Mauritania',
+  'Mauritius',
+  'Mexico',
+  'Micronesia',
+  'Moldova',
+  'Monaco',
+  'Mongolia',
+  'Montenegro',
+  'Morocco',
+  'Mozambique',
+  'Myanmar',
+  'Namibia',
+  'Nauru',
+  'Nepal',
+  'Netherlands',
+  'New Zealand',
+  'Nicaragua',
+  'Niger',
+  'Nigeria',
+  'North Korea',
+  'North Macedonia',
+  'Norway',
+  'Oman',
+  'Pakistan',
+  'Palau',
+  'Palestine',
+  'Panama',
+  'Papua New Guinea',
+  'Paraguay',
+  'Peru',
+  'Philippines',
+  'Poland',
+  'Portugal',
+  'Qatar',
+  'Romania',
+  'Russia',
+  'Rwanda',
+  'Saint Kitts and Nevis',
+  'Saint Lucia',
+  'Saint Vincent and the Grenadines',
+  'Samoa',
+  'San Marino',
+  'Sao Tome and Principe',
+  'Saudi Arabia',
+  'Senegal',
+  'Serbia',
+  'Seychelles',
+  'Sierra Leone',
+  'Singapore',
+  'Slovakia',
+  'Slovenia',
+  'Solomon Islands',
+  'Somalia',
+  'South Africa',
+  'South Korea',
+  'South Sudan',
+  'Spain',
+  'Sri Lanka',
+  'Sudan',
+  'Suriname',
+  'Sweden',
+  'Switzerland',
+  'Syria',
+  'Taiwan',
+  'Tajikistan',
+  'Tanzania',
+  'Thailand',
+  'Timor-Leste',
+  'Togo',
+  'Tonga',
+  'Trinidad and Tobago',
+  'Tunisia',
+  'Turkey',
+  'Turkmenistan',
+  'Tuvalu',
+  'Uganda',
+  'Ukraine',
+  'United Arab Emirates',
+  'United Kingdom',
+  'United States',
+  'Uruguay',
+  'Uzbekistan',
+  'Vanuatu',
+  'Vatican City',
+  'Venezuela',
+  'Vietnam',
+  'Yemen',
+  'Zambia',
+  'Zimbabwe',
+]
 
-const GENDERS = ['female', 'male', 'non-binary', 'prefer not to say'];
-const GENDERS_KO = ['여성', '남성', '논바이너리', '응답 거절'];
-const CUSTOM_TYPE_OPTION = 'Others (type)';
-const UNIVERSITY_OPTIONS = ['University of Amsterdam (UvA)'];
+const GENDERS = ['female', 'male', 'non-binary', 'prefer not to say']
+const GENDERS_KO = ['여성', '남성', '논바이너리', '응답 거절']
+
+const CUSTOM_TYPE_OPTION = 'Others (type)'
+
+const UNIVERSITY_OPTIONS = ['University of Amsterdam (UvA)']
+
 const MAJOR_OPTIONS = [
   'Business Administration',
   'Business Analytics',
@@ -46,13 +223,17 @@ const MAJOR_OPTIONS = [
   'Global Arts, Culture and Politics',
   'Media and Information',
   'Sport and Performance Psychology',
-];
+]
 
-const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
-const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b));
-const SORTED_GENDERS_KO = [...GENDERS_KO].sort((a, b) => a.localeCompare(b, 'ko'));
-const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
-const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
+const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.localeCompare(b))
+const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b))
+const SORTED_GENDERS_KO = [...GENDERS_KO].sort((a, b) => a.localeCompare(b, 'ko'))
+const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS]
+  .sort((a, b) => a.localeCompare(b))
+  .concat(CUSTOM_TYPE_OPTION)
+const SORTED_MAJORS = [...MAJOR_OPTIONS]
+  .sort((a, b) => a.localeCompare(b))
+  .concat(CUSTOM_TYPE_OPTION)
 
 const PASTEL_COLORS = [
   '#FFB3B3',
@@ -63,29 +244,33 @@ const PASTEL_COLORS = [
   '#C5B3FF',
   '#FFB3E6',
   '#B3F0EE',
-];
+]
 
 function getPastelColor(seed) {
-  const str = seed || 'default';
-  let hash = 0;
+  const str = seed || 'default'
+  let hash = 0
+
   for (let i = 0; i < str.length; i += 1) {
-    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+    hash = (hash * 31 + str.charCodeAt(i)) | 0
   }
-  return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length];
+
+  return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
 async function getCroppedImgAsFile(imageSrc, pixelCrop, fileName = 'profile.jpg') {
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.src = imageSrc;
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  img.src = imageSrc
 
-  const canvas = document.createElement('canvas');
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  await new Promise((resolve, reject) => {
+    img.onload = resolve
+    img.onerror = reject
+  })
+
+  const canvas = document.createElement('canvas')
+  canvas.width = pixelCrop.width
+  canvas.height = pixelCrop.height
+
   canvas
     .getContext('2d')
     .drawImage(
@@ -98,28 +283,33 @@ async function getCroppedImgAsFile(imageSrc, pixelCrop, fileName = 'profile.jpg'
       0,
       pixelCrop.width,
       pixelCrop.height
-    );
+    )
 
   const blob = await new Promise((resolve, reject) => {
-    canvas.toBlob((result) => {
-      if (!result) {
-        reject(new Error('Canvas is empty'));
-        return;
-      }
-      resolve(result);
-    }, 'image/jpeg', 0.95);
-  });
+    canvas.toBlob(
+      (result) => {
+        if (!result) {
+          reject(new Error('Canvas is empty'))
+          return
+        }
+        resolve(result)
+      },
+      'image/jpeg',
+      0.95
+    )
+  })
 
-  return new File([blob], fileName, { type: 'image/jpeg' });
+  return new File([blob], fileName, { type: 'image/jpeg' })
 }
 
-// ?? Translations ????????????????????????????????????????????????????????????????
 const translations = {
   en: {
     title: 'Sign up',
-    subtitle: 'Your membership will be inactive after registration. The board will activate it once verified.',
+    subtitle:
+      'Your membership will be inactive after registration.\nThe board will activate it once verified.',
     aboutYou: 'About you',
-    academicInfo: 'Academic Information',
+    personalInfo: 'Personal information',
+    academicInfo: 'Academic information',
     finalStep: 'And That',
     firstName: 'First name (English) *',
     lastName: 'Last name (English) *',
@@ -160,11 +350,17 @@ const translations = {
     bachelor: 'Bachelor',
     master: 'Masters',
     alumni: 'Alumni',
+    greeting: 'Greetings,',
+    upload: 'Upload',
+    cropTitle: 'Crop profile photo',
+    cancel: 'Cancel',
+    save: 'Save',
   },
   ko: {
     title: 'Sign up',
-    subtitle: '등록 후 회원 자격은 비활성 상태입니다. 임원 확인 후 활성화됩니다.',
+    subtitle: '등록 후 회원 자격은 비활성 상태입니다.\n임원 확인 후 활성화됩니다.',
     aboutYou: '당신에 대해',
+    personalInfo: '개인 정보',
     academicInfo: '학력 정보',
     finalStep: '마지막 단계',
     firstName: '이름 (영문) *',
@@ -206,56 +402,71 @@ const translations = {
     bachelor: 'Bachelor',
     master: 'Masters',
     alumni: 'Alumni',
+    greeting: '안녕하세요,',
+    upload: '업로드',
+    cropTitle: '프로필 사진 자르기',
+    cancel: '취소',
+    save: '저장',
   },
-};
-// ?? Typeahead select component ????????????????????????????????????????????????
-function TypeaheadSelect({ name, value, onChange, options, placeholder = '', allowCustom = false }) {
-  const [inputValue, setInputValue] = useState(value || '');
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef(null);
+}
+
+function TypeaheadSelect({
+  name,
+  value,
+  onChange,
+  options,
+  placeholder = '',
+  allowCustom = false,
+}) {
+  const [inputValue, setInputValue] = useState(value || '')
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef(null)
 
   useEffect(() => {
-    setInputValue(value || '');
-  }, [value]);
+    setInputValue(value || '')
+  }, [value])
 
   useEffect(() => {
     const handler = (e) => {
-      if (!containerRef.current) return;
+      if (!containerRef.current) return
       if (!containerRef.current.contains(e.target)) {
-        setOpen(false);
+        setOpen(false)
       }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+    }
+
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const filtered = options.filter((opt) =>
     opt.toLowerCase().includes(inputValue.toLowerCase())
-  );
+  )
 
   const handleSelect = (val) => {
     if (allowCustom && val === CUSTOM_TYPE_OPTION) {
-      setInputValue('');
-      setOpen(false);
-      onChange({ target: { name, value: '' } });
-      return;
+      setInputValue('')
+      setOpen(false)
+      onChange({ target: { name, value: '' } })
+      return
     }
-    setInputValue(val);
-    setOpen(false);
-    onChange({ target: { name, value: val } });
-  };
+
+    setInputValue(val)
+    setOpen(false)
+    onChange({ target: { name, value: val } })
+  }
 
   const handleInputChange = (e) => {
-    const val = e.target.value;
-    setInputValue(val);
-    setOpen(true);
+    const val = e.target.value
+    setInputValue(val)
+    setOpen(true)
+
     if (allowCustom || val === '') {
-      onChange({ target: { name, value: val } });
+      onChange({ target: { name, value: val } })
     }
-  };
+  }
 
   return (
-    <div ref={containerRef} style={s.typeaheadContainer}>
+    <div ref={containerRef} style={s.typeaheadWrap}>
       <input
         name={name}
         value={inputValue}
@@ -265,7 +476,9 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '', all
         style={{ ...s.input, ...s.typeaheadInputSpacer }}
         autoComplete="off"
       />
+
       <span style={s.dropdownIcon}>⌄</span>
+
       {open && filtered.length > 0 && (
         <div style={s.typeaheadList}>
           {filtered.map((opt) => (
@@ -273,8 +486,8 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '', all
               key={opt}
               style={s.typeaheadItem}
               onMouseDown={(e) => {
-                e.preventDefault();
-                handleSelect(opt);
+                e.preventDefault()
+                handleSelect(opt)
               }}
             >
               {opt}
@@ -283,31 +496,20 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '', all
         </div>
       )}
     </div>
-  );
+  )
 }
 
-// ?? Main component ????????????????????????????????????????????????????????????
 export default function RegistrationPage() {
-  const navigate = useNavigate();
-  const [language, setLanguage] = useState('ko');
-  const fileInputRef = useRef(null);
-  const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
-  const [cropImageSrc, setCropImageSrc] = useState(null);
-  const [cropFileName, setCropFileName] = useState('profile.jpg');
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const navigate = useNavigate()
+  const [language, setLanguage] = useState('ko')
+  const fileInputRef = useRef(null)
 
-  useEffect(() => {
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-    };
-  }, []);
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState('')
+  const [cropImageSrc, setCropImageSrc] = useState(null)
+  const [cropFileName, setCropFileName] = useState('profile.jpg')
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
 
   const {
     step,
@@ -320,55 +522,92 @@ export default function RegistrationPage() {
     goNext,
     goBack,
     setProfileFile,
-  } = useRegisterMember();
+  } = useRegisterMember()
 
-  const yearOptions = getYearOptions(formData.educationLevel);
-  const t = translations[language];
-  const displayName =
-    `${formData.lastNameKorean || ''}${formData.firstNameKorean || ''}`.trim() ||
-    `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
-  const greetingName = language === 'ko'
-    ? (formData.firstNameKorean || formData.firstName || '회원')
-    : (formData.firstName || 'member');
-  const pastelBg = getPastelColor('registration-default-profile');
+  useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow
+    const previousHtmlOverflow = document.documentElement.style.overflow
+
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.documentElement.style.overflow = previousHtmlOverflow
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
-      if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
-    };
-  }, [profilePreviewUrl]);
+      if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl)
+    }
+  }, [profilePreviewUrl])
+
+  const yearOptions = getYearOptions(formData.educationLevel)
+  const t = translations[language]
+
+  const displayName =
+    `${formData.lastNameKorean || ''}${formData.firstNameKorean || ''}`.trim() ||
+    `${formData.firstName || ''} ${formData.lastName || ''}`.trim()
+
+  const greetingName =
+    language === 'ko'
+      ? formData.firstNameKorean || formData.firstName || '회원'
+      : formData.firstName || 'member'
+
+  const pastelBg = getPastelColor(displayName || 'registration-default-profile')
 
   const handleProfileFileChange = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
+    const file = e.target.files && e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+
     reader.onload = () => {
-      setCropImageSrc(reader.result);
-      setCropFileName(file.name || 'profile.jpg');
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setCroppedAreaPixels(null);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
+      setCropImageSrc(reader.result)
+      setCropFileName(file.name || 'profile.jpg')
+      setCrop({ x: 0, y: 0 })
+      setZoom(1)
+      setCroppedAreaPixels(null)
+    }
+
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
 
   const handleCropConfirm = async () => {
-    if (!cropImageSrc || !croppedAreaPixels) return;
-    const croppedFile = await getCroppedImgAsFile(cropImageSrc, croppedAreaPixels, cropFileName);
-    setProfileFile(croppedFile);
+    if (!cropImageSrc || !croppedAreaPixels) return
+
+    const croppedFile = await getCroppedImgAsFile(
+      cropImageSrc,
+      croppedAreaPixels,
+      cropFileName
+    )
+
+    setProfileFile(croppedFile)
+
     setProfilePreviewUrl((current) => {
-      if (current) URL.revokeObjectURL(current);
-      return URL.createObjectURL(croppedFile);
-    });
-    setCropImageSrc(null);
-    setCroppedAreaPixels(null);
-  };
+      if (current) URL.revokeObjectURL(current)
+      return URL.createObjectURL(croppedFile)
+    })
+
+    setCropImageSrc(null)
+    setCroppedAreaPixels(null)
+  }
 
   const closeCropper = () => {
-    setCropImageSrc(null);
-    setCroppedAreaPixels(null);
-  };
+    setCropImageSrc(null)
+    setCroppedAreaPixels(null)
+  }
+
+  const handleTopBack = () => {
+    if (step === 'about') {
+      navigate('/public')
+      return
+    }
+
+    goBack()
+  }
 
   const profileHeroProps = {
     fileInputRef,
@@ -376,20 +615,13 @@ export default function RegistrationPage() {
     pastelBg,
     onProfileClick: () => fileInputRef.current?.click(),
     t,
-  };
-  const handleTopBack = () => {
-    if (step === 'about') {
-      navigate('/public');
-      return;
-    }
-    goBack();
-  };
+  }
 
-  // Final step: after successful registration, tell user to check email
   if (step === 'email') {
     return (
-      <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
+      <div style={s.page}>
         <style>{registrationMotionCss}</style>
+
         <div style={s.topBar}>
           <button
             type="button"
@@ -399,38 +631,47 @@ export default function RegistrationPage() {
           >
             <CaretLeft size={24} weight="bold" />
           </button>
+
           <button
+            type="button"
             onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
             style={s.languageToggle}
           >
             {language === 'en' ? '한국어' : 'English'}
           </button>
         </div>
+
         <div style={s.emailCard}>
-          <div style={{ textAlign: 'center', marginBottom: '22px' }}>
-            <div style={s.emailIcon}>
-              <EnvelopeSimple size={28} weight="fill" color="#f97316" />
-            </div>
-            <h1 style={s.title}>{t.checkEmail}</h1>
-            <p style={s.emailText}>
-              {t.emailSent} <br />
-              <strong style={{ color: '#111827' }}>{formData.email}</strong>
-              <br />
-              {t.verifyEmail}
-            </p>
+          <div style={s.emailIcon}>
+            <EnvelopeSimple size={30} weight="bold" color="#f97316" />
           </div>
-          <button type="button" onClick={() => navigate('/login')} style={s.submitBtn}>
+
+          <h1 style={s.emailTitle}>{t.checkEmail}</h1>
+
+          <p style={s.emailText}>
+            {t.emailSent}
+            <br />
+            <strong style={s.emailStrong}>{formData.email}</strong>
+            <br />
+            {t.verifyEmail}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            style={s.submitBtn}
+          >
             {t.goToLogin}
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
+    <div style={s.page}>
       <style>{registrationMotionCss}</style>
-      {/* Top Bar with Back Button and Language Toggle */}
+
       <div style={s.topBar}>
         <button
           type="button"
@@ -440,18 +681,23 @@ export default function RegistrationPage() {
         >
           <CaretLeft size={24} weight="bold" />
         </button>
+
         {step === 'about' && (
-          <span className="registration-title" style={s.topTitle}>
+          <div className="registration-title" style={s.topTitle}>
             {t.title}
-          </span>
+          </div>
         )}
+
         <button
+          type="button"
           onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
           style={s.languageToggle}
         >
-            {language === 'en' ? '한국어' : 'English'}
+          {language === 'en' ? '한국어' : 'English'}
         </button>
       </div>
+
+      {error && <div style={s.errorBanner}>{error}</div>}
 
       <input
         ref={fileInputRef}
@@ -461,66 +707,53 @@ export default function RegistrationPage() {
         style={{ display: 'none' }}
       />
 
-      {error && <div style={s.errorBanner}>{error}</div>}
-
       {step === 'about' && (
-        <div key="about" className="registration-step" style={s.stepShell}>
-          <NameStep
-            formData={formData}
-            handleChange={handleChange}
-            goNext={goNext}
-            language={language}
-            t={t}
-            profileHeroProps={profileHeroProps}
-          />
-        </div>
+        <NameStep
+          formData={formData}
+          handleChange={handleChange}
+          goNext={goNext}
+          language={language}
+          t={t}
+          profileHeroProps={profileHeroProps}
+        />
       )}
 
       {step === 'personal' && (
-        <div key="personal" className="registration-step" style={s.stepShell}>
-          <PersonalStep
-            formData={formData}
-            handleChange={handleChange}
-            goNext={goNext}
-            language={language}
-            t={t}
-            displayName={displayName}
-            greetingName={greetingName}
-            profileHeroProps={profileHeroProps}
-          />
-        </div>
+        <PersonalStep
+          formData={formData}
+          handleChange={handleChange}
+          goNext={goNext}
+          language={language}
+          t={t}
+          greetingName={greetingName}
+          profileHeroProps={profileHeroProps}
+        />
       )}
 
       {step === 'academic' && (
-        <div key="academic" className="registration-step registration-step-academic" style={s.stepShell}>
-          <AcademicStep
-            formData={formData}
-            handleChange={handleChange}
-            handleEducationLevelChange={handleEducationLevelChange}
-            yearOptions={yearOptions}
-            goNext={goNext}
-            t={t}
-            displayName={displayName}
-            greetingName={greetingName}
-            language={language}
-            profileHeroProps={profileHeroProps}
-          />
-        </div>
+        <AcademicStep
+          formData={formData}
+          handleChange={handleChange}
+          handleEducationLevelChange={handleEducationLevelChange}
+          yearOptions={yearOptions}
+          goNext={goNext}
+          t={t}
+          greetingName={greetingName}
+          language={language}
+          profileHeroProps={profileHeroProps}
+        />
       )}
 
       {step === 'account' && (
-        <div key="account" className="registration-step registration-step-account" style={s.stepShell}>
-          <AccountStep
-            formData={formData}
-            handleChange={handleChange}
-            handleSubmit={handleSubmit}
-            loading={loading}
-            navigate={navigate}
-            t={t}
-            language={language}
-            profileHeroProps={profileHeroProps}
-          />
-        </div>
+        <AccountStep
+          formData={formData}
+          handleChange={handleChange}
+          handleSubmit={handleSubmit}
+          loading={loading}
+          t={t}
+          language={language}
+          profileHeroProps={profileHeroProps}
+        />
       )}
 
       {cropImageSrc && (
@@ -533,13 +766,13 @@ export default function RegistrationPage() {
           setCroppedAreaPixels={setCroppedAreaPixels}
           onCancel={closeCropper}
           onConfirm={handleCropConfirm}
+          t={t}
         />
       )}
     </div>
-  );
+  )
 }
 
-// ?? Step 1: About you ??????????????????????????????????????????????????????????
 function ProfileHero({
   profileHeroProps,
   variant = 'large',
@@ -548,149 +781,191 @@ function ProfileHero({
   allowUpload = true,
   equalIntroTextSize = false,
 }) {
-  const { profilePreviewUrl, pastelBg, onProfileClick, t } = profileHeroProps;
-  const compact = variant === 'compact';
-  const academic = variant === 'academic';
-  const showIntro = Boolean(firstLine || secondLine);
+  const { profilePreviewUrl, pastelBg, onProfileClick, t } = profileHeroProps
+  const compact = variant === 'compact'
+  const academic = variant === 'academic'
+  const showIntro = Boolean(firstLine || secondLine)
+
+  const avatarSize = compact ? 66 : academic ? 76 : 98
+
   return (
-    <div style={academic ? s.academicHero : compact ? s.compactHero : s.aboutTopGrid}>
-      <div style={s.profilePicker} data-motion="avatar">
-        <button
-          type="button"
-          onClick={allowUpload ? onProfileClick : undefined}
-          style={academic ? s.avatarButtonAcademic : compact ? s.avatarButtonCompact : s.avatarButton}
-          aria-label={t.profilePicture}
-        >
-          <div
-            style={{
-              ...(academic ? s.avatarCircleAcademic : compact ? s.avatarCircleCompact : s.avatarCircle),
-              background: profilePreviewUrl ? 'transparent' : pastelBg,
-            }}
-          >
-            {profilePreviewUrl ? (
-              <img src={profilePreviewUrl} alt="Profile" style={s.avatarImage} />
-            ) : (
-              <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
-            )}
-          </div>
-          {allowUpload && (
-            <span style={academic ? s.cameraBadgeAcademic : compact ? s.cameraBadgeCompact : s.cameraBadge}>
-              <Camera size={academic || compact ? 12 : 19} weight="fill" color="#111827" />
-            </span>
-          )}
+    <div style={s.hero}>
+      <button
+        type="button"
+        onClick={allowUpload ? onProfileClick : undefined}
+        style={{
+          ...s.avatarButton,
+          width: avatarSize,
+          height: avatarSize,
+          backgroundColor: profilePreviewUrl ? 'transparent' : pastelBg,
+          cursor: allowUpload ? 'pointer' : 'default',
+        }}
+        data-motion="avatar"
+      >
+        {profilePreviewUrl ? (
+          <img src={profilePreviewUrl} alt="Profile preview" style={s.avatarImage} />
+        ) : (
+          <UserCircle size={compact ? 46 : 64} weight="fill" color="rgba(0,0,0,0.22)" />
+        )}
+
+        {allowUpload && (
+          <span style={s.cameraBadge}>
+            <Camera size={14} weight="bold" />
+          </span>
+        )}
+      </button>
+
+      {allowUpload && (
+        <button type="button" onClick={onProfileClick} style={s.uploadTextButton}>
+          {t.upload}
         </button>
-      </div>
+      )}
 
       {showIntro && (
-        <div style={academic || compact ? s.compactIntro : s.aboutIntro} data-motion="hero-text">
+        <div data-motion="hero-text" style={s.heroTextWrap}>
           {firstLine && (
-            <p style={academic || compact ? s.compactIntroLine : equalIntroTextSize ? s.aboutIntroKo : s.aboutIntroEn}>{firstLine}</p>
+            <div
+              style={{
+                ...s.heroFirstLine,
+                ...(equalIntroTextSize ? s.heroEqualLine : {}),
+              }}
+            >
+              {firstLine}
+            </div>
           )}
+
           {secondLine && (
-            <p style={academic || compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
+            <div
+              style={{
+                ...s.heroSecondLine,
+                ...(equalIntroTextSize ? s.heroEqualLine : {}),
+              }}
+            >
+              {secondLine}
+            </div>
           )}
         </div>
       )}
     </div>
-  );
+  )
 }
 
 function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps }) {
   return (
-    <div style={s.form}>
-      <div style={s.formContent}>
+    <form style={s.form} onSubmit={(e) => e.preventDefault()}>
+      <div style={s.stepBody} className="registration-step">
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine={language === 'ko' ? '네덜란드 유학생을 위한' : 'For International Students,'}
-          secondLine="UvA-IN."
+          firstLine={t.aboutYou}
+          secondLine={t.subtitle}
+          equalIntroTextSize={false}
         />
 
-        <div style={s.nameGrid} data-motion="fields">
-          <Field label={t.firstName}>
-            <input
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              style={s.input}
-            />
-          </Field>
-          <Field label={t.lastName}>
-            <input
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              style={s.input}
-            />
-          </Field>
+        <div data-motion="fields" style={s.fields}>
+          <Row>
+            <Field label={t.firstName}>
+              <input
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                style={s.input}
+                autoComplete="given-name"
+              />
+            </Field>
+
+            <Field label={t.lastName}>
+              <input
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                style={s.input}
+                autoComplete="family-name"
+              />
+            </Field>
+          </Row>
+
           {language === 'ko' && (
-            <>
-              <div style={s.nameGroupGap} />
+            <Row>
               <Field label={t.firstNameKorean}>
                 <input
                   name="firstNameKorean"
-                  value={formData.firstNameKorean || ''}
+                  value={formData.firstNameKorean}
                   onChange={handleChange}
                   style={s.input}
                 />
               </Field>
+
               <Field label={t.lastNameKorean}>
                 <input
                   name="lastNameKorean"
-                  value={formData.lastNameKorean || ''}
+                  value={formData.lastNameKorean}
                   onChange={handleChange}
                   style={s.input}
                 />
               </Field>
-            </>
+            </Row>
           )}
         </div>
       </div>
 
-      <div style={s.bottomAction}>
-        <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
-          {t.next}
-        </button>
-      </div>
-    </div>
-  );
+      <button type="button" onClick={goNext} style={s.submitBtn}>
+        {t.next}
+      </button>
+    </form>
+  )
 }
 
-function PersonalStep({ formData, handleChange, goNext, language, t, greetingName, profileHeroProps }) {
-  const greetingFirstLine = language === 'ko' ? '안녕하세요,' : 'Greetings,';
-  const greetingSecondLine = language === 'ko' ? `${greetingName}님` : greetingName;
+function PersonalStep({
+  formData,
+  handleChange,
+  goNext,
+  language,
+  t,
+  greetingName,
+  profileHeroProps,
+}) {
+  const greetingFirstLine = language === 'ko' ? t.greeting : 'Greetings,'
+  const greetingSecondLine = language === 'ko' ? `${greetingName}님` : greetingName
+
   return (
-    <div style={s.form}>
-      <div style={s.formContent}>
+    <form style={s.form} onSubmit={(e) => e.preventDefault()}>
+      <div style={s.stepBody} className="registration-step registration-step-personal">
         <ProfileHero
           profileHeroProps={profileHeroProps}
+          variant="compact"
           firstLine={greetingFirstLine}
           secondLine={greetingSecondLine}
+          allowUpload={false}
+          equalIntroTextSize
         />
 
-        <div style={s.fieldStack} data-motion="fields">
-          <Row>
-            <Field label={t.yearOfBirth}>
-              <input
-                type="number"
-                name="yearOfBirth"
-                value={formData.yearOfBirth}
-                onChange={handleChange}
-                style={s.input}
-                placeholder=""
-                min="1950"
-                max="2015"
-              />
-            </Field>
-            <Field label={t.gender}>
-              <TypeaheadSelect
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
-                placeholder=""
-              />
-            </Field>
-          </Row>
+        <div data-motion="fields" style={s.fields}>
+          <Field label={t.yearOfBirth}>
+            <input
+              name="yearOfBirth"
+              value={formData.yearOfBirth}
+              onChange={handleChange}
+              style={s.input}
+              inputMode="numeric"
+              placeholder="YYYY"
+            />
+          </Field>
+
+          <Field label={t.gender}>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              style={s.select}
+            >
+              <option value="">{t.selectGender}</option>
+              {(language === 'ko' ? SORTED_GENDERS_KO : SORTED_GENDERS).map((gender) => (
+                <option key={gender} value={gender}>
+                  {gender}
+                </option>
+              ))}
+            </select>
+          </Field>
 
           <Field label={t.nationality}>
             <TypeaheadSelect
@@ -698,70 +973,19 @@ function PersonalStep({ formData, handleChange, goNext, language, t, greetingNam
               value={formData.countryOfOrigin}
               onChange={handleChange}
               options={SORTED_COUNTRIES}
-              placeholder=""
+              placeholder={t.selectNationality}
             />
           </Field>
         </div>
       </div>
 
-      <div style={s.bottomAction}>
-        <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
-          {t.next}
-        </button>
-      </div>
-    </div>
-  );
-}
-function ProfileCropModal({
-  imageSrc,
-  crop,
-  zoom,
-  setCrop,
-  setZoom,
-  setCroppedAreaPixels,
-  onCancel,
-  onConfirm,
-}) {
-  return (
-    <div style={s.cropOverlay}>
-      <div style={s.cropModal}>
-        <h2 style={s.cropTitle}>프로필 사진 자르기</h2>
-        <div style={s.cropFrame}>
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={1}
-            cropShape="round"
-            showGrid={false}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={(_, areaPixels) => setCroppedAreaPixels(areaPixels)}
-          />
-        </div>
-        <input
-          type="range"
-          min={1}
-          max={3}
-          step={0.1}
-          value={zoom}
-          onChange={(e) => setZoom(Number(e.target.value))}
-          style={s.zoomSlider}
-        />
-        <div style={s.cropActions}>
-          <button type="button" onClick={onCancel} style={s.cropCancelBtn}>
-            취소
-          </button>
-          <button type="button" onClick={onConfirm} style={s.cropConfirmBtn}>
-            저장
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+      <button type="button" onClick={goNext} style={s.submitBtn}>
+        {t.next}
+      </button>
+    </form>
+  )
 }
 
-// ?? Step 2: Academic info ??????????????????????????????????????????????????????
 function AcademicStep({
   formData,
   handleChange,
@@ -773,40 +997,42 @@ function AcademicStep({
   language,
   profileHeroProps,
 }) {
-  const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
+  const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni']
+
   return (
-    <div style={s.form}>
-      <div style={{ ...s.formContent, ...s.academicContent }}>
+    <form style={s.form} onSubmit={(e) => e.preventDefault()}>
+      <div style={s.stepBody} className="registration-step registration-step-academic">
         <ProfileHero
           profileHeroProps={profileHeroProps}
           variant="academic"
-          firstLine={t.academicInfo}
+          firstLine={language === 'ko' ? `${greetingName}님,` : greetingName}
+          secondLine={t.academicInfo}
           allowUpload={false}
+          equalIntroTextSize
         />
 
-        <div style={s.fieldStack} data-motion="fields">
-          <div style={s.academicGrid}>
-            <Field label={t.university}>
-              <TypeaheadSelect
-                name="university"
-                value={formData.university}
-                onChange={handleChange}
-                options={SORTED_UNIVERSITIES}
-                placeholder=""
-                allowCustom
-              />
-            </Field>
-            <Field label={t.major}>
-              <TypeaheadSelect
-                name="major"
-                value={formData.major}
-                onChange={handleChange}
-                options={SORTED_MAJORS}
-                placeholder=""
-                allowCustom
-              />
-            </Field>
-          </div>
+        <div data-motion="fields" style={s.fields}>
+          <Field label={t.university}>
+            <TypeaheadSelect
+              name="university"
+              value={formData.university}
+              onChange={handleChange}
+              options={SORTED_UNIVERSITIES}
+              placeholder={t.selectUniversity}
+              allowCustom
+            />
+          </Field>
+
+          <Field label={t.major}>
+            <TypeaheadSelect
+              name="major"
+              value={formData.major}
+              onChange={handleChange}
+              options={SORTED_MAJORS}
+              placeholder={t.selectMajor}
+              allowCustom
+            />
+          </Field>
 
           <Field label={t.studentNumber}>
             <input
@@ -814,47 +1040,52 @@ function AcademicStep({
               value={formData.studentNumber}
               onChange={handleChange}
               style={s.input}
+              inputMode="numeric"
             />
           </Field>
 
-          <Field label={t.programme} variant="group" style={s.programmeField}>
+          <Field label={t.programme} variant="group">
             <div style={s.programmeGrid}>
               {programmeOptions.map((level) => (
-                <label
+                <button
                   key={level}
+                  type="button"
+                  onClick={() =>
+                    handleEducationLevelChange({
+                      target: { name: 'educationLevel', value: level },
+                    })
+                  }
                   style={{
                     ...s.programmeOption,
                     ...(formData.educationLevel === level ? s.programmeOptionActive : {}),
                   }}
                 >
-                  <input
-                    type="radio"
-                    name="educationLevel"
-                    value={level}
-                    checked={formData.educationLevel === level}
-                    onChange={handleEducationLevelChange}
-                    style={s.programmeRadio}
-                  />
                   {t[level]}
-                </label>
+                </button>
               ))}
             </div>
           </Field>
 
           {yearOptions.length > 0 && (
-            <Field label={t.academicYear} variant="group" style={s.yearField}>
+            <Field label={t.academicYear} variant="group">
               <div style={s.yearGrid}>
                 {yearOptions.map((y) => (
                   <button
                     key={y}
                     type="button"
-                    onClick={() => handleChange({ target: { name: 'yearNumber', value: String(y) } })}
+                    onClick={() =>
+                      handleChange({
+                        target: { name: 'yearNumber', value: String(y) },
+                      })
+                    }
                     style={{
                       ...s.yearOption,
-                      ...(String(formData.yearNumber) === String(y) ? s.yearOptionActive : {}),
+                      ...(String(formData.yearNumber) === String(y)
+                        ? s.yearOptionActive
+                        : {}),
                     }}
                   >
-                    {y}
+                    {t.year} {y}
                   </button>
                 ))}
               </div>
@@ -863,23 +1094,13 @@ function AcademicStep({
         </div>
       </div>
 
-      <div style={s.bottomAction}>
-        <button
-          type="button"
-          onClick={goNext}
-          style={{
-            ...s.submitBtn,
-            flex: 1,
-          }}
-        >
-          {t.next}
-        </button>
-      </div>
-    </div>
-  );
+      <button type="button" onClick={goNext} style={s.submitBtn}>
+        {t.next}
+      </button>
+    </form>
+  )
 }
 
-// ?? Step 3: Account & login info ???????????????????????????????????????????????
 function AccountStep({
   formData,
   handleChange,
@@ -894,95 +1115,153 @@ function AccountStep({
     formData.password &&
     formData.confirmPassword &&
     formData.password === formData.confirmPassword &&
-    formData.password.length >= 6;
+    formData.password.length >= 6
 
   return (
-    <form onSubmit={handleSubmit} style={s.form}>
-      <div style={s.formContent}>
+    <form style={s.form} onSubmit={handleSubmit}>
+      <div style={s.stepBody} className="registration-step registration-step-account">
         <ProfileHero
           profileHeroProps={profileHeroProps}
-          firstLine={language === 'ko' ? '이제' : 'And That'}
-          secondLine={language === 'ko' ? '마무리.' : 'Concludes It.'}
+          variant="compact"
+          firstLine={language === 'ko' ? t.finalStep : t.finalStep}
+          secondLine={t.requiredFields}
           allowUpload={false}
           equalIntroTextSize
         />
 
-        <div style={s.fieldStack} data-motion="fields">
+        <div data-motion="fields" style={s.fields}>
           <Field label={t.email}>
             <input
-              type="email"
               name="email"
+              type="email"
               value={formData.email}
               onChange={handleChange}
               style={s.input}
-              placeholder=""
+              autoComplete="email"
             />
           </Field>
 
-          <Row>
-            <Field label={t.password}>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                style={s.input}
-                placeholder=""
-              />
-            </Field>
-            <Field label={t.confirmPassword}>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                style={s.input}
-              />
-            </Field>
-          </Row>
+          <Field label={t.password}>
+            <input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              style={s.input}
+              autoComplete="new-password"
+            />
+          </Field>
+
+          <Field label={t.confirmPassword}>
+            <input
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              style={s.input}
+              autoComplete="new-password"
+            />
+          </Field>
+
+          <p style={s.helperText}>{t.minCharacters}</p>
+
+          {formData.password &&
+            formData.confirmPassword &&
+            formData.password !== formData.confirmPassword && (
+              <div style={s.inlineError}>{t.passwordMismatch}</div>
+            )}
         </div>
-
-        {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-          <p style={{ ...s.helperText, color: '#dc2626' }}>
-            {t.passwordMismatch}
-          </p>
-        )}
       </div>
 
-      <div style={s.bottomAction}>
-        <button
-          type="submit"
-          disabled={loading || !isComplete}
-          style={{
-            ...s.submitBtn,
-            flex: 1,
-            background: !loading && isComplete
-              ? 'linear-gradient(135deg, #fb923c 0%, #f97316 48%, #ea580c 100%)'
-              : '#fb923c',
-            opacity: loading || !isComplete ? 0.6 : 1,
-            cursor: loading || !isComplete ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {loading ? t.creatingAccount : t.createAccount}
+      <button
+        type="submit"
+        disabled={loading || !isComplete}
+        style={{
+          ...s.submitBtn,
+          ...(loading || !isComplete ? s.submitBtnDisabled : {}),
+        }}
+      >
+        {loading ? t.creatingAccount : t.createAccount}
+      </button>
+
+      <p style={s.loginPrompt}>
+        {t.alreadyHaveAccount}{' '}
+        <button type="button" onClick={() => window.location.assign('/login')} style={s.linkBtn}>
+          {t.logIn}
         </button>
-      </div>
+      </p>
     </form>
-  );
+  )
 }
 
-// ?? Small layout helpers ???????????????????????????????????????????????????????
+function ProfileCropModal({
+  imageSrc,
+  crop,
+  zoom,
+  setCrop,
+  setZoom,
+  setCroppedAreaPixels,
+  onCancel,
+  onConfirm,
+  t,
+}) {
+  return (
+    <div style={s.cropOverlay}>
+      <div style={s.cropModal}>
+        <h2 style={s.cropTitle}>{t.cropTitle}</h2>
+
+        <div style={s.cropArea}>
+          <Cropper
+            image={imageSrc}
+            crop={crop}
+            zoom={zoom}
+            aspect={1}
+            cropShape="round"
+            showGrid={false}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={(_, areaPixels) => setCroppedAreaPixels(areaPixels)}
+          />
+        </div>
+
+        <input
+          type="range"
+          min={1}
+          max={3}
+          step={0.01}
+          value={zoom}
+          onChange={(e) => setZoom(Number(e.target.value))}
+          style={s.zoomSlider}
+        />
+
+        <div style={s.cropActions}>
+          <button type="button" onClick={onCancel} style={s.cropCancelBtn}>
+            {t.cancel}
+          </button>
+
+          <button type="button" onClick={onConfirm} style={s.cropConfirmBtn}>
+            {t.save}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Row({ children }) {
-  return <div style={rowStyle}>{children}</div>;
+  return <div style={s.row}>{children}</div>
 }
 
 function Field({ label, children, variant = 'input', style }) {
-  const fieldRef = useRef(null);
+  const fieldRef = useRef(null)
+
   const handleFieldClick = (event) => {
-    if (variant !== 'input') return;
-    if (event.target.closest('input, textarea, select, button')) return;
-    const input = fieldRef.current?.querySelector('input, textarea, select');
-    input?.focus();
-  };
+    if (variant !== 'input') return
+    if (event.target.closest('input, textarea, select, button')) return
+
+    const input = fieldRef.current?.querySelector('input, textarea, select')
+    input?.focus()
+  }
 
   return (
     <div
@@ -990,36 +1269,133 @@ function Field({ label, children, variant = 'input', style }) {
       onClick={handleFieldClick}
       style={{
         ...(variant === 'group' ? groupFieldStyle : fieldStyle),
-        ...(variant === 'input' ? s.touchableField : {}),
         ...style,
       }}
     >
       <label style={labelStyle}>{label}</label>
       {children}
     </div>
-  );
+  )
 }
 
-// ?? Styles ?????????????????????????????????????????????????????????????????????
-const rowStyle = {
-  display: 'grid',
-  gridTemplateColumns: '1fr',
-  gap: '8px',
-};
+const registrationMotionCss = `
+  :root {
+    --reg-page-bg: #ffffff;
+    --reg-card-bg: #ffffff;
+    --reg-field-bg: #ffffff;
+    --reg-text: #111827;
+    --reg-subtext: #6b7280;
+    --reg-muted: #9ca3af;
+    --reg-border: #d8dde5;
+    --reg-soft-border: #e5e7eb;
+    --reg-button-dark: #111827;
+    --reg-button-dark-text: #ffffff;
+    --reg-ghost-bg: #f3f4f6;
+    --reg-error-bg: #fef2f2;
+    --reg-error-text: #b91c1c;
+    --reg-error-border: #fecaca;
+    --reg-email-icon-bg: #fff7ed;
+    --reg-email-icon-border: #fed7aa;
+    --reg-dropdown-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    --reg-avatar-border: rgba(44,42,39,0.08);
+    --reg-camera-bg: #ffffff;
+  }
+
+  html.dark {
+    --reg-page-bg: #121212;
+    --reg-card-bg: #121212;
+    --reg-field-bg: #121212;
+    --reg-text: #f5f5f7;
+    --reg-subtext: #c7c7cc;
+    --reg-muted: #8e8e93;
+    --reg-border: #2c2c2e;
+    --reg-soft-border: #2c2c2e;
+    --reg-button-dark: #f5f5f7;
+    --reg-button-dark-text: #111111;
+    --reg-ghost-bg: #1c1c1e;
+    --reg-error-bg: #3b1d1d;
+    --reg-error-text: #fca5a5;
+    --reg-error-border: #7f1d1d;
+    --reg-email-icon-bg: #2b1a10;
+    --reg-email-icon-border: #7c3f12;
+    --reg-dropdown-shadow: 0 8px 20px rgba(0,0,0,0.42);
+    --reg-avatar-border: rgba(255,255,255,0.14);
+    --reg-camera-bg: #1c1c1e;
+  }
+
+  @keyframes registrationFadeUp {
+    from { opacity: 0.84; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes registrationTitleFade {
+    from { opacity: 0.72; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes registrationHeroShrink {
+    from { opacity: 0.98; transform: translate(20px, 10px) scale(1.22); }
+    to { opacity: 1; transform: translate(0, 0) scale(1); }
+  }
+
+  @keyframes registrationHeroReturn {
+    from { opacity: 0.98; transform: translate(-14px, -8px) scale(0.82); }
+    to { opacity: 1; transform: translate(0, 0) scale(1); }
+  }
+
+  .registration-title {
+    animation: registrationTitleFade 420ms ease-out both;
+  }
+
+  .registration-step [data-motion='hero-text'] {
+    will-change: transform, opacity;
+    animation: registrationFadeUp 820ms cubic-bezier(.16,.72,.18,1) both;
+  }
+
+  .registration-step [data-motion='fields'] {
+    will-change: transform, opacity;
+    animation: registrationFadeUp 1120ms cubic-bezier(.16,.72,.18,1) both;
+  }
+
+  .registration-step-academic [data-motion='avatar'] {
+    transform-origin: left top;
+    will-change: transform, opacity;
+    animation: registrationHeroShrink 880ms cubic-bezier(.16,.72,.18,1) both;
+  }
+
+  .registration-step-account [data-motion='avatar'] {
+    transform-origin: left top;
+    will-change: transform, opacity;
+    animation: registrationHeroReturn 880ms cubic-bezier(.16,.72,.18,1) both;
+  }
+
+  input::placeholder {
+    color: var(--reg-muted);
+  }
+
+  select option {
+    color: #111827;
+    background: #ffffff;
+  }
+
+  html.dark select option {
+    color: #f5f5f7;
+    background: #1c1c1e;
+  }
+`
 
 const fieldStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: '5px',
-  height: '54px',
   minHeight: '54px',
   padding: '8px 12px 7px',
-  border: `1px solid ${theme.border}`,
+  border: '1px solid var(--reg-border)',
   borderRadius: '8px',
-  backgroundColor: theme.fieldBg,
+  backgroundColor: 'var(--reg-field-bg)',
   boxSizing: 'border-box',
   justifyContent: 'center',
-};
+}
 
 const groupFieldStyle = {
   display: 'flex',
@@ -1027,113 +1403,18 @@ const groupFieldStyle = {
   gap: '7px',
   minHeight: '54px',
   padding: '8px 12px',
-  border: `1px solid ${theme.border}`,
+  border: '1px solid var(--reg-border)',
   borderRadius: '8px',
-  backgroundColor: theme.fieldBg,
+  backgroundColor: 'var(--reg-field-bg)',
   boxSizing: 'border-box',
   justifyContent: 'center',
-};
+}
 
 const labelStyle = {
   fontSize: '12px',
   fontWeight: 400,
-  color: theme.subText,
+  color: 'var(--reg-subtext)',
   lineHeight: 1,
-};
-
-const registrationMotionCss = `
-@keyframes registrationFadeUp {
-  from {
-    opacity: 0.84;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes registrationTitleFade {
-  from {
-    opacity: 0.72;
-    transform: translateX(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes registrationHeroShrink {
-  from {
-    opacity: 0.98;
-    transform: translate(20px, 10px) scale(1.22);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-@keyframes registrationHeroReturn {
-  from {
-    opacity: 0.98;
-    transform: translate(-14px, -8px) scale(0.82);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-.registration-title {
-  animation: registrationTitleFade 420ms ease-out both;
-}
-
-.registration-step {
-  opacity: 1;
-}
-
-.registration-step [data-motion='hero-text'] {
-  will-change: transform, opacity;
-  animation: registrationFadeUp 820ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step [data-motion='fields'] {
-  will-change: transform, opacity;
-  animation: registrationFadeUp 1120ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step-academic [data-motion='avatar'] {
-  transform-origin: left top;
-  will-change: transform, opacity;
-  animation: registrationHeroShrink 880ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step-account [data-motion='avatar'] {
-  transform-origin: left top;
-  will-change: transform, opacity;
-  animation: registrationHeroReturn 880ms cubic-bezier(.16,.72,.18,1) both;
-}
-`;
-
-const isDarkMode =
-  typeof document !== 'undefined' &&
-  document.documentElement.classList.contains('dark')
-
-const theme = {
-  pageBg: isDarkMode ? '#121212' : '#ffffff',
-  cardBg: isDarkMode ? '#111111' : '#ffffff',
-  fieldBg: isDarkMode ? '#111111' : '#ffffff',
-  text: isDarkMode ? '#F5F5F7' : '#111827',
-  subText: isDarkMode ? '#C7C7CC' : '#6b7280',
-  mutedText: isDarkMode ? '#8E8E93' : '#9ca3af',
-  border: isDarkMode ? '#2C2C2E' : '#d8dde5',
-  softBorder: isDarkMode ? '#2C2C2E' : '#e5e7eb',
-  ghostBg: isDarkMode ? '#1C1C1E' : '#f3f4f6',
-  errorBg: isDarkMode ? '#3B1D1D' : '#fef2f2',
-  errorText: isDarkMode ? '#FCA5A5' : '#b91c1c',
-  errorBorder: isDarkMode ? '#7F1D1D' : '#fecaca',
 }
 
 const s = {
@@ -1142,10 +1423,12 @@ const s = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: theme.pageBg,
+    backgroundColor: 'var(--reg-page-bg)',
+    color: 'var(--reg-text)',
     padding: '0',
     overflow: 'hidden',
   },
+
   topBar: {
     width: '100%',
     maxWidth: '320px',
@@ -1153,19 +1436,20 @@ const s = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '6px 0',
-    backgroundColor: theme.pageBg,
+    backgroundColor: 'var(--reg-page-bg)',
     boxShadow: 'none',
     position: 'sticky',
     top: 0,
     zIndex: 100,
     minHeight: '42px',
   },
+
   backButton: {
     background: 'none',
     border: 'none',
     fontSize: '24px',
     cursor: 'pointer',
-    color: '#374151',
+    color: 'var(--reg-subtext)',
     padding: '8px 8px 8px 0',
     display: 'flex',
     alignItems: 'center',
@@ -1174,56 +1458,37 @@ const s = {
     transform: 'translateX(-22px)',
     width: '34px',
   },
+
   topTitle: {
     position: 'absolute',
     left: '4px',
     top: '12px',
     fontSize: '15px',
     fontWeight: 600,
-    color: '#111827',
+    color: 'var(--reg-text)',
     pointerEvents: 'none',
   },
+
   languageToggle: {
     padding: '8px 16px',
     borderRadius: '6px',
-    border: '1px solid #d1d5db',
-    backgroundColor: theme.pageBg,
-    color: '#374151',
+    border: '1px solid var(--reg-soft-border)',
+    backgroundColor: 'var(--reg-card-bg)',
+    color: 'var(--reg-subtext)',
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
     transition: 'all 0.2s',
     transform: 'translate(14px, 3px)',
   },
-  header: {
-    width: '100%',
-    textAlign: 'center',
-    padding: '40px 32px 20px',
-    backgroundColor: theme.pageBg,
-    borderBottom: '1px solid #e5e7eb',
-  },
-  title: {
-    fontSize: '32px',
-    fontWeight: 700,
-    color: '#111827',
-    margin: '0 0 12px',
-  },
-  subtitle: {
-    fontSize: '15px',
-    color: '#6b7280',
-    margin: 0,
-    lineHeight: 1.6,
-    maxWidth: '600px',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-  },
+
   form: {
     display: 'flex',
     flexDirection: 'column',
     gap: '0',
     marginTop: '0',
     padding: '6px 0 14px',
-    backgroundColor: theme.pageBg,
+    backgroundColor: 'var(--reg-page-bg)',
     borderRadius: '0',
     maxWidth: '320px',
     width: '100%',
@@ -1232,236 +1497,103 @@ const s = {
     minHeight: 0,
     justifyContent: 'space-between',
   },
-  stepShell: {
-    width: '100%',
-    maxWidth: '320px',
-    flex: 1,
-    minHeight: 0,
+
+  stepBody: {
     display: 'flex',
     flexDirection: 'column',
+    minHeight: 0,
   },
-  formContent: {
+
+  hero: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px',
-    flex: 1,
-    minHeight: 0,
-    justifyContent: 'flex-start',
-    paddingTop: '104px',
-  },
-  academicContent: {
-    gap: '9px',
-    paddingTop: '104px',
-  },
-  bottomAction: {
-    flexShrink: 0,
-    paddingBottom: 'calc(env(safe-area-inset-bottom) + 122px)',
-  },
-  formTitle: {
-    fontSize: '18px',
-    fontWeight: 600,
-    color: '#111827',
-    margin: '0 0 4px',
-    textAlign: 'left',
-  },
-  aboutTopGrid: {
-    display: 'grid',
-    gridTemplateColumns: '94px 1fr',
-    gap: '14px',
     alignItems: 'center',
-    height: '96px',
-    minHeight: '96px',
+    margin: '6px 0 18px',
   },
-  profilePicker: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
+
   avatarButton: {
     position: 'relative',
-    width: '86px',
-    height: '86px',
-    padding: 0,
-    border: 'none',
-    background: 'transparent',
-    cursor: 'pointer',
-  },
-  avatarCircle: {
-    width: '80px',
-    height: '80px',
     borderRadius: '50%',
-    overflow: 'hidden',
+    border: '1px solid var(--reg-avatar-border)',
+    padding: 0,
+    overflow: 'visible',
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: '0',
-    border: '1px solid rgba(44,42,39,0.08)',
   },
+
   avatarImage: {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
+    borderRadius: '50%',
     display: 'block',
   },
+
   cameraBadge: {
     position: 'absolute',
-    right: '-1px',
-    bottom: '1px',
-    width: '30px',
-    height: '30px',
+    right: 0,
+    bottom: 0,
+    width: '28px',
+    height: '28px',
     borderRadius: '50%',
-    backgroundColor: theme.pageBg,
-    border: '1px solid #111827',
+    backgroundColor: 'var(--reg-camera-bg)',
+    color: 'var(--reg-text)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(17,24,39,0.14)',
+    border: '1px solid var(--reg-soft-border)',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
   },
-  aboutIntro: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
-    justifyContent: 'center',
-    minWidth: 0,
-    maxWidth: '100%',
-  },
-  aboutIntroEn: {
-    margin: 0,
-    fontSize: '16px',
-    lineHeight: 1.2,
-    fontWeight: 600,
-    color: '#111827',
-    whiteSpace: 'nowrap',
-    maxWidth: '100%',
-  },
-  aboutIntroKo: {
-    margin: 0,
-    fontSize: '20px',
-    lineHeight: 1.25,
-    fontWeight: 600,
-    color: '#111827',
-    whiteSpace: 'nowrap',
-    maxWidth: '100%',
-  },
-  compactHero: {
-    display: 'grid',
-    gridTemplateColumns: '60px 1fr',
-    gap: '12px',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-  },
-  academicHero: {
-    display: 'grid',
-    gridTemplateColumns: '42px 1fr',
-    gap: '12px',
-    alignItems: 'center',
-    height: '44px',
-    minHeight: '44px',
-    marginTop: '-4px',
-    alignSelf: 'stretch',
-  },
-  avatarButtonCompact: {
-    position: 'relative',
-    width: '54px',
-    height: '54px',
-    padding: 0,
+
+  uploadTextButton: {
+    marginTop: '8px',
     border: 'none',
-    background: 'transparent',
+    background: 'none',
+    color: 'var(--reg-subtext)',
+    fontSize: '12px',
     cursor: 'pointer',
   },
-  avatarCircleCompact: {
-    width: '50px',
-    height: '50px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(44,42,39,0.08)',
+
+  heroTextWrap: {
+    marginTop: '12px',
+    textAlign: 'center',
+    maxWidth: '300px',
   },
-  cameraBadgeCompact: {
-    position: 'absolute',
-    right: '0',
-    bottom: '2px',
-    width: '20px',
-    height: '20px',
-    borderRadius: '50%',
-    backgroundColor: theme.pageBg,
-    border: '1px solid #111827',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(17,24,39,0.14)',
+
+  heroFirstLine: {
+    fontSize: '18px',
+    fontWeight: 700,
+    color: 'var(--reg-text)',
+    whiteSpace: 'pre-line',
   },
-  compactIntro: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
-    minWidth: 0,
-    maxWidth: '100%',
+
+  heroSecondLine: {
+    marginTop: '5px',
+    fontSize: '12px',
+    lineHeight: 1.45,
+    color: 'var(--reg-subtext)',
+    whiteSpace: 'pre-line',
   },
-  compactIntroLine: {
-    margin: 0,
+
+  heroEqualLine: {
     fontSize: '16px',
-    lineHeight: 1.2,
-    fontWeight: 600,
-    color: '#111827',
-    whiteSpace: 'nowrap',
-    maxWidth: '100%',
+    fontWeight: 650,
+    color: 'var(--reg-text)',
   },
-  avatarButtonAcademic: {
-    position: 'relative',
-    width: '38px',
-    height: '38px',
-    padding: 0,
-    border: 'none',
-    background: 'transparent',
-    cursor: 'default',
-  },
-  avatarCircleAcademic: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(44,42,39,0.08)',
-  },
-  cameraBadgeAcademic: {
-    display: 'none',
-  },
-  compactIntroName: {
-    margin: 0,
-    fontSize: '20px',
-    lineHeight: 1.2,
-    fontWeight: 600,
-    color: '#111827',
-    whiteSpace: 'nowrap',
-    maxWidth: '100%',
-  },
-  nameGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '8px',
-    marginTop: '8px',
-  },
-  nameGroupGap: {
-    height: '4px',
-  },
-  fieldStack: {
+
+  fields: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '9px',
   },
-  touchableField: {
-    cursor: 'text',
-  },
-  academicGrid: {
+
+  row: {
     display: 'grid',
-    gridTemplateColumns: '1fr',
+    gridTemplateColumns: '1fr 1fr',
     gap: '8px',
   },
+
   input: {
     padding: '0',
     borderRadius: '0',
@@ -1470,51 +1602,79 @@ const s = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
-    backgroundColor: theme.pageBg,
-    color: '#111827',
+    backgroundColor: 'var(--reg-field-bg)',
+    color: 'var(--reg-text)',
     minHeight: '20px',
   },
+
   select: {
     padding: '0',
     borderRadius: '0',
     border: 'none',
     fontSize: '14px',
-    backgroundColor: theme.pageBg,
+    backgroundColor: 'var(--reg-field-bg)',
+    color: 'var(--reg-text)',
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
     minHeight: '20px',
   },
-  radioGroup: {
-    display: 'flex',
-    gap: '20px',
+
+  typeaheadWrap: {
+    position: 'relative',
+    width: '100%',
+  },
+
+  typeaheadInputSpacer: {
+    paddingRight: '22px',
+  },
+
+  dropdownIcon: {
+    position: 'absolute',
+    right: '0',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: 'var(--reg-muted)',
+    fontSize: '16px',
+    lineHeight: 1,
+    pointerEvents: 'none',
+  },
+
+  typeaheadList: {
+    position: 'absolute',
+    top: '100%',
+    left: '-14px',
+    right: '-14px',
+    maxHeight: '180px',
+    overflowY: 'auto',
+    backgroundColor: 'var(--reg-card-bg)',
+    borderRadius: '6px',
+    boxShadow: 'var(--reg-dropdown-shadow)',
     marginTop: '4px',
-    flexWrap: 'wrap',
+    zIndex: 20,
+    border: '1px solid var(--reg-soft-border)',
   },
-  radioLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
+
+  typeaheadItem: {
+    padding: '8px 10px',
     fontSize: '14px',
-    color: '#374151',
     cursor: 'pointer',
+    color: 'var(--reg-text)',
   },
+
   programmeGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '7px 8px',
-    marginTop: '2px',
+    gap: '7px',
   },
-  programmeField: {
-    minHeight: '104px',
-  },
+
   programmeOption: {
     position: 'relative',
     minHeight: '30px',
     borderRadius: '9999px',
-    border: '1px solid #cfd4dc',
-    backgroundColor: theme.pageBg,
-    color: '#4b5563',
+    border: '1px solid var(--reg-border)',
+    backgroundColor: 'var(--reg-field-bg)',
+    color: 'var(--reg-subtext)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1524,232 +1684,207 @@ const s = {
     cursor: 'pointer',
     transition: 'background-color 0.15s, border-color 0.15s, color 0.15s',
   },
+
   programmeOptionActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
-    color: '#fff',
+    backgroundColor: 'var(--reg-button-dark)',
+    borderColor: 'var(--reg-button-dark)',
+    color: 'var(--reg-button-dark-text)',
   },
-  programmeRadio: {
-    position: 'absolute',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
+
   yearGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
+    gridTemplateColumns: '1fr 1fr',
     gap: '7px',
-    marginTop: '2px',
   },
-  yearField: {
-    minHeight: '72px',
-  },
+
   yearOption: {
     minHeight: '30px',
     borderRadius: '9999px',
-    border: '1px solid #cfd4dc',
-    backgroundColor: theme.pageBg,
-    color: '#4b5563',
+    border: '1px solid var(--reg-border)',
+    backgroundColor: 'var(--reg-field-bg)',
+    color: 'var(--reg-subtext)',
     fontSize: '12px',
     fontWeight: 600,
     cursor: 'pointer',
   },
+
   yearOptionActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
-    color: '#fff',
+    backgroundColor: 'var(--reg-button-dark)',
+    borderColor: 'var(--reg-button-dark)',
+    color: 'var(--reg-button-dark-text)',
   },
-  stepActions: {
-    display: 'flex',
-    gap: '10px',
-    marginTop: '8px',
-  },
+
   submitBtn: {
-    marginTop: '2px',
-    padding: '12px 10px',
+    width: '100%',
+    minHeight: '44px',
     borderRadius: '9999px',
     border: 'none',
-    background: '#f97316',
-    color: 'white',
+    backgroundColor: 'var(--reg-button-dark)',
+    color: 'var(--reg-button-dark-text)',
     fontSize: '14px',
-    fontWeight: 600,
-    width: '100%',
+    fontWeight: 700,
     cursor: 'pointer',
+    marginTop: '12px',
   },
+
+  submitBtnDisabled: {
+    opacity: 0.42,
+    cursor: 'not-allowed',
+  },
+
   errorBanner: {
     padding: '10px 12px',
-    margin: '20px auto',
+    margin: '8px auto',
     borderRadius: '6px',
-    backgroundColor: '#fef2f2',
-    color: '#b91c1c',
-    border: '1px solid #fecaca',
+    backgroundColor: 'var(--reg-error-bg)',
+    color: 'var(--reg-error-text)',
+    border: '1px solid var(--reg-error-border)',
     fontSize: '13px',
-    maxWidth: '800px',
+    maxWidth: '320px',
     width: '100%',
+    boxSizing: 'border-box',
   },
+
+  inlineError: {
+    padding: '8px 10px',
+    borderRadius: '6px',
+    backgroundColor: 'var(--reg-error-bg)',
+    color: 'var(--reg-error-text)',
+    border: '1px solid var(--reg-error-border)',
+    fontSize: '12px',
+  },
+
   loginPrompt: {
     textAlign: 'center',
     fontSize: '13px',
-    color: '#6b7280',
-    margin: '4px 0 0',
+    color: 'var(--reg-subtext)',
+    margin: '8px 0 0',
   },
+
   linkBtn: {
+    border: 'none',
     background: 'none',
-    border: 'none',
-    color: '#f97316',
-    fontWeight: 600,
-    cursor: 'pointer',
-    fontSize: '13px',
     padding: 0,
-  },
-  ghostBtn: {
-    background: '#f3f4f6',
-    borderRadius: '9999px',
-    border: 'none',
+    color: 'var(--reg-text)',
+    fontWeight: 700,
     cursor: 'pointer',
-    padding: '10px',
-    color: '#4b5563',
-    textAlign: 'center',
-    fontSize: '13px',
-    fontWeight: 500,
   },
-  note: {
-    marginTop: '0',
-    marginBottom: '10px',
-    fontSize: '11px',
-    color: '#9ca3af',
-    textAlign: 'center',
-  },
+
   helperText: {
     fontSize: '12px',
-    color: '#6b7280',
-    margin: '4px 0 0',
+    color: 'var(--reg-subtext)',
+    margin: '2px 0 0',
     fontStyle: 'italic',
   },
-  typeaheadContainer: {
-    position: 'relative',
-    width: '100%',
-  },
-  typeaheadInputSpacer: {
-    paddingRight: '20px',
-  },
-  dropdownIcon: {
-    position: 'absolute',
-    right: '0',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    color: '#9ca3af',
-    fontSize: '16px',
-    lineHeight: 1,
-    pointerEvents: 'none',
-  },
-  typeaheadList: {
-    position: 'absolute',
-    top: '100%',
-    left: '-14px',
-    right: '-14px',
-    maxHeight: '180px',
-    overflowY: 'auto',
-    backgroundColor: theme.pageBg,
-    borderRadius: '6px',
-    boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
-    marginTop: '4px',
-    zIndex: 20,
-    border: '1px solid #e5e7eb',
-  },
-  typeaheadItem: {
-    padding: '8px 10px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    color: '#374151',
-  },
+
   emailCard: {
-    backgroundColor: theme.pageBg,
+    backgroundColor: 'var(--reg-page-bg)',
     borderRadius: '0',
     boxShadow: 'none',
     padding: '0 0 14px',
     maxWidth: '320px',
     width: '100%',
     margin: '122px auto 0',
+    textAlign: 'center',
   },
+
   emailIcon: {
     width: '64px',
     height: '64px',
     borderRadius: '50%',
     margin: '0 auto 18px',
-    backgroundColor: '#fff7ed',
-    border: '1px solid #fed7aa',
+    backgroundColor: 'var(--reg-email-icon-bg)',
+    border: '1px solid var(--reg-email-icon-border)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  emailTitle: {
+    fontSize: '21px',
+    fontWeight: 700,
+    color: 'var(--reg-text)',
+    margin: '0 0 10px',
+  },
+
   emailText: {
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'var(--reg-subtext)',
     lineHeight: 1.6,
-    margin: 0,
+    margin: '0 0 22px',
   },
+
+  emailStrong: {
+    color: 'var(--reg-text)',
+  },
+
   cropOverlay: {
     position: 'fixed',
     inset: 0,
-    zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.58)',
+    zIndex: 999,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '16px',
+    padding: '18px',
   },
+
   cropModal: {
     width: '100%',
     maxWidth: '380px',
-    backgroundColor: theme.pageBg,
+    backgroundColor: 'var(--reg-card-bg)',
     borderRadius: '16px',
     padding: '16px',
     display: 'flex',
     flexDirection: 'column',
     gap: '14px',
   },
+
   cropTitle: {
     margin: 0,
     fontSize: '14px',
     fontWeight: 700,
-    color: '#111827',
+    color: 'var(--reg-text)',
   },
-  cropFrame: {
+
+  cropArea: {
     position: 'relative',
     width: '100%',
     height: '280px',
-    borderRadius: '14px',
+    borderRadius: '12px',
     overflow: 'hidden',
-    backgroundColor: '#111827',
+    backgroundColor: '#111',
   },
+
   zoomSlider: {
     width: '100%',
   },
+
   cropActions: {
     display: 'flex',
     justifyContent: 'flex-end',
     gap: '8px',
   },
+
   cropCancelBtn: {
     padding: '8px 14px',
     borderRadius: '9999px',
     border: 'none',
-    backgroundColor: '#f3f4f6',
-    color: '#4b5563',
+    backgroundColor: 'var(--reg-ghost-bg)',
+    color: 'var(--reg-subtext)',
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
   },
+
   cropConfirmBtn: {
     padding: '8px 16px',
     borderRadius: '9999px',
     border: 'none',
-    backgroundColor: '#111827',
-    color: '#fff',
+    backgroundColor: 'var(--reg-button-dark)',
+    color: 'var(--reg-button-dark-text)',
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
   },
-};
-
-
+}
