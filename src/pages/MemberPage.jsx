@@ -1909,21 +1909,22 @@ const effectiveDateColor = isDragging
   return (
     <>
       <button
-        type="button"
-        onClick={() => setEventListOpen(true)}
-        className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-[#1c1c1e]"
-        aria-label="Open event list"
-        style={{
-          left: '12px',
-          top: 'calc(env(safe-area-inset-top) + 4px)',
-          zIndex: 30,
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          WebkitTapHighlightColor: 'transparent',
-        }}
-      >
-        <List size={20} weight="bold" />
-      </button>
+  type="button"
+  onClick={() => setEventListOpen(true)}
+  className="fixed flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-[#1c1c1e]"
+  aria-label="Open event list"
+  style={{
+    left: '16px',
+    top: 'calc(env(safe-area-inset-top) + 8px)',
+    zIndex: 30,
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    WebkitTapHighlightColor: 'transparent',
+  }}
+>
+
+  <List size={22} weight="bold" />
+</button>
 
       <div
         className="no-highlight-zone"
