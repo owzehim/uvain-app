@@ -225,7 +225,7 @@ export default function MemberPage() {
     WebkitTapHighlightColor: 'transparent',
   }}
 >
-  <Gear size={24} weight="bold" />
+  <Gear size={22} weight="bold" />
 </button>
         </div>
       )}
