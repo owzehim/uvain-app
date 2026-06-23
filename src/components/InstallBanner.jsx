@@ -65,7 +65,8 @@ export default function InstallBanner() {
   if (!show) return null;
 
   return (
-    <div style={styles.overlay}>
+  <div style={styles.overlay}>
+    <style>{installBannerThemeCss}</style>
       <div style={styles.banner}>
         <button onClick={dismiss} style={styles.closeBtn} aria-label="닫기">
           <X size={20} color="#999" />
@@ -125,6 +126,34 @@ export default function InstallBanner() {
   );
 }
 
+const installBannerThemeCss = `
+  :root {
+    --install-bg: #ffffff;
+    --install-text: #111111;
+    --install-subtext: #555555;
+    --install-muted: #999999;
+    --install-guide-bg: #f5f5f5;
+    --install-step-bg: #000000;
+    --install-step-text: #ffffff;
+    --install-button-bg: #111111;
+    --install-button-text: #ffffff;
+    --install-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+  }
+
+  html.dark {
+    --install-bg: #121212;
+    --install-text: #f5f5f7;
+    --install-subtext: #c7c7cc;
+    --install-muted: #8e8e93;
+    --install-guide-bg: #1c1c1e;
+    --install-step-bg: #f5f5f7;
+    --install-step-text: #111111;
+    --install-button-bg: #f5f5f7;
+    --install-button-text: #111111;
+    --install-shadow: 0 -8px 28px rgba(0,0,0,0.45);
+  }
+`;
+
 const styles = {
   overlay: {
     position: "fixed",
@@ -137,14 +166,15 @@ const styles = {
     padding: "0 0 env(safe-area-inset-bottom)",
   },
   banner: {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--install-bg)",
     borderRadius: "20px 20px 0 0",
     padding: "24px 20px 32px",
     width: "100%",
     maxWidth: "480px",
     textAlign: "center",
     position: "relative",
-    boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
+    boxShadow: "var(--install-shadow)",
+    color: "var(--install-text)",
   },
   closeBtn: {
     position: "absolute",
@@ -156,6 +186,7 @@ const styles = {
     padding: "4px",
     display: "flex",
     alignItems: "center",
+    color: "var(--install-muted)",
   },
   iconWrapper: {
     marginBottom: "12px",
@@ -176,16 +207,16 @@ const styles = {
     fontSize: "20px",
     fontWeight: "700",
     margin: 0,
-    color: "#111",
+    color: "var(--install-text)",
   },
   subtitle: {
     fontSize: "14px",
-    color: "#555",
+    color: "var(--install-subtext)",
     margin: "0 0 20px",
     lineHeight: "1.5",
   },
   iosGuide: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "var(--install-guide-bg)",
     borderRadius: "12px",
     padding: "14px 16px",
     marginBottom: "16px",
@@ -199,8 +230,8 @@ const styles = {
     gap: "8px 10px",
   },
   stepNum: {
-    backgroundColor: "#000",
-    color: "#fff",
+    backgroundColor: "var(--install-step-bg)",
+    color: "var(--install-step-text)",
     borderRadius: "50%",
     width: "22px",
     height: "22px",
@@ -213,7 +244,7 @@ const styles = {
   },
   stepContent: {
     fontSize: "14px",
-    color: "#333",
+    color: "var(--install-subtext)",
     display: "flex",
     alignItems: "center",
     flexWrap: "wrap",
@@ -228,8 +259,8 @@ const styles = {
   installBtn: {
     width: "100%",
     padding: "14px",
-    backgroundColor: "#111",
-    color: "#fff",
+    backgroundColor: "var(--install-button-bg)",
+    color: "var(--install-button-text)",
     border: "none",
     borderRadius: "12px",
     fontSize: "15px",
@@ -244,7 +275,7 @@ const styles = {
   laterBtn: {
     background: "none",
     border: "none",
-    color: "#999",
+    color: "var(--install-muted)",
     fontSize: "14px",
     cursor: "pointer",
     padding: "4px",
