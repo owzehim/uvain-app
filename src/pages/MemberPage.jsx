@@ -2331,7 +2331,7 @@ function EventsTab({ events }) {
                     bg = darkMode ? '#1c1c1e' : '#f3f4f6'
                     color = darkMode
                       ? isPastEventDate
-                        ? '#A8A8A8'
+                        ? '#B8B8B8'
                         : '#EDEDED'
                       : '#9ca3af'
                     fw = 600

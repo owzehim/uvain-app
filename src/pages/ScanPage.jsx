@@ -151,7 +151,7 @@ export default function ScanPage() {
 
   return (
     <div
-      className="flex flex-col bg-white overflow-hidden"
+      className="force-light flex flex-col bg-white overflow-hidden"
       style={{ height: '100dvh' }}
     >
       {/* Header – white */}

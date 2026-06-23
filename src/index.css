@@ -126,6 +126,41 @@ body {
   color: #f5f5f7;
 }
 
+.dark .force-light,
+.dark .force-light .bg-white {
+  background-color: #ffffff;
+}
+
+.dark .force-light .bg-gray-50,
+.dark .force-light .bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.dark .force-light .bg-gray-200 {
+  background-color: #e5e7eb;
+}
+
+.dark .force-light .border-gray-100,
+.dark .force-light .border-gray-200,
+.dark .force-light .border-gray-300 {
+  border-color: #f3f4f6;
+}
+
+.dark .force-light .text-gray-900,
+.dark .force-light .text-gray-800,
+.dark .force-light .text-gray-700 {
+  color: #111827;
+}
+
+.dark .force-light .text-gray-600,
+.dark .force-light .text-gray-500 {
+  color: #6b7280;
+}
+
+.dark .force-light .text-gray-400 {
+  color: #9ca3af;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
