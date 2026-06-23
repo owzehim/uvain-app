@@ -2398,90 +2398,90 @@ const effectiveDateColor = isDragging
                   }
 
                   return (
-                    <div
-  key={dateKey}
-  onClick={() => handleDayPress(day)}
-  style={{
-    aspectRatio: '1/1',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: hasEvt ? 'pointer' : 'default',
-    position: 'relative',
-    transform: 'scale(0.82)',
-  }}
->
-                      {rangeEvent && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            left: rangeStart ? '15%' : '-3px',
-                            right: rangeEnd ? '15%' : '-3px',
-                            top: '50%',
-                            height: '38%',
-                            transform: 'translateY(-50%)',
-                            background: rangeColor,
-                            borderTopLeftRadius: rangeStart ? 999 : 0,
-                            borderBottomLeftRadius: rangeStart ? 999 : 0,
-                            borderTopRightRadius: rangeEnd ? 999 : 0,
-                            borderBottomRightRadius: rangeEnd ? 999 : 0,
-                            pointerEvents: 'none',
-                          }}
-                        />
-                      )}
-                      {isToday && (
-                        <span
-                          style={{
-                            position: 'absolute',
-                            top: -6,
-                            left: 0,
-                            right: 0,
-                            textAlign: 'center',
-                            fontFamily:
-                              '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.022)`,
-                            fontWeight: 800,
-                            color: darkMode ? '#ffffff' : '#1f2937',
-                            lineHeight: 1,
-                            letterSpacing: '0.04em',
-                            pointerEvents: 'none',
-                            userSelect: 'none',
-                          }}
-                        >
-                          TODAY
-                        </span>
-                      )}
-                      <div
-  style={{
-    width: '82%',
-    aspectRatio: '1/1',
-    borderRadius: '50%',
-                          backgroundColor: bg,
-                          border,
-                          position: 'relative',
-                          zIndex: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'background-color 0.15s',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontFamily:
-                              '"Handjet", system-ui, sans-serif',
-                            fontSize: `calc(${W} * 0.036)`,
-                            fontWeight: fw,
-                            color,
-                            lineHeight: 1,
-                            userSelect: 'none',
-                          }}
-                        >
-                          {day}
-                        </span>
-                      </div>
-                    </div>
-                  )
+  <div
+    key={dateKey}
+    onClick={() => handleDayPress(day)}
+    style={{
+      aspectRatio: '1/1',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: hasEvt ? 'pointer' : 'default',
+      position: 'relative',
+      transform: 'scale(0.92)',
+    }}
+  >
+    {rangeEvent && (
+      <div
+        style={{
+          position: 'absolute',
+          left: rangeStart ? '15%' : '-3px',
+          right: rangeEnd ? '15%' : '-3px',
+          top: '50%',
+          height: '38%',
+          transform: 'translateY(-50%)',
+          background: rangeColor,
+          borderTopLeftRadius: rangeStart ? 999 : 0,
+          borderBottomLeftRadius: rangeStart ? 999 : 0,
+          borderTopRightRadius: rangeEnd ? 999 : 0,
+          borderBottomRightRadius: rangeEnd ? 999 : 0,
+          pointerEvents: 'none',
+        }}
+      />
+    )}
+    {isToday && (
+      <span
+        style={{
+          position: 'absolute',
+          top: -6,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          fontSize: `calc(${W} * 0.022)`,
+          fontWeight: 800,
+          color: darkMode ? '#ffffff' : '#1f2937',
+          lineHeight: 1,
+          letterSpacing: '0.04em',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        TODAY
+      </span>
+    )}
+    <div
+      style={{
+        width: '82%',
+        aspectRatio: '1/1',
+        borderRadius: '50%',
+        backgroundColor: bg,
+        border,
+        position: 'relative',
+        zIndex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'background-color 0.15s',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          fontSize: `calc(${W} * 0.036)`,
+          fontWeight: fw,
+          color,
+          lineHeight: 1,
+          userSelect: 'none',
+          display: 'block',
+          marginTop: '0.1em',   // nudge down slightly to visually centre Handjet glyphs
+        }}
+      >
+        {day}
+      </span>
+    </div>
+  </div>
+)
                 })}
               </div>
 
