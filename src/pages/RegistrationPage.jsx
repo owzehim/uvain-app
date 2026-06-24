@@ -176,7 +176,7 @@ const translations = {
     nationality: '국적 *',
     university: '대학교 *',
     major: '전공 *',
-    studentNumber: '학번 *',
+    studentNumber: 'Student number *',
     programme: '프로그램 *',
     academicYear: '학년 *',
     email: '이메일 *',
