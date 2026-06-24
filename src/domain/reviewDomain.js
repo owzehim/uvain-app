@@ -19,7 +19,7 @@ import { VALID_TAG_KEYS, REVIEW_TAGS } from './reviewTypes'
 export function validateReviewInput({ rating, tags }) {
   const errors = {}
 
-  if (!rating || rating < 1 || rating > 5) {
+  if (!rating || rating < 0.5 || rating > 5 || (rating * 2) !== Math.floor(rating * 2)) {
     errors.rating = '별점을 선택해주세요.'
   }
 
