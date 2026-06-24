@@ -4,23 +4,22 @@
 // Receives all state and actions from useReviewPrompt hook —
 // this component is purely presentational.
 // ─────────────────────────────────────────────────────────────
-
 import { useEffect, useRef, useState } from 'react'
-import { Star, BowlSteam, HandHeart, Sparkle, CoinVertical, X } from '@phosphor-icons/react'
+import { Star, BowlSteam, HandHeart, Wine, CoinVertical, X } from '@phosphor-icons/react'
 import { REVIEW_TAGS } from '../domain/reviewTypes'
 
 const TAG_ICONS = {
   BowlSteam,
   HandHeart,
-  Sparkle,
+  Wine,
   CoinVertical,
 }
 
-// ── Star row ──────────────────────────────────────────────────
+// ── Star row ─────────────────────────────────────────────────
 function StarRow({ rating, onSelect, error }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-sm font-medium text-gray-700">별점을 선택해 주세요</p>
+      <p className="text-sm font-medium text-gray-700">이 장소는 몇 점인가요?</p>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((value) => (
           <button
@@ -42,18 +41,19 @@ function StarRow({ rating, onSelect, error }) {
   )
 }
 
-// ── Tag chip ──────────────────────────────────────────────────
+// ── Tag chip ─────────────────────────────────────────────────
 function TagChip({ tag, selected, onToggle }) {
   const IconComponent = TAG_ICONS[tag.icon]
   return (
     <button
       onClick={() => onToggle(tag.key)}
       className={`
-        flex items-center gap-1.5 px-3 py-2 rounded-2xl border text-sm font-medium
+        flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border text-sm font-medium
         transition-all active:scale-95
-        ${selected
-          ? 'bg-orange-500 border-orange-500 text-white'
-          : 'bg-white border-gray-200 text-gray-600 hover:border-orange-300'
+        ${
+          selected
+            ? 'bg-orange-500 border-orange-500 text-white'
+            : 'bg-white border-gray-200 text-gray-600 hover:border-orange-300'
         }
       `}
     >
@@ -121,7 +121,6 @@ export default function ReviewModal({
     const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current)
     touchStartY.current = null
     touchStartX.current = null
-
     // only close if swipe is mostly downward and > 60px
     if (dy > 60 && dy > dx) {
       handleClose()
@@ -182,17 +181,16 @@ export default function ReviewModal({
         </div>
 
         <div className="px-5 flex flex-col gap-6 pb-4">
-
           {/* Star rating */}
           <StarRow rating={rating} onSelect={onSelectRating} error={errors.rating} />
 
-          {/* Tag chips */}
+          {/* Tag chips — 2×2 centered grid */}
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-gray-700">
-              어떤 점이 좋았나요?
+              어떤 점이 좋았나요?{' '}
               <span className="text-gray-400 font-normal ml-1">(복수 선택 가능)</span>
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {REVIEW_TAGS.map((tag) => (
                 <TagChip
                   key={tag.key}
@@ -208,13 +206,13 @@ export default function ReviewModal({
           {/* Comment */}
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-gray-700">
-              한 줄 후기
+              한 줄 후기{' '}
               <span className="text-gray-400 font-normal ml-1">(선택)</span>
             </p>
             <textarea
               value={comment}
               onChange={(e) => onCommentChange(e.target.value)}
-              placeholder="자유롭게 남겨주세요..."
+              placeholder="이곳에서의 경험을 공유해 주세요."
               maxLength={200}
               rows={3}
               className="w-full px-3 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:border-orange-400 placeholder:text-gray-400"
@@ -232,9 +230,7 @@ export default function ReviewModal({
             <button
               onClick={onSubmit}
               disabled={submitting}
-              className="w-full py-3.5 bg-orange-500 text-white font-semibold rounded-2xl text-sm
-                         hover:bg-orange-600 active:scale-[0.98] transition-all
-                         disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {submitting ? '저장 중...' : '후기 남기기'}
             </button>
@@ -246,7 +242,6 @@ export default function ReviewModal({
               다음에 할게요
             </button>
           </div>
-
         </div>
       </div>
     </>
