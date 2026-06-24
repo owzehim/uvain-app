@@ -59,7 +59,7 @@ export default function ScanPageStampBox({
 
   const handleRedeem = async () => {
     if (!effectivePendingReward) return
-    if (!window.confirm('혜택 적용 완료 처리할까요?')) return
+    if (!window.confirm('Confirm applying benefits?')) return
 
     setRedeeming(true)
     try {
@@ -70,7 +70,7 @@ export default function ScanPageStampBox({
       onRewardRedeemed?.()
     } catch (e) {
       console.error('redeemReward error:', e)
-      alert('혜택 적용 완료 처리에 실패했습니다.')
+      alert('Failed to complete benefit application.')
     } finally {
       setRedeeming(false)
     }
@@ -125,7 +125,7 @@ export default function ScanPageStampBox({
             {redeeming
               ? '혜택 적용 처리 중...'
               : effectivePendingReward
-                ? '직원 전용: 탭 해서 혜택 적용 완료 하기'
+                ? 'Staff Only: Tap to Complete Applying Benefits'
                 : '혜택 정보 불러오는 중...'}
           </div>
         )}
