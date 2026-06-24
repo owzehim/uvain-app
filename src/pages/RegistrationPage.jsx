@@ -162,7 +162,7 @@ const translations = {
     alumni: 'Alumni',
   },
   ko: {
-    title: 'Sign up',
+    title: '회원가입',
     subtitle: '등록 후 회원 자격은 비활성 상태입니다. 임원 확인 후 활성화됩니다.',
     aboutYou: '당신에 대해',
     academicInfo: '학력 정보',
