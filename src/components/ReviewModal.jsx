@@ -5,7 +5,7 @@
 // this component is purely presentational.
 // ─────────────────────────────────────────────────────────────
 import { useEffect, useRef, useState } from 'react'
-import { Star, BowlSteam, HandHeart, Wine, CoinVertical, X } from '@phosphor-icons/react'
+import { Star, StarHalf, BowlSteam, HandHeart, Wine, CoinVertical, X } from '@phosphor-icons/react'
 import { REVIEW_TAGS } from '../domain/reviewTypes'
 
 const TAG_ICONS = {
@@ -16,25 +16,51 @@ const TAG_ICONS = {
 }
 
 // ── Star row ─────────────────────────────────────────────────
+// rating can be a whole number (1–5) or a half (0.5–4.5).
+// Tap a star once  → whole rating (e.g. 4)
+// Tap same star again → half rating one step below (e.g. 3.5)
 function StarRow({ rating, onSelect, error }) {
+  function starWeight(value) {
+    if (rating === null) return 'regular'
+    if (value < rating) return 'fill'
+    if (value === Math.ceil(rating) && rating % 1 !== 0) return 'half'
+    if (value <= rating) return 'fill'
+    return 'regular'
+  }
+
+  function handleStarClick(value) {
+    if (rating === value) {
+      onSelect(value - 0.5)
+    } else {
+      onSelect(value)
+    }
+  }
+
   return (
     <div className="flex flex-col items-center gap-2">
       <p className="text-sm font-medium text-gray-700">이 장소는 몇 점인가요?</p>
       <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((value) => (
-          <button
-            key={value}
-            onClick={() => onSelect(value)}
-            className="p-1 transition-transform active:scale-90"
-            aria-label={`${value}점`}
-          >
-            <Star
-              size={36}
-              weight={rating !== null && value <= rating ? 'fill' : 'regular'}
-              color={rating !== null && value <= rating ? '#f97316' : '#d1d5db'}
-            />
-          </button>
-        ))}
+        {[1, 2, 3, 4, 5].map((value) => {
+          const weight = starWeight(value)
+          return (
+            <button
+              key={value}
+              onClick={() => handleStarClick(value)}
+              className="p-1 transition-transform active:scale-90"
+              aria-label={`${value}점`}
+            >
+              {weight === 'half' ? (
+                <StarHalf size={36} weight="fill" color="#f97316" />
+              ) : (
+                <Star
+                  size={36}
+                  weight={weight}
+                  color={weight !== 'regular' ? '#f97316' : '#d1d5db'}
+                />
+              )}
+            </button>
+          )
+        })}
       </div>
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
@@ -88,12 +114,10 @@ export default function ReviewModal({
   const [visible, setVisible] = useState(false)
   const [closing, setClosing] = useState(false)
 
-  // swipe-down state
   const touchStartY = useRef(null)
   const touchStartX = useRef(null)
   const sheetRef = useRef(null)
 
-  // slide-up on open
   useEffect(() => {
     if (open) {
       setClosing(false)
@@ -121,7 +145,6 @@ export default function ReviewModal({
     const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current)
     touchStartY.current = null
     touchStartX.current = null
-    // only close if swipe is mostly downward and > 60px
     if (dy > 60 && dy > dx) {
       handleClose()
     }

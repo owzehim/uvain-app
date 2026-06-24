@@ -610,7 +610,7 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
           {selected.one_line_review && (
             <div className="mt-8 mb-3">
               <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
-                UvA-IN 한 줄 평가
+                UvA-IN 한줄평
               </p>
               <div className="relative w-full">
                 <svg
