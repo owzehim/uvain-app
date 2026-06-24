@@ -606,11 +606,11 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
             </div>
           )}
 
-          {/* 한 줄 평가 */}
+          {/* UvA-IN 한 줄 평가 */}
           {selected.one_line_review && (
             <div className="mt-8 mb-3">
               <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
-                한 줄 평가
+                UvA-IN 한 줄 평가
               </p>
               <div className="relative w-full">
                 <svg
