@@ -65,7 +65,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const serviceKey = getServiceRoleKey()
-    const masterAppsScriptUrl = Deno.env.get('MASTER_APPS_SCRIPT_URL')
+    const masterAppsScriptUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')
 
     if (!supabaseUrl || !serviceKey || !masterAppsScriptUrl) {
       return new Response(
