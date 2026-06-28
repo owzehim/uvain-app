@@ -116,6 +116,7 @@ serve(async (req) => {
 
     const reviewPayload = {
       type:           'review',
+      partnership_id:  store_id,
       sheet_name:     partnership.sheet_name || partnership.name,
       redemption_id:  String(redemption_id),
       rating:         rating,

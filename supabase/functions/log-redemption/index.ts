@@ -419,20 +419,12 @@ serve(async (req) => {
     // ── Partner sheet payload ──────────────────────────────────────────────
     const storePayload = {
       type: 'store',
+      partnership_id: storeId,
       sheet_name: partnership.sheet_name || partnership.name,
       date,
       time,
-      first_name: safe(member.first_name),
-      last_name: safe(member.last_name),
-      university: safe(member.University),
-      major: safe(member.major),
-      education_level: safe(member.education_level),
-      year_number: member.year_number ?? '',
-      year_of_birth: safe(member.year_of_birth),
-      country_of_origin: safe(member.country_of_origin),
-      gender: safe(member.gender),
-      membership_valid_until: safe(member.membership_valid_until),
       redemption_id: redemptionId,
+      place_name: partnership.name,
       stamp_status: formatStampStatus(stampResult),
       stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
     }
