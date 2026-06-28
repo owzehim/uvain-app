@@ -340,27 +340,43 @@ serve(async (req) => {
 
     // ── Master sheet payload ───────────────────────────────────────────────
     const masterPayload = {
-      type: 'master',
-      date,
-      time,
-      first_name: safe(member.first_name),
-      last_name: safe(member.last_name),
-      university: safe(member.University),
-      student_id: safe(member.student_number),
-      major: safe(member.major),
-      education_level: safe(member.education_level),
-      year_number: member.year_number ?? '',
-      year_of_birth: safe(member.year_of_birth),
-      country_of_origin: safe(member.country_of_origin),
-      gender: safe(member.gender),
-      membership_valid_until: safe(member.membership_valid_until),
-      place_name: partnership.name,
-      redemption_id: redemptionId,
-      stamp_status: formatStampStatus(stampResult),
-      stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
-      first_name_korean: safe(member.first_name_korean),
-      last_name_korean: safe(member.last_name_korean),
-    }
+  type: 'master',
+  date,
+  time,
+
+  redemption_id: redemptionId,
+  restaurant_id: storeId,
+  place_name: partnership.name,
+
+  user_id: user.id,
+  first_name: safe(member.first_name),
+  last_name: safe(member.last_name),
+  first_name_korean: safe(member.first_name_korean),
+  last_name_korean: safe(member.last_name_korean),
+  university: safe(member.University),
+  student_number: safe(member.student_number),
+  education_level: safe(member.education_level),
+  year_number: member.year_number ?? '',
+  major: safe(member.major),
+  gender: safe(member.gender),
+  year_of_birth: safe(member.year_of_birth),
+  country_of_origin: safe(member.country_of_origin),
+
+  star_rating: '',
+  great_food: '',
+  friendly_staff: '',
+  nice_atmosphere: '',
+  good_value: '',
+  comment: '',
+
+  stamp_status: formatStampStatus(stampResult),
+  stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
+
+  account_status: safe(member.account_status) || 'active',
+  membership_valid_until: safe(member.membership_valid_until),
+  membership_ended_at: safe(member.membership_ended_at),
+  identity_anonymized_at: safe(member.identity_anonymized_at),
+};
 
     // ── Partner sheet payload ──────────────────────────────────────────────
     const storePayload = {
