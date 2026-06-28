@@ -8,6 +8,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function postJsonToAppsScript(url: string | null | undefined, payload: Record<string, unknown>, label: string) {
+  if (!url) {
+    console.warn(`Skipping ${label} sheet sync: missing Apps Script URL`)
+    return { ok: false, skipped: true, label }
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const text = await res.text().catch(() => '')
+
+    if (!res.ok) {
+      console.error(`${label} sheet sync failed:`, res.status, text)
+      return { ok: false, status: res.status, text, label }
+    }
+
+    let body: unknown = text
+    try {
+      body = text ? JSON.parse(text) : null
+    } catch {
+      // Apps Script sometimes returns plain text on deployment/configuration errors.
+    }
+
+    if (body && typeof body === 'object' && 'success' in body && !(body as { success?: boolean }).success) {
+      console.error(`${label} Apps Script returned failure:`, body)
+      return { ok: false, body, label }
+    }
+
+    return { ok: true, body, label }
+  } catch (error) {
+    console.error(`${label} sheet sync threw:`, error)
+    return { ok: false, error: error instanceof Error ? error.message : String(error), label }
+  }
+}
+
 function formatStampStatus(stampResult: any) {
   if (!stampResult?.enabled) return ''
 
@@ -218,7 +256,7 @@ serve(async (req) => {
     const { data: member, error: memberError } = await admin
       .from('members')
       .select(
-        'first_name, last_name, first_name_korean, last_name_korean, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, is_member',
+        'first_name, last_name, first_name_korean, last_name_korean, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, membership_ended_at, identity_anonymized_at, account_status, is_member',
       )
       .eq('user_id', user.id)
       .single()
@@ -399,24 +437,10 @@ serve(async (req) => {
       stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
     }
 
-    const [masterRes, storeRes] = await Promise.all([
-      fetch(partnership.master_apps_script_url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(masterPayload),
-      }),
-      fetch(partnership.partner_apps_script_url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(storePayload),
-      }),
+    await Promise.all([
+      postJsonToAppsScript(partnership.master_apps_script_url, masterPayload, 'master'),
+      postJsonToAppsScript(partnership.partner_apps_script_url, storePayload, 'partner'),
     ])
-
-    if (!masterRes.ok || !storeRes.ok) {
-      const masterText = await masterRes.text()
-      const storeText = await storeRes.text()
-      console.error('Sheet POST failed — master:', masterText, '| store:', storeText)
-    }
 
     return new Response(
       JSON.stringify({ success: true, storeName: partnership.name, stampResult }),

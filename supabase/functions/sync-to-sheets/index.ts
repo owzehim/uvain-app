@@ -6,6 +6,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function postJsonToAppsScript(url: string | null | undefined, payload: Record<string, unknown>, label: string) {
+  if (!url) {
+    console.warn(`Skipping ${label} sheet sync: missing Apps Script URL`)
+    return { ok: false, skipped: true, label }
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const text = await res.text().catch(() => '')
+
+    if (!res.ok) {
+      console.error(`${label} sheet sync failed:`, res.status, text)
+      return { ok: false, status: res.status, text, label }
+    }
+
+    let body: unknown = text
+    try {
+      body = text ? JSON.parse(text) : null
+    } catch {
+      // Apps Script may return plain text if the deployment is misconfigured.
+    }
+
+    if (body && typeof body === 'object' && 'success' in body && !(body as { success?: boolean }).success) {
+      console.error(`${label} Apps Script returned failure:`, body)
+      return { ok: false, body, label }
+    }
+
+    return { ok: true, body, label }
+  } catch (error) {
+    console.error(`${label} sheet sync threw:`, error)
+    return { ok: false, error: error instanceof Error ? error.message : String(error), label }
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -86,25 +124,10 @@ serve(async (req) => {
     }
 
     // ── POST to both Apps Scripts ─────────────────────────────
-    const [masterRes, storeRes] = await Promise.all([
-      fetch(partnership.master_apps_script_url, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(reviewPayload),
-      }),
-      fetch(partnership.partner_apps_script_url, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(reviewPayload),
-      }),
+    await Promise.all([
+      postJsonToAppsScript(partnership.master_apps_script_url, reviewPayload, 'master'),
+      postJsonToAppsScript(partnership.partner_apps_script_url, reviewPayload, 'partner'),
     ])
-
-    if (!masterRes.ok || !storeRes.ok) {
-      const masterText = await masterRes.text()
-      const storeText  = await storeRes.text()
-      console.error('Sheet sync failed — master:', masterText, '| store:', storeText)
-      // Non-fatal: review is already saved in Supabase
-    }
 
     return new Response(
       JSON.stringify({ success: true }),
