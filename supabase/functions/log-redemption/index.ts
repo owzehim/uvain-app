@@ -49,17 +49,21 @@ async function postJsonToAppsScript(url: string | null | undefined, payload: Rec
 function formatStampStatus(stampResult: any) {
   if (!stampResult?.enabled) return ''
 
+  if (stampResult.rewardPending) return 'reward pending'
+  if (stampResult.cycleCompleted) return 'ready to claim'
+  if (stampResult.alreadyStamped) return 'already stamped today'
+  return ''
+}
+
+function formatStampProgress(stampResult: any) {
+  if (!stampResult?.enabled) return ''
+
   const totalStamps = Math.max(1, Number(stampResult.totalStamps || 10))
   const count = stampResult.rewardPending || stampResult.cycleCompleted
     ? totalStamps
     : Number(stampResult.newCount ?? stampResult.currentCount ?? 0)
 
-  const status = `${Math.max(0, count)}/${totalStamps}`
-  if (stampResult.rewardPending) return `${status} - reward pending`
-  if (stampResult.cycleCompleted) return `${status} - ready to claim`
-  if (stampResult.alreadyStamped) return `${status} - already stamped today`
-  if (stampResult.success) return status
-  return ''
+  return `${Math.max(0, count)}/${totalStamps}`
 }
 
 async function findStampRestaurant(admin: any, storeId: string) {
@@ -413,6 +417,8 @@ serve(async (req) => {
   comment: '',
 
   stamp_status: formatStampStatus(stampResult),
+  stamp_progress: formatStampProgress(stampResult),
+  stamp_card_progress: formatStampProgress(stampResult),
   stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
 
   account_status: safe(member.account_status) || 'active',
@@ -431,16 +437,24 @@ serve(async (req) => {
       redemption_id: redemptionId,
       place_name: partnership.name,
       stamp_status: formatStampStatus(stampResult),
+      stamp_progress: formatStampProgress(stampResult),
+      stamp_card_progress: formatStampProgress(stampResult),
       stamp_card_claimed_after_scan: stampResult?.claimedAfterScan ? 'Yes' : 'No',
     }
 
-    await Promise.all([
+    const sheetResults = await Promise.all([
       postJsonToAppsScript(partnership.master_apps_script_url, masterPayload, 'master'),
       postJsonToAppsScript(partnership.partner_apps_script_url, storePayload, 'partner'),
     ])
 
     return new Response(
-      JSON.stringify({ success: true, storeName: partnership.name, redemptionId, stampResult }),
+      JSON.stringify({
+        success: true,
+        storeName: partnership.name,
+        redemptionId,
+        stampResult,
+        sheetResults,
+      }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {

@@ -131,7 +131,7 @@ serve(async (req) => {
           sheet_results: sheetResults,
         }),
         {
-          status: failedSheets.length === 0 ? 200 : 502,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         },
       )
