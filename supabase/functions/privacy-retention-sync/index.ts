@@ -71,7 +71,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Missing SUPABASE_URL, service role key, or MASTER_APPS_SCRIPT_URL',
+          message: 'Missing SUPABASE_URL, service role key, or MASTER_SHEET_APPS_SCRIPT_URL',
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
@@ -95,7 +95,7 @@ serve(async (req) => {
     const sheetResults = []
 
     for (const row of users) {
-      const userId = typeof row === 'string' ? row : row?.user_id
+      const userId = typeof row === 'string' ? row : row?.anonymized_user_id || row?.user_id
       if (!userId) continue
 
       try {

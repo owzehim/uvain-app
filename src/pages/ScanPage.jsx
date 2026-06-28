@@ -88,7 +88,11 @@ export default function ScanPage() {
         if (result.stampResult?.enabled && result.stampResult?.restaurantId) {
           setStampRestaurantId(result.stampResult.restaurantId)
           setStampCardEnabled(true)
-          setStampResult(result.stampResult)
+          setStampResult({
+            ...result.stampResult,
+            redemptionId: result.redemptionId,
+            storeId,
+          })
         }
 
         setState(STATE.SUCCESS)

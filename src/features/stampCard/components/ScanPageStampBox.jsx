@@ -63,14 +63,17 @@ export default function ScanPageStampBox({
 
     setRedeeming(true)
     try {
-      await redeemReward(effectivePendingReward.id)
+      await redeemReward(effectivePendingReward.id, {
+        redemptionId: scanResult?.redemptionId,
+        storeId: scanResult?.storeId,
+      })
       setPendingReward(null)
       setRedeemedThisSession(true)
       await refetch()
       onRewardRedeemed?.()
     } catch (e) {
       console.error('redeemReward error:', e)
-      alert('Failed to complete benefit application.')
+      alert(e?.message || 'Failed to complete benefit application.')
     } finally {
       setRedeeming(false)
     }

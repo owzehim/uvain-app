@@ -62,9 +62,9 @@ serve(async (req) => {
     }
 
     // ── Parse body ────────────────────────────────────────────
-    const { redemption_id, store_id, rating, tags, comment } = await req.json()
+    const { action, redemption_id, store_id, rating, tags, comment, stamp_status } = await req.json()
 
-    if (!redemption_id || !store_id || !rating || !tags) {
+    if (!redemption_id || !store_id) {
       return new Response(
         JSON.stringify({ success: false, message: '필수 항목이 누락되었습니다.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -107,6 +107,40 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ success: false, message: '매장 정보를 찾을 수 없습니다.' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    if (action === 'stamp_claim') {
+      const claimPayload = {
+        type: 'stamp_claim',
+        partnership_id: store_id,
+        sheet_name: partnership.sheet_name || partnership.name,
+        redemption_id: String(redemption_id),
+        stamp_status: stamp_status || 'claimed',
+      }
+
+      const sheetResults = await Promise.all([
+        postJsonToAppsScript(partnership.master_apps_script_url, claimPayload, 'master'),
+        postJsonToAppsScript(partnership.partner_apps_script_url, claimPayload, 'partner'),
+      ])
+      const failedSheets = sheetResults.filter((result) => !result.ok)
+
+      return new Response(
+        JSON.stringify({
+          success: failedSheets.length === 0,
+          sheet_results: sheetResults,
+        }),
+        {
+          status: failedSheets.length === 0 ? 200 : 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
+    }
+
+    if (!rating || !tags) {
+      return new Response(
+        JSON.stringify({ success: false, message: '필수 항목이 누락되었습니다.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 

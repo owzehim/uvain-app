@@ -353,7 +353,12 @@ serve(async (req) => {
     if (reuseRecent) {
       // No new DB row, no Google Sheets POST — just return success
       return new Response(
-        JSON.stringify({ success: true, storeName: partnership.name, stampResult }),
+        JSON.stringify({
+          success: true,
+          storeName: partnership.name,
+          redemptionId: recentRedemption.id,
+          stampResult,
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
@@ -435,7 +440,7 @@ serve(async (req) => {
     ])
 
     return new Response(
-      JSON.stringify({ success: true, storeName: partnership.name, stampResult }),
+      JSON.stringify({ success: true, storeName: partnership.name, redemptionId, stampResult }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {

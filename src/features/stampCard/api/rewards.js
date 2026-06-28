@@ -18,7 +18,7 @@ export async function fetchPendingReward(userId, restaurantId) {
   return data
 }
 
-export async function redeemReward(rewardId) {
+export async function redeemReward(rewardId, sheetSync = {}) {
   const { error } = await supabase
     .from('stamp_card_rewards')
     .update({
@@ -28,6 +28,40 @@ export async function redeemReward(rewardId) {
     .eq('id', rewardId)
 
   if (error) throw error
+
+  await syncRewardClaimToSheets(sheetSync)
+}
+
+async function syncRewardClaimToSheets({ redemptionId, storeId } = {}) {
+  if (!redemptionId || !storeId) {
+    console.warn('Skipping reward claim sheet sync: missing redemptionId or storeId')
+    return
+  }
+
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) return
+
+  const { data, error } = await supabase.functions.invoke('sync-to-sheets', {
+    body: {
+      action: 'stamp_claim',
+      redemption_id: redemptionId,
+      store_id: storeId,
+      stamp_status: 'claimed',
+    },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  })
+
+  if (error) {
+    console.warn('Reward claim sheet sync failed:', error.message || error)
+    throw error
+  }
+
+  if (data?.success === false) {
+    console.warn('Reward claim sheet sync failed:', data)
+    throw new Error('Reward was claimed, but Google Sheets did not update.')
+  }
 }
 
 export async function restoreReward(rewardId) {
