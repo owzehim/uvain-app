@@ -71,7 +71,7 @@ export const PROMPT_STATUS = {
  * @property {number} redemption_id  - FK → redemptions.id
  * @property {string} user_id        - UUID
  * @property {string} store_id       - FK → partnerships.id
- * @property {string} prompt_at      - ISO timestamp (redeemed_at + 50 min)
+ * @property {string} prompt_at      - ISO timestamp (redeemed_at + 30 min)
  * @property {string} status         - one of PROMPT_STATUS values
  * @property {string} created_at     - ISO timestamp
  */

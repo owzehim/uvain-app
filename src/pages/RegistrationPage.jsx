@@ -10,6 +10,7 @@ import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
 import { LEGAL_DOCUMENT_VERSION, legalDocuments } from '../content/legalDocuments';
+import { isProductionEnv } from '../lib/appEnv';
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
@@ -296,6 +297,44 @@ const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS_KO = [...GENDERS_KO].sort((a, b) => a.localeCompare(b, 'ko'));
 const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
 const SORTED_MAJORS = [...new Set(MAJOR_OPTIONS)].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
+
+const filled = (value) => String(value || '').trim().length > 0;
+
+function getRegistrationStepComplete(step, formData, yearOptions = []) {
+  if (!isProductionEnv) return true;
+
+  if (step === 'about') {
+    return filled(formData.firstName) && filled(formData.lastName);
+  }
+
+  if (step === 'personal') {
+    return (
+      filled(formData.yearOfBirth) &&
+      filled(formData.gender) &&
+      filled(formData.countryOfOrigin)
+    );
+  }
+
+  if (step === 'academic') {
+    return (
+      filled(formData.university) &&
+      filled(formData.major) &&
+      filled(formData.studentNumber) &&
+      filled(formData.educationLevel) &&
+      (yearOptions.length === 0 || filled(formData.yearNumber))
+    );
+  }
+
+  return true;
+}
+
+function getNextButtonStyle(isComplete) {
+  return {
+    ...s.submitBtn,
+    opacity: isComplete ? 1 : 0.6,
+    cursor: isComplete ? 'pointer' : 'not-allowed',
+  };
+}
 
 const PASTEL_COLORS = [
   '#FFB3B3',
@@ -644,6 +683,9 @@ export default function RegistrationPage() {
     }
     goBack();
   };
+  const aboutComplete = getRegistrationStepComplete('about', formData, yearOptions);
+  const personalComplete = getRegistrationStepComplete('personal', formData, yearOptions);
+  const academicComplete = getRegistrationStepComplete('academic', formData, yearOptions);
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
@@ -732,6 +774,7 @@ export default function RegistrationPage() {
             language={language}
             t={t}
             profileHeroProps={profileHeroProps}
+            isComplete={aboutComplete}
           />
         </div>
       )}
@@ -747,6 +790,7 @@ export default function RegistrationPage() {
             displayName={displayName}
             greetingName={greetingName}
             profileHeroProps={profileHeroProps}
+            isComplete={personalComplete}
           />
         </div>
       )}
@@ -764,6 +808,7 @@ export default function RegistrationPage() {
             greetingName={greetingName}
             language={language}
             profileHeroProps={profileHeroProps}
+            isComplete={academicComplete}
           />
         </div>
       )}
@@ -865,7 +910,7 @@ function ProfileHero({
   );
 }
 
-function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps }) {
+function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps, isComplete }) {
   return (
     <div style={s.form}>
       <div style={s.formContent}>
@@ -917,7 +962,7 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
       </div>
 
       <div style={s.bottomAction}>
-        <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
+        <button type="button" onClick={goNext} disabled={!isComplete} style={getNextButtonStyle(isComplete)}>
           {t.next}
         </button>
       </div>
@@ -925,7 +970,7 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
   );
 }
 
-function PersonalStep({ formData, handleChange, goNext, language, t, greetingName, profileHeroProps }) {
+function PersonalStep({ formData, handleChange, goNext, language, t, greetingName, profileHeroProps, isComplete }) {
   const greetingFirstLine = language === 'ko' ? '안녕하세요,' : 'Greetings,';
   const greetingSecondLine = language === 'ko' ? `${greetingName}님` : greetingName;
   return (
@@ -975,7 +1020,7 @@ function PersonalStep({ formData, handleChange, goNext, language, t, greetingNam
       </div>
 
       <div style={s.bottomAction}>
-        <button type="button" onClick={goNext} style={{ ...s.submitBtn }}>
+        <button type="button" onClick={goNext} disabled={!isComplete} style={getNextButtonStyle(isComplete)}>
           {t.next}
         </button>
       </div>
@@ -1042,6 +1087,7 @@ function AcademicStep({
   greetingName,
   language,
   profileHeroProps,
+  isComplete,
 }) {
   const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
   return (
@@ -1137,8 +1183,9 @@ function AcademicStep({
         <button
           type="button"
           onClick={goNext}
+          disabled={!isComplete}
           style={{
-            ...s.submitBtn,
+            ...getNextButtonStyle(isComplete),
             flex: 1,
           }}
         >

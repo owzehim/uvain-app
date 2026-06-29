@@ -1265,7 +1265,8 @@ function EventsTab({ events }) {
 
   const nextEvent = futureEvents[0] || null
   const otherUpcomingEvents = nextEvent ? futureEvents.slice(1) : futureEvents
-  const allEvents = [...pastEvents.slice().reverse(), ...futureEvents, ...tbdEvents]
+  const eventTabEvents = [...futureEvents.slice().reverse(), ...pastEvents, ...tbdEvents]
+  const allEvents = eventTabEvents
   const initialEvent = nextEvent || allEvents[0] || null
 
   const [selectedEvent, setSelectedEvent] = useState(initialEvent)
@@ -1276,7 +1277,7 @@ function EventsTab({ events }) {
   const [slideIndexes, setSlideIndexes] = useState({})
   const [eventListOpen, setEventListOpen] = useState(false)
   const [eventListClosing, setEventListClosing] = useState(false)
-  const [eventListNewestFirst, setEventListNewestFirst] = useState(false)
+  const [eventListNewestFirst, setEventListNewestFirst] = useState(true)
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
   )
@@ -1972,7 +1973,10 @@ const effectiveDateColor = isDragging
     `}</style>
     <button
       type="button"
-      onClick={() => setEventListOpen(true)}
+      onClick={() => {
+        setEventListNewestFirst(true)
+        setEventListOpen(true)
+      }}
   className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
   aria-label="Open event list"
   style={{

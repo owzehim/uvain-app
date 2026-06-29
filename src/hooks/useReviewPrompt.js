@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { getPendingReviewPrompt, markPromptSubmitted, markPromptDismissed } from '../api/reviewPromptApi'
 import { createReview } from '../api/reviewApi'
 import { validateReviewInput } from '../domain/reviewDomain'
+import { isProductionEnv } from '../lib/appEnv'
 
 export function useReviewPrompt() {
   const [prompt, setPrompt]           = useState(null)
@@ -38,8 +39,9 @@ export function useReviewPrompt() {
       // ⚠️ TEST MODE: fetch pending prompts and treat any pending one as due
       // by passing a now that is 50 min in the future.
       // To revert: remove the override and use getPendingReviewPrompt() as-is.
-      const { data: allPending, error } = await getPendingReviewPrompt({ testMode: true })
-console.log('prompt result:', allPending, error) 
+      const { data: allPending, error } = await getPendingReviewPrompt({
+        testMode: !isProductionEnv,
+      })
 
       if (!error && allPending) {
         setPrompt(allPending)
@@ -50,7 +52,14 @@ console.log('prompt result:', allPending, error)
 
     // ⚠️ TEST MODE: show after 10 seconds instead of waiting for prompt_at
     // To revert: change to checkForPrompt()
-    setTimeout(checkForPrompt, 10_000)
+    if (isProductionEnv) {
+      checkForPrompt()
+      const intervalId = setInterval(checkForPrompt, 60_000)
+      return () => clearInterval(intervalId)
+    }
+
+    const timerId = setTimeout(checkForPrompt, 10_000)
+    return () => clearTimeout(timerId)
   }, [])
 
   // ── 2. Tag toggle ─────────────────────────────────────────

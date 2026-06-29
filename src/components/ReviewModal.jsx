@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 // ReviewModal
-// The popup shown to members 50 minutes after a store visit.
+// The popup shown to members 30 minutes after a store visit in production.
 // Receives all state and actions from useReviewPrompt hook —
 // this component is purely presentational.
 // ─────────────────────────────────────────────────────────────
