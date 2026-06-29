@@ -1934,7 +1934,7 @@ const effectiveDateColor = isDragging
     <button
       type="button"
       onClick={() => setEventListOpen(true)}
-  className="fixed flex h-11 w-11 items-center justify-center rounded-full border border-black/5 bg-white text-gray-700 shadow-sm hover:bg-gray-100 dark:border-white/10 dark:bg-[#111111] dark:text-gray-200 dark:hover:bg-[#1c1c1e]"
+  className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
   aria-label="Open event list"
   style={{
     left: '14px',
@@ -2702,6 +2702,48 @@ onClick={() => openParticipationForm(displayEvent)}
               zIndex: 4,
             }}
           />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              closeEventList()
+            }}
+            className="fixed flex h-11 w-11 items-center justify-center text-white/85 hover:text-white"
+            aria-label="Close event list"
+            style={{
+              left: '14px',
+              top: 'calc(env(safe-area-inset-top) + 6px)',
+              zIndex: 90,
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <List size={24} weight="bold" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setEventListNewestFirst((v) => !v)
+            }}
+            className="fixed flex h-11 w-11 items-center justify-center text-white/85 hover:text-white"
+            aria-label={eventListNewestFirst ? 'Sort events old to new' : 'Sort events new to old'}
+            style={{
+              right: '14px',
+              top: 'calc(env(safe-area-inset-top) + 6px)',
+              zIndex: 90,
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            {eventListNewestFirst ? (
+              <SortDescending size={24} weight="bold" />
+            ) : (
+              <SortAscending size={24} weight="bold" />
+            )}
+          </button>
           <div
             className="absolute left-0 right-0 top-0 px-6"
             style={{
@@ -2712,42 +2754,6 @@ onClick={() => openParticipationForm(displayEvent)}
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={closeEventList}
-              className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white/80 shadow-sm ring-1 ring-white/10 hover:bg-white/15 hover:text-white"
-              aria-label="Close event list"
-              style={{
-                left: '14px',
-                top: 'calc(env(safe-area-inset-top) + 6px)',
-                zIndex: 5,
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              <List size={22} weight="bold" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setEventListNewestFirst((v) => !v)}
-              className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white/80 shadow-sm ring-1 ring-white/10 hover:bg-white/15 hover:text-white"
-              aria-label={eventListNewestFirst ? 'Sort events old to new' : 'Sort events new to old'}
-              style={{
-                right: '14px',
-                top: 'calc(env(safe-area-inset-top) + 6px)',
-                zIndex: 5,
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              {eventListNewestFirst ? (
-                <SortDescending size={22} weight="bold" />
-              ) : (
-                <SortAscending size={22} weight="bold" />
-              )}
-            </button>
           </div>
 
           <div
