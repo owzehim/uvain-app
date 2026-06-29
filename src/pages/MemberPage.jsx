@@ -1643,7 +1643,7 @@ function EventsTab({ events }) {
     const d = new Date(date)
     return {
       year: String(d.getFullYear()),
-      month: `${d.getMonth() + 1}월`,
+      month: d.toLocaleDateString('en-US', { month: 'short' }),
       day: String(d.getDate()),
       weekday: d
         .toLocaleDateString('en-US', { weekday: 'short' })
@@ -2742,7 +2742,7 @@ onClick={() => openParticipationForm(displayEvent)}
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <List size={24} weight="bold" />
+            <List size={22} weight="bold" />
           </button>
           <button
             type="button"
@@ -2763,9 +2763,9 @@ onClick={() => openParticipationForm(displayEvent)}
             }}
           >
             {eventListNewestFirst ? (
-              <SortDescending size={24} weight="bold" />
+              <SortDescending size={22} weight="bold" />
             ) : (
-              <SortAscending size={24} weight="bold" />
+              <SortAscending size={22} weight="bold" />
             )}
           </button>
           <div
@@ -2793,23 +2793,23 @@ onClick={() => openParticipationForm(displayEvent)}
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 86px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 74px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto w-full max-w-md">
-              <div className="space-y-7">
+              <div className="space-y-4">
                 {groupedListEvents.map((yearGroup) => (
-                  <section key={yearGroup.year} className="space-y-4">
+                  <section key={yearGroup.year} className="space-y-2.5">
                     <p
-                      className="py-4 text-3xl font-bold leading-none"
+                      className="py-2 text-3xl font-bold leading-none"
                       style={{ color: eventListYearColor }}
                     >
                       {yearGroup.year}
                     </p>
-                    <div className="space-y-2.5">
+                    <div className="space-y-2">
                       {yearGroup.months.flatMap((monthGroup) => monthGroup.events).map((ev) => {
                         const parts = getListDateParts(ev)
                         return (
@@ -2817,23 +2817,23 @@ onClick={() => openParticipationForm(displayEvent)}
                             key={ev.id}
                             type="button"
                             onClick={() => selectEventFromList(ev)}
-                            className="w-full rounded-2xl border px-3.5 py-3 text-left transition-transform active:scale-[0.99]"
+                            className="w-full rounded-2xl border px-3 py-2.5 text-left transition-transform active:scale-[0.99]"
                             style={eventListCardStyle}
                           >
-                            <div className="flex min-h-[58px] items-center">
-                              <div className="w-[58px] shrink-0 text-center">
+                            <div className="flex min-h-[48px] items-center">
+                              <div className="w-[54px] shrink-0 text-center">
                                 <p
                                   className="text-xs font-semibold leading-none"
                                   style={{ color: eventListMutedColor }}
                                 >
                                   {parts.month}
                                 </p>
-                                <p className="mt-1 text-3xl font-medium leading-none">
+                                <p className="mt-0.5 text-2xl font-medium leading-none">
                                   {parts.day}
                                 </p>
                               </div>
                               <div
-                                className="mx-3 h-11 w-px shrink-0"
+                                className="mx-3 h-9 w-px shrink-0"
                                 style={{ backgroundColor: eventListDividerColor }}
                               />
                               <div className="min-w-0 flex-1">
