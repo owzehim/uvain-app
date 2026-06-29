@@ -21,7 +21,7 @@ if (typeof window !== 'undefined') {
 }
 
 import { getMapIconSvg } from '../lib/mapCategories'
-import { MapPin } from '@phosphor-icons/react'
+import { MapPinSimple } from '@phosphor-icons/react'
 
 // Set your API key
 const API_KEY = import.meta.env.VITE_MAPTILER_API_KEY
@@ -413,8 +413,10 @@ useEffect(() => {
             : darkMapControls
               ? '1px solid #2c2c2e'
               : 'none',
-          borderRadius: '8px',
-          padding: '8px 10px',
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+          padding: 0,
           boxShadow: isTrackingLocation
             ? '0 3px 12px rgba(249,115,22,0.35)'
             : darkMapControls
@@ -427,7 +429,7 @@ useEffect(() => {
         }}
         title={isTrackingLocation ? '현재 위치 끄기' : '현재 위치 켜기'}
       >
-        <MapPin
+        <MapPinSimple
           size={20}
           weight="fill"
           color={isTrackingLocation ? (darkMapControls ? '#121212' : 'white') : '#f97316'}
