@@ -2951,6 +2951,22 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
     [restaurants, activeCategory],
   )
 
+  const visibleCategories = useMemo(() => {
+    const categoriesWithMarkers = new Set(
+      restaurants
+        .map((r) => r.category)
+        .filter(Boolean),
+    )
+
+    return MAP_CATEGORIES.filter((cat) => cat === '전체' || categoriesWithMarkers.has(cat))
+  }, [restaurants])
+
+  useEffect(() => {
+    if (!visibleCategories.includes(activeCategory)) {
+      setActiveCategory('전체')
+    }
+  }, [activeCategory, visibleCategories])
+
   return (
     <div
       className="h-full flex flex-col no-highlight-zone"
@@ -2971,7 +2987,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
     WebkitTapHighlightColor: 'transparent',
   }} 
 >
-        {MAP_CATEGORIES.map((cat) => {
+        {visibleCategories.map((cat) => {
           const isActive = activeCategory === cat
           const iconSvg = isActive
             ? darkMode

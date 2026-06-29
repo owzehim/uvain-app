@@ -431,7 +431,7 @@ useEffect(() => {
       >
         <MapPinSimple
           size={22}
-          weight="bold"
+          weight={isTrackingLocation ? 'fill' : 'bold'}
           color={isTrackingLocation ? (darkMapControls ? '#121212' : 'white') : '#f97316'}
         />
       </button>
