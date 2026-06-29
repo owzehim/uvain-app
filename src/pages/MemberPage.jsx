@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical } from '@phosphor-icons/react'
+import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -1259,6 +1259,7 @@ function EventsTab({ events }) {
   const [slideIndexes, setSlideIndexes] = useState({})
   const [eventListOpen, setEventListOpen] = useState(false)
   const [eventListClosing, setEventListClosing] = useState(false)
+  const [eventListNewestFirst, setEventListNewestFirst] = useState(false)
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
   )
@@ -1650,7 +1651,21 @@ function EventsTab({ events }) {
     }
   }
 
-  const groupedListEvents = allEvents.reduce((years, ev) => {
+  const getListSortTime = (ev) => {
+    const date = getPrimaryEventDateTime(ev)
+    return date ? new Date(date).getTime() : Number.POSITIVE_INFINITY
+  }
+
+  const sortedListEvents = allEvents.slice().sort((a, b) => {
+    const aTime = getListSortTime(a)
+    const bTime = getListSortTime(b)
+    if (aTime !== bTime) {
+      return eventListNewestFirst ? bTime - aTime : aTime - bTime
+    }
+    return String(a.title || '').localeCompare(String(b.title || ''))
+  })
+
+  const groupedListEvents = sortedListEvents.reduce((years, ev) => {
     const parts = getListDateParts(ev)
     let yearGroup = years.find((group) => group.year === parts.year)
     if (!yearGroup) {
@@ -1919,12 +1934,12 @@ const effectiveDateColor = isDragging
     <button
       type="button"
       onClick={() => setEventListOpen(true)}
-  className="fixed flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-[#1c1c1e]"
+  className="fixed flex h-11 w-11 items-center justify-center rounded-full border border-black/5 bg-white text-gray-700 shadow-sm hover:bg-gray-100 dark:border-white/10 dark:bg-[#111111] dark:text-gray-200 dark:hover:bg-[#1c1c1e]"
   aria-label="Open event list"
   style={{
-    left: '16px',
-    top: 'calc(env(safe-area-inset-top) + 8px)',
-    zIndex: 30,
+    left: '14px',
+    top: 'calc(env(safe-area-inset-top) + 6px)',
+    zIndex: 70,
     userSelect: 'none',
     WebkitUserSelect: 'none',
     WebkitTapHighlightColor: 'transparent',
@@ -2700,11 +2715,11 @@ onClick={() => openParticipationForm(displayEvent)}
             <button
               type="button"
               onClick={closeEventList}
-              className="fixed flex h-10 w-10 items-center justify-center rounded-full text-white/70 hover:text-white"
+              className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white/80 shadow-sm ring-1 ring-white/10 hover:bg-white/15 hover:text-white"
               aria-label="Close event list"
               style={{
-                left: '16px',
-                top: 'calc(env(safe-area-inset-top) + 8px)',
+                left: '14px',
+                top: 'calc(env(safe-area-inset-top) + 6px)',
                 zIndex: 5,
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
@@ -2712,6 +2727,26 @@ onClick={() => openParticipationForm(displayEvent)}
               }}
             >
               <List size={22} weight="bold" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setEventListNewestFirst((v) => !v)}
+              className="fixed flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white/80 shadow-sm ring-1 ring-white/10 hover:bg-white/15 hover:text-white"
+              aria-label={eventListNewestFirst ? 'Sort events old to new' : 'Sort events new to old'}
+              style={{
+                right: '14px',
+                top: 'calc(env(safe-area-inset-top) + 6px)',
+                zIndex: 5,
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              {eventListNewestFirst ? (
+                <SortDescending size={22} weight="bold" />
+              ) : (
+                <SortAscending size={22} weight="bold" />
+              )}
             </button>
           </div>
 
