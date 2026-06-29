@@ -10,6 +10,7 @@
 const OTP_EXEMPT_EMAILS = [
   'test@uvain.nl',
   'admin@uvain.nl',
+  'northeastkitchen@uvain.nl',
 ]
 
 /**

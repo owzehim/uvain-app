@@ -260,7 +260,7 @@ serve(async (req) => {
     const { data: member, error: memberError } = await admin
       .from('members')
       .select(
-        'first_name, last_name, first_name_korean, last_name_korean, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, membership_ended_at, identity_anonymized_at, account_status, is_member',
+        'first_name, last_name, first_name_korean, last_name_korean, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, membership_ended_at, identity_anonymized_at, account_status, is_member, is_test_account',
       )
       .eq('user_id', user.id)
       .single()
@@ -299,6 +299,20 @@ serve(async (req) => {
       .select('name, sheet_name, master_apps_script_url, partner_apps_script_url')
       .eq('id', storeId)
       .single()
+
+    if (!partnershipError && partnership && member.is_test_account) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          storeName: partnership.name,
+          redemptionId: '',
+          testMode: true,
+          stampResult: { enabled: false, testMode: true },
+          sheetResults: [],
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
 
     if (partnershipError || !partnership) {
       console.error('Partnership error:', partnershipError)
