@@ -2682,7 +2682,7 @@ onClick={() => openParticipationForm(displayEvent)}
           <div
             className="fixed left-0 right-0 top-0"
             style={{
-              height: 'env(safe-area-inset-top)',
+              height: 'calc(env(safe-area-inset-top) + 64px)',
               backgroundColor: '#303236',
               zIndex: 4,
             }}
@@ -2700,18 +2700,18 @@ onClick={() => openParticipationForm(displayEvent)}
             <button
               type="button"
               onClick={closeEventList}
-              className="fixed flex h-11 w-11 items-center justify-center rounded-full text-white/70 hover:text-white"
+              className="fixed flex h-10 w-10 items-center justify-center rounded-full text-white/70 hover:text-white"
               aria-label="Close event list"
               style={{
-                left: '12px',
-                top: 'calc(env(safe-area-inset-top) + 4px)',
+                left: '16px',
+                top: 'calc(env(safe-area-inset-top) + 8px)',
                 zIndex: 5,
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              <List size={20} weight="bold" />
+              <List size={22} weight="bold" />
             </button>
           </div>
 
@@ -2739,29 +2739,13 @@ onClick={() => openParticipationForm(displayEvent)}
               <div className="space-y-9">
                 {groupedListEvents.map((yearGroup) => (
                   <section key={yearGroup.year}>
-                    <p
-                      className="mb-5 text-white"
-                      style={{
-                        fontFamily: '"Handjet", system-ui, sans-serif',
-                        fontSize: `calc(${W} * 0.10)`,
-                        fontWeight: 700,
-                        lineHeight: 0.8,
-                      }}
-                    >
+                    <p className="mb-5 text-3xl font-bold leading-none text-white">
                       {yearGroup.year}
                     </p>
                     <div className="space-y-5">
                       {yearGroup.months.map((monthGroup) => (
                         <div key={`${yearGroup.year}-${monthGroup.month}`}>
-                          <p
-                            className="mb-2 text-white/75"
-                            style={{
-                              fontFamily: '"Handjet", system-ui, sans-serif',
-                              fontSize: `calc(${W} * 0.04)`,
-                              fontWeight: 700,
-                              lineHeight: 0.9,
-                            }}
-                          >
+                          <p className="mb-2 text-sm font-bold leading-none text-white/75">
                             {monthGroup.month}
                           </p>
                           <div className="space-y-2">
@@ -2772,43 +2756,28 @@ onClick={() => openParticipationForm(displayEvent)}
                                   key={ev.id}
                                   type="button"
                                   onClick={() => selectEventFromList(ev)}
-                                  className="w-full rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3 text-left transition-colors hover:bg-white/[0.14]"
+                                  className="w-full rounded-2xl border border-white/12 bg-white/[0.08] px-3.5 py-2.5 text-left transition-colors hover:bg-white/[0.14]"
                                 >
-                                  <div className="flex items-center gap-4">
+                                  <div className="flex items-center gap-3">
                                     <div
                                       className="shrink-0 text-white"
                                       style={{
-                                        width: `calc(${W} * 0.16)`,
-                                        fontFamily: '"Handjet", system-ui, sans-serif',
+                                        width: 52,
                                       }}
                                     >
-                                      <p
-                                        style={{
-                                          fontSize: `calc(${W} * 0.075)`,
-                                          fontWeight: 700,
-                                          lineHeight: 0.75,
-                                        }}
-                                      >
+                                      <p className="text-2xl font-bold leading-none">
                                         {parts.day}
                                       </p>
-                                      <p
-                                        className="text-white/70"
-                                        style={{
-                                          fontSize: `calc(${W} * 0.045)`,
-                                          fontWeight: 700,
-                                          lineHeight: 0.9,
-                                          marginTop: 5,
-                                        }}
-                                      >
+                                      <p className="mt-1 text-xs font-semibold leading-none text-white/70">
                                         {parts.weekday}
                                       </p>
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                      <p className="truncate text-base font-semibold text-white">
+                                      <p className="truncate text-sm font-semibold text-white">
                                         {ev.title || 'Untitled event'}
                                       </p>
                                       {ev.location && (
-                                        <p className="mt-1 truncate text-sm text-white/55">
+                                        <p className="mt-0.5 truncate text-xs text-white/55">
                                           {plainText(ev.location)}
                                         </p>
                                       )}

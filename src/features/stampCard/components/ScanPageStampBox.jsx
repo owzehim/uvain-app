@@ -116,22 +116,24 @@ export default function ScanPageStampBox({
           </div>
         </div>
 
-        {scanResult?.alreadyStamped && !isBenefitReady && (
-          <p className="text-xs text-gray-400 mt-2 text-center">
-            오늘은 이미 스탬프가 적립되었어요
-          </p>
-        )}
+        <div className="mt-2 min-h-[16px] flex items-center justify-center">
+          {scanResult?.alreadyStamped && !isBenefitReady && (
+            <p className="text-xs text-gray-400 text-center">
+              오늘은 이미 포인트가 적립되었어요
+            </p>
+          )}
 
-        {isBenefitReady && (
-          <div className="mt-2 flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
-            <CheckCircle size={15} weight="fill" />
-            {redeeming
-              ? '혜택 적용 처리 중...'
-              : effectivePendingReward
-                ? 'Staff Only: Tap to Complete Applying Benefits'
-                : '혜택 정보 불러오는 중...'}
-          </div>
-        )}
+          {isBenefitReady && (
+            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
+              <CheckCircle size={15} weight="fill" />
+              {redeeming
+                ? '혜택 적용 처리 중...'
+                : effectivePendingReward
+                  ? 'Staff Only: Tap to Complete Applying Benefits'
+                  : '혜택 정보 불러오는 중...'}
+            </div>
+          )}
+        </div>
       </button>
     </div>
   )
