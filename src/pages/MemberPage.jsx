@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight } from '@phosphor-icons/react'
+import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -2804,7 +2804,7 @@ onClick={() => openParticipationForm(displayEvent)}
                 {groupedListEvents.map((yearGroup) => (
                   <section key={yearGroup.year} className="space-y-2.5">
                     <p
-                      className="py-2 text-3xl font-bold leading-none"
+                      className="pb-2 pt-5 text-3xl font-bold leading-none"
                       style={{ color: eventListYearColor }}
                     >
                       {yearGroup.year}
@@ -2812,6 +2812,8 @@ onClick={() => openParticipationForm(displayEvent)}
                     <div className="space-y-2">
                       {yearGroup.months.flatMap((monthGroup) => monthGroup.events).map((ev) => {
                         const parts = getListDateParts(ev)
+                        const hasActiveParticipation = !!ev.participation_url && !ev.is_registration_closed
+                        const RowCaret = hasActiveParticipation ? CaretDoubleRight : CaretRight
                         return (
                           <button
                             key={ev.id}
@@ -2821,7 +2823,7 @@ onClick={() => openParticipationForm(displayEvent)}
                             style={eventListCardStyle}
                           >
                             <div className="flex min-h-[48px] items-center">
-                              <div className="w-[54px] shrink-0 text-center">
+                              <div className="w-[46px] shrink-0 text-center">
                                 <p
                                   className="text-xs font-semibold leading-none"
                                   style={{ color: eventListMutedColor }}
@@ -2833,7 +2835,7 @@ onClick={() => openParticipationForm(displayEvent)}
                                 </p>
                               </div>
                               <div
-                                className="mx-3 h-9 w-px shrink-0"
+                                className="ml-2 mr-4 h-9 w-px shrink-0"
                                 style={{ backgroundColor: eventListDividerColor }}
                               />
                               <div className="min-w-0 flex-1">
@@ -2849,7 +2851,7 @@ onClick={() => openParticipationForm(displayEvent)}
                                   </p>
                                 )}
                               </div>
-                              <CaretRight
+                              <RowCaret
                                 className="ml-3 shrink-0"
                                 size={18}
                                 weight="bold"
