@@ -220,7 +220,13 @@ function PublicMapTab({ restaurants }) {
       ) : (
         <div className="flex-1 relative overflow-hidden no-highlight-zone">
           <MapView restaurants={filtered} selected={selected} onSelect={setSelected} />
-          {selected && <SpotCard selected={selected} onClose={() => setSelected(null)} />}
+          {selected && (
+            <SpotCard
+              selected={selected}
+              onClose={() => setSelected(null)}
+              constrainToParent
+            />
+          )}
         </div>
       )}
     </div>

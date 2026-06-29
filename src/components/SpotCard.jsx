@@ -308,13 +308,19 @@ function ImageThumbnails({ imgs, onTap }) {
   )
 }
 
-export function SpotCard({ selected, onClose, onClosingStart }) {
+export function SpotCard({
+  selected,
+  onClose,
+  onClosingStart,
+  constrainToParent = false,
+}) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [closing, setClosing] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [isVisible, setIsVisible] = useState(false)
   const [darkMode, setDarkMode] = useState(() => isDarkMode())
+  const [parentHeight, setParentHeight] = useState(null)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -337,7 +343,24 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
 
   const isDesktop = WIN_W >= 768
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
+  const defaultMaxHeight = isDesktop ? 460 : WIN_H * 0.82
+  const MAX_HEIGHT =
+    constrainToParent && parentHeight
+      ? Math.min(defaultMaxHeight, parentHeight)
+      : defaultMaxHeight
+
+  useEffect(() => {
+    if (!constrainToParent) return undefined
+
+    const syncParentHeight = () => {
+      const height = cardRef.current?.parentElement?.getBoundingClientRect().height
+      if (height) setParentHeight(height)
+    }
+
+    syncParentHeight()
+    window.addEventListener('resize', syncParentHeight)
+    return () => window.removeEventListener('resize', syncParentHeight)
+  }, [constrainToParent, selected])
 
   // Trigger animation on mount
   useEffect(() => {
@@ -474,7 +497,7 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
 
       <div
         ref={cardRef}
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+        className="absolute bottom-0 left-0 right-0 bg-white"
         style={{
           ...(hasImages ? imageStyle : noImageStyle),
           zIndex: 1000,
@@ -482,6 +505,8 @@ export function SpotCard({ selected, onClose, onClosingStart }) {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          borderTopLeftRadius: isMax ? 0 : 16,
+          borderTopRightRadius: isMax ? 0 : 16,
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
