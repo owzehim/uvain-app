@@ -405,7 +405,7 @@ useEffect(() => {
         style={{
           position: 'absolute',
           bottom: '80px',
-          right: '10px',
+          right: '16px',
           zIndex: 1000,
           background: isTrackingLocation ? '#f97316' : darkMapControls ? '#121212' : 'white',
           border: isTrackingLocation
@@ -414,8 +414,8 @@ useEffect(() => {
               ? '1px solid #2c2c2e'
               : 'none',
           borderRadius: '12px',
-          width: '40px',
-          height: '40px',
+          width: '44px',
+          height: '44px',
           padding: 0,
           boxShadow: isTrackingLocation
             ? '0 3px 12px rgba(249,115,22,0.35)'
@@ -430,8 +430,8 @@ useEffect(() => {
         title={isTrackingLocation ? '현재 위치 끄기' : '현재 위치 켜기'}
       >
         <MapPinSimple
-          size={20}
-          weight="fill"
+          size={22}
+          weight="bold"
           color={isTrackingLocation ? (darkMapControls ? '#121212' : 'white') : '#f97316'}
         />
       </button>
