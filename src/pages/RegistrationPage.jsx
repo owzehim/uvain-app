@@ -9,6 +9,7 @@ import { Camera, CaretLeft, EnvelopeSimple, UserCircle } from '@phosphor-icons/r
 import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
+import { LEGAL_DOCUMENT_VERSION, legalDocuments } from '../content/legalDocuments';
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
@@ -35,24 +36,267 @@ const COUNTRIES = [
 
 const GENDERS = ['female', 'male', 'non-binary', 'prefer not to say'];
 const GENDERS_KO = ['여성', '남성', '논바이너리', '응답 거절'];
-const CUSTOM_TYPE_OPTION = 'Others (type)';
+const CUSTOM_TYPE_OPTION = 'Other (please specify)';
 const UNIVERSITY_OPTIONS = ['University of Amsterdam (UvA)'];
 const MAJOR_OPTIONS = [
+  'Aardrijkskunde',
+  'Accountancy',
+  'Accountancy and Control',
+  'Actuarial Science',
+  'Actuarial Science and Mathematical Finance',
+  'Advanced Matter and Energy Physics',
+  'Algemene economie',
+  'Analytical Sciences',
+  'Ancient Studies',
+  'Arabisch',
+  'Arabische taal en cultuur',
+  'Archaeology',
+  'Archaeology and Heritage',
+  'Archival and Information Studies',
+  'Artificial Intelligence',
+  'Arts and Culture',
+  'Arts and Culture (Research)',
+  'Art and Performance Research Studies',
+  'Asset Management',
+  'Astronomy and Astrophysics',
+  'Banking and Regulation',
+  'Behavioral Data Science',
+  'Behavioral Economics and Game Theory',
+  'Bedrijfseconomie',
+  'Biologie',
+  'Biological Sciences',
+  'Biology',
+  'Bioinformatics and Systems Biology',
+  'Biomedical Sciences',
+  'Biophysics and Biophotonics',
+  'Boekwetenschap',
+  'Brain & Cognition in Society',
+  'Brain and Cognitive Sciences',
+  'Brain and Cognitive Sciences (Research)',
+  'Business',
   'Business Administration',
   'Business Analytics',
+  'Business Economics',
+  'Business Information Technology Management',
+  'Bèta-gamma',
+  'Chemistry',
+  'Chemistry of Life',
+  'Child Development and Education (Research)',
+  'Classics and Ancient Civilizations',
+  'Coaching & Vitality in Organisations',
+  'Cognition Language and Communication',
+  'Communication and Information',
   'Communication Science',
+  'Communication Science (Research)',
+  'Comparative Cultural Analysis',
+  'Comparative Literature',
+  'Complex Systems and Policy',
+  'Computational Science',
+  'Computational Social Science',
+  'Computer Science',
+  'Conflict Resolution and Governance',
+  'Conservation and Restoration of Cultural Heritage',
+  'Consultancy & Organisational Development',
+  'Consumer Marketing',
+  'Corporate Finance',
+  'Cultural Analysis',
+  'Cultural Anthropology and Development Sociology',
+  'Cultural and Social Anthropology',
+  'Cultural Data & AI',
+  'Cultural Psychology',
+  'Curating Art and Cultures',
+  'Data Science',
+  'Data Science and Business Analytics',
+  'Development Economics',
+  'Digital Marketing',
+  'Documentary and Fiction',
+  'Duits',
+  'Duitslandstudies',
+  'Earth Sciences',
+  'Econometrics',
   'Econometrics and Data Science',
+  'Economics',
   'Economics and Business Economics',
+  'Engels',
+  'English Language and Culture',
+  'English Literature and Culture',
+  'Entrepreneurship',
+  'Environmental Economics',
+  'European Competition Law and Regulation',
+  'European Politics and External Relations',
+  'European Studies',
+  'European Union Law',
+  'Film Studies',
+  'Finance',
+  'Financial Econometrics',
+  'Financial Management',
+  'Fiscaal Recht',
+  'Fiscale Economie',
+  'Filosofie',
+  'Forensic Science',
+  'Frans',
+  'Franse taal en cultuur',
+  'Future Planet Studies',
+  'Gender and Sexuality',
+  'Geneeskunde',
+  'Geneeskunde (Medicine)',
+  'General Linguistics',
+  'Geschiedenis',
+  'Gezondheidsrecht',
+  'Gezondheidszorgpsychologie',
+  'Global Arts Culture and Politics',
   'Global Arts, Culture and Politics',
+  'Global Communication Science',
+  'Global Cross-Media Cultures',
+  'Godsdienst en levensbeschouwing',
+  'Griekse en Latijnse taal en cultuur',
+  'Health Promotion & Behaviour Change',
+  'Hebreeuwse taal en cultuur',
+  'Hebreeuws',
+  'Heritage and Memory Studies',
+  'Heritage Studies',
+  'History (Research)',
+  'Holocaust and Genocide Studies',
+  'Human Geography',
+  'Human Geography and Planning',
+  'Human Resource & Career Management',
+  'Human-Computer Interaction',
+  'Informatica',
+  'Information Studies',
+  'Informatierecht',
+  'Interdisciplinaire sociale wetenschap',
+  'International and European Law',
+  'International and Transnational Criminal Law',
+  'International Business',
+  'International Criminal Law (LLM)',
+  'International Development Studies',
+  'International Development Studies (Research)',
+  'International Dramaturgy',
+  'International Finance and Trade',
+  'International Relations',
+  'International Tax Law (Advanced LLM)',
+  'International Trade and Investment Law',
+  'Italiaans',
+  'Italië studies',
+  'Jewish Studies',
+  'Journalism and Media',
+  'Journalism Media and Globalisation',
+  'Kunstgeschiedenis',
+  'Language and Society',
+  'Language Literature and Education',
+  'Latin American Studies',
+  'Latijnse taal en cultuur',
+  'Law & Finance (LLM)',
+  'Leadership and Management',
+  'Liberal Arts and Sciences (AUC)',
+  'Linguistics',
+  'Linguistics and Communication',
+  'Literary and Cultural Analysis',
+  'Literary Studies',
+  'Literary Studies (Research)',
+  'Literature Culture and Society',
+  'Logic',
+  'Maatschappijleer',
+  'Management of International Business and Trade',
+  'Managerial Economics and Strategy',
+  'Master’s Qualifying Programme (MQP) – OnCampus Amsterdam',
+  'Mathematics',
+  'Media and Culture',
   'Media and Information',
+  'Media Studies',
+  'Media Studies (Research)',
+  'Medical Anthropology and Sociology',
+  'Medical Informatics',
+  'Medische informatiekunde',
+  'Middle Eastern Studies',
+  'Molecular Sciences',
+  'Monetary Policy and Banking',
+  'Museum Studies',
+  'Music Studies',
+  'Muziekwetenschap',
+  'Natuurkunde',
+  'Nederlandse taal en cultuur',
+  'Nederlands',
+  'Nederlands als tweede taal en meertaligheid',
+  'Neuroeconomics',
+  'New Media and Digital Culture',
+  'Nieuwgriekse taal en cultuur',
+  'Onderwijswetenschappen',
+  'Orthopedagogiek',
+  'Other postgraduate fields',
+  'Pedagogical Sciences',
+  'Pedagogische wetenschappen',
+  'Persuasive Communication',
+  'Philosophy',
+  'Philosophy (Research)',
+  'Physics and Astronomy',
+  'Plus education/communication combinations',
+  'Political Communication',
+  'Political Economy',
+  'Political Geography',
+  'Political Science',
+  'Political Theory',
+  'Politics Psychology Law and Economics (PPLE)',
+  'Pre-Master\'s Programmes (UvA Bridging)',
+  'Preservation and Presentation of the Moving Image',
+  'Privaatrecht',
+  'Psychology',
+  'Psychology (Research)',
+  'Public Policy',
+  'Public Policy and Governance',
+  'Publiekrecht',
+  'Quantum Computer Science',
+  'Quantitative Finance',
+  'Real Estate Finance',
+  'Rechtsgeleerdheid',
+  'Redacteur/Editor',
+  'Religiewetenschappen',
+  'Religious Studies',
+  'Russisch',
+  'Scandinavië studies',
+  'Scheikunde',
+  'Science Technology & Innovation',
+  'Science for Energy and Sustainability',
+  'Security and Network Engineering',
+  'Sign Language Linguistics',
+  'Slavische talen en culturen',
+  'Social Influence',
+  'Social Sciences (Research)',
+  'Sociology',
+  'Software Engineering',
+  'Spaans',
+  'Spaanse en Latijns-Amerikaanse studies',
+  'Spatial Analysis',
+  'Spatial Sustainability Studies',
   'Sport and Performance Psychology',
+  'Stochastics and Financial Mathematics',
+  'Strafrecht',
+  'Strategy',
+  'Strategy and AI Transformation',
+  'Sustainability',
+  'Tandheelkunde',
+  'Tandheelkunde (Dentistry)',
+  'Technology Governance (Advanced LLM)',
+  'Theaterwetenschap',
+  'Theatre Studies',
+  'Theology and Religious Studies',
+  'Training & Development',
+  'Translation Studies',
+  'Transnational and European Private Law',
+  'Universitaire Pabo van Amsterdam',
+  'Urban and Regional Planning',
+  'Urban Geography',
+  'Urban Studies (Research)',
+  'Visual Anthropology',
+  'Wiskunde',
+  'Youth at Risk',
 ];
 
 const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS_KO = [...GENDERS_KO].sort((a, b) => a.localeCompare(b, 'ko'));
 const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
-const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
+const SORTED_MAJORS = [...new Set(MAJOR_OPTIONS)].sort((a, b) => a.localeCompare(b)).concat(CUSTOM_TYPE_OPTION);
 
 const PASTEL_COLORS = [
   '#FFB3B3',
@@ -297,6 +541,12 @@ export default function RegistrationPage() {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [legalAgreements, setLegalAgreements] = useState({
+    terms: false,
+    privacy: false,
+    community: false,
+  });
+  const [activeLegalDoc, setActiveLegalDoc] = useState(null);
 
   useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
@@ -368,6 +618,17 @@ export default function RegistrationPage() {
   const closeCropper = () => {
     setCropImageSrc(null);
     setCroppedAreaPixels(null);
+  };
+
+  const handleAgreementChange = (name, checked) => {
+    setLegalAgreements((current) => ({ ...current, [name]: checked }));
+  };
+
+  const handleAccountSubmit = (event) => {
+    handleSubmit(event, {
+      legalAccepted: Object.values(legalAgreements).every(Boolean),
+      legalDocumentsVersion: LEGAL_DOCUMENT_VERSION,
+    });
   };
 
   const profileHeroProps = {
@@ -513,11 +774,14 @@ export default function RegistrationPage() {
           <AccountStep
             formData={formData}
             handleChange={handleChange}
-            handleSubmit={handleSubmit}
+            handleSubmit={handleAccountSubmit}
             loading={loading}
             navigate={navigate}
             t={t}
             language={language}
+            legalAgreements={legalAgreements}
+            onAgreementChange={handleAgreementChange}
+            onOpenLegalDocument={setActiveLegalDoc}
             profileHeroProps={profileHeroProps}
           />
         </div>
@@ -533,6 +797,13 @@ export default function RegistrationPage() {
           setCroppedAreaPixels={setCroppedAreaPixels}
           onCancel={closeCropper}
           onConfirm={handleCropConfirm}
+        />
+      )}
+
+      {activeLegalDoc && (
+        <LegalDocumentModal
+          document={legalDocuments[activeLegalDoc]}
+          onClose={() => setActiveLegalDoc(null)}
         />
       )}
     </div>
@@ -887,14 +1158,19 @@ function AccountStep({
   loading,
   t,
   language,
+  legalAgreements,
+  onAgreementChange,
+  onOpenLegalDocument,
   profileHeroProps,
 }) {
+  const allLegalAccepted = Object.values(legalAgreements).every(Boolean);
   const isComplete =
     formData.email &&
     formData.password &&
     formData.confirmPassword &&
     formData.password === formData.confirmPassword &&
-    formData.password.length >= 6;
+    formData.password.length >= 6 &&
+    allLegalAccepted;
 
   return (
     <form onSubmit={handleSubmit} style={s.form}>
@@ -940,6 +1216,13 @@ function AccountStep({
               />
             </Field>
           </Row>
+
+          <LegalAgreementList
+            agreements={legalAgreements}
+            onAgreementChange={onAgreementChange}
+            onOpenDocument={onOpenLegalDocument}
+            language={language}
+          />
         </div>
 
         {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
@@ -967,6 +1250,81 @@ function AccountStep({
         </button>
       </div>
     </form>
+  );
+}
+
+function LegalAgreementList({
+  agreements,
+  onAgreementChange,
+  onOpenDocument,
+  language,
+}) {
+  const labels = {
+    terms: language === 'ko' ? 'Terms & Conditions에 동의합니다' : 'I agree to the Terms & Conditions',
+    privacy: language === 'ko' ? 'Privacy Policy에 동의합니다' : 'I agree to the Privacy Policy',
+    community: language === 'ko' ? 'Community Guidelines에 동의합니다' : 'I agree to the Community Guidelines',
+  };
+
+  const readLabels = {
+    terms: language === 'ko' ? '전체 보기' : 'Read full text',
+    privacy: language === 'ko' ? '전체 보기' : 'Read full text',
+    community: language === 'ko' ? '전체 보기' : 'Read full text',
+  };
+
+  return (
+    <div style={s.legalBox}>
+      {Object.keys(legalDocuments).map((key) => (
+        <label key={key} style={s.legalRow}>
+          <input
+            type="checkbox"
+            checked={agreements[key]}
+            onChange={(event) => onAgreementChange(key, event.target.checked)}
+            style={s.legalCheckbox}
+          />
+          <span style={s.legalText}>{labels[key]}</span>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              onOpenDocument(key);
+            }}
+            style={s.legalReadButton}
+          >
+            {readLabels[key]}
+          </button>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function LegalDocumentModal({ document, onClose }) {
+  if (!document) return null;
+
+  return (
+    <div style={s.legalOverlay}>
+      <div style={s.legalModal}>
+        <div style={s.legalModalHeader}>
+          <div>
+            <h2 style={s.legalModalTitle}>{document.title}</h2>
+            <p style={s.legalModalDate}>Effective Date: {document.effectiveDate}</p>
+          </div>
+          <button type="button" onClick={onClose} style={s.legalCloseButton}>
+            Close
+          </button>
+        </div>
+        <div style={s.legalModalBody}>
+          {document.body.split('\n').map((line, index) => (
+            <p
+              key={`${document.title}-${index}`}
+              style={line.trim() ? s.legalParagraph : s.legalSpacer}
+            >
+              {line}
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1725,6 +2083,112 @@ const s = {
     color: 'var(--reg-muted)',
     lineHeight: 1.6,
     margin: 0,
+  },
+  legalBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '7px',
+    padding: '10px 12px',
+    border: '1px solid var(--reg-border)',
+    borderRadius: '8px',
+    backgroundColor: 'var(--reg-field-bg)',
+  },
+  legalRow: {
+    display: 'grid',
+    gridTemplateColumns: '18px 1fr auto',
+    gap: '8px',
+    alignItems: 'center',
+    minHeight: '24px',
+    color: 'var(--reg-subtext)',
+    fontSize: '11px',
+  },
+  legalCheckbox: {
+    width: '15px',
+    height: '15px',
+    margin: 0,
+    accentColor: '#f97316',
+    cursor: 'pointer',
+  },
+  legalText: {
+    minWidth: 0,
+    lineHeight: 1.25,
+  },
+  legalReadButton: {
+    border: 'none',
+    background: 'transparent',
+    color: '#f97316',
+    fontSize: '11px',
+    fontWeight: 700,
+    padding: '3px 0',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  legalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 1200,
+    backgroundColor: 'rgba(0,0,0,0.58)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '16px',
+  },
+  legalModal: {
+    width: '100%',
+    maxWidth: '720px',
+    maxHeight: '86dvh',
+    backgroundColor: 'var(--reg-card-bg)',
+    color: 'var(--reg-text)',
+    borderRadius: '8px',
+    border: '1px solid var(--reg-soft-border)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    boxShadow: '0 18px 48px rgba(0,0,0,0.26)',
+  },
+  legalModalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: '12px',
+    padding: '14px 16px',
+    borderBottom: '1px solid var(--reg-soft-border)',
+  },
+  legalModalTitle: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: 700,
+    color: 'var(--reg-text)',
+  },
+  legalModalDate: {
+    margin: '5px 0 0',
+    fontSize: '12px',
+    color: 'var(--reg-muted)',
+  },
+  legalCloseButton: {
+    border: 'none',
+    borderRadius: '9999px',
+    backgroundColor: 'var(--reg-ghost-bg)',
+    color: 'var(--reg-subtext)',
+    padding: '8px 12px',
+    fontSize: '12px',
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  legalModalBody: {
+    padding: '14px 16px 20px',
+    overflowY: 'auto',
+  },
+  legalParagraph: {
+    margin: '0 0 10px',
+    fontSize: '13px',
+    lineHeight: 1.55,
+    whiteSpace: 'pre-wrap',
+    color: 'var(--reg-subtext)',
+  },
+  legalSpacer: {
+    margin: '0 0 6px',
+    minHeight: '1px',
   },
   cropOverlay: {
     position: 'fixed',

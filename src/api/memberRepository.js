@@ -45,6 +45,8 @@ function isAlreadyRegisteredError(error) {
  *  educationLevel: 'foundation' | 'bachelor' | 'master' | 'alumni',
  *  yearNumber: number | null,
  *  profileImageUrl?: string | null,
+ *  legalDocumentsVersion?: string,
+ *  legalAcceptedAt?: string,
  * }} payload
  *
  * @returns {Promise<{ userId: string, memberId: string }>}
@@ -66,6 +68,8 @@ export async function registerMember(payload) {
     educationLevel,
     yearNumber,
     profileImageUrl,
+    legalDocumentsVersion,
+    legalAcceptedAt,
   } = payload;
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -177,6 +181,28 @@ export async function registerMember(payload) {
       throw new Error(ALREADY_REGISTERED_MESSAGE);
     }
     throw new Error(memberError.message);
+  }
+
+  if (legalDocumentsVersion && legalAcceptedAt) {
+    const legalUpdates = [
+      { legal_documents_version: legalDocumentsVersion },
+      { legal_documents_accepted_at: legalAcceptedAt },
+      { privacy_policy_version: legalDocumentsVersion },
+      { privacy_accepted_at: legalAcceptedAt },
+      { terms_accepted_at: legalAcceptedAt },
+      { community_guidelines_accepted_at: legalAcceptedAt },
+    ];
+
+    for (const update of legalUpdates) {
+      const { error: legalUpdateError } = await supabase
+        .from('members')
+        .update(update)
+        .eq('id', memberData.id);
+
+      if (legalUpdateError) {
+        console.warn('Legal acceptance metadata field was not stored:', update, legalUpdateError);
+      }
+    }
   }
 
   return { userId, memberId: memberData.id };

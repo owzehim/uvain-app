@@ -136,9 +136,14 @@ export function useRegisterMember() {
   };
 
   // ── Final submit (after step 3) ─────────────────────────────────────────
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, options = {}) => {
     e.preventDefault();
     setError('');
+
+    if (!options.legalAccepted) {
+      setError('Please read and accept the Terms, Privacy Policy, and Community Guidelines');
+      return;
+    }
 
     // Client-side password checks
     if (formData.password !== formData.confirmPassword) {
@@ -226,6 +231,8 @@ export function useRegisterMember() {
           ? Number(formData.yearNumber)
           : null,
         profileImageUrl,
+        legalDocumentsVersion: options.legalDocumentsVersion,
+        legalAcceptedAt: new Date().toISOString(),
       });
 
       // Account created — now tell user to check their email.
