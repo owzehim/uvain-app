@@ -4,6 +4,7 @@ import MapView from '../components/MapView'
 import { supabase } from '../lib/supabase'
 import { SpotCard } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
+import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { MapPin, Lock, ForkKnife, Calendar, Users } from '@phosphor-icons/react'
 
 export default function PublicPage() {
@@ -141,10 +142,21 @@ function PublicMapTab({ restaurants }) {
     [restaurants, activeCategory]
   )
 
+  const visibleCategories = useMemo(
+    () => getVisibleMapCategories(restaurants),
+    [restaurants],
+  )
+
+  useEffect(() => {
+    if (!visibleCategories.includes(activeCategory)) {
+      setActiveCategory(MAP_CATEGORIES[0])
+    }
+  }, [activeCategory, visibleCategories])
+
   return (
     <div className="h-full flex flex-col no-highlight-zone">
       <div className="bg-white px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0 select-none">
-  {MAP_CATEGORIES.map((cat) => {
+  {visibleCategories.map((cat) => {
     const isActive = activeCategory === cat
 
     const iconSvg = isActive

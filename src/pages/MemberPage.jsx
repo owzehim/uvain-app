@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
+import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
@@ -133,7 +134,7 @@ export default function MemberPage() {
 
   return (
     <div
-      className="relative flex flex-col bg-white overflow-hidden dark:bg-[#121212]"
+      className="member-app-shell relative flex flex-col bg-white overflow-hidden dark:bg-[#121212]"
       style={{ height: '100dvh' }}
     >
       {/* Review modal */}
@@ -325,7 +326,7 @@ function MembershipCard({
 }) {
   const [flipped, setFlipped] = useState(false)
 
-  const W = 'calc(100vw - 32px)'
+  const W = 'min(calc(100vw - 32px), 398px)'
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
   const fs = {
@@ -804,7 +805,7 @@ function QRTab({ member, isValid, onLiftChange }) {
     navigate('/scan', { state: { rawValue } })
   }
 
-  const W = 'calc(100vw - 32px)'
+  const W = 'min(calc(100vw - 32px), 398px)'
   const fs = {
     guide: `calc(${W} * 0.032)`,
   }
@@ -1566,7 +1567,7 @@ function EventsTab({ events }) {
     window.open(ev.participation_url, '_blank', 'noopener,noreferrer')
   }
 
-  const W = 'calc(100vw - 32px)'
+  const W = 'min(calc(100vw - 32px), 398px)'
   const fs = {
     day: `calc(${W} * 0.06)`,
     date: `calc(${W} * 0.24)`,
@@ -2951,15 +2952,10 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
     [restaurants, activeCategory],
   )
 
-  const visibleCategories = useMemo(() => {
-    const categoriesWithMarkers = new Set(
-      restaurants
-        .map((r) => r.category)
-        .filter(Boolean),
-    )
-
-    return MAP_CATEGORIES.filter((cat) => cat === '전체' || categoriesWithMarkers.has(cat))
-  }, [restaurants])
+  const visibleCategories = useMemo(
+    () => getVisibleMapCategories(restaurants),
+    [restaurants],
+  )
 
   useEffect(() => {
     if (!visibleCategories.includes(activeCategory)) {
