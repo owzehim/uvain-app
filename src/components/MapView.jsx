@@ -413,7 +413,7 @@ useEffect(() => {
             : darkMapControls
               ? '1px solid #2c2c2e'
               : 'none',
-          borderRadius: '50%',
+          borderRadius: '12px',
           width: '40px',
           height: '40px',
           padding: 0,
