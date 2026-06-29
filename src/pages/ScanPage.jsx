@@ -15,6 +15,11 @@ const STATE = {
 
 export default function ScanPage() {
   const [state, setState] = useState(STATE.SCANNING)
+  const [darkMode, setDarkMode] = useState(
+    () =>
+      typeof document !== 'undefined' &&
+      document.documentElement.classList.contains('dark'),
+  )
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [member, setMember] = useState(null)
@@ -117,7 +122,32 @@ export default function ScanPage() {
     handleScan(rawValue)
   }, [handleScan, location.state])
 
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return undefined
+
+    const syncDarkMode = () => {
+      setDarkMode(document.documentElement.classList.contains('dark'))
+    }
+
+    const observer = new MutationObserver(syncDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+
+    syncDarkMode()
+    return () => observer.disconnect()
+  }, [])
+
   const reset = () => {
+    if (location.state?.returnToMemberScanner) {
+      navigate('/member', {
+        replace: true,
+        state: { reopenQrScanner: Date.now() },
+      })
+      return
+    }
+
     setState(STATE.SCANNING)
     setStoreName('')
     setErrorMsg('')
@@ -152,16 +182,24 @@ export default function ScanPage() {
   const fullName = member
     ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
     : ''
+  const isLoading = state === STATE.LOADING
+  const loadingBg = darkMode ? '#121212' : '#ffffff'
 
   return (
     <div
       className="force-light flex flex-col bg-white overflow-hidden"
-      style={{ height: '100dvh' }}
+      style={{
+        height: '100dvh',
+        backgroundColor: isLoading ? loadingBg : undefined,
+      }}
     >
       {/* Header – white */}
       <div
         className="bg-white px-2 py-3 flex items-center flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 12px)',
+          backgroundColor: isLoading ? loadingBg : undefined,
+        }}
       >
         <button
           onClick={() => navigate('/member')}
@@ -173,7 +211,14 @@ export default function ScanPage() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto flex flex-col items-center bg-white px-4 pt-3 pb-6 gap-4 relative">
+      <div
+        className="flex-1 overflow-y-auto flex flex-col items-center bg-white px-4 pb-6 gap-4 relative"
+        style={{
+          paddingTop: isLoading ? 0 : 12,
+          justifyContent: isLoading ? 'center' : 'flex-start',
+          backgroundColor: isLoading ? loadingBg : undefined,
+        }}
+      >
         {/* Blinking orange dot – only on success */}
         {state === STATE.SUCCESS && (
           <>
@@ -206,8 +251,14 @@ export default function ScanPage() {
         {state === STATE.SCANNING && <QRScanner onScan={handleScan} />}
 
         {state === STATE.LOADING && (
-          <div className="flex flex-col items-center gap-4 mt-12">
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
+          <div className="flex flex-col items-center gap-4">
+            <div
+              className="w-12 h-12 border-4 rounded-full animate-spin"
+              style={{
+                borderColor: darkMode ? '#2c2c2e' : '#e5e7eb',
+                borderTopColor: '#f97316',
+              }}
+            />
             <p className="text-gray-500 text-sm">멤버십 확인 중...</p>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
@@ -24,6 +24,8 @@ export default function MemberPage() {
   const [restaurants, setRestaurants] = useState([])
   const [qrCardLifted, setQrCardLifted] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+  const scannerOpenSignal = location.state?.reopenQrScanner || 0
 
   // Review prompt hook
   const {
@@ -239,6 +241,7 @@ export default function MemberPage() {
             <QRTab
               member={member}
               isValid={isValid}
+              scannerOpenSignal={scannerOpenSignal}
               onLiftChange={(lifted) => setQrCardLifted(lifted)}
             />
           )}
@@ -323,6 +326,7 @@ function MembershipCard({
   disabled = false,
   onFlipChange,
   darkMode = false,
+  scannerOpenSignal = 0,
 }) {
   const [flipped, setFlipped] = useState(false)
 
@@ -357,6 +361,10 @@ function MembershipCard({
   useEffect(() => {
     if (onFlipChange) onFlipChange(flipped)
   }, [flipped, onFlipChange])
+
+  useEffect(() => {
+    if (scannerOpenSignal) setFlipped(true)
+  }, [scannerOpenSignal])
 
   const cardFront = (
     <div
@@ -712,7 +720,7 @@ function MembershipCard({
 }
 
 // QR Tab
-function QRTab({ member, isValid, onLiftChange }) {
+function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
   const [cardFlipped, setCardFlipped] = useState(false)
@@ -798,11 +806,18 @@ function QRTab({ member, isValid, onLiftChange }) {
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => {
+    if (!scannerOpenSignal) return
+    setLifted(false)
+    liftedRef.current = false
+    if (onLiftChange) onLiftChange(false)
+  }, [scannerOpenSignal, onLiftChange])
+
   const handleQRScanned = (rawValue) => {
     setLifted(false)
     liftedRef.current = false
     if (onLiftChange) onLiftChange(false)
-    navigate('/scan', { state: { rawValue } })
+    navigate('/scan', { state: { rawValue, returnToMemberScanner: true } })
   }
 
   const W = 'min(calc(100vw - 32px), 398px)'
@@ -887,6 +902,7 @@ function QRTab({ member, isValid, onLiftChange }) {
           disabled={lifted}
           onFlipChange={setCardFlipped}
           darkMode={darkMode}
+          scannerOpenSignal={scannerOpenSignal}
         />
         <div
           style={{
