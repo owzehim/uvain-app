@@ -119,7 +119,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
       color: ${dark ? '#ffffff' : '#374151'};
       font-size: 9px;
       font-weight: 600;
-      line-height: 11px;
+      line-height: 12px;
       padding: 1px 4px;
       border-radius: 4px;
       white-space: nowrap;
