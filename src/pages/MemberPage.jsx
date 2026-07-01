@@ -2067,40 +2067,26 @@ const effectiveDateColor = isDragging
               </div>
 
               {/* Date + pile + front panel */}
-              <div
-                className="mt-2"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: `calc(${W} * 0.45) minmax(0, 1fr)`,
-                  columnGap: '16px',
-                  alignItems: 'stretch',
-                }}
-              >
+              <div className="flex items-stretch mt-2">
                 {/* Left: date */}
                 {getPrimaryEventDate(displayEvent) && (() => {
                   const t = formatTopDate(getPrimaryEventDate(displayEvent))
                   if (!t) return null
                   return (
                     <div
-                      className="relative"
-                      style={{
-                        height: '100%',
-                        paddingTop: '2px',
-                      }}
+                      className="flex flex-col items-start justify-start"
+                      style={{ flexShrink: 0 }}
                     >
                       <span
                         style={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
                           fontFamily:
                             '"Handjet", system-ui, sans-serif',
                           fontSize: fs.date,
                           fontWeight: 800,
                           color: effectiveDateColor,
                           letterSpacing: '0.02em',
-                          lineHeight: 0.7,
-                          transform: 'scaleY(1.28)',
+                          lineHeight: 0.78,
+                          transform: 'scaleY(1.16)',
                           transformOrigin: 'left top',
                         }}
                       >
@@ -2108,9 +2094,6 @@ const effectiveDateColor = isDragging
                       </span>
                       <span
                         style={{
-                          position: 'absolute',
-                          left: 0,
-                          bottom: 0,
                           fontFamily:
                             '"Handjet", system-ui, sans-serif',
                           fontSize: fs.month,
@@ -2118,9 +2101,10 @@ const effectiveDateColor = isDragging
                           color: effectiveDateColor,
                           letterSpacing: '0.04em',
                           textTransform: 'uppercase',
-                          lineHeight: 0.72,
-                          transform: 'scaleY(1.12)',
-                          transformOrigin: 'left bottom',
+                          lineHeight: 0.85,
+                          marginTop: `calc(${fs.date} * 0.1 + 2px)`,
+                          transform: 'scaleY(1.08)',
+                          transformOrigin: 'left top',
                         }}
                       >
                         {t.monthName}
@@ -2131,12 +2115,15 @@ const effectiveDateColor = isDragging
 
                 {/* Right: image pile + front blur panel */}
                 <div
+                  className="flex-1"
                   onClick={() => hasImages && openLightboxAt(0)}
                   style={{
+                    paddingLeft: getPrimaryEventDate(displayEvent) ? '16px' : '0',
                     paddingRight: '4px',
                     position: 'relative',
                     aspectRatio: '1/1',
                     minWidth: 0,
+                    flexBasis: 0,
                     cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
