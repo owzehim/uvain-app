@@ -1592,6 +1592,7 @@ function EventsTab({ events }) {
     month: `calc(${W} * 0.255)`,
     guide: `calc(${W} * 0.032)`, // same as MY tab guide
   }
+  const eventHeroThumbSize = `calc(${W} * 0.46)`
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
@@ -2078,7 +2079,10 @@ const effectiveDateColor = isDragging
                   return (
                     <div
                       className="flex flex-col items-start justify-between"
-                      style={{ flexShrink: 0, alignSelf: 'stretch' }}
+                      style={{
+                        flexShrink: 0,
+                        height: eventHeroThumbSize,
+                      }}
                     >
                       <span
                         style={{
@@ -2089,7 +2093,7 @@ const effectiveDateColor = isDragging
                           color: effectiveDateColor,
                           letterSpacing: '0.02em',
                           lineHeight: 0.78,
-                          transform: 'scaleY(1.16)',
+                          transform: 'translateY(-1px) scaleY(1.16)',
                           transformOrigin: 'left top',
                         }}
                       >
@@ -2106,7 +2110,7 @@ const effectiveDateColor = isDragging
                           textTransform: 'uppercase',
                           lineHeight: 0.85,
                           marginTop: `calc(${fs.date} * 0.1 + 2px)`,
-                          transform: 'scaleY(1.08)',
+                          transform: 'translateY(1px) scaleY(1.08)',
                           transformOrigin: 'left bottom',
                         }}
                       >
@@ -2122,10 +2126,11 @@ const effectiveDateColor = isDragging
                   onClick={() => hasImages && openLightboxAt(0)}
                   style={{
                     position: 'relative',
-                    aspectRatio: '1/1',
+                    width: eventHeroThumbSize,
+                    height: eventHeroThumbSize,
+                    flex: `0 0 ${eventHeroThumbSize}`,
                     boxSizing: 'border-box',
                     minWidth: 0,
-                    flexBasis: 0,
                     cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
