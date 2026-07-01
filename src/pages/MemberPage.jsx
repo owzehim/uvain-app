@@ -1592,7 +1592,12 @@ function EventsTab({ events }) {
     month: `calc(${W} * 0.255)`,
     guide: `calc(${W} * 0.032)`, // same as MY tab guide
   }
+  // Events hero alignment knobs:
+  // - eventHeroThumbSize locks the lightbox square size.
+  // - eventDateTopNudge/eventDateBottomNudge tune the visible font edges.
   const eventHeroThumbSize = `calc(${W} * 0.46)`
+  const eventDateTopNudge = '-4px'
+  const eventDateBottomNudge = '3px'
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
@@ -2093,7 +2098,7 @@ const effectiveDateColor = isDragging
                           color: effectiveDateColor,
                           letterSpacing: '0.02em',
                           lineHeight: 0.78,
-                          transform: 'translateY(-1px) scaleY(1.16)',
+                          transform: `translateY(${eventDateTopNudge}) scaleY(1.16)`,
                           transformOrigin: 'left top',
                         }}
                       >
@@ -2110,7 +2115,7 @@ const effectiveDateColor = isDragging
                           textTransform: 'uppercase',
                           lineHeight: 0.85,
                           marginTop: `calc(${fs.date} * 0.1 + 2px)`,
-                          transform: 'translateY(1px) scaleY(1.08)',
+                          transform: `translateY(${eventDateBottomNudge}) scaleY(1.08)`,
                           transformOrigin: 'left bottom',
                         }}
                       >
