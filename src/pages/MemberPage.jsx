@@ -1599,7 +1599,7 @@ function EventsTab({ events }) {
   const eventHeroThumbSize = `calc(${W} * 0.46)`
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
-  const eventDateNumberStretch = 1.24
+  const eventDateNumberStretch = 1.30
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
