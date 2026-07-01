@@ -2067,14 +2067,14 @@ const effectiveDateColor = isDragging
               </div>
 
               {/* Date + pile + front panel */}
-              <div className="flex items-stretch mt-2">
+              <div className="flex items-end mt-2">
                 {/* Left: date */}
                 {getPrimaryEventDate(displayEvent) && (() => {
                   const t = formatTopDate(getPrimaryEventDate(displayEvent))
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-start"
+                      className="flex flex-col items-start justify-end"
                       style={{ flexShrink: 0 }}
                     >
                       <span
@@ -2104,7 +2104,7 @@ const effectiveDateColor = isDragging
                           lineHeight: 0.85,
                           marginTop: `calc(${fs.date} * 0.1 + 2px)`,
                           transform: 'scaleY(1.08)',
-                          transformOrigin: 'left top',
+                          transformOrigin: 'left bottom',
                         }}
                       >
                         {t.monthName}
@@ -2122,6 +2122,7 @@ const effectiveDateColor = isDragging
                     paddingRight: '4px',
                     position: 'relative',
                     aspectRatio: '1/1',
+                    boxSizing: 'border-box',
                     minWidth: 0,
                     flexBasis: 0,
                     cursor: hasImages ? 'pointer' : 'default',
