@@ -1232,13 +1232,14 @@ function EventsTab({ events }) {
   }
 
   const getEventDates = (ev) => {
+    if (!ev) return []
     const dates = Array.isArray(ev.event_dates) ? ev.event_dates : []
     const allDates = [...dates, ev.event_date].filter(Boolean)
     const unique = Array.from(new Set(allDates.map((date) => toLocalDateKey(date))))
     return unique.length ? unique : []
   }
 
-  const getPrimaryEventDate = (ev) => getEventDates(ev)[0] || ev.event_date
+  const getPrimaryEventDate = (ev) => getEventDates(ev)[0] || ev?.event_date
   const getPrimaryEventDateTime = (ev) => {
     const dates = Array.isArray(ev?.event_dates) ? ev.event_dates : []
     return dates[0] || ev?.event_date
