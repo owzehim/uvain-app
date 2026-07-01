@@ -2067,15 +2067,18 @@ const effectiveDateColor = isDragging
               </div>
 
               {/* Date + pile + front panel */}
-              <div className="flex items-end mt-2">
+              <div
+                className="flex items-start mt-2"
+                style={{ columnGap: getPrimaryEventDate(displayEvent) ? '16px' : '0' }}
+              >
                 {/* Left: date */}
                 {getPrimaryEventDate(displayEvent) && (() => {
                   const t = formatTopDate(getPrimaryEventDate(displayEvent))
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-end"
-                      style={{ flexShrink: 0 }}
+                      className="flex flex-col items-start justify-between"
+                      style={{ flexShrink: 0, alignSelf: 'stretch' }}
                     >
                       <span
                         style={{
@@ -2118,8 +2121,6 @@ const effectiveDateColor = isDragging
                   className="flex-1"
                   onClick={() => hasImages && openLightboxAt(0)}
                   style={{
-                    paddingLeft: getPrimaryEventDate(displayEvent) ? '16px' : '0',
-                    paddingRight: '4px',
                     position: 'relative',
                     aspectRatio: '1/1',
                     boxSizing: 'border-box',
