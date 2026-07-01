@@ -1001,11 +1001,16 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 // Event Lightbox (SpotCard-style)
-function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
+function EventLightbox({ imgs, startIndex = 0, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
+  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 92px)'
+
+  const goToIndex = (nextIndex) => {
+    setIndex(Math.max(0, Math.min(nextIndex, imgs.length - 1)))
+  }
 
   // zoom-in + fade-in on open
   useEffect(() => {
@@ -1054,10 +1059,10 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
         // swipe left ??next
-        setIndex((i) => Math.min(i + 1, imgs.length - 1))
+        goToIndex(index + 1)
       } else {
         // swipe right ??prev
-        setIndex((i) => Math.max(i - 1, 0))
+        goToIndex(index - 1)
       }
     }
 
@@ -1076,6 +1081,13 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
         }
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes lightboxImageSlideIn {
+          from { opacity: 0.72; transform: translateX(22px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .lightbox-image-slide {
+          animation: lightboxImageSlideIn 0.28s cubic-bezier(0.22,1,0.36,1);
         }
       `}</style>
       <div
@@ -1115,6 +1127,8 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
         >
           {/* Image */}
           <img
+            key={index}
+            className="lightbox-image-slide"
             src={imgs[index]}
             alt={`사진 ${index + 1}`}
             style={{
@@ -1128,42 +1142,6 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
             }}
           />
 
-          {instagramUrl && (
-            <a
-              href={instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              aria-label="Open Instagram"
-              style={{
-                position: 'fixed',
-                top: 'calc(env(safe-area-inset-top) + 8px)',
-                right: '16px',
-                zIndex: 10000,
-                width: 36,
-                height: 36,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 999,
-                background:
-                  'linear-gradient(135deg, #f58529 0%, #dd2a7b 45%, #8134af 75%, #515bd4 100%)',
-                color: '#fff',
-                textDecoration: 'none',
-                boxShadow: '0 6px 18px rgba(0,0,0,0.24)',
-              }}
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
-              </svg>
-            </a>
-          )}
         </div>
 
         {/* Dots */}
@@ -1171,7 +1149,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
           <div
             style={{
               position: 'absolute',
-              bottom: 20,
+              bottom: lightboxDotsBottom,
               left: 0,
               right: 0,
               display: 'flex',
@@ -1184,7 +1162,7 @@ function EventLightbox({ imgs, startIndex = 0, instagramUrl, onClose }) {
                 key={i}
                 onClick={(e) => {
                   e.stopPropagation()
-                  setIndex(i)
+                  goToIndex(i)
                 }}
                 style={{
                   width: i === index ? 8 : 6,
@@ -2934,7 +2912,6 @@ onClick={() => openParticipationForm(displayEvent)}
         <EventLightbox
           imgs={displayImages}
           startIndex={lightboxIndex}
-          instagramUrl={displayEvent?.instagram_url}
           onClose={() => setLightboxIndex(null)}
         />
       )}
