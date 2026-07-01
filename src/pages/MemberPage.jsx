@@ -2073,45 +2073,67 @@ const effectiveDateColor = isDragging
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-start"
+                      className="flex flex-col items-start justify-between"
                       style={{
                         flexShrink: 0,
                         alignSelf: 'stretch',
                         paddingTop: '2px',
+                        paddingBottom: '1px',
                       }}
                     >
-                      <span
+                      <div
                         style={{
-                          fontFamily:
-                            '"Handjet", system-ui, sans-serif',
-                          fontSize: fs.date,
-                          fontWeight: 800,
-                          color: effectiveDateColor,
-                          letterSpacing: '0.02em',
-                          lineHeight: 0.7,
-                          transform: 'scaleY(1.3)',
-                          transformOrigin: 'left top',
+                          position: 'relative',
+                          height: `calc(${fs.date} * 0.92)`,
+                          width: '100%',
                         }}
                       >
-                        {t.dateNum}
-                      </span>
-                      <span
+                        <span
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            fontFamily:
+                              '"Handjet", system-ui, sans-serif',
+                            fontSize: fs.date,
+                            fontWeight: 800,
+                            color: effectiveDateColor,
+                            letterSpacing: '0.02em',
+                            lineHeight: 0.7,
+                            transform: 'scaleY(1.3)',
+                            transformOrigin: 'left top',
+                          }}
+                        >
+                          {t.dateNum}
+                        </span>
+                      </div>
+                      <div
                         style={{
-                          fontFamily:
-                            '"Handjet", system-ui, sans-serif',
-                          fontSize: fs.month,
-                          fontWeight: 800,
-                          color: effectiveDateColor,
-                          letterSpacing: '0.04em',
-                          textTransform: 'uppercase',
-                          lineHeight: 0.7,
-                          marginTop: `calc(${fs.date} * 0.22 + 2px)`,
-                          transform: 'scaleY(1.18)',
-                          transformOrigin: 'left top',
+                          position: 'relative',
+                          height: `calc(${fs.month} * 0.84)`,
+                          width: '100%',
                         }}
                       >
-                        {t.monthName}
-                      </span>
+                        <span
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            bottom: 0,
+                            fontFamily:
+                              '"Handjet", system-ui, sans-serif',
+                            fontSize: fs.month,
+                            fontWeight: 800,
+                            color: effectiveDateColor,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            lineHeight: 0.7,
+                            transform: 'scaleY(1.18)',
+                            transformOrigin: 'left bottom',
+                          }}
+                        >
+                          {t.monthName}
+                        </span>
+                      </div>
                     </div>
                   )
                 })()}
