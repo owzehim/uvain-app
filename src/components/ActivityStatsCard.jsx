@@ -187,6 +187,10 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false, theme }) {
 }
 
 function RecentVisitsCard({ visits, loading, theme }) {
+  const visitSlots = Array.from({ length: 3 }, (_, index) => (
+    visits[index] || { placeName: '---', redeemedAt: null, isPlaceholder: true }
+  ))
+
   return (
     <div
       style={{
@@ -237,7 +241,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
             />
           ))}
         </div>
-      ) : visits.length === 0 ? (
+      ) : false ? (
         <p
           style={{
             fontSize: '13px',
@@ -255,7 +259,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
             gap: '8px',
           }}
         >
-          {visits.slice(0, 3).map((v, idx) => (
+          {visitSlots.map((v, idx) => (
             <div
               key={idx}
               style={{
@@ -267,7 +271,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
             >
               <span
                 style={{
-                  color: theme.mainText,
+                  color: v.isPlaceholder ? theme.mutedText : theme.mainText,
                   fontFamily: '"Handjet", system-ui, sans-serif',
                   letterSpacing: '0.03em',
                   whiteSpace: 'nowrap',
@@ -287,7 +291,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
                   flexShrink: 0,
                 }}
               >
-                {formatVisitDate(v.redeemedAt)}
+                {v.isPlaceholder ? '---' : formatVisitDate(v.redeemedAt)}
               </span>
             </div>
           ))}

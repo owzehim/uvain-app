@@ -250,7 +250,7 @@ export default function SettingsPage() {
       >
         <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800">
           <ArrowLeft size={18} weight="bold" />
-          <span className="pointer-events-none absolute right-4 bottom-3 text-xs font-medium text-gray-300 dark:text-gray-600">
+          <span className="pointer-events-none absolute right-4 top-[calc(env(safe-area-inset-top)+19px)] text-xs font-medium text-gray-300 dark:text-gray-600">
             version 0.9.5
           </span>
         </button>
