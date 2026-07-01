@@ -1595,9 +1595,11 @@ function EventsTab({ events }) {
   // Events hero alignment knobs:
   // - eventHeroThumbSize locks the lightbox square size.
   // - eventDateTopNudge/eventDateBottomNudge tune the visible font edges.
+  // - eventDateNumberStretch stretches the number row downward toward the month.
   const eventHeroThumbSize = `calc(${W} * 0.46)`
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
+  const eventDateNumberStretch = 1.24
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
@@ -2098,7 +2100,7 @@ const effectiveDateColor = isDragging
                           color: effectiveDateColor,
                           letterSpacing: '0.02em',
                           lineHeight: 0.78,
-                          transform: `translateY(${eventDateTopNudge}) scaleY(1.16)`,
+                          transform: `translateY(${eventDateTopNudge}) scaleY(${eventDateNumberStretch})`,
                           transformOrigin: 'left top',
                         }}
                       >
