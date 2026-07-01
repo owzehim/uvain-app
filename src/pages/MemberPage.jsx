@@ -2073,14 +2073,19 @@ const effectiveDateColor = isDragging
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-start"
+                      className="relative"
                       style={{
                         flexShrink: 0,
+                        width: `calc(${W} * 0.45)`,
+                        height: `calc(${W} * 0.55 - 20px)`,
                         paddingTop: '2px',
                       }}
                     >
                       <span
                         style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
                           fontFamily:
                             '"Handjet", system-ui, sans-serif',
                           fontSize: fs.date,
@@ -2096,6 +2101,9 @@ const effectiveDateColor = isDragging
                       </span>
                       <span
                         style={{
+                          position: 'absolute',
+                          left: 0,
+                          bottom: 0,
                           fontFamily:
                             '"Handjet", system-ui, sans-serif',
                           fontSize: fs.month,
@@ -2104,9 +2112,8 @@ const effectiveDateColor = isDragging
                           letterSpacing: '0.04em',
                           textTransform: 'uppercase',
                           lineHeight: 0.72,
-                          marginTop: `calc(${fs.date} * 0.18 + 2px)`,
                           transform: 'scaleY(1.12)',
-                          transformOrigin: 'left top',
+                          transformOrigin: 'left bottom',
                         }}
                       >
                         {t.monthName}
