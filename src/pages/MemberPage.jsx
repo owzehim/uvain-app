@@ -1597,7 +1597,7 @@ function EventsTab({ events }) {
   // - eventDateTopNudge/eventDateBottomNudge tune the visible font edges.
   const eventHeroThumbSize = `calc(${W} * 0.46)`
   const eventDateTopNudge = '-4px'
-  const eventDateBottomNudge = '5px'
+  const eventDateBottomNudge = '6px'
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
