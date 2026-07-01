@@ -62,7 +62,7 @@ export default function ActivityStatsCard({ userId }) {
           margin: '0 auto',
           background: theme.cardBg,
           borderRadius: '16px',
-          padding: '20px 24px',
+          padding: '16px 20px',
           boxSizing: 'border-box',
         }}
       >
@@ -72,7 +72,7 @@ export default function ActivityStatsCard({ userId }) {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            marginBottom: '14px',
+            marginBottom: '10px',
           }}
         >
           <ChartLine size={16} color={theme.titleText} />
@@ -97,7 +97,7 @@ export default function ActivityStatsCard({ userId }) {
               <div
                 key={i}
                 style={{
-                  height: '14px',
+                  height: '12px',
                   width: `${w}%`,
                   background: theme.skeleton,
                   borderRadius: '6px',
@@ -106,7 +106,7 @@ export default function ActivityStatsCard({ userId }) {
             ))}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <StatRow
               icon={Money}
               label="받은 할인"
@@ -146,11 +146,11 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false, theme }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        fontSize: '14px',
+        fontSize: '13px',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Icon size={15} color={theme.subText} />
+        <Icon size={13} color={theme.subText} />
 
         <span
           style={{

@@ -245,7 +245,7 @@ export default function SettingsPage() {
       `}</style>
       {/* Header */}
       <div
-        className="relative bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:border-[#2c2c2e] dark:bg-[#121212]"
+        className="relative bg-white px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:bg-[#121212]"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800">

@@ -160,7 +160,7 @@ export default function ReviewModal({
         style={{
           background: 'rgba(0,0,0,0.5)',
           opacity: visible ? 1 : 0,
-          transition: 'opacity 0.32s ease',
+          transition: 'opacity 0.38s ease',
         }}
         onClick={handleClose}
       />
@@ -173,8 +173,14 @@ export default function ReviewModal({
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)',
           maxHeight: '92dvh',
           overflowY: 'auto',
-          transform: visible ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.35s cubic-bezier(0.32, 0, 0.67, 0)',
+          transform: visible ? 'translate3d(0, 0, 0)' : 'translate3d(0, 104%, 0)',
+          transition: visible
+            ? 'transform 0.48s cubic-bezier(0.22, 1, 0.36, 1)'
+            : 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)',
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          WebkitOverflowScrolling: 'touch',
         }}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}

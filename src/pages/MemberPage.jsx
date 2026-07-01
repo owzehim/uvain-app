@@ -571,7 +571,7 @@ function MembershipCard({
                 letterSpacing: '0.05em',
               }}
             >
-              여기서 Check-IN 하기
+              눌러서 Check-IN 하기
             </span>
           </div>
         </div>
