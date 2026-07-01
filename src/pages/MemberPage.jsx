@@ -1869,11 +1869,15 @@ const DRAG_DATE_COLOR = '#9ca3af'
 
 const isPastSelected =
   getEventStatus(displayEvent) === 'PAST'
+const isNextSelected =
+  Boolean(nextEvent && displayEvent && displayEvent.id === nextEvent.id)
 
 const baseDateColor = isPastSelected ? PAST_DATE_COLOR : '#1f2937'
 
 const effectiveDateColor = isDragging
   ? DRAG_DATE_COLOR
+  : isNextSelected
+    ? '#f97316'
   : darkMode && isPastSelected
     ? PAST_DARK_DATE_COLOR
     : darkMode
@@ -2069,8 +2073,13 @@ const effectiveDateColor = isDragging
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-start"
-                      style={{ flexShrink: 0 }}
+                      className="flex flex-col items-start justify-between"
+                      style={{
+                        flexShrink: 0,
+                        alignSelf: 'stretch',
+                        paddingTop: '2px',
+                        paddingBottom: '3px',
+                      }}
                     >
                       <span
                         style={{
@@ -2080,7 +2089,9 @@ const effectiveDateColor = isDragging
                           fontWeight: 800,
                           color: effectiveDateColor,
                           letterSpacing: '0.02em',
-                          lineHeight: 0.85,
+                          lineHeight: 0.76,
+                          transform: 'scaleY(1.16)',
+                          transformOrigin: 'left top',
                         }}
                       >
                         {t.dateNum}
@@ -2226,12 +2237,7 @@ const effectiveDateColor = isDragging
                                 '"Noto Sans KR", system-ui, sans-serif',
                               fontSize: `calc(${W} * 0.052)`,
                               fontWeight: 700,
-                              color:
-                                nextEvent &&
-                                displayEvent &&
-                                displayEvent.id === nextEvent.id
-                                  ? '#f97316'
-                                  : frontPanelTextColor,
+                              color: frontPanelTextColor,
                               lineHeight: 1.2,
                             }}
                           >
@@ -2405,6 +2411,8 @@ const effectiveDateColor = isDragging
                     hasEvt && parseLocalDate(dateKey) < todayStart
                   const selectedEventDates = getEventDates(selectedEvent)
                   const isSelectedEventDate = hasEvt && selectedEventDates.includes(dateKey)
+                  const nextEventDates = getEventDates(nextEvent)
+                  const isNextEventDate = hasEvt && nextEventDates.includes(dateKey)
                   const rangeEvent = dayEvents.find((ev) => {
                     const dates = getEventDates(ev)
                     return ev.calendar_highlight_mode === 'range' && dates.length > 1
@@ -2430,7 +2438,11 @@ const effectiveDateColor = isDragging
                   let color = darkMode ? '#EDEDED' : '#1f2937'
                   let fw = 500
 
-      if (isSelectedEventDate) {
+      if (isNextEventDate) {
+        bg = '#f97316'
+        color = '#ffffff'
+        fw = 800
+      } else if (isSelectedEventDate) {
         bg = darkMode ? '#2c2c2e' : '#d1d5db'
         color = darkMode
           ? isPastEventDate
