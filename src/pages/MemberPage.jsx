@@ -1588,7 +1588,7 @@ function EventsTab({ events }) {
   const fs = {
     day: `calc(${W} * 0.06)`,
     date: `calc(${W} * 0.24)`,
-    month: `calc(${W} * 0.24)`,
+    month: `calc(${W} * 0.255)`,
     guide: `calc(${W} * 0.032)`, // same as MY tab guide
   }
 
@@ -2073,12 +2073,11 @@ const effectiveDateColor = isDragging
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-between"
+                      className="flex flex-col items-start justify-start"
                       style={{
                         flexShrink: 0,
                         alignSelf: 'stretch',
                         paddingTop: '2px',
-                        paddingBottom: '3px',
                       }}
                     >
                       <span
@@ -2089,8 +2088,8 @@ const effectiveDateColor = isDragging
                           fontWeight: 800,
                           color: effectiveDateColor,
                           letterSpacing: '0.02em',
-                          lineHeight: 0.76,
-                          transform: 'scaleY(1.16)',
+                          lineHeight: 0.7,
+                          transform: 'scaleY(1.3)',
                           transformOrigin: 'left top',
                         }}
                       >
@@ -2206,7 +2205,9 @@ const effectiveDateColor = isDragging
                           height: '100%',
                           width: '100%',
                           backgroundColor: 'transparent',
-                          border: 'none',
+                          border: hasImages
+                            ? 'none'
+                            : `1px solid ${darkMode ? 'rgba(255,255,255,0.18)' : '#d1d5db'}`,
                         }}
                       >
                         <div
