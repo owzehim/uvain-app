@@ -2066,7 +2066,15 @@ const effectiveDateColor = isDragging
               </div>
 
               {/* Date + pile + front panel */}
-              <div className="flex items-start mt-2">
+              <div
+                className="mt-2"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `calc(${W} * 0.45) minmax(0, 1fr)`,
+                  columnGap: '16px',
+                  alignItems: 'stretch',
+                }}
+              >
                 {/* Left: date */}
                 {getPrimaryEventDate(displayEvent) && (() => {
                   const t = formatTopDate(getPrimaryEventDate(displayEvent))
@@ -2075,9 +2083,7 @@ const effectiveDateColor = isDragging
                     <div
                       className="relative"
                       style={{
-                        flexShrink: 0,
-                        width: `calc(${W} * 0.45)`,
-                        height: `calc(${W} * 0.55 - 20px)`,
+                        height: '100%',
                         paddingTop: '2px',
                       }}
                     >
@@ -2124,15 +2130,12 @@ const effectiveDateColor = isDragging
 
                 {/* Right: image pile + front blur panel */}
                 <div
-                  className="flex-1"
                   onClick={() => hasImages && openLightboxAt(0)}
                   style={{
-                    paddingLeft: getPrimaryEventDate(displayEvent) ? '16px' : '0',
                     paddingRight: '4px',
                     position: 'relative',
                     aspectRatio: '1/1',
                     minWidth: 0,
-                    flexBasis: 0,
                     cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
