@@ -2105,7 +2105,7 @@ const effectiveDateColor = isDragging
                           letterSpacing: '0.04em',
                           textTransform: 'uppercase',
                           lineHeight: 0.85,
-                          marginTop: '2px',
+                          marginTop: `calc(${fs.date} * 0.22 + 2px)`,
                         }}
                       >
                         {t.monthName}
