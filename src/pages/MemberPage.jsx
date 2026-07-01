@@ -2066,74 +2066,51 @@ const effectiveDateColor = isDragging
               </div>
 
               {/* Date + pile + front panel */}
-              <div className="flex items-stretch mt-2">
+              <div className="flex items-start mt-2">
                 {/* Left: date */}
                 {getPrimaryEventDate(displayEvent) && (() => {
                   const t = formatTopDate(getPrimaryEventDate(displayEvent))
                   if (!t) return null
                   return (
                     <div
-                      className="flex flex-col items-start justify-between"
+                      className="flex flex-col items-start justify-start"
                       style={{
                         flexShrink: 0,
-                        alignSelf: 'stretch',
                         paddingTop: '2px',
-                        paddingBottom: '1px',
                       }}
                     >
-                      <div
+                      <span
                         style={{
-                          position: 'relative',
-                          height: `calc(${fs.date} * 0.92)`,
-                          width: '100%',
+                          fontFamily:
+                            '"Handjet", system-ui, sans-serif',
+                          fontSize: fs.date,
+                          fontWeight: 800,
+                          color: effectiveDateColor,
+                          letterSpacing: '0.02em',
+                          lineHeight: 0.7,
+                          transform: 'scaleY(1.28)',
+                          transformOrigin: 'left top',
                         }}
                       >
-                        <span
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            fontFamily:
-                              '"Handjet", system-ui, sans-serif',
-                            fontSize: fs.date,
-                            fontWeight: 800,
-                            color: effectiveDateColor,
-                            letterSpacing: '0.02em',
-                            lineHeight: 0.7,
-                            transform: 'scaleY(1.3)',
-                            transformOrigin: 'left top',
-                          }}
-                        >
-                          {t.dateNum}
-                        </span>
-                      </div>
-                      <div
+                        {t.dateNum}
+                      </span>
+                      <span
                         style={{
-                          position: 'relative',
-                          height: `calc(${fs.month} * 0.84)`,
-                          width: '100%',
+                          fontFamily:
+                            '"Handjet", system-ui, sans-serif',
+                          fontSize: fs.month,
+                          fontWeight: 800,
+                          color: effectiveDateColor,
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                          lineHeight: 0.72,
+                          marginTop: `calc(${fs.date} * 0.18 + 2px)`,
+                          transform: 'scaleY(1.12)',
+                          transformOrigin: 'left top',
                         }}
                       >
-                        <span
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            bottom: 0,
-                            fontFamily:
-                              '"Handjet", system-ui, sans-serif',
-                            fontSize: fs.month,
-                            fontWeight: 800,
-                            color: effectiveDateColor,
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                            lineHeight: 0.7,
-                            transform: 'scaleY(1.18)',
-                            transformOrigin: 'left bottom',
-                          }}
-                        >
-                          {t.monthName}
-                        </span>
-                      </div>
+                        {t.monthName}
+                      </span>
                     </div>
                   )
                 })()}
