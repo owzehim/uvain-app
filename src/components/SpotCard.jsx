@@ -135,7 +135,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
   const [visible, setVisible] = useState(false)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
-  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 32px)'
+  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 10px)'
 
   // zoom-in + fade-in on open
   useEffect(() => {
@@ -195,8 +195,8 @@ function Lightbox({ imgs, startIndex, onClose }) {
     <>
       <style>{`
         @keyframes lightboxZoomIn {
-          from { transform: scale(0.9); }
-          to   { transform: scale(1);   }
+          from { transform: translateY(-18px) scale(0.9); }
+          to   { transform: translateY(-18px) scale(1);   }
         }
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
@@ -233,6 +233,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
             boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
             userSelect: 'none',
             WebkitUserSelect: 'none',
+            transform: 'translateY(-18px)',
           }}
         />
 

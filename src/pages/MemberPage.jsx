@@ -1006,7 +1006,7 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
   const [visible, setVisible] = useState(false)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
-  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 32px)'
+  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 10px)'
 
   const goToIndex = (nextIndex) => {
     setIndex(Math.max(0, Math.min(nextIndex, imgs.length - 1)))
@@ -1083,8 +1083,8 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
         @keyframes lightboxImageSlideIn {
-          from { opacity: 0.72; transform: translateX(22px); }
-          to { opacity: 1; transform: translateX(0); }
+          from { opacity: 0.72; transform: translate(22px, -18px); }
+          to { opacity: 1; transform: translate(0, -18px); }
         }
         .lightbox-image-slide {
           animation: lightboxImageSlideIn 0.28s cubic-bezier(0.22,1,0.36,1);
@@ -1139,6 +1139,7 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
               boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
               userSelect: 'none',
               WebkitUserSelect: 'none',
+              transform: 'translateY(-18px)',
             }}
           />
 
