@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, useLayoutEffect } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
@@ -1006,44 +1006,11 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
   const [visible, setVisible] = useState(false)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
-  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 92px)'
+  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 32px)'
 
   const goToIndex = (nextIndex) => {
     setIndex(Math.max(0, Math.min(nextIndex, imgs.length - 1)))
   }
-
-  useLayoutEffect(() => {
-    const themeMeta =
-      document.querySelector('meta[name="theme-color"]') ||
-      document.head.appendChild(document.createElement('meta'))
-    themeMeta.setAttribute('name', 'theme-color')
-
-    const statusMeta = document.querySelector(
-      'meta[name="apple-mobile-web-app-status-bar-style"]',
-    )
-
-    const previousThemeColor = themeMeta.getAttribute('content')
-    const previousStatusStyle = statusMeta?.getAttribute('content')
-    const previousBodyBackground = document.body.style.backgroundColor
-    const previousHtmlBackground = document.documentElement.style.backgroundColor
-    const previousBodyTransition = document.body.style.transition
-
-    themeMeta.setAttribute('content', '#000000')
-    statusMeta?.setAttribute('content', 'black-translucent')
-    document.body.style.transition = 'none'
-    document.body.style.backgroundColor = '#000000'
-    document.documentElement.style.backgroundColor = '#000000'
-
-    return () => {
-      if (previousThemeColor) themeMeta.setAttribute('content', previousThemeColor)
-      if (statusMeta && previousStatusStyle) {
-        statusMeta.setAttribute('content', previousStatusStyle)
-      }
-      document.body.style.backgroundColor = previousBodyBackground
-      document.documentElement.style.backgroundColor = previousHtmlBackground
-      document.body.style.transition = previousBodyTransition
-    }
-  }, [])
 
   // zoom-in + fade-in on open
   useEffect(() => {
@@ -1136,8 +1103,8 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: 1,
-          transition: 'none',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.25s ease',
           touchAction: 'none',
           userSelect: 'none',
           WebkitUserSelect: 'none',
@@ -2294,6 +2261,20 @@ const effectiveDateColor = isDragging
                               }}
                             >
                               {plainText(displayEvent.location)}
+                            </span>
+                          )}
+                          {displayEvent.location_description && (
+                            <span
+                              style={{
+                                fontFamily:
+                                  '"Handjet", system-ui, sans-serif',
+                                fontSize: `calc(${W} * 0.036)`,
+                                fontWeight: 700,
+                                color: frontPanelTextColor,
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {plainText(displayEvent.location_description)}
                             </span>
                           )}
                         </div>

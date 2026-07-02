@@ -1458,6 +1458,18 @@ function EventForm({
           rows={2}
         />
       </div>
+      <div>
+        <label className="text-sm text-gray-500 block mb-1">장소 description</label>
+        <textarea
+          value={form.location_description}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, location_description: e.target.value }))
+          }
+          placeholder="장소 description을 입력하세요"
+          rows={2}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+        />
+      </div>
       <div className="space-y-2">
         <div>
           <label className="text-sm text-gray-500 block mb-1">날짜</label>
@@ -1636,6 +1648,7 @@ function EventsTab() {
     eventEndTime: '',
     calendarHighlightMode: 'separate',
     location: '',
+    location_description: '',
     instagram_url: '',
     participation_url: '',
     is_registration_closed: false,
@@ -1722,6 +1735,7 @@ function EventsTab() {
       eventEndTime: '',
       calendarHighlightMode: 'separate',
       location: '',
+      location_description: '',
       instagram_url: '',
       participation_url: '',
       is_registration_closed: false,
@@ -1797,6 +1811,7 @@ function EventsTab() {
       event_dates,
       calendar_highlight_mode: form.calendarHighlightMode || 'separate',
       location: form.location,
+      location_description: form.location_description,
       instagram_url: form.instagram_url,
       participation_url: form.participation_url,
       is_registration_closed: form.is_registration_closed,
@@ -1856,6 +1871,7 @@ function EventsTab() {
       eventEndTime: toEventEndTimeInput(event),
       calendarHighlightMode: event.calendar_highlight_mode || 'separate',
       location: event.location || '',
+      location_description: event.location_description || '',
       instagram_url: event.instagram_url || '',
       participation_url: event.participation_url || '',
       is_registration_closed: !!event.is_registration_closed,
@@ -1878,6 +1894,7 @@ function EventsTab() {
       eventEndTime: '',
       calendarHighlightMode: 'separate',
       location: '',
+      location_description: '',
       instagram_url: '',
       participation_url: '',
       is_registration_closed: false,

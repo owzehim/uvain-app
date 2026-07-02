@@ -135,6 +135,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
   const [visible, setVisible] = useState(false)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
+  const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 32px)'
 
   // zoom-in + fade-in on open
   useEffect(() => {
@@ -240,7 +241,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
           <div
             style={{
               position: 'absolute',
-              bottom: 20,
+              bottom: lightboxDotsBottom,
               left: 0,
               right: 0,
               display: 'flex',
