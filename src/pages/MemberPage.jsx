@@ -1389,6 +1389,12 @@ function EventsTab({ events }) {
   const dragStartY = useRef(null)
   const dragAccumulator = useRef(0)
   const lastIdxRef = useRef(null)
+  const previewIdxRef = useRef(null)
+  const touchIdRef = useRef(null)
+  const allEventsRef = useRef(allEvents)
+  const selectedEventRef = useRef(selectedEvent)
+  const activeEventIndexRef = useRef(0)
+  const removeDragListenersRef = useRef(null)
 
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
@@ -1397,70 +1403,79 @@ function EventsTab({ events }) {
     ? currentEventIndex
     : Math.max(0, allEvents.findIndex((ev) => ev.id === initialEvent?.id))
   const scrollProgress = 0
-  const handleContainerTouchStart = (e) => {
-    const touch = e.touches[0]
-    const rect = containerRef.current?.getBoundingClientRect()
-    // Avoid grabbing when finger starts too low (near calendar)
-    if (rect && touch.clientY > rect.bottom - 60) return
 
-    dragStartY.current = touch.clientY
-    dragAccumulator.current = 0
-    lastIdxRef.current = activeEventIndex
-    setIsDragging(true)
-    setIsTouching(true)
-    setPreviewEvent(selectedEvent)
+  useEffect(() => {
+    allEventsRef.current = allEvents
+    selectedEventRef.current = selectedEvent
+    activeEventIndexRef.current = activeEventIndex
+  }, [allEvents, selectedEvent, activeEventIndex])
+
+  const getActiveTouch = (touches) => {
+    if (!touches?.length) return null
+    if (touchIdRef.current == null) return touches[0]
+    return Array.from(touches).find((touch) => touch.identifier === touchIdRef.current) || null
   }
 
-  const handleContainerTouchMove = (e) => {
-    if (dragStartY.current == null) return
-    const dy = dragStartY.current - e.touches[0].clientY
-    dragAccumulator.current = dy
-    const delta =
-      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
-    const idx = Math.max(
-      0,
-      Math.min((lastIdxRef.current ?? 0) + delta, allEvents.length - 1),
-    )
-    setPreviewEvent(allEvents[idx])
+  const removeDragListeners = () => {
+    removeDragListenersRef.current?.()
+    removeDragListenersRef.current = null
   }
 
-  const resetDragState = (eventForPreview = selectedEvent) => {
+  const resetDragState = (eventForPreview = selectedEventRef.current) => {
+    removeDragListeners()
     dragStartY.current = null
     dragAccumulator.current = 0
     lastIdxRef.current = null
+    previewIdxRef.current = null
+    touchIdRef.current = null
     setIsDragging(false)
     setIsTouching(false)
     setPreviewEvent(eventForPreview)
   }
 
   const finalizeDrag = (forceCancel = false) => {
-    if (dragStartY.current == null) {
-      resetDragState()
-      return
-    }
+    if (dragStartY.current == null) return
 
     if (forceCancel) {
       resetDragState()
       return
     }
 
-    const dy = dragAccumulator.current
-    const delta =
-      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+    const eventsNow = allEventsRef.current
+    const fallbackIdx = activeEventIndexRef.current
+    const nextIdx = previewIdxRef.current ?? fallbackIdx
+    const nextSelectedEvent = eventsNow[nextIdx] || selectedEventRef.current
 
-    let nextSelectedEvent = selectedEvent
-    if (delta !== 0) {
-      const newIdx = Math.max(
-        0,
-        Math.min(activeEventIndex + delta, allEvents.length - 1),
-      )
-      if (newIdx !== activeEventIndex) {
-        nextSelectedEvent = allEvents[newIdx]
-        setSelectedEvent(nextSelectedEvent)
-      }
+    if (nextSelectedEvent?.id !== selectedEventRef.current?.id) {
+      selectedEventRef.current = nextSelectedEvent
+      setSelectedEvent(nextSelectedEvent)
     }
 
     resetDragState(nextSelectedEvent)
+  }
+
+  const updateDragPreview = (clientY) => {
+    if (dragStartY.current == null) return
+    const eventsNow = allEventsRef.current
+    if (!eventsNow.length) return
+
+    const dy = dragStartY.current - clientY
+    dragAccumulator.current = dy
+    const delta =
+      dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
+    const idx = Math.max(
+      0,
+      Math.min((lastIdxRef.current ?? 0) + delta, eventsNow.length - 1),
+    )
+
+    previewIdxRef.current = idx
+    setPreviewEvent(eventsNow[idx])
+  }
+
+  const handleWindowTouchMove = (e) => {
+    const touch = getActiveTouch(e.touches)
+    if (!touch) return
+    updateDragPreview(touch.clientY)
   }
 
   const handleContainerTouchEnd = () => {
@@ -1471,23 +1486,45 @@ function EventsTab({ events }) {
     finalizeDrag(true)
   }
 
-  useEffect(() => {
-    if (!isDragging) return undefined
-
-    const handleWindowTouchEnd = () => handleContainerTouchEnd()
-    const handleWindowTouchCancel = () => handleContainerTouchCancel()
-    const handleWindowBlur = () => handleContainerTouchCancel()
-
-    window.addEventListener('touchend', handleWindowTouchEnd)
-    window.addEventListener('touchcancel', handleWindowTouchCancel)
-    window.addEventListener('blur', handleWindowBlur)
-
-    return () => {
-      window.removeEventListener('touchend', handleWindowTouchEnd)
-      window.removeEventListener('touchcancel', handleWindowTouchCancel)
-      window.removeEventListener('blur', handleWindowBlur)
+  const addDragListeners = () => {
+    removeDragListeners()
+    window.addEventListener('touchmove', handleWindowTouchMove, { passive: true })
+    window.addEventListener('touchend', handleContainerTouchEnd)
+    window.addEventListener('touchcancel', handleContainerTouchCancel)
+    window.addEventListener('blur', handleContainerTouchCancel)
+    removeDragListenersRef.current = () => {
+      window.removeEventListener('touchmove', handleWindowTouchMove)
+      window.removeEventListener('touchend', handleContainerTouchEnd)
+      window.removeEventListener('touchcancel', handleContainerTouchCancel)
+      window.removeEventListener('blur', handleContainerTouchCancel)
     }
-  }, [isDragging, selectedEvent, activeEventIndex, allEvents])
+  }
+
+  const handleContainerTouchStart = (e) => {
+    const touch = e.touches[0]
+    const rect = containerRef.current?.getBoundingClientRect()
+    // Avoid grabbing when finger starts too low (near calendar)
+    if (rect && touch.clientY > rect.bottom - 60) return
+
+    removeDragListeners()
+    touchIdRef.current = touch.identifier
+    dragStartY.current = touch.clientY
+    dragAccumulator.current = 0
+    lastIdxRef.current = activeEventIndexRef.current
+    previewIdxRef.current = activeEventIndexRef.current
+    setIsDragging(true)
+    setIsTouching(true)
+    setPreviewEvent(selectedEventRef.current)
+    addDragListeners()
+  }
+
+  const handleContainerTouchMove = (e) => {
+    const touch = getActiveTouch(e.touches)
+    if (!touch) return
+    updateDragPreview(touch.clientY)
+  }
+
+  useEffect(() => () => removeDragListeners(), [])
 
   // Helper to open lightbox at specific index
   const openLightboxAt = (index) => {
