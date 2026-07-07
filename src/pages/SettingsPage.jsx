@@ -248,11 +248,14 @@ export default function SettingsPage() {
         className="relative bg-white px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:bg-[#121212]"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800">
+        <button
+          type="button"
+          onClick={() => navigate('/member')}
+          className="text-[#374151] dark:text-[#c7c7cc]"
+          style={settingsBackButtonStyle}
+          aria-label="Back to member page"
+        >
           <CaretLeft size={24} weight="bold" />
-          <span className="pointer-events-none absolute right-4 top-[calc(env(safe-area-inset-top)+19px)] text-xs font-medium text-gray-300 dark:text-gray-600">
-            version 0.9.5
-          </span>
         </button>
       </div>
 
@@ -464,4 +467,21 @@ export default function SettingsPage() {
       )}
     </div>
   )
+}
+
+const settingsBackButtonStyle = {
+  position: 'fixed',
+  left: 'calc(50% - 160px - 22px)',
+  top: 'calc(env(safe-area-inset-top) + 6px)',
+  zIndex: 10,
+  background: 'none',
+  border: 'none',
+  fontSize: '24px',
+  cursor: 'pointer',
+  padding: '8px 8px 8px 0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'color 0.2s',
+  width: '34px',
 }
