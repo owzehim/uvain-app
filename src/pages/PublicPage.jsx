@@ -487,10 +487,45 @@ function MembershipCarousel() {
         ))}
       </div>
 
+      <div className="pointer-events-none absolute inset-0 z-10 bg-white/34 dark:bg-black/38" />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10"
+        style={{
+          height: '58%',
+          background:
+            'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.84) 58%, #ffffff 100%)',
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden dark:block"
+        style={{
+          height: '58%',
+          background:
+            'linear-gradient(to bottom, rgba(18,18,18,0), rgba(18,18,18,0.84) 58%, #121212 100%)',
+        }}
+      />
+
+      <div
+        className="pointer-events-none absolute left-0 right-0 px-6 text-left"
+        style={{
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 96px)`,
+          zIndex: 20,
+        }}
+      >
+        <h2 className="max-w-sm text-[31px] font-bold leading-tight text-gray-950 dark:text-white">
+          {MEMBERSHIP_SLIDES[activeSlide].title}
+        </h2>
+        {MEMBERSHIP_SLIDES[activeSlide].description && (
+          <p className="mt-2 max-w-sm text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-300">
+            {MEMBERSHIP_SLIDES[activeSlide].description}
+          </p>
+        )}
+      </div>
+
       <div
         className="pointer-events-none absolute left-0 right-0 flex justify-center gap-1.5"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 66px)`,
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 68px)`,
           zIndex: 25,
         }}
       >
@@ -500,17 +535,14 @@ function MembershipCarousel() {
             type="button"
             aria-label={`Go to membership slide ${index + 1}`}
             onClick={() => goToSlide(index)}
-            className="pointer-events-auto h-2 rounded-full transition-all"
+            className="pointer-events-auto rounded-full transition-all"
             style={{
-              width: index === activeSlide ? 18 : 7,
+              width: index === activeSlide ? 8 : 6,
+              height: index === activeSlide ? 8 : 6,
               background:
                 index === activeSlide
-                  ? '#f97316'
-                  : 'rgba(255,255,255,0.58)',
-              boxShadow:
-                index === activeSlide
-                  ? '0 2px 10px rgba(249,115,22,0.45)'
-                  : '0 1px 4px rgba(0,0,0,0.18)',
+                  ? '#fff'
+                  : 'rgba(255,255,255,0.4)',
             }}
           />
         ))}
@@ -519,7 +551,7 @@ function MembershipCarousel() {
       <div
         className="absolute left-0 right-0 px-5"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 10px)`,
+          bottom: BOTTOM_TAB_OFFSET,
           zIndex: 30,
         }}
       >
@@ -562,40 +594,6 @@ function MembershipSlide({ slide, imageIndex }) {
         </div>
       ))}
 
-      <div className="absolute inset-0 bg-white/34 dark:bg-black/38" />
-      <div
-        className="absolute inset-x-0 bottom-0"
-        style={{
-          height: '58%',
-          background:
-            'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.84) 58%, #ffffff 100%)',
-        }}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 hidden dark:block"
-        style={{
-          height: '58%',
-          background:
-            'linear-gradient(to bottom, rgba(18,18,18,0), rgba(18,18,18,0.84) 58%, #121212 100%)',
-        }}
-      />
-
-      <div
-        className="absolute left-0 right-0 px-6 text-left"
-        style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 112px)`,
-          zIndex: 10,
-        }}
-      >
-        <h2 className="max-w-sm text-[31px] font-bold leading-tight text-gray-950 dark:text-white">
-          {slide.title}
-        </h2>
-        {slide.description && (
-          <p className="mt-2 max-w-sm text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-300">
-            {slide.description}
-          </p>
-        )}
-      </div>
     </section>
   )
 }
