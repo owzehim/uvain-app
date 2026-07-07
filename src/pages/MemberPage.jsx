@@ -1034,6 +1034,17 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
   }, [])
 
   useEffect(() => {
+    ;[index, index - 1, index + 1]
+      .filter((nextIndex) => nextIndex >= 0 && nextIndex < imgs.length)
+      .forEach((nextIndex) => {
+        const image = new Image()
+        image.decoding = 'async'
+        image.src = imgs[nextIndex]
+        image.decode?.().catch(() => {})
+      })
+  }, [imgs, index])
+
+  useEffect(() => {
     setIndex(startIndex)
   }, [startIndex, imgs])
 
@@ -1147,6 +1158,9 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
             key={index}
             className="lightbox-image-slide"
             src={imgs[index]}
+            decoding="async"
+            fetchPriority="high"
+            loading="eager"
             alt={`사진 ${index + 1}`}
             style={{
               maxWidth: '90vw',

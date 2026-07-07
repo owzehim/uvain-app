@@ -147,6 +147,17 @@ function Lightbox({ imgs, startIndex, onClose }) {
   }, [])
 
   useEffect(() => {
+    ;[index, index - 1, index + 1]
+      .filter((nextIndex) => nextIndex >= 0 && nextIndex < imgs.length)
+      .forEach((nextIndex) => {
+        const image = new Image()
+        image.decoding = 'async'
+        image.src = imgs[nextIndex]
+        image.decode?.().catch(() => {})
+      })
+  }, [imgs, index])
+
+  useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') handleClose()
       if (e.key === 'ArrowRight') goToIndex(index + 1)
@@ -239,6 +250,9 @@ function Lightbox({ imgs, startIndex, onClose }) {
           onClick={(e) => e.stopPropagation()}
           key={index}
           className={`${visible ? 'lightbox-zoom-enter ' : ''}lightbox-image-slide`}
+          decoding="async"
+          fetchPriority="high"
+          loading="eager"
           style={{
             maxWidth: '90vw',
             maxHeight: '90vh',
