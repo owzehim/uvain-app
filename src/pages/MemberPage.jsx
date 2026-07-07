@@ -1386,13 +1386,12 @@ function EventsTab({ events }) {
   }, [expandedId, slideIndexes, events])
 
   // Vertical drag between events in header
-  const dragStartY = useRef(null)
+  const pointerStartY = useRef(null)
   const dragBaseIdxRef = useRef(0)
   const currentDragIdxRef = useRef(0)
-  const touchIdRef = useRef(null)
+  const activePointerIdRef = useRef(null)
   const allEventsRef = useRef(allEvents)
   const selectedEventRef = useRef(selectedEvent)
-  const removeDragListenersRef = useRef(null)
 
   const currentEventIndex = allEvents.findIndex(
     (ev) => ev.id === selectedEvent?.id,
@@ -1407,39 +1406,27 @@ function EventsTab({ events }) {
     selectedEventRef.current = selectedEvent
   }, [allEvents, selectedEvent])
 
-  const getActiveTouch = (touches) => {
-    if (!touches?.length) return null
-    if (touchIdRef.current == null) return touches[0]
-    return Array.from(touches).find((touch) => touch.identifier === touchIdRef.current) || null
-  }
-
-  const removeDragListeners = () => {
-    removeDragListenersRef.current?.()
-    removeDragListenersRef.current = null
-  }
-
   const resetDragState = () => {
-    removeDragListeners()
-    dragStartY.current = null
+    pointerStartY.current = null
     dragBaseIdxRef.current = activeEventIndex
     currentDragIdxRef.current = activeEventIndex
-    touchIdRef.current = null
+    activePointerIdRef.current = null
     setIsDragging(false)
     setIsTouching(false)
     setPreviewEvent(selectedEventRef.current)
   }
 
   const finalizeDrag = () => {
-    if (dragStartY.current == null) return
+    if (pointerStartY.current == null) return
     resetDragState()
   }
 
   const updateDraggedEvent = (clientY) => {
-    if (dragStartY.current == null) return
+    if (pointerStartY.current == null) return
     const eventsNow = allEventsRef.current
     if (!eventsNow.length) return
 
-    const dy = dragStartY.current - clientY
+    const dy = pointerStartY.current - clientY
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
     const idx = Math.max(
@@ -1456,58 +1443,41 @@ function EventsTab({ events }) {
     setPreviewEvent(nextEvent)
   }
 
-  const handleWindowTouchMove = (e) => {
-    const touch = getActiveTouch(e.touches)
-    if (!touch) return
-    updateDraggedEvent(touch.clientY)
-  }
+  const handleContainerPointerDown = (e) => {
+    if (!e.isPrimary || e.button !== 0) return
+    if (e.target.closest('button, a, input, textarea, select')) return
 
-  const handleContainerTouchEnd = () => {
-    finalizeDrag()
-  }
-
-  const handleContainerTouchCancel = () => {
-    finalizeDrag()
-  }
-
-  const addDragListeners = () => {
-    removeDragListeners()
-    window.addEventListener('touchmove', handleWindowTouchMove, { passive: true })
-    window.addEventListener('touchend', handleContainerTouchEnd)
-    window.addEventListener('touchcancel', handleContainerTouchCancel)
-    window.addEventListener('blur', handleContainerTouchCancel)
-    removeDragListenersRef.current = () => {
-      window.removeEventListener('touchmove', handleWindowTouchMove)
-      window.removeEventListener('touchend', handleContainerTouchEnd)
-      window.removeEventListener('touchcancel', handleContainerTouchCancel)
-      window.removeEventListener('blur', handleContainerTouchCancel)
-    }
-  }
-
-  const handleContainerTouchStart = (e) => {
-    const touch = e.touches[0]
     const rect = containerRef.current?.getBoundingClientRect()
     // Avoid grabbing when finger starts too low (near calendar)
-    if (rect && touch.clientY > rect.bottom - 60) return
+    if (rect && e.clientY > rect.bottom - 60) return
 
-    removeDragListeners()
-    touchIdRef.current = touch.identifier
-    dragStartY.current = touch.clientY
+    activePointerIdRef.current = e.pointerId
+    pointerStartY.current = e.clientY
     dragBaseIdxRef.current = activeEventIndex
     currentDragIdxRef.current = activeEventIndex
     setIsDragging(false)
     setIsTouching(true)
     setPreviewEvent(selectedEventRef.current)
-    addDragListeners()
+
+    e.currentTarget.setPointerCapture?.(e.pointerId)
   }
 
-  const handleContainerTouchMove = (e) => {
-    const touch = getActiveTouch(e.touches)
-    if (!touch) return
-    updateDraggedEvent(touch.clientY)
+  const handleContainerPointerMove = (e) => {
+    if (e.pointerId !== activePointerIdRef.current) return
+    updateDraggedEvent(e.clientY)
   }
 
-  useEffect(() => () => removeDragListeners(), [])
+  const handleContainerPointerEnd = (e) => {
+    if (e.pointerId !== activePointerIdRef.current) return
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    finalizeDrag()
+  }
+
+  const handleContainerPointerCancel = (e) => {
+    if (e.pointerId !== activePointerIdRef.current) return
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    finalizeDrag()
+  }
 
   // Helper to open lightbox at specific index
   const openLightboxAt = (index) => {
@@ -2065,10 +2035,11 @@ const effectiveDateColor = isDragging
       <div
         className="no-highlight-zone"
         ref={containerRef}
-        onTouchStart={handleContainerTouchStart}
-        onTouchMove={handleContainerTouchMove}
-        onTouchEnd={handleContainerTouchEnd}
-        onTouchCancel={handleContainerTouchCancel}
+        onPointerDown={handleContainerPointerDown}
+        onPointerMove={handleContainerPointerMove}
+        onPointerUp={handleContainerPointerEnd}
+        onPointerCancel={handleContainerPointerCancel}
+        onLostPointerCapture={handleContainerPointerEnd}
         style={{
           height: '100dvh',
           display: 'flex',
