@@ -1595,6 +1595,7 @@ function EventsTab({ events }) {
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
   const eventDateNumberStretch = 1.35
+  const displayEvent = isDragging ? previewEvent : selectedEvent
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
@@ -1604,8 +1605,15 @@ function EventsTab({ events }) {
     })
   })
 
-  const calYear = calMonth.getFullYear()
-  const calMonthIdx = calMonth.getMonth()
+  const displayEventDate = getPrimaryEventDate(displayEvent)
+  const displayCalMonth = isDragging && displayEventDate
+    ? (() => {
+        const d = parseLocalDate(displayEventDate)
+        return new Date(d.getFullYear(), d.getMonth(), 1)
+      })()
+    : calMonth
+  const calYear = displayCalMonth.getFullYear()
+  const calMonthIdx = displayCalMonth.getMonth()
 
   const cells = [
     ...Array(new Date(calYear, calMonthIdx, 1).getDay()).fill(null),
@@ -1864,7 +1872,6 @@ function EventsTab({ events }) {
   }
 
   // First-panel image + color logic
-  const displayEvent = isDragging ? previewEvent : selectedEvent
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
@@ -2435,7 +2442,7 @@ const effectiveDateColor = isDragging
                   const hasEvt = dayEvents.length > 0
                   const isPastEventDate =
                     hasEvt && parseLocalDate(dateKey) < todayStart
-                  const selectedEventDates = getEventDates(selectedEvent)
+                  const selectedEventDates = getEventDates(displayEvent)
                   const isSelectedEventDate = hasEvt && selectedEventDates.includes(dateKey)
                   const nextEventDates = getEventDates(nextEvent)
                   const isNextEventDate = hasEvt && nextEventDates.includes(dateKey)
