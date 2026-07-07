@@ -65,6 +65,13 @@ function App() {
   useEffect(() => {
     if (!isStandaloneApp()) return undefined
 
+    const viewport = document.querySelector('meta[name="viewport"]')
+    const previousViewport = viewport?.getAttribute('content')
+    viewport?.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover',
+    )
+
     const preventPinch = (e) => {
       if (e.touches?.length > 1) e.preventDefault()
     }
@@ -75,6 +82,7 @@ function App() {
     document.addEventListener('gesturechange', preventGesture)
 
     return () => {
+      if (previousViewport) viewport?.setAttribute('content', previousViewport)
       document.removeEventListener('touchmove', preventPinch)
       document.removeEventListener('gesturestart', preventGesture)
       document.removeEventListener('gesturechange', preventGesture)

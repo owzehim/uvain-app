@@ -376,10 +376,13 @@ const MEMBERSHIP_SLIDES = [
 const SLIDE_INTERVAL_MS = 5200
 const IMAGE_INTERVAL_MS = 2600
 const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
+const PLACE_IMAGE_EXTENSIONS = /\.(avif|webp|jpe?g|png)$/i
 
 function MembershipCarousel() {
   const navigate = useNavigate()
   const [activeSlide, setActiveSlide] = useState(0)
+  const [placeImages, setPlaceImages] = useState([])
+  const [transitionEnabled, setTransitionEnabled] = useState(true)
   const [imageIndexes, setImageIndexes] = useState(() =>
     MEMBERSHIP_SLIDES.map(() => 0),
   )
@@ -389,9 +392,25 @@ function MembershipCarousel() {
   const touchStartXRef = useRef(0)
   const touchStartYRef = useRef(0)
 
+  const slides = useMemo(
+    () =>
+      MEMBERSHIP_SLIDES.map((slide) =>
+        slide.key === 'discounts' && placeImages.length > 0
+          ? { ...slide, images: placeImages }
+          : slide,
+      ),
+    [placeImages],
+  )
+  const displaySlides = useMemo(() => [...slides, slides[0]], [slides])
+  const realActiveSlide = activeSlide % slides.length
+
   const goToSlide = (nextSlide) => {
-    const slideCount = MEMBERSHIP_SLIDES.length
-    setActiveSlide((nextSlide + slideCount) % slideCount)
+    setTransitionEnabled(true)
+    if (nextSlide < 0) {
+      setActiveSlide(slides.length - 1)
+      return
+    }
+    setActiveSlide(nextSlide)
   }
 
   useEffect(() => {
@@ -400,21 +419,54 @@ function MembershipCarousel() {
     }, SLIDE_INTERVAL_MS)
 
     return () => window.clearInterval(timer)
-  }, [activeSlide])
+  }, [activeSlide, slides.length])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchPlaceImages = async () => {
+      const { data, error } = await supabase.storage
+        .from('place-images')
+        .list('', {
+          limit: 30,
+          sortBy: { column: 'created_at', order: 'desc' },
+        })
+
+      if (cancelled || error || !Array.isArray(data)) return
+
+      const urls = data
+        .filter((file) => file.name && PLACE_IMAGE_EXTENSIONS.test(file.name))
+        .map((file) => {
+          const { data: publicData } = supabase.storage
+            .from('place-images')
+            .getPublicUrl(file.name)
+          return publicData?.publicUrl ? { src: publicData.publicUrl } : null
+        })
+        .filter(Boolean)
+
+      if (urls.length > 0) setPlaceImages(urls)
+    }
+
+    fetchPlaceImages()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (interactionPausedRef.current) return
       setImageIndexes((current) =>
         current.map((imageIndex, slideIndex) => {
-          const imageCount = MEMBERSHIP_SLIDES[slideIndex].images.length
+          const imageCount = slides[slideIndex]?.images.length || 0
           return imageCount > 1 ? (imageIndex + 1) % imageCount : imageIndex
         }),
       )
     }, IMAGE_INTERVAL_MS)
 
     return () => window.clearInterval(timer)
-  }, [])
+  }, [slides])
 
   const pauseInteraction = () => {
     interactionPausedRef.current = true
@@ -463,6 +515,16 @@ function MembershipCarousel() {
     resumeInteraction()
   }
 
+  const handleSlideTransitionEnd = () => {
+    if (activeSlide !== slides.length) return
+
+    setTransitionEnabled(false)
+    setActiveSlide(0)
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setTransitionEnabled(true))
+    })
+  }
+
   return (
     <div
       className="membership-carousel relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
@@ -476,21 +538,23 @@ function MembershipCarousel() {
     >
       <div
         className="flex h-full"
+        onTransitionEnd={handleSlideTransitionEnd}
         style={{
-          width: `${MEMBERSHIP_SLIDES.length * 100}%`,
-          transform: `translateX(calc(-${activeSlide * (100 / MEMBERSHIP_SLIDES.length)}% + ${dragOffset}px))`,
-          transition: isDragging
+          width: `${displaySlides.length * 100}%`,
+          transform: `translateX(calc(-${activeSlide * (100 / displaySlides.length)}% + ${dragOffset}px))`,
+          transition: isDragging || !transitionEnabled
             ? 'none'
             : 'transform 620ms cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
-        {MEMBERSHIP_SLIDES.map((slide, slideIndex) => (
+        {displaySlides.map((slide, slideIndex) => (
           <MembershipSlide
-            key={slide.key}
-          slide={slide}
-          imageIndex={imageIndexes[slideIndex]}
-        />
-      ))}
+            key={`${slide.key}-${slideIndex}`}
+            slide={slide}
+            slideCount={displaySlides.length}
+            imageIndex={imageIndexes[slideIndex % slides.length]}
+          />
+        ))}
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 bg-white/34 dark:bg-black/38" />
@@ -513,17 +577,17 @@ function MembershipCarousel() {
       <div
         className="pointer-events-none absolute inset-x-0 top-0 z-10"
         style={{
-          height: 'calc(env(safe-area-inset-top) + 42px)',
+          height: 'calc(env(safe-area-inset-top) + 82px)',
           background:
-            'linear-gradient(to bottom, rgba(255,255,255,0.34), rgba(255,255,255,0))',
+            'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.96) 30%, rgba(255,255,255,0.62) 66%, rgba(255,255,255,0) 100%)',
         }}
       />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 z-10 hidden dark:block"
         style={{
-          height: 'calc(env(safe-area-inset-top) + 42px)',
+          height: 'calc(env(safe-area-inset-top) + 82px)',
           background:
-            'linear-gradient(to bottom, rgba(0,0,0,0.34), rgba(0,0,0,0))',
+            'linear-gradient(to bottom, #000000 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.58) 66%, rgba(0,0,0,0) 100%)',
         }}
       />
 
@@ -535,11 +599,11 @@ function MembershipCarousel() {
         }}
       >
         <h2 className="max-w-sm text-[31px] font-bold leading-tight text-gray-950 dark:text-white">
-          {MEMBERSHIP_SLIDES[activeSlide].title}
+          {slides[realActiveSlide].title}
         </h2>
-        {MEMBERSHIP_SLIDES[activeSlide].description && (
+        {slides[realActiveSlide].description && (
           <p className="mt-2 max-w-sm text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-300">
-            {MEMBERSHIP_SLIDES[activeSlide].description}
+            {slides[realActiveSlide].description}
           </p>
         )}
       </div>
@@ -551,7 +615,7 @@ function MembershipCarousel() {
           zIndex: 25,
         }}
       >
-        {MEMBERSHIP_SLIDES.map((slide, index) => (
+        {slides.map((slide, index) => (
           <button
             key={slide.key}
             type="button"
@@ -559,10 +623,10 @@ function MembershipCarousel() {
             onClick={() => goToSlide(index)}
             className="pointer-events-auto rounded-full transition-all"
             style={{
-              width: index === activeSlide ? 8 : 6,
-              height: index === activeSlide ? 8 : 6,
+              width: index === realActiveSlide ? 8 : 6,
+              height: index === realActiveSlide ? 8 : 6,
               background:
-                index === activeSlide
+                index === realActiveSlide
                   ? 'var(--membership-dot-active)'
                   : 'var(--membership-dot-idle)',
             }}
@@ -589,11 +653,11 @@ function MembershipCarousel() {
   )
 }
 
-function MembershipSlide({ slide, imageIndex }) {
+function MembershipSlide({ slide, slideCount, imageIndex }) {
   return (
     <section
       className="relative h-full flex-shrink-0 overflow-hidden bg-neutral-400 dark:bg-neutral-700"
-      style={{ width: `${100 / MEMBERSHIP_SLIDES.length}%` }}
+      style={{ width: `${100 / slideCount}%` }}
     >
       {slide.images.map((image, index) => (
         <div
@@ -605,12 +669,14 @@ function MembershipSlide({ slide, imageIndex }) {
             opacity: index === imageIndex ? 1 : 0,
           }}
         >
-          <div className="absolute inset-x-8 top-[16%] grid grid-cols-2 gap-3 opacity-80">
-            <div className="h-40 rounded-[8px] bg-white/18 backdrop-blur-[1px]" />
-            <div className="mt-10 h-52 rounded-[8px] bg-black/12 backdrop-blur-[1px]" />
-            <div className="h-36 rounded-[8px] bg-black/14 backdrop-blur-[1px]" />
-            <div className="h-32 rounded-[8px] bg-white/20 backdrop-blur-[1px]" />
-          </div>
+          {!image.src && (
+            <div className="absolute inset-x-8 top-[16%] grid grid-cols-2 gap-3 opacity-80">
+              <div className="h-40 rounded-[8px] bg-white/18 backdrop-blur-[1px]" />
+              <div className="mt-10 h-52 rounded-[8px] bg-black/12 backdrop-blur-[1px]" />
+              <div className="h-36 rounded-[8px] bg-black/14 backdrop-blur-[1px]" />
+              <div className="h-32 rounded-[8px] bg-white/20 backdrop-blur-[1px]" />
+            </div>
+          )}
         </div>
       ))}
 

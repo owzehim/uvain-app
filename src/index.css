@@ -79,6 +79,12 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+input,
+textarea,
+select {
+  font-size: max(16px, 1rem);
+}
+
 @media (min-width: 768px) {
   .member-app-shell {
     width: min(100vw, 430px);
