@@ -163,8 +163,17 @@ function TimeInput({ value, onChange, className = '' }) {
 
 // ─── AdminPage ────────────────────────────────────────────────────────────────
 
+const ADMIN_ACTIVE_TAB_KEY = 'uvain_admin_active_tab'
+const ADMIN_TABS = ['members', 'events', 'restaurants']
+
+function getStoredAdminTab() {
+  if (typeof window === 'undefined') return 'members'
+  const storedTab = window.sessionStorage.getItem(ADMIN_ACTIVE_TAB_KEY)
+  return ADMIN_TABS.includes(storedTab) ? storedTab : 'members'
+}
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState('members')
+  const [activeTab, setActiveTab] = useState(getStoredAdminTab)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
@@ -230,7 +239,10 @@ export default function AdminPage() {
         ].map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => {
+              window.sessionStorage.setItem(ADMIN_ACTIVE_TAB_KEY, tab.key)
+              setActiveTab(tab.key)
+            }}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.key
                 ? 'border-blue-500 text-blue-600'

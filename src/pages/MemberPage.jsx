@@ -13,12 +13,27 @@ import QRScanner from '../components/QRScanner'
 import StampCardMini from '../features/stampCard/components/StampCardMini'
 import StampCardModal from '../features/stampCard/components/StampCardModal'
 
+const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
+const MEMBER_TABS = ['qr', 'events', 'map']
+const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
+
+function getStoredMemberTab() {
+  if (typeof window === 'undefined') return 'qr'
+  const storedTab = window.sessionStorage.getItem(MEMBER_ACTIVE_TAB_KEY)
+  return MEMBER_TABS.includes(storedTab) ? storedTab : 'qr'
+}
+
+function getStoredEventListOpen() {
+  if (typeof window === 'undefined') return false
+  return window.sessionStorage.getItem(MEMBER_EVENT_LIST_OPEN_KEY) === '1'
+}
+
 export default function MemberPage() {
   const [authUserId, setAuthUserId] = useState(null)
   const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [activeTab, setActiveTab] = useState('qr')
+  const [activeTab, setActiveTab] = useState(getStoredMemberTab)
   const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
@@ -114,6 +129,7 @@ export default function MemberPage() {
   }, [])
 
   const handleTabChange = (key) => {
+    window.sessionStorage.setItem(MEMBER_ACTIVE_TAB_KEY, key)
     setActiveTab(key)
     setTabKey((prev) => prev + 1)
     if (key !== 'qr') {
@@ -1255,7 +1271,7 @@ function EventsTab({ events }) {
   const [isTouching, setIsTouching] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
   const [slideIndexes, setSlideIndexes] = useState({})
-  const [eventListOpen, setEventListOpen] = useState(false)
+  const [eventListOpen, setEventListOpen] = useState(getStoredEventListOpen)
   const [eventListClosing, setEventListClosing] = useState(false)
   const [eventListNewestFirst, setEventListNewestFirst] = useState(true)
   const [darkMode, setDarkMode] = useState(() =>
@@ -1614,6 +1630,7 @@ function EventsTab({ events }) {
   }
 
   const closeEventList = () => {
+    window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
     setEventListClosing(true)
     window.setTimeout(() => {
       setEventListOpen(false)
@@ -1622,6 +1639,7 @@ function EventsTab({ events }) {
   }
 
   const selectEventFromList = (ev) => {
+    window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
     setSelectedEvent(ev)
     setPreviewEvent(ev)
     setExpandedId(null)
@@ -1965,10 +1983,11 @@ const effectiveDateColor = isDragging
     `}</style>
     <button
       type="button"
-      onClick={() => {
-        setEventListNewestFirst(true)
-        setEventListOpen(true)
-      }}
+        onClick={() => {
+          setEventListNewestFirst(true)
+          window.sessionStorage.setItem(MEMBER_EVENT_LIST_OPEN_KEY, '1')
+          setEventListOpen(true)
+        }}
   className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
   aria-label="Open event list"
   style={{
@@ -2833,7 +2852,7 @@ onClick={() => openParticipationForm(displayEvent)}
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 58px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 66px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
