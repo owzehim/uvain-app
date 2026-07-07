@@ -184,11 +184,11 @@ function Lightbox({ imgs, startIndex, onClose }) {
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
         // swipe left → next
-        if (index === 0) handleClose()
-        else goToIndex(index + 1)
+        goToIndex(index + 1)
       } else {
         // swipe right → prev
-        goToIndex(index - 1)
+        if (index === 0) handleClose()
+        else goToIndex(index - 1)
       }
     }
 
@@ -200,15 +200,15 @@ function Lightbox({ imgs, startIndex, onClose }) {
     <>
       <style>{`
         @keyframes lightboxZoomIn {
-          from { transform: scale(0.9); }
-          to { transform: scale(1); }
+          from { transform: translateY(-18px) scale(0.9); }
+          to { transform: translateY(-18px) scale(1); }
         }
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
         @keyframes lightboxImageSlideIn {
-          from { opacity: 0.72; transform: translate(22px, 0); }
-          to { opacity: 1; transform: translate(0, 0); }
+          from { opacity: 0.72; }
+          to { opacity: 1; }
         }
         .lightbox-image-slide {
           animation: lightboxImageSlideIn 0.28s cubic-bezier(0.22,1,0.36,1);
@@ -225,10 +225,8 @@ function Lightbox({ imgs, startIndex, onClose }) {
           zIndex: 2000,
           background: 'rgba(0, 0, 0, 0.75)',
           display: 'flex',
-          alignItems: 'flex-start',
+          alignItems: 'center',
           justifyContent: 'center',
-          paddingTop: 'calc(env(safe-area-inset-top) + 58px)',
-          boxSizing: 'border-box',
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.25s ease',
           touchAction: 'none',
@@ -243,12 +241,13 @@ function Lightbox({ imgs, startIndex, onClose }) {
           className={`${visible ? 'lightbox-zoom-enter ' : ''}lightbox-image-slide`}
           style={{
             maxWidth: '90vw',
-            maxHeight: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 96px)',
+            maxHeight: '90vh',
             objectFit: 'contain',
             borderRadius: 12,
             boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
             userSelect: 'none',
             WebkitUserSelect: 'none',
+            transform: 'translateY(-18px)',
           }}
         />
 
