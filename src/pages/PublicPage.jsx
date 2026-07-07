@@ -369,6 +369,7 @@ const MEMBERSHIP_SLIDES = [
 
 const SLIDE_INTERVAL_MS = 5200
 const IMAGE_INTERVAL_MS = 2600
+const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
 
 function MembershipCarousel() {
   const navigate = useNavigate()
@@ -426,6 +427,14 @@ function MembershipCarousel() {
     touchStartYRef.current = e.touches[0].clientY
   }
 
+  const handlePointerDown = () => {
+    pauseInteraction()
+  }
+
+  const handlePointerUp = () => {
+    resumeInteraction()
+  }
+
   const handleTouchMove = (e) => {
     if (!isDragging) return
 
@@ -454,9 +463,10 @@ function MembershipCarousel() {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onMouseDown={pauseInteraction}
-      onMouseUp={resumeInteraction}
-      onMouseLeave={resumeInteraction}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onPointerLeave={handlePointerUp}
     >
       <div
         className="flex h-full"
@@ -480,7 +490,7 @@ function MembershipCarousel() {
       <div
         className="pointer-events-none absolute left-0 right-0 flex justify-center gap-1.5"
         style={{
-          bottom: 'calc(env(safe-area-inset-bottom) + 130px)',
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 66px)`,
           zIndex: 25,
         }}
       >
@@ -509,7 +519,7 @@ function MembershipCarousel() {
       <div
         className="absolute left-0 right-0 px-5"
         style={{
-          bottom: 'calc(env(safe-area-inset-bottom) + 64px)',
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 10px)`,
           zIndex: 30,
         }}
       >
@@ -571,17 +581,17 @@ function MembershipSlide({ slide, imageIndex }) {
       />
 
       <div
-        className="absolute left-0 right-0 px-6 text-center"
+        className="absolute left-0 right-0 px-6 text-left"
         style={{
-          bottom: 'calc(env(safe-area-inset-bottom) + 188px)',
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 112px)`,
           zIndex: 10,
         }}
       >
-        <h2 className="mx-auto max-w-sm text-[28px] font-bold leading-tight text-gray-950 dark:text-white">
+        <h2 className="max-w-sm text-[31px] font-bold leading-tight text-gray-950 dark:text-white">
           {slide.title}
         </h2>
         {slide.description && (
-          <p className="mx-auto mt-2 max-w-sm text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-300">
+          <p className="mt-2 max-w-sm text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-300">
             {slide.description}
           </p>
         )}
