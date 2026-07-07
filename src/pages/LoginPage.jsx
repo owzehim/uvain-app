@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { CaretLeft, X } from '@phosphor-icons/react'
+import { CaretLeft } from '@phosphor-icons/react'
 import { useLogin } from '../hooks/useLogin'
 
 export default function LoginPage() {
@@ -30,25 +30,14 @@ export default function LoginPage() {
 
   return (
     <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-[#121212]">
-      {isStandaloneStep ? (
-        <button
-          type="button"
-          onClick={handleBack}
-          className="fixed left-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-          aria-label="Back to login"
-        >
-          <CaretLeft size={30} weight="regular" />
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => navigate('/public')}
-          className="fixed right-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-200"
-          aria-label="Close login"
-        >
-          <X size={22} weight="bold" />
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={isStandaloneStep ? handleBack : () => navigate('/public')}
+        className="fixed left-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+        aria-label={isStandaloneStep ? 'Back to login' : 'Close login'}
+      >
+        <CaretLeft size={30} weight="regular" />
+      </button>
 
       <div className="w-full max-w-sm px-2">
         {!isStandaloneStep && (
