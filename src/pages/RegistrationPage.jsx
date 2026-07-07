@@ -1618,9 +1618,11 @@ const s = {
   topTitle: {
     position: 'absolute',
     left: '4px',
-    top: '12px',
+    top: '50%',
+    transform: 'translateY(-50%)',
     fontSize: '15px',
     fontWeight: 600,
+    lineHeight: 1,
     color: 'var(--reg-text)',
     pointerEvents: 'none',
   },
