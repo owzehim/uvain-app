@@ -347,6 +347,8 @@ const PASTEL_COLORS = [
   '#B3F0EE',
 ];
 
+const AUTH_BOX_WIDTH = '368px';
+
 function getPastelColor(seed) {
   const str = seed || 'default';
   let hash = 0;
@@ -1659,8 +1661,8 @@ const s = {
     padding: '6px 0 14px',
     backgroundColor: 'var(--reg-page-bg)',
     borderRadius: '0',
-    maxWidth: '320px',
-    width: '100%',
+    maxWidth: AUTH_BOX_WIDTH,
+    width: 'calc(100% - 32px)',
     margin: '0 auto',
     flex: 1,
     minHeight: 0,
@@ -1668,7 +1670,7 @@ const s = {
   },
   stepShell: {
     width: '100%',
-    maxWidth: '320px',
+    maxWidth: AUTH_BOX_WIDTH,
     flex: 1,
     minHeight: 0,
     display: 'flex',
@@ -2102,8 +2104,8 @@ const s = {
     borderRadius: '0',
     boxShadow: 'none',
     padding: '0 0 14px',
-    maxWidth: '320px',
-    width: '100%',
+    maxWidth: AUTH_BOX_WIDTH,
+    width: 'calc(100% - 32px)',
     margin: '122px auto 0',
   },
   emailIcon: {

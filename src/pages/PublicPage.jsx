@@ -62,8 +62,8 @@ export default function PublicPage() {
       <div
         className="relative bg-white flex items-center justify-between flex-shrink-0"
         style={{
-          paddingTop: 'calc(env(safe-area-inset-top) + 2px)',
-          minHeight: 'calc(env(safe-area-inset-top) + 48px)',
+          paddingTop: 'calc(env(safe-area-inset-top) + 6px)',
+          minHeight: 'calc(env(safe-area-inset-top) + 56px)',
         }}
       >
         <h1
@@ -71,7 +71,7 @@ export default function PublicPage() {
           style={{
             position: 'fixed',
             left: '32px',
-            top: 'calc(env(safe-area-inset-top) + 2px)',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
             height: '44px',
             display: 'flex',
             alignItems: 'center',
@@ -86,7 +86,7 @@ export default function PublicPage() {
           style={{
             position: 'fixed',
             right: '14px',
-            top: 'calc(env(safe-area-inset-top) + 2px)',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
             height: '44px',
             padding: '0 12px',
             display: 'flex',
@@ -263,7 +263,6 @@ function PublicMapTab({ restaurants }) {
               selected={selected}
               onClose={() => setSelected(null)}
               constrainToParent
-              fillParentMax
             />
           )}
         </div>
@@ -276,7 +275,10 @@ function MembershipTab() {
   const navigate = useNavigate()
   return (
     <div className="h-full overflow-y-auto flex items-center justify-center bg-white no-highlight-zone">
-      <div className="px-4 py-8 w-full max-w-sm">
+      <div
+        className="py-8"
+        style={{ width: 'calc(100% - 32px)', maxWidth: '368px' }}
+      >
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Lock size={48} weight="fill" color="#f97316" />
