@@ -1075,11 +1075,11 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
         // swipe left ??next
-        if (index === 0) handleClose()
-        else goToIndex(index + 1)
+        goToIndex(index + 1)
       } else {
         // swipe right ??prev
-        goToIndex(index - 1)
+        if (index === 0) handleClose()
+        else goToIndex(index - 1)
       }
     }
 
