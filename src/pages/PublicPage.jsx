@@ -62,8 +62,8 @@ export default function PublicPage() {
       <div
         className="relative bg-white flex items-center justify-between flex-shrink-0"
         style={{
-          paddingTop: 'calc(env(safe-area-inset-top) + 6px)',
-          minHeight: 'calc(env(safe-area-inset-top) + 56px)',
+          paddingTop: 'calc(env(safe-area-inset-top) + 2px)',
+          minHeight: 'calc(env(safe-area-inset-top) + 48px)',
         }}
       >
         <h1
@@ -71,7 +71,7 @@ export default function PublicPage() {
           style={{
             position: 'fixed',
             left: '32px',
-            top: 'calc(env(safe-area-inset-top) + 6px)',
+            top: 'calc(env(safe-area-inset-top) + 2px)',
             height: '44px',
             display: 'flex',
             alignItems: 'center',
@@ -86,7 +86,7 @@ export default function PublicPage() {
           style={{
             position: 'fixed',
             right: '14px',
-            top: 'calc(env(safe-area-inset-top) + 6px)',
+            top: 'calc(env(safe-area-inset-top) + 2px)',
             height: '44px',
             padding: '0 12px',
             display: 'flex',
@@ -263,6 +263,7 @@ function PublicMapTab({ restaurants }) {
               selected={selected}
               onClose={() => setSelected(null)}
               constrainToParent
+              fillParentMax
             />
           )}
         </div>

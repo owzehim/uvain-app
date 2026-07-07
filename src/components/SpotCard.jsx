@@ -343,6 +343,7 @@ export function SpotCard({
   onClose,
   onClosingStart,
   constrainToParent = false,
+  fillParentMax = false,
 }) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -376,7 +377,9 @@ export function SpotCard({
   const defaultMaxHeight = isDesktop ? 460 : WIN_H * 0.82
   const MAX_HEIGHT =
     constrainToParent && parentHeight
-      ? Math.min(defaultMaxHeight, parentHeight)
+      ? fillParentMax
+        ? parentHeight
+        : Math.min(defaultMaxHeight, parentHeight)
       : defaultMaxHeight
 
   useEffect(() => {
