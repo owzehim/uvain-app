@@ -1616,10 +1616,10 @@ const s = {
   languageToggle: {
     position: 'fixed',
     right: '32px',
-    top: 'calc(env(safe-area-inset-top) + 6px)',
+    top: 'calc(env(safe-area-inset-top) + 10px)',
     minWidth: '72px',
-    height: '44px',
-    padding: '0 14px',
+    height: '36px',
+    padding: '0 12px',
     borderRadius: '6px',
     border: '1px solid var(--reg-soft-border)',
     backgroundColor: 'var(--reg-card-bg)',
@@ -2000,8 +2000,7 @@ const s = {
   },
   submitBtn: {
     marginTop: '2px',
-    height: '56px',
-    padding: '0 10px',
+    padding: '12px 10px',
     borderRadius: '9999px',
     border: 'none',
     background: '#f97316',
