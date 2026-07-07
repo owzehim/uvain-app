@@ -574,7 +574,6 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '', all
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const [language, setLanguage] = useState('ko');
-  const [isStepFading, setIsStepFading] = useState(false);
   const fileInputRef = useRef(null);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
   const [cropImageSrc, setCropImageSrc] = useState(null);
@@ -686,20 +685,9 @@ export default function RegistrationPage() {
     }
     goBack();
   };
-  const handleNextWithFade = () => {
-    if (isStepFading) return;
-    setIsStepFading(true);
-    window.setTimeout(() => {
-      goNext();
-      window.requestAnimationFrame(() => {
-        setIsStepFading(false);
-      });
-    }, 120);
-  };
   const aboutComplete = getRegistrationStepComplete('about', formData, yearOptions);
   const personalComplete = getRegistrationStepComplete('personal', formData, yearOptions);
   const academicComplete = getRegistrationStepComplete('academic', formData, yearOptions);
-  const registrationStepClass = `registration-step${isStepFading ? ' is-fading' : ''}`;
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
@@ -775,11 +763,11 @@ export default function RegistrationPage() {
       {error && <div style={s.errorBanner}>{error}</div>}
 
       {step === 'about' && (
-        <div key="about" className={registrationStepClass} style={s.stepShell}>
+        <div key="about" className="registration-step" style={s.stepShell}>
           <NameStep
             formData={formData}
             handleChange={handleChange}
-            goNext={handleNextWithFade}
+            goNext={goNext}
             language={language}
             t={t}
             profileHeroProps={profileHeroProps}
@@ -789,11 +777,11 @@ export default function RegistrationPage() {
       )}
 
       {step === 'personal' && (
-        <div key="personal" className={registrationStepClass} style={s.stepShell}>
+        <div key="personal" className="registration-step" style={s.stepShell}>
           <PersonalStep
             formData={formData}
             handleChange={handleChange}
-            goNext={handleNextWithFade}
+            goNext={goNext}
             language={language}
             t={t}
             displayName={displayName}
@@ -805,13 +793,13 @@ export default function RegistrationPage() {
       )}
 
       {step === 'academic' && (
-        <div key="academic" className={`${registrationStepClass} registration-step-academic`} style={s.stepShell}>
+        <div key="academic" className="registration-step registration-step-academic" style={s.stepShell}>
           <AcademicStep
             formData={formData}
             handleChange={handleChange}
             handleEducationLevelChange={handleEducationLevelChange}
             yearOptions={yearOptions}
-            goNext={handleNextWithFade}
+            goNext={goNext}
             t={t}
             displayName={displayName}
             greetingName={greetingName}
@@ -1513,11 +1501,6 @@ html.dark select option {
 
 .registration-step {
   opacity: 1;
-  transition: opacity 160ms ease-in-out;
-}
-
-.registration-step.is-fading {
-  opacity: 0.42;
 }
 `;
 

@@ -54,6 +54,9 @@ export default function PublicPage() {
           user-select: none;
           -webkit-tap-highlight-color: transparent;
         }
+        .membership-heading p + p {
+          display: none;
+        }
       `}</style>
 
       <div
@@ -285,23 +288,23 @@ function MembershipTab() {
         className="py-8"
         style={{ width: 'calc(100% - 32px)', maxWidth: '368px' }}
       >
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Lock size={48} weight="fill" color="#f97316" />
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">UvA 대학 생활을 완벽하게 즐기는 방법.</h2>
+        <div className="membership-heading text-center mb-8">
+          <h2 className="mb-2 text-3xl font-bold text-gray-900">완벽한 캠퍼스 라이프를 위한 시작</h2>
+          <p className="text-sm font-normal leading-relaxed text-gray-400">
+            UvA-IN Membership
+          </p>
           <p className="text-gray-500 text-sm leading-relaxed">UvA-IN Membership</p>
         </div>
 
         <div className="space-y-3 mb-8">
-          <Benefit icon={<ForkKnife size={24} weight="fill" color="#f97316" />} title="로컬 맛집부터 단골 카페까지">
-            암스테르담 곳곳의 제휴 매장에서 즐기는 특별 할인
+          <Benefit icon={<ForkKnife size={24} weight="fill" color="#f97316" />} title="로컬 맛집 & 카페 제휴 할인">
+            암스테르담 곳곳의 제휴 매장 혜택
           </Benefit>
-          <Benefit icon={<Calendar size={24} weight="fill" color="#3b82f6" />} title="더 많은 참여와 경험을 위한 기회">
-            UvA-IN 멤버에게만 제공되는 다양한 이벤트 참가비 특별 할인
+          <Benefit icon={<Calendar size={24} weight="fill" color="#3b82f6" />} title="캠퍼스 이벤트 참가비 할인">
+            UvA-IN 독점 이벤트 지원 혜택
           </Benefit>
-          <Benefit icon={<Users size={24} weight="fill" color="#22c55e" />} title="더 넓은 세계와 연결되는 커뮤니티">
-            국적을 넘어 암스테르담의 모든 UvA 학생들과 교류하는 전용 네트워크
+          <Benefit icon={<Users size={24} weight="fill" color="#22c55e" />} title="글로벌 캠퍼스 네트워크">
+            UvA 학생 전용 커뮤니티 연결
           </Benefit>
         </div>
 
@@ -314,6 +317,7 @@ function MembershipTab() {
 
         <button
   onClick={() => navigate('/register')}
+  style={{ display: 'none' }}
   className="
     w-full
     font-semibold
