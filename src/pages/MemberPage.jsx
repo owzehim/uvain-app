@@ -2823,7 +2823,7 @@ onClick={() => openParticipationForm(displayEvent)}
           <div
             className="pointer-events-none absolute left-0 right-0"
             style={{
-              top: 'calc(env(safe-area-inset-top) + 58px)',
+              top: 'calc(env(safe-area-inset-top) + 50px)',
               height: 36,
               zIndex: 2,
               background: eventListFade,
@@ -2833,7 +2833,7 @@ onClick={() => openParticipationForm(displayEvent)}
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 74px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 58px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
@@ -2844,7 +2844,7 @@ onClick={() => openParticipationForm(displayEvent)}
                 {groupedListEvents.map((yearGroup) => (
                   <section key={yearGroup.year} className="space-y-2.5">
                     <p
-                      className="pb-2 pt-5 text-3xl font-bold leading-none"
+                      className="pb-1 pl-3 pt-1 text-sm font-semibold leading-none"
                       style={{ color: eventListYearColor }}
                     >
                       {yearGroup.year}
