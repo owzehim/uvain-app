@@ -481,10 +481,10 @@ function MembershipCarousel() {
         {MEMBERSHIP_SLIDES.map((slide, slideIndex) => (
           <MembershipSlide
             key={slide.key}
-            slide={slide}
-            imageIndex={imageIndexes[slideIndex]}
-          />
-        ))}
+          slide={slide}
+          imageIndex={imageIndexes[slideIndex]}
+        />
+      ))}
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 bg-white/34 dark:bg-black/38" />
@@ -508,7 +508,7 @@ function MembershipCarousel() {
       <div
         className="pointer-events-none absolute left-0 right-0 px-6 text-left"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 96px)`,
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 78px)`,
           zIndex: 20,
         }}
       >
@@ -525,7 +525,7 @@ function MembershipCarousel() {
       <div
         className="pointer-events-none absolute left-0 right-0 flex justify-center gap-1.5"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 68px)`,
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 48px)`,
           zIndex: 25,
         }}
       >
@@ -551,7 +551,7 @@ function MembershipCarousel() {
       <div
         className="absolute left-0 right-0 px-5"
         style={{
-          bottom: BOTTOM_TAB_OFFSET,
+          bottom: `calc(${BOTTOM_TAB_OFFSET} - 20px)`,
           zIndex: 30,
         }}
       >
@@ -570,15 +570,16 @@ function MembershipCarousel() {
 function MembershipSlide({ slide, imageIndex }) {
   return (
     <section
-      className="relative h-full flex-shrink-0 overflow-hidden"
+      className="relative h-full flex-shrink-0 overflow-hidden bg-neutral-400 dark:bg-neutral-700"
       style={{ width: `${100 / MEMBERSHIP_SLIDES.length}%` }}
     >
       {slide.images.map((image, index) => (
         <div
-          key={image.label}
-          className="absolute inset-0 transition-opacity duration-1000 ease-out"
+          key={image.src || image.label}
+          className="absolute inset-0 bg-neutral-400 bg-cover bg-center transition-opacity duration-1000 ease-out dark:bg-neutral-700"
           style={{
             ...image.style,
+            backgroundImage: image.src ? `url("${image.src}")` : image.style?.background,
             opacity: index === imageIndex ? 1 : 0,
           }}
         >
@@ -588,9 +589,6 @@ function MembershipSlide({ slide, imageIndex }) {
             <div className="h-36 rounded-[8px] bg-black/14 backdrop-blur-[1px]" />
             <div className="h-32 rounded-[8px] bg-white/20 backdrop-blur-[1px]" />
           </div>
-          <span className="absolute bottom-[38%] left-6 rounded-full bg-black/24 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-md">
-            {image.label}
-          </span>
         </div>
       ))}
 
