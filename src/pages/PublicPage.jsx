@@ -299,7 +299,7 @@ function MembershipTab() {
 
         <button
           onClick={() => navigate('/login')}
-          className="mb-3 w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white transition-colors hover:bg-orange-600"
+          className="mb-3 w-full rounded-full bg-orange-500 py-3 font-semibold text-white transition-colors hover:bg-orange-600"
         >
           로그인
         </button>
@@ -310,7 +310,7 @@ function MembershipTab() {
     w-full
     font-semibold
     py-3
-    rounded-2xl
+    rounded-full
     transition-colors
     bg-gray-200 text-gray-900 hover:bg-gray-300
     dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700
