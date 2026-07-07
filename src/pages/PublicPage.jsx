@@ -57,6 +57,14 @@ export default function PublicPage() {
         .membership-heading p + p {
           display: none;
         }
+        .membership-carousel {
+          --membership-dot-active: #111827;
+          --membership-dot-idle: rgba(17, 24, 39, 0.32);
+        }
+        .dark .membership-carousel {
+          --membership-dot-active: #ffffff;
+          --membership-dot-idle: rgba(255, 255, 255, 0.4);
+        }
       `}</style>
 
       <div
@@ -287,18 +295,16 @@ const MEMBERSHIP_SLIDES = [
     description: '',
     images: [
       {
-        label: 'University of Amsterdam',
-        style: {
-          background:
-            'linear-gradient(135deg, #f97316 0%, #f8b24d 38%, #204a87 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/uva-campus-1.jpg',
       },
       {
-        label: 'Amsterdam campus',
-        style: {
-          background:
-            'linear-gradient(140deg, #fef3c7 0%, #fb923c 42%, #1e293b 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/uva-campus-2.jpg',
+      },
+      {
+        src: '/PublicPage_MembershipTab_Images/uva-campus-3.jpg',
+      },
+      {
+        src: '/PublicPage_MembershipTab_Images/uva-campus-4.jpg',
       },
     ],
   },
@@ -459,7 +465,7 @@ function MembershipCarousel() {
 
   return (
     <div
-      className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
+      className="membership-carousel relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -504,11 +510,27 @@ function MembershipCarousel() {
             'linear-gradient(to bottom, rgba(18,18,18,0), rgba(18,18,18,0.84) 58%, #121212 100%)',
         }}
       />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-10"
+        style={{
+          height: 'calc(env(safe-area-inset-top) + 42px)',
+          background:
+            'linear-gradient(to bottom, rgba(255,255,255,0.34), rgba(255,255,255,0))',
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 hidden dark:block"
+        style={{
+          height: 'calc(env(safe-area-inset-top) + 42px)',
+          background:
+            'linear-gradient(to bottom, rgba(0,0,0,0.34), rgba(0,0,0,0))',
+        }}
+      />
 
       <div
         className="pointer-events-none absolute left-0 right-0 px-6 text-left"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 78px)`,
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 62px)`,
           zIndex: 20,
         }}
       >
@@ -525,7 +547,7 @@ function MembershipCarousel() {
       <div
         className="pointer-events-none absolute left-0 right-0 flex justify-center gap-1.5"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 48px)`,
+          bottom: `calc(${BOTTOM_TAB_OFFSET} + 24px)`,
           zIndex: 25,
         }}
       >
@@ -541,8 +563,8 @@ function MembershipCarousel() {
               height: index === activeSlide ? 8 : 6,
               background:
                 index === activeSlide
-                  ? '#fff'
-                  : 'rgba(255,255,255,0.4)',
+                  ? 'var(--membership-dot-active)'
+                  : 'var(--membership-dot-idle)',
             }}
           />
         ))}
@@ -551,7 +573,7 @@ function MembershipCarousel() {
       <div
         className="absolute left-0 right-0 px-5"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} - 20px)`,
+          bottom: `calc(${BOTTOM_TAB_OFFSET} - 42px)`,
           zIndex: 30,
         }}
       >
@@ -575,7 +597,7 @@ function MembershipSlide({ slide, imageIndex }) {
     >
       {slide.images.map((image, index) => (
         <div
-          key={image.src || image.label}
+          key={image.src || image.label || index}
           className="absolute inset-0 bg-neutral-400 bg-cover bg-center transition-opacity duration-1000 ease-out dark:bg-neutral-700"
           style={{
             ...image.style,
