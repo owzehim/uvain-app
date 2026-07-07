@@ -137,6 +137,10 @@ function Lightbox({ imgs, startIndex, onClose }) {
   const touchStartY = useRef(null)
   const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 10px)'
 
+  const goToIndex = (nextIndex) => {
+    setIndex(Math.max(0, Math.min(nextIndex, imgs.length - 1)))
+  }
+
   // zoom-in + fade-in on open
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
@@ -145,13 +149,13 @@ function Lightbox({ imgs, startIndex, onClose }) {
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') handleClose()
-      if (e.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, imgs.length - 1))
-      if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
+      if (e.key === 'ArrowRight') goToIndex(index + 1)
+      if (e.key === 'ArrowLeft') goToIndex(index - 1)
     }
 
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [imgs.length])
+  }, [imgs.length, index])
 
   const handleClose = () => {
     setVisible(false)
@@ -180,10 +184,11 @@ function Lightbox({ imgs, startIndex, onClose }) {
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
         // swipe left → next
-        setIndex((i) => Math.min(i + 1, imgs.length - 1))
+        if (index === 0) handleClose()
+        else goToIndex(index + 1)
       } else {
         // swipe right → prev
-        setIndex((i) => Math.max(i - 1, 0))
+        goToIndex(index - 1)
       }
     }
 
@@ -195,11 +200,18 @@ function Lightbox({ imgs, startIndex, onClose }) {
     <>
       <style>{`
         @keyframes lightboxZoomIn {
-          from { transform: translateY(-18px) scale(0.9); }
-          to   { transform: translateY(-18px) scale(1);   }
+          from { transform: scale(0.9); }
+          to { transform: scale(1); }
         }
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes lightboxImageSlideIn {
+          from { opacity: 0.72; transform: translate(22px, 0); }
+          to { opacity: 1; transform: translate(0, 0); }
+        }
+        .lightbox-image-slide {
+          animation: lightboxImageSlideIn 0.28s cubic-bezier(0.22,1,0.36,1);
         }
       `}</style>
 
@@ -213,10 +225,13 @@ function Lightbox({ imgs, startIndex, onClose }) {
           zIndex: 2000,
           background: 'rgba(0, 0, 0, 0.75)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
+          paddingTop: 'calc(env(safe-area-inset-top) + 58px)',
+          boxSizing: 'border-box',
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.25s ease',
+          touchAction: 'none',
         }}
       >
         {/* Image */}
@@ -224,16 +239,16 @@ function Lightbox({ imgs, startIndex, onClose }) {
           src={imgs[index]}
           alt={'사진 ' + (index + 1)}
           onClick={(e) => e.stopPropagation()}
-          className={visible ? 'lightbox-zoom-enter' : ''}
+          key={index}
+          className={`${visible ? 'lightbox-zoom-enter ' : ''}lightbox-image-slide`}
           style={{
             maxWidth: '90vw',
-            maxHeight: '90vh',
+            maxHeight: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 96px)',
             objectFit: 'contain',
             borderRadius: 12,
             boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
             userSelect: 'none',
             WebkitUserSelect: 'none',
-            transform: 'translateY(-18px)',
           }}
         />
 
@@ -255,7 +270,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
                 key={i}
                 onClick={(e) => {
                   e.stopPropagation()
-                  setIndex(i)
+                  goToIndex(i)
                 }}
                 style={{
                   width: i === index ? 8 : 6,
