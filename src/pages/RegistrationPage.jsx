@@ -742,11 +742,6 @@ export default function RegistrationPage() {
         >
           <CaretLeft size={24} weight="bold" />
         </button>
-        {step === 'about' && (
-          <span className="registration-title" style={s.topTitle}>
-            {t.title}
-          </span>
-        )}
         <button
           onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
           style={s.languageToggle}
@@ -1614,17 +1609,6 @@ const s = {
     transition: 'color 0.2s',
     transform: 'translateX(-22px)',
     width: '34px',
-  },
-  topTitle: {
-    position: 'absolute',
-    left: '4px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    fontSize: '15px',
-    fontWeight: 600,
-    lineHeight: 1,
-    color: 'var(--reg-text)',
-    pointerEvents: 'none',
   },
   languageToggle: {
     padding: '8px 16px',
