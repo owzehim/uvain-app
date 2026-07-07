@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { updatePassword } from '../api/authRepository'
-import { UserCircle, ArrowLeft, Camera } from '@phosphor-icons/react'
+import { UserCircle, CaretLeft, Camera } from '@phosphor-icons/react'
 import Cropper from 'react-easy-crop'
 import ThemeToggle from '../components/ThemeToggle'
 
@@ -249,12 +249,11 @@ export default function SettingsPage() {
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <button onClick={() => navigate('/member')} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800">
-          <ArrowLeft size={18} weight="bold" />
+          <CaretLeft size={24} weight="bold" />
           <span className="pointer-events-none absolute right-4 top-[calc(env(safe-area-inset-top)+19px)] text-xs font-medium text-gray-300 dark:text-gray-600">
             version 0.9.5
           </span>
         </button>
-        <h1 className="font-semibold text-gray-900 text-sm dark:text-white">설정</h1>
       </div>
 
       {/* Content */}
