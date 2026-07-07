@@ -60,13 +60,39 @@ export default function PublicPage() {
       `}</style>
 
       <div
-        className="bg-white px-4 py-3 flex items-center justify-between flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+        className="relative bg-white flex items-center justify-between flex-shrink-0"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 6px)',
+          minHeight: 'calc(env(safe-area-inset-top) + 56px)',
+        }}
       >
-        <h1 className="font-bold text-gray-900">UvA-IN</h1>
+        <h1
+          className="font-bold text-gray-900"
+          style={{
+            position: 'fixed',
+            left: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            height: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            zIndex: 10,
+          }}
+        >
+          UvA-IN
+        </h1>
         <button
           onClick={() => navigate('/login')}
-          className="text-sm text-orange-500 font-medium px-3 py-1 rounded-lg hover:bg-orange-50"
+          className="text-sm text-orange-500 font-medium rounded-lg hover:bg-orange-50"
+          style={{
+            position: 'fixed',
+            right: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            height: '44px',
+            padding: '0 12px',
+            display: 'flex',
+            alignItems: 'center',
+            zIndex: 10,
+          }}
         >
           로그인
         </button>

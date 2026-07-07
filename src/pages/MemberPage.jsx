@@ -175,8 +175,11 @@ export default function MemberPage() {
       {/* Header: only on EVENTS tab */}
       {activeTab === 'events' && (
   <div
-    className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0 dark:bg-[#121212]"
-    style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+    className="relative bg-white flex items-center justify-between flex-shrink-0 dark:bg-[#121212]"
+    style={{
+      paddingTop: 'calc(env(safe-area-inset-top) + 6px)',
+      minHeight: 'calc(env(safe-area-inset-top) + 56px)',
+    }}
   >
     <div className="w-[60px]" />
     <div className="flex gap-2 items-center">
@@ -185,15 +188,26 @@ export default function MemberPage() {
           onClick={() => {
             window.location.href = '/admin'
           }}
-          className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+          className="fixed flex items-center rounded-lg bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700"
+          style={{
+            right: '66px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            height: '44px',
+            zIndex: 70,
+          }}
         >
           관리자
         </button>
       )}
       <button
         onClick={() => navigate('/settings')}
-        className="p-2 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800"
+        className="fixed flex h-11 w-11 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800"
         aria-label="Settings"
+        style={{
+          right: '14px',
+          top: 'calc(env(safe-area-inset-top) + 6px)',
+          zIndex: 70,
+        }}
       >
         {/* CHANGED: size={20} → size={22} to match the MY tab gear icon */}
         <Gear size={22} weight="bold" />
@@ -206,12 +220,13 @@ export default function MemberPage() {
       {activeTab === 'qr' && (
         <div
           className={
-            'absolute right-4 flex gap-2 transition-opacity duration-200 ' +
+            'fixed flex items-center gap-2 transition-opacity duration-200 ' +
             (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
           }
           style={{
-            top: 'calc(env(safe-area-inset-top) + 8px)',
-            zIndex: 20,
+            right: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            zIndex: 70,
             userSelect: 'none',
             WebkitUserSelect: 'none',
             WebkitTapHighlightColor: 'transparent',
@@ -222,8 +237,9 @@ export default function MemberPage() {
               onClick={() => {
                 window.location.href = '/admin'
               }}
-              className="text-xs text-white font-medium px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+              className="flex items-center rounded-lg bg-blue-600 px-3 text-xs font-medium text-white hover:bg-blue-700"
               style={{
+                height: '44px',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 WebkitTapHighlightColor: 'transparent',
@@ -233,20 +249,20 @@ export default function MemberPage() {
             </button>
           )}
           <button
-  onClick={() => navigate('/settings')}
-  className="p-2 text-gray-500 dark:text-gray-300"
-  aria-label="Settings"
-  style={{
-    background: 'transparent',
-    boxShadow: 'none',
-    borderRadius: 0,
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    WebkitTapHighlightColor: 'transparent',
-  }}
->
-  <Gear size={22} weight="bold" />
-</button>
+            onClick={() => navigate('/settings')}
+            className="flex h-11 w-11 items-center justify-center text-gray-500 dark:text-gray-300"
+            aria-label="Settings"
+            style={{
+              background: 'transparent',
+              boxShadow: 'none',
+              borderRadius: 0,
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <Gear size={22} weight="bold" />
+          </button>
         </div>
       )}
 
