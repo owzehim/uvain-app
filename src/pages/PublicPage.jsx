@@ -289,19 +289,19 @@ function MembershipTab() {
           <div className="flex justify-center mb-4">
             <Lock size={48} weight="fill" color="#f97316" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">UvA-IN Membership</h2>
-          <p className="text-gray-500 text-sm leading-relaxed">UvA-IN 멤버가 되어 다양한 혜택을 누려보세요.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">UvA 대학 생활을 완벽하게 즐기는 방법.</h2>
+          <p className="text-gray-500 text-sm leading-relaxed">UvA-IN Membership</p>
         </div>
 
         <div className="space-y-3 mb-8">
-          <Benefit icon={<ForkKnife size={24} weight="fill" color="#f97316" />} title="제휴 레스토랑 / 카페 할인">
-            암스테르담 제휴 장소에서 멤버 할인 혜택
+          <Benefit icon={<ForkKnife size={24} weight="fill" color="#f97316" />} title="로컬 맛집부터 단골 카페까지">
+            암스테르담 곳곳의 제휴 매장에서 즐기는 특별 할인
           </Benefit>
-          <Benefit icon={<Calendar size={24} weight="fill" color="#3b82f6" />} title="학생 이벤트 우선 참가">
-            이벤트 참가비 할인 혜택
+          <Benefit icon={<Calendar size={24} weight="fill" color="#3b82f6" />} title="더 많은 참여와 경험을 위한 기회">
+            UvA-IN 멤버에게만 제공되는 다양한 이벤트 참가비 특별 할인
           </Benefit>
-          <Benefit icon={<Users size={24} weight="fill" color="#22c55e" />} title="UvA 한인 네트워크">
-            암스테르담 한인 학생 커뮤니티 참여
+          <Benefit icon={<Users size={24} weight="fill" color="#22c55e" />} title="더 넓은 세계와 연결되는 커뮤니티">
+            국적을 넘어 암스테르담의 모든 UvA 학생들과 교류하는 전용 네트워크
           </Benefit>
         </div>
 
@@ -324,7 +324,7 @@ function MembershipTab() {
     dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700
   "
 >
-  Register as Member
+  회원가입
 </button>
       </div>
     </div>
