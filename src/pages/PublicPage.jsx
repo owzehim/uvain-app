@@ -39,7 +39,12 @@ export default function PublicPage() {
 
   return (
     <div
-      className="flex flex-col bg-white overflow-hidden no-highlight-zone"
+      className={
+        'flex flex-col overflow-hidden no-highlight-zone ' +
+        (activeTab === 'membership'
+          ? 'bg-black'
+          : 'bg-white dark:bg-[#121212]')
+      }
       style={{
         height: '100dvh',
         userSelect: 'none',
@@ -115,7 +120,7 @@ export default function PublicPage() {
       </div>
 
       <div
-        className="bg-white flex flex-shrink-0 select-none"
+        className="bg-white flex flex-shrink-0 select-none dark:bg-[#121212]"
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
           userSelect: 'none',
@@ -557,7 +562,7 @@ function MembershipCarousel() {
         ))}
       </div>
 
-      <div className="pointer-events-none absolute inset-0 z-10 bg-white/34 dark:bg-black/38" />
+      <div className="pointer-events-none absolute inset-0 z-10 bg-black/30 dark:bg-black/38" />
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10"
         style={{
@@ -574,23 +579,6 @@ function MembershipCarousel() {
             'linear-gradient(to bottom, rgba(18,18,18,0), rgba(18,18,18,0.84) 58%, #121212 100%)',
         }}
       />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-10"
-        style={{
-          height: 'calc(env(safe-area-inset-top) + 82px)',
-          background:
-            'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.96) 30%, rgba(255,255,255,0.62) 66%, rgba(255,255,255,0) 100%)',
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 hidden dark:block"
-        style={{
-          height: 'calc(env(safe-area-inset-top) + 82px)',
-          background:
-            'linear-gradient(to bottom, #000000 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.58) 66%, rgba(0,0,0,0) 100%)',
-        }}
-      />
-
       <div
         className="pointer-events-none absolute left-0 right-0 px-6 text-left"
         style={{
