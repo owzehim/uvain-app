@@ -8,12 +8,9 @@ import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { MapPin, Lock, ForkKnife, Calendar, Users } from '@phosphor-icons/react'
 
 const PUBLIC_ACTIVE_TAB_KEY = 'uvain_public_active_tab'
-const PUBLIC_TABS = ['map', 'membership']
 
 function getStoredPublicTab() {
-  if (typeof window === 'undefined') return 'map'
-  const storedTab = window.sessionStorage.getItem(PUBLIC_ACTIVE_TAB_KEY)
-  return PUBLIC_TABS.includes(storedTab) ? storedTab : 'map'
+  return 'membership'
 }
 
 export default function PublicPage() {
@@ -34,7 +31,7 @@ export default function PublicPage() {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.touches[0]?.clientX < 30) e.preventDefault()
+      if (e.touches.length === 1 && e.touches[0]?.clientX < 30) e.preventDefault()
     }
     document.addEventListener('touchstart', handler, { passive: false })
     return () => document.removeEventListener('touchstart', handler)
@@ -62,6 +59,7 @@ export default function PublicPage() {
       <div
         className="relative bg-white flex items-center justify-between flex-shrink-0"
         style={{
+          display: 'none',
           paddingTop: 'calc(env(safe-area-inset-top) + 6px)',
           minHeight: 'calc(env(safe-area-inset-top) + 56px)',
         }}
@@ -115,8 +113,8 @@ export default function PublicPage() {
         }}
       >
         {[
-          { key: 'map', label: 'SPOT', icon: MapPin },
           { key: 'membership', label: 'Membership', icon: Lock },
+          { key: 'map', label: 'SPOT', icon: MapPin },
         ].map((tab) => {
           const IconComponent = tab.icon
           return (
@@ -193,7 +191,16 @@ function PublicMapTab({ restaurants }) {
 
   return (
     <div className="h-full flex flex-col no-highlight-zone">
-      <div className="bg-white px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0 select-none">
+      <div
+        className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0 select-none dark:bg-[#121212]"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
+          zIndex: 10,
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
   {visibleCategories.map((cat) => {
     const isActive = activeCategory === cat
 
@@ -262,7 +269,6 @@ function PublicMapTab({ restaurants }) {
             <SpotCard
               selected={selected}
               onClose={() => setSelected(null)}
-              constrainToParent
             />
           )}
         </div>
