@@ -574,6 +574,7 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '', all
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const [language, setLanguage] = useState('ko');
+  const [isStepFading, setIsStepFading] = useState(false);
   const fileInputRef = useRef(null);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
   const [cropImageSrc, setCropImageSrc] = useState(null);
@@ -685,9 +686,20 @@ export default function RegistrationPage() {
     }
     goBack();
   };
+  const handleNextWithFade = () => {
+    if (isStepFading) return;
+    setIsStepFading(true);
+    window.setTimeout(() => {
+      goNext();
+      window.requestAnimationFrame(() => {
+        setIsStepFading(false);
+      });
+    }, 120);
+  };
   const aboutComplete = getRegistrationStepComplete('about', formData, yearOptions);
   const personalComplete = getRegistrationStepComplete('personal', formData, yearOptions);
   const academicComplete = getRegistrationStepComplete('academic', formData, yearOptions);
+  const registrationStepClass = `registration-step${isStepFading ? ' is-fading' : ''}`;
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
@@ -763,11 +775,11 @@ export default function RegistrationPage() {
       {error && <div style={s.errorBanner}>{error}</div>}
 
       {step === 'about' && (
-        <div key="about" className="registration-step" style={s.stepShell}>
+        <div key="about" className={registrationStepClass} style={s.stepShell}>
           <NameStep
             formData={formData}
             handleChange={handleChange}
-            goNext={goNext}
+            goNext={handleNextWithFade}
             language={language}
             t={t}
             profileHeroProps={profileHeroProps}
@@ -777,11 +789,11 @@ export default function RegistrationPage() {
       )}
 
       {step === 'personal' && (
-        <div key="personal" className="registration-step" style={s.stepShell}>
+        <div key="personal" className={registrationStepClass} style={s.stepShell}>
           <PersonalStep
             formData={formData}
             handleChange={handleChange}
-            goNext={goNext}
+            goNext={handleNextWithFade}
             language={language}
             t={t}
             displayName={displayName}
@@ -793,13 +805,13 @@ export default function RegistrationPage() {
       )}
 
       {step === 'academic' && (
-        <div key="academic" className="registration-step registration-step-academic" style={s.stepShell}>
+        <div key="academic" className={`${registrationStepClass} registration-step-academic`} style={s.stepShell}>
           <AcademicStep
             formData={formData}
             handleChange={handleChange}
             handleEducationLevelChange={handleEducationLevelChange}
             yearOptions={yearOptions}
-            goNext={goNext}
+            goNext={handleNextWithFade}
             t={t}
             displayName={displayName}
             greetingName={greetingName}
@@ -866,7 +878,7 @@ function ProfileHero({
   const showIntro = Boolean(firstLine || secondLine);
   return (
     <div style={academic ? s.academicHero : compact ? s.compactHero : s.aboutTopGrid}>
-      <div style={s.profilePicker} data-motion="avatar">
+      <div style={s.profilePicker}>
         <button
           type="button"
           onClick={allowUpload ? onProfileClick : undefined}
@@ -894,7 +906,7 @@ function ProfileHero({
       </div>
 
       {showIntro && (
-        <div style={academic || compact ? s.compactIntro : s.aboutIntro} data-motion="hero-text">
+        <div style={academic || compact ? s.compactIntro : s.aboutIntro}>
           {firstLine && (
             <p style={academic || compact ? s.compactIntroLine : equalIntroTextSize ? s.aboutIntroKo : s.aboutIntroEn}>{firstLine}</p>
           )}
@@ -917,7 +929,7 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
           secondLine="UvA-IN."
         />
 
-        <div style={s.nameGrid} data-motion="fields">
+        <div style={s.nameGrid}>
           <Field label={t.firstName}>
             <input
               name="firstName"
@@ -979,7 +991,7 @@ function PersonalStep({ formData, handleChange, goNext, language, t, greetingNam
           secondLine={greetingSecondLine}
         />
 
-        <div style={s.fieldStack} data-motion="fields">
+        <div style={s.fieldStack}>
           <Row>
             <Field label={t.yearOfBirth}>
               <input
@@ -1097,7 +1109,7 @@ function AcademicStep({
           allowUpload={false}
         />
 
-        <div style={s.fieldStack} data-motion="fields">
+        <div style={s.fieldStack}>
           <div style={s.academicGrid}>
             <Field label={t.university}>
               <TypeaheadSelect
@@ -1226,7 +1238,7 @@ function AccountStep({
           equalIntroTextSize
         />
 
-        <div style={s.fieldStack} data-motion="fields">
+        <div style={s.fieldStack}>
           <Field label={t.email}>
             <input
               type="email"
@@ -1499,78 +1511,13 @@ html.dark select option {
   background: #1c1c1e;
 }
 
-@keyframes registrationFadeUp {
-  from {
-    opacity: 0.84;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes registrationTitleFade {
-  from {
-    opacity: 0.72;
-    transform: translateX(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes registrationHeroShrink {
-  from {
-    opacity: 0.98;
-    transform: translate(20px, 10px) scale(1.22);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-@keyframes registrationHeroReturn {
-  from {
-    opacity: 0.98;
-    transform: translate(-14px, -8px) scale(0.82);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-.registration-title {
-  animation: registrationTitleFade 420ms ease-out both;
-}
-
 .registration-step {
   opacity: 1;
+  transition: opacity 160ms ease-in-out;
 }
 
-.registration-step [data-motion='hero-text'] {
-  will-change: transform, opacity;
-  animation: registrationFadeUp 820ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step [data-motion='fields'] {
-  will-change: transform, opacity;
-  animation: registrationFadeUp 1120ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step-academic [data-motion='avatar'] {
-  transform-origin: left top;
-  will-change: transform, opacity;
-  animation: registrationHeroShrink 880ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step-account [data-motion='avatar'] {
-  transform-origin: left top;
-  will-change: transform, opacity;
-  animation: registrationHeroReturn 880ms cubic-bezier(.16,.72,.18,1) both;
+.registration-step.is-fading {
+  opacity: 0.42;
 }
 `;
 
@@ -1611,7 +1558,6 @@ const s = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'color 0.2s',
     width: '44px',
     height: '44px',
   },
@@ -1629,7 +1575,6 @@ const s = {
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
-    transition: 'all 0.2s',
   },
   header: {
     width: '100%',
@@ -1960,7 +1905,6 @@ const s = {
     fontSize: '12px',
     fontWeight: 600,
     cursor: 'pointer',
-    transition: 'background-color 0.15s, border-color 0.15s, color 0.15s',
   },
   programmeOptionActive: {
     backgroundColor: 'var(--reg-text)',
@@ -2003,7 +1947,8 @@ const s = {
   },
   submitBtn: {
     marginTop: '2px',
-    padding: '12px 10px',
+    height: '56px',
+    padding: '0 10px',
     borderRadius: '9999px',
     border: 'none',
     background: '#f97316',
@@ -2011,6 +1956,10 @@ const s = {
     fontSize: '14px',
     fontWeight: 600,
     width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
     cursor: 'pointer',
   },
   errorBanner: {
