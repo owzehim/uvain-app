@@ -1615,7 +1615,7 @@ const s = {
   },
   languageToggle: {
     position: 'fixed',
-    right: '14px',
+    right: '32px',
     top: 'calc(env(safe-area-inset-top) + 6px)',
     minWidth: '72px',
     height: '44px',
@@ -2000,7 +2000,8 @@ const s = {
   },
   submitBtn: {
     marginTop: '2px',
-    padding: '12px 10px',
+    height: '56px',
+    padding: '0 10px',
     borderRadius: '9999px',
     border: 'none',
     background: '#f97316',
