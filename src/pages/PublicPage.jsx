@@ -378,7 +378,7 @@ const MEMBERSHIP_SLIDES = [
   },
 ]
 
-const SLIDE_INTERVAL_MS = 5200
+const SLIDE_INTERVAL_MS = 7000
 const IMAGE_INTERVAL_MS = 2600
 const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
 const PLACE_IMAGE_EXTENSIONS = /\.(avif|webp|jpe?g|png)$/i
@@ -632,7 +632,7 @@ function MembershipCarousel() {
         <button
           type="button"
           onClick={() => navigate('/login')}
-          className="mx-auto block w-full max-w-sm rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white shadow-xl shadow-orange-950/20 transition-colors hover:bg-orange-600"
+          className="mx-auto block w-full max-w-sm rounded-full bg-orange-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
         >
           로그인
         </button>
