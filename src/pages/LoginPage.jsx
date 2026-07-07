@@ -33,10 +33,11 @@ export default function LoginPage() {
       <button
         type="button"
         onClick={isStandaloneStep ? handleBack : () => navigate('/public')}
-        className="fixed left-5 top-[calc(env(safe-area-inset-top)+18px)] z-10 text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+        className="text-[#374151] dark:text-[#c7c7cc]"
+        style={loginBackButtonStyle}
         aria-label={isStandaloneStep ? 'Back to login' : 'Close login'}
       >
-        <CaretLeft size={30} weight="regular" />
+        <CaretLeft size={24} weight="bold" />
       </button>
 
       <div className="w-full max-w-sm px-2">
@@ -254,6 +255,23 @@ function LoginField({ label, children }) {
       {children}
     </label>
   )
+}
+
+const loginBackButtonStyle = {
+  position: 'fixed',
+  left: 'calc(50% - 160px - 22px)',
+  top: 'calc(env(safe-area-inset-top) + 6px)',
+  zIndex: 10,
+  background: 'none',
+  border: 'none',
+  fontSize: '24px',
+  cursor: 'pointer',
+  padding: '8px 8px 8px 0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'color 0.2s',
+  width: '34px',
 }
 
 const inputClass =
