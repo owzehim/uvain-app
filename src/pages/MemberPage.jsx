@@ -2852,7 +2852,7 @@ onClick={() => openParticipationForm(displayEvent)}
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 66px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 72px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
