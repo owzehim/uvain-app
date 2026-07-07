@@ -246,7 +246,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div
         className="relative bg-white px-4 py-3 flex items-center gap-2 flex-shrink-0 dark:bg-[#121212]"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+        style={settingsHeaderStyle}
       >
         <button
           type="button"
@@ -484,4 +484,9 @@ const settingsBackButtonStyle = {
   justifyContent: 'center',
   transition: 'color 0.2s',
   width: '34px',
+}
+
+const settingsHeaderStyle = {
+  paddingTop: 'calc(env(safe-area-inset-top) + 12px)',
+  minHeight: 'calc(env(safe-area-inset-top) + 54px)',
 }
