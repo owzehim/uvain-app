@@ -70,7 +70,7 @@ export default function PublicPage() {
           className="font-bold text-gray-900"
           style={{
             position: 'fixed',
-            left: '14px',
+            left: '32px',
             top: 'calc(env(safe-area-inset-top) + 6px)',
             height: '44px',
             display: 'flex',
@@ -298,7 +298,7 @@ function MembershipTab() {
 
         <button
           onClick={() => navigate('/login')}
-          className="w-full mb-3 bg-orange-500 text-white font-semibold py-3 rounded-2xl hover:bg-orange-600 transition-colors"
+          className="mb-3 flex h-14 w-full items-center justify-center rounded-full bg-orange-500 py-0 font-semibold text-white transition-colors hover:bg-orange-600"
         >
           로그인
         </button>
@@ -308,8 +308,9 @@ function MembershipTab() {
   className="
     w-full
     font-semibold
-    py-3
-    rounded-2xl
+    flex h-14 items-center justify-center
+    py-0
+    rounded-full
     transition-colors
     bg-gray-200 text-gray-900 hover:bg-gray-300
     dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700
