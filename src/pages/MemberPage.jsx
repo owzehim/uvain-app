@@ -1424,38 +1424,70 @@ function EventsTab({ events }) {
     setPreviewEvent(allEvents[idx])
   }
 
-  const handleContainerTouchEnd = () => {
-    if (dragStartY.current == null) return
+  const resetDragState = (eventForPreview = selectedEvent) => {
+    dragStartY.current = null
+    dragAccumulator.current = 0
+    lastIdxRef.current = null
+    setIsDragging(false)
+    setIsTouching(false)
+    setPreviewEvent(eventForPreview)
+  }
+
+  const finalizeDrag = (forceCancel = false) => {
+    if (dragStartY.current == null) {
+      resetDragState()
+      return
+    }
+
+    if (forceCancel) {
+      resetDragState()
+      return
+    }
+
     const dy = dragAccumulator.current
     const delta =
       dy > 0 ? Math.floor(dy / 60) : dy < 0 ? Math.ceil(dy / 60) : 0
 
+    let nextSelectedEvent = selectedEvent
     if (delta !== 0) {
       const newIdx = Math.max(
         0,
         Math.min(activeEventIndex + delta, allEvents.length - 1),
       )
       if (newIdx !== activeEventIndex) {
-        setSelectedEvent(allEvents[newIdx])
+        nextSelectedEvent = allEvents[newIdx]
+        setSelectedEvent(nextSelectedEvent)
       }
     }
 
-    dragStartY.current = null
-    dragAccumulator.current = 0
-    lastIdxRef.current = null
-    setIsDragging(false)
-    setIsTouching(false)
-    setPreviewEvent(selectedEvent)
+    resetDragState(nextSelectedEvent)
+  }
+
+  const handleContainerTouchEnd = () => {
+    finalizeDrag(false)
   }
 
   const handleContainerTouchCancel = () => {
-    dragStartY.current = null
-    dragAccumulator.current = 0
-    lastIdxRef.current = null
-    setIsDragging(false)
-    setIsTouching(false)
-    setPreviewEvent(selectedEvent)
+    finalizeDrag(true)
   }
+
+  useEffect(() => {
+    if (!isDragging) return undefined
+
+    const handleWindowTouchEnd = () => handleContainerTouchEnd()
+    const handleWindowTouchCancel = () => handleContainerTouchCancel()
+    const handleWindowBlur = () => handleContainerTouchCancel()
+
+    window.addEventListener('touchend', handleWindowTouchEnd)
+    window.addEventListener('touchcancel', handleWindowTouchCancel)
+    window.addEventListener('blur', handleWindowBlur)
+
+    return () => {
+      window.removeEventListener('touchend', handleWindowTouchEnd)
+      window.removeEventListener('touchcancel', handleWindowTouchCancel)
+      window.removeEventListener('blur', handleWindowBlur)
+    }
+  }, [isDragging, selectedEvent, activeEventIndex, allEvents])
 
   // Helper to open lightbox at specific index
   const openLightboxAt = (index) => {
