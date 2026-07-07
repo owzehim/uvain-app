@@ -7,8 +7,17 @@ import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_I
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { MapPin, Lock, ForkKnife, Calendar, Users } from '@phosphor-icons/react'
 
+const PUBLIC_ACTIVE_TAB_KEY = 'uvain_public_active_tab'
+const PUBLIC_TABS = ['map', 'membership']
+
+function getStoredPublicTab() {
+  if (typeof window === 'undefined') return 'map'
+  const storedTab = window.sessionStorage.getItem(PUBLIC_ACTIVE_TAB_KEY)
+  return PUBLIC_TABS.includes(storedTab) ? storedTab : 'map'
+}
+
 export default function PublicPage() {
-  const [activeTab, setActiveTab] = useState('map')
+  const [activeTab, setActiveTab] = useState(getStoredPublicTab)
   const [restaurants, setRestaurants] = useState([])
   const navigate = useNavigate()
 
@@ -87,7 +96,10 @@ export default function PublicPage() {
           return (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                window.sessionStorage.setItem(PUBLIC_ACTIVE_TAB_KEY, tab.key)
+                setActiveTab(tab.key)
+              }}
               className={
                 'flex-1 py-3 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors select-none ' +
                 (activeTab === tab.key ? 'text-orange-500' : 'text-gray-400')
