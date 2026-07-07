@@ -471,22 +471,23 @@ export default function SettingsPage() {
 
 const settingsBackButtonStyle = {
   position: 'fixed',
-  left: 'calc(50% - 160px - 22px)',
+  left: '14px',
   top: 'calc(env(safe-area-inset-top) + 6px)',
   zIndex: 10,
   background: 'none',
   border: 'none',
   fontSize: '24px',
   cursor: 'pointer',
-  padding: '8px 8px 8px 0',
+  padding: 0,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   transition: 'color 0.2s',
-  width: '34px',
+  width: '44px',
+  height: '44px',
 }
 
 const settingsHeaderStyle = {
-  paddingTop: 'calc(env(safe-area-inset-top) + 12px)',
-  minHeight: 'calc(env(safe-area-inset-top) + 54px)',
+  paddingTop: 'calc(env(safe-area-inset-top) + 6px)',
+  minHeight: 'calc(env(safe-area-inset-top) + 56px)',
 }
