@@ -300,7 +300,7 @@ const MEMBERSHIP_SLIDES = [
       <>
         완벽한 UvA 캠퍼스 라이프,
         <br />
-        UvA-IN.
+        UvA-IN
       </>
     ),
     description: '',
