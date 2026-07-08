@@ -1380,7 +1380,10 @@ function EventsTab({ events }) {
   }
 
   const moveEvent = (delta) => {
-    setSelectedIndex((idx) => Math.max(0, Math.min(idx + delta, orderedEvents.length - 1)))
+    setSelectedIndex((idx) => {
+      const next = Math.max(0, Math.min(idx + delta, orderedEvents.length - 1))
+      return next
+    })
     setViewState('collapsed')
   }
 
