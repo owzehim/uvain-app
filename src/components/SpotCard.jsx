@@ -378,7 +378,7 @@ export function SpotCard({
   const FULL_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MIN_HEIGHT = spotCardHeightMode === 'full' ? FULL_HEIGHT : COMPACT_HEIGHT
   const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
-  const SHEET_RADIUS = 28
+  const SHEET_RADIUS = 20
 
   // Trigger animation on mount
   useEffect(() => {
@@ -525,9 +525,6 @@ export function SpotCard({
           overflow: 'hidden',
           borderTopLeftRadius: isMax ? 0 : SHEET_RADIUS,
           borderTopRightRadius: isMax ? 0 : SHEET_RADIUS,
-          clipPath: isMax
-            ? 'none'
-            : `inset(0 0 0 0 round ${SHEET_RADIUS}px ${SHEET_RADIUS}px 0 0)`,
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

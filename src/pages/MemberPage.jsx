@@ -2191,14 +2191,11 @@ const effectiveDateColor = isDragging
               style={{
                 bottom: 0,
                 height: eventCardOpen
-                  ? '78%'
+                  ? '100%'
                   : `${Math.min(window.innerHeight * 0.38, 260)}px`,
                 zIndex: 20,
-                borderTopLeftRadius: eventCardOpen ? 0 : 28,
-                borderTopRightRadius: eventCardOpen ? 0 : 28,
-                clipPath: eventCardOpen
-                  ? 'none'
-                  : 'inset(0 0 0 0 round 28px 28px 0 0)',
+                borderTopLeftRadius: eventCardOpen ? 0 : 20,
+                borderTopRightRadius: eventCardOpen ? 0 : 20,
                 boxShadow: 'none',
                 transition:
                   'height 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
