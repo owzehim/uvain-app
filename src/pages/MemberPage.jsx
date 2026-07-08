@@ -923,8 +923,8 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'flex-start',
-          padding: '66px 16px 0',
+          justifyContent: 'center',
+          padding: '0 16px',
         }}
       >
         <MembershipCard
@@ -938,12 +938,14 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
         />
         <div
           style={{
-            width: '100%',
+            position: 'absolute',
+            top: `calc(50% + (${W} * 0.793) + 6px)`,
+            left: 0,
+            right: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-end',
-            paddingRight: '20px',
-            paddingTop: '6px',
+            paddingRight: '36px',
             gap: 4,
           }}
         >
