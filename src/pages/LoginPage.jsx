@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CaretLeft } from '@phosphor-icons/react'
 import { useLogin } from '../hooks/useLogin'
@@ -27,6 +28,43 @@ export default function LoginPage() {
 
   const isOtpStep = step === 'otp'
   const isStandaloneStep = step === 'otp' || step === 'forgot'
+
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const previousHtmlOverflow = html.style.overflow
+    const previousBodyOverflow = body.style.overflow
+    const previousBodyHeight = body.style.height
+    const previousBodyTouchAction = body.style.touchAction
+
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    body.style.height = '100dvh'
+    body.style.touchAction = 'manipulation'
+
+    const keepAtTop = () => window.scrollTo(0, 0)
+    const preventPageDrag = (e) => {
+      if (e.touches?.length === 1) e.preventDefault()
+    }
+
+    window.addEventListener('scroll', keepAtTop, { passive: true })
+    window.visualViewport?.addEventListener('resize', keepAtTop)
+    window.visualViewport?.addEventListener('scroll', keepAtTop)
+    document.addEventListener('touchmove', preventPageDrag, { passive: false })
+
+    keepAtTop()
+
+    return () => {
+      html.style.overflow = previousHtmlOverflow
+      body.style.overflow = previousBodyOverflow
+      body.style.height = previousBodyHeight
+      body.style.touchAction = previousBodyTouchAction
+      window.removeEventListener('scroll', keepAtTop)
+      window.visualViewport?.removeEventListener('resize', keepAtTop)
+      window.visualViewport?.removeEventListener('scroll', keepAtTop)
+      document.removeEventListener('touchmove', preventPageDrag)
+    }
+  }, [])
 
   return (
     <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-[#121212]">
