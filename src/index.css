@@ -5,7 +5,6 @@
 html,
 body {
   overscroll-behavior: none;
-  touch-action: pan-x pan-y;
 }
 
 @keyframes fadeSlideUp {
@@ -78,6 +77,12 @@ body {
   background: #ffffff;
   color: #111827;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+input,
+textarea,
+select {
+  font-size: max(16px, 1rem);
 }
 
 @media (min-width: 768px) {

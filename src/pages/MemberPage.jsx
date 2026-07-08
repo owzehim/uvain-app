@@ -122,7 +122,7 @@ export default function MemberPage() {
   // Prevent iOS edge-swipe back gesture
   useEffect(() => {
     const handler = (e) => {
-      if (e.touches[0]?.clientX < 30) e.preventDefault()
+      if (e.touches.length === 1 && e.touches[0]?.clientX < 30) e.preventDefault()
     }
     document.addEventListener('touchstart', handler, { passive: false })
     return () => document.removeEventListener('touchstart', handler)

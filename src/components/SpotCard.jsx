@@ -342,7 +342,6 @@ export function SpotCard({
   selected,
   onClose,
   onClosingStart,
-  constrainToParent = false,
 }) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -350,7 +349,6 @@ export function SpotCard({
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [isVisible, setIsVisible] = useState(false)
   const [darkMode, setDarkMode] = useState(() => isDarkMode())
-  const [parentHeight, setParentHeight] = useState(null)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -373,24 +371,7 @@ export function SpotCard({
 
   const isDesktop = WIN_W >= 768
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
-  const defaultMaxHeight = isDesktop ? 460 : WIN_H * 0.82
-  const MAX_HEIGHT =
-    constrainToParent && parentHeight
-      ? Math.min(defaultMaxHeight, parentHeight)
-      : defaultMaxHeight
-
-  useEffect(() => {
-    if (!constrainToParent) return undefined
-
-    const syncParentHeight = () => {
-      const height = cardRef.current?.parentElement?.getBoundingClientRect().height
-      if (height) setParentHeight(height)
-    }
-
-    syncParentHeight()
-    window.addEventListener('resize', syncParentHeight)
-    return () => window.removeEventListener('resize', syncParentHeight)
-  }, [constrainToParent, selected])
+  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
 
   // Trigger animation on mount
   useEffect(() => {

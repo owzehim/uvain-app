@@ -347,6 +347,8 @@ const PASTEL_COLORS = [
   '#B3F0EE',
 ];
 
+const AUTH_BOX_WIDTH = '368px';
+
 function getPastelColor(seed) {
   const str = seed || 'default';
   let hash = 0;
@@ -864,7 +866,7 @@ function ProfileHero({
   const showIntro = Boolean(firstLine || secondLine);
   return (
     <div style={academic ? s.academicHero : compact ? s.compactHero : s.aboutTopGrid}>
-      <div style={s.profilePicker} data-motion="avatar">
+      <div style={s.profilePicker}>
         <button
           type="button"
           onClick={allowUpload ? onProfileClick : undefined}
@@ -892,7 +894,7 @@ function ProfileHero({
       </div>
 
       {showIntro && (
-        <div style={academic || compact ? s.compactIntro : s.aboutIntro} data-motion="hero-text">
+        <div style={academic || compact ? s.compactIntro : s.aboutIntro}>
           {firstLine && (
             <p style={academic || compact ? s.compactIntroLine : equalIntroTextSize ? s.aboutIntroKo : s.aboutIntroEn}>{firstLine}</p>
           )}
@@ -915,7 +917,7 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
           secondLine="UvA-IN."
         />
 
-        <div style={s.nameGrid} data-motion="fields">
+        <div style={s.nameGrid}>
           <Field label={t.firstName}>
             <input
               name="firstName"
@@ -977,7 +979,7 @@ function PersonalStep({ formData, handleChange, goNext, language, t, greetingNam
           secondLine={greetingSecondLine}
         />
 
-        <div style={s.fieldStack} data-motion="fields">
+        <div style={s.fieldStack}>
           <Row>
             <Field label={t.yearOfBirth}>
               <input
@@ -1095,7 +1097,7 @@ function AcademicStep({
           allowUpload={false}
         />
 
-        <div style={s.fieldStack} data-motion="fields">
+        <div style={s.fieldStack}>
           <div style={s.academicGrid}>
             <Field label={t.university}>
               <TypeaheadSelect
@@ -1224,7 +1226,7 @@ function AccountStep({
           equalIntroTextSize
         />
 
-        <div style={s.fieldStack} data-motion="fields">
+        <div style={s.fieldStack}>
           <Field label={t.email}>
             <input
               type="email"
@@ -1497,78 +1499,8 @@ html.dark select option {
   background: #1c1c1e;
 }
 
-@keyframes registrationFadeUp {
-  from {
-    opacity: 0.84;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes registrationTitleFade {
-  from {
-    opacity: 0.72;
-    transform: translateX(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes registrationHeroShrink {
-  from {
-    opacity: 0.98;
-    transform: translate(20px, 10px) scale(1.22);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-@keyframes registrationHeroReturn {
-  from {
-    opacity: 0.98;
-    transform: translate(-14px, -8px) scale(0.82);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-.registration-title {
-  animation: registrationTitleFade 420ms ease-out both;
-}
-
 .registration-step {
   opacity: 1;
-}
-
-.registration-step [data-motion='hero-text'] {
-  will-change: transform, opacity;
-  animation: registrationFadeUp 820ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step [data-motion='fields'] {
-  will-change: transform, opacity;
-  animation: registrationFadeUp 1120ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step-academic [data-motion='avatar'] {
-  transform-origin: left top;
-  will-change: transform, opacity;
-  animation: registrationHeroShrink 880ms cubic-bezier(.16,.72,.18,1) both;
-}
-
-.registration-step-account [data-motion='avatar'] {
-  transform-origin: left top;
-  will-change: transform, opacity;
-  animation: registrationHeroReturn 880ms cubic-bezier(.16,.72,.18,1) both;
 }
 `;
 
@@ -1609,7 +1541,6 @@ const s = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'color 0.2s',
     width: '44px',
     height: '44px',
   },
@@ -1627,7 +1558,6 @@ const s = {
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
-    transition: 'all 0.2s',
   },
   header: {
     width: '100%',
@@ -1659,7 +1589,7 @@ const s = {
     padding: '6px 0 14px',
     backgroundColor: 'var(--reg-page-bg)',
     borderRadius: '0',
-    maxWidth: '320px',
+    maxWidth: AUTH_BOX_WIDTH,
     width: '100%',
     margin: '0 auto',
     flex: 1,
@@ -1667,8 +1597,9 @@ const s = {
     justifyContent: 'space-between',
   },
   stepShell: {
-    width: '100%',
-    maxWidth: '320px',
+    width: 'calc(100% - 32px)',
+    maxWidth: AUTH_BOX_WIDTH,
+    margin: '0 auto',
     flex: 1,
     minHeight: 0,
     display: 'flex',
@@ -1957,7 +1888,6 @@ const s = {
     fontSize: '12px',
     fontWeight: 600,
     cursor: 'pointer',
-    transition: 'background-color 0.15s, border-color 0.15s, color 0.15s',
   },
   programmeOptionActive: {
     backgroundColor: 'var(--reg-text)',
@@ -2000,7 +1930,8 @@ const s = {
   },
   submitBtn: {
     marginTop: '2px',
-    padding: '12px 10px',
+    height: '56px',
+    padding: '0 10px',
     borderRadius: '9999px',
     border: 'none',
     background: '#f97316',
@@ -2008,6 +1939,10 @@ const s = {
     fontSize: '14px',
     fontWeight: 600,
     width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
     cursor: 'pointer',
   },
   errorBanner: {
@@ -2102,8 +2037,8 @@ const s = {
     borderRadius: '0',
     boxShadow: 'none',
     padding: '0 0 14px',
-    maxWidth: '320px',
-    width: '100%',
+    maxWidth: AUTH_BOX_WIDTH,
+    width: 'calc(100% - 32px)',
     margin: '122px auto 0',
   },
   emailIcon: {

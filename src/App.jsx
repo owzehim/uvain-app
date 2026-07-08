@@ -18,6 +18,14 @@ import { useTheme } from './hooks/useTheme'
 const OTP_PENDING_KEY = 'uvain_otp_pending_email'
 const OTP_PENDING_EVENT = 'uvain-otp-pending-change'
 
+function isStandaloneApp() {
+  if (typeof window === 'undefined') return false
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  )
+}
+
 function App() {
   useTheme()
   const [session, setSession] = useState(undefined)
@@ -53,6 +61,33 @@ function App() {
   }, [])
 
   useSingleDeviceSession(isOtpPending ? null : session)
+
+  useEffect(() => {
+    if (!isStandaloneApp()) return undefined
+
+    const viewport = document.querySelector('meta[name="viewport"]')
+    const previousViewport = viewport?.getAttribute('content')
+    viewport?.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover',
+    )
+
+    const preventPinch = (e) => {
+      if (e.touches?.length > 1) e.preventDefault()
+    }
+    const preventGesture = (e) => e.preventDefault()
+
+    document.addEventListener('touchmove', preventPinch, { passive: false })
+    document.addEventListener('gesturestart', preventGesture)
+    document.addEventListener('gesturechange', preventGesture)
+
+    return () => {
+      if (previousViewport) viewport?.setAttribute('content', previousViewport)
+      document.removeEventListener('touchmove', preventPinch)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [])
 
   if (session === undefined) {
     return (
