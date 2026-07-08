@@ -1252,6 +1252,7 @@ function EventsTab({ events }) {
   const [viewState, setViewState] = useState('collapsed')
   const [photoIndexes, setPhotoIndexes] = useState({})
   const [lightboxIndex, setLightboxIndex] = useState(null)
+  const [eventListOpen, setEventListOpen] = useState(getStoredEventListOpen)
   const touchStart = useRef(null)
   const photoTouchStart = useRef(null)
 
@@ -1367,6 +1368,17 @@ function EventsTab({ events }) {
     return selectedIndex === initialIndex ? `D-${days}` : 'FUTURE'
   }
 
+  const getListDateParts = (ev) => {
+    const date = getPrimaryEventDateTime(ev)
+    if (!date) return { month: 'TBD', day: '--', year: '' }
+    const d = parseLocalDate(date)
+    return {
+      month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      day: String(d.getDate()).padStart(2, '0'),
+      year: String(d.getFullYear()),
+    }
+  }
+
   const moveEvent = (delta) => {
     setSelectedIndex((idx) => {
       const next = Math.max(0, Math.min(idx + delta, orderedEvents.length - 1))
@@ -1421,6 +1433,26 @@ function EventsTab({ events }) {
     setPhotoIndex(photoIndex + (dx < 0 ? 1 : -1))
   }
 
+  const openEventList = (e) => {
+    e?.stopPropagation()
+    window.sessionStorage.setItem(MEMBER_EVENT_LIST_OPEN_KEY, '1')
+    setEventListOpen(true)
+  }
+
+  const closeEventList = (e) => {
+    e?.stopPropagation()
+    window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
+    setEventListOpen(false)
+  }
+
+  const selectEventFromList = (eventIndex) => {
+    window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
+    setSelectedIndex(eventIndex)
+    setViewState('collapsed')
+    setLightboxIndex(null)
+    setEventListOpen(false)
+  }
+
   const dateParts = formatDateParts(getPrimaryEventDateTime(selectedEvent))
   const extended = viewState === 'extended'
 
@@ -1431,6 +1463,25 @@ function EventsTab({ events }) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
+        <button
+          type="button"
+          onClick={openEventList}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
+          aria-label="Open event list"
+          style={{
+            left: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            zIndex: 70,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <List size={22} weight="bold" />
+        </button>
+
         {selectedEvent ? (
           <div
             className="absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -1549,6 +1600,70 @@ function EventsTab({ events }) {
 
       {lightboxIndex !== null && images.length > 0 && (
         <EventLightbox imgs={images} startIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      )}
+
+      {eventListOpen && (
+        <div
+          className="fixed inset-0 bg-white text-gray-950 dark:bg-[#121212] dark:text-white"
+          style={{ zIndex: 80 }}
+          onClick={closeEventList}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={closeEventList}
+            className="fixed flex h-11 w-11 items-center justify-center text-gray-600 dark:text-gray-200"
+            aria-label="Close event list"
+            style={{
+              left: '14px',
+              top: 'calc(env(safe-area-inset-top) + 6px)',
+              zIndex: 90,
+            }}
+          >
+            <List size={22} weight="bold" />
+          </button>
+
+          <div
+            className="h-full overflow-y-auto px-6 pb-10"
+            style={{ paddingTop: 'calc(env(safe-area-inset-top) + 72px)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto max-w-md space-y-3">
+              {orderedEvents.map((ev, idx) => {
+                const parts = getListDateParts(ev)
+                const selected = idx === selectedIndex
+                return (
+                  <button
+                    key={ev.id}
+                    type="button"
+                    onClick={() => selectEventFromList(idx)}
+                    className="w-full rounded-[8px] border px-3 py-3 text-left transition-colors"
+                    style={{
+                      borderColor: selected ? '#f97316' : 'rgba(156, 163, 175, 0.28)',
+                      backgroundColor: selected ? 'rgba(249, 115, 22, 0.08)' : 'transparent',
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 shrink-0 text-center">
+                        <p className="text-[11px] font-black text-gray-400">{parts.month}</p>
+                        <p className="text-2xl font-black leading-none text-orange-500">
+                          {parts.day}
+                        </p>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold">{ev.title || 'Untitled event'}</p>
+                        <p className="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">
+                          {ev.location ? plainText(ev.location) : parts.year}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
