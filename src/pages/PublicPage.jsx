@@ -550,11 +550,7 @@ function MembershipCarousel() {
             slide={slide}
             slideIndex={slideIndex}
             slideCount={slides.length}
-            imageIndex={
-              loadedImageIndexes[slideIndex]?.includes(imageIndexes[slideIndex])
-                ? imageIndexes[slideIndex]
-                : loadedImageIndexes[slideIndex]?.[0] ?? imageIndexes[slideIndex]
-            }
+            imageIndex={imageIndexes[slideIndex]}
             onImageLoaded={handleImageLoaded}
           />
         ))}
@@ -675,12 +671,10 @@ function MembershipImageLayer({
 }) {
   const candidates = image.srcCandidates || (image.src ? [image.src] : [])
   const [candidateIndex, setCandidateIndex] = useState(0)
-  const [loaded, setLoaded] = useState(false)
   const src = candidates[candidateIndex]
 
   useEffect(() => {
     setCandidateIndex(0)
-    setLoaded(false)
   }, [candidates.join('|')])
 
   if (!src && !image.style) return null
@@ -710,9 +704,8 @@ function MembershipImageLayer({
       alt=""
       aria-hidden="true"
       className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out"
-      style={{ opacity: active && loaded ? 1 : 0 }}
+      style={{ opacity: active ? 1 : 0 }}
       onLoad={() => {
-        setLoaded(true)
         onImageLoaded(slideIndex, imageIndex)
       }}
       onError={() => {
