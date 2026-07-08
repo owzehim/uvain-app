@@ -1342,6 +1342,8 @@ function EventsTab({ events }) {
   const eventSwipeStartX = useRef(null)
   const eventSwipeStartY = useRef(null)
   const eventCardStartY = useRef(null)
+  const eventPreviewTouchStartX = useRef(null)
+  const eventPreviewTouchStartY = useRef(null)
 
   useEffect(() => {
     if (typeof MutationObserver === 'undefined') return undefined
@@ -1533,6 +1535,36 @@ function EventsTab({ events }) {
   // Helper to open lightbox at specific index
   const openLightboxAt = (index) => {
     setLightboxIndex(index)
+  }
+
+  const handleEventPreviewTouchStart = (e) => {
+    if (!eventCardOpen) return
+    eventPreviewTouchStartX.current = e.touches[0].clientX
+    eventPreviewTouchStartY.current = e.touches[0].clientY
+  }
+
+  const handleEventPreviewTouchEnd = (e) => {
+    if (!eventCardOpen) return
+    if (eventPreviewTouchStartX.current == null || eventPreviewTouchStartY.current == null) return
+    if (!displayEvent || displayImages.length <= 1) return
+
+    const dx = e.changedTouches[0].clientX - eventPreviewTouchStartX.current
+    const dy = e.changedTouches[0].clientY - eventPreviewTouchStartY.current
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
+    const currentSlide = slideIndexes[displayEvent.id] || 0
+
+    if (absDx > absDy && absDx > 40) {
+      e.stopPropagation()
+      if (dx < 0) {
+        setSlide(displayEvent.id, Math.min(currentSlide + 1, displayImages.length - 1))
+      } else {
+        setSlide(displayEvent.id, Math.max(currentSlide - 1, 0))
+      }
+    }
+
+    eventPreviewTouchStartX.current = null
+    eventPreviewTouchStartY.current = null
   }
 
   // Formatting helpers
@@ -1993,6 +2025,14 @@ function EventsTab({ events }) {
   const displayImages = displayEvent?.image_urls || []
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
+  const displayImageSlide = displayEvent ? slideIndexes[displayEvent.id] || 0 : 0
+
+  useEffect(() => {
+    if (!displayEvent || displayImages.length === 0) return
+    if (displayImageSlide > displayImages.length - 1) {
+      setSlide(displayEvent.id, displayImages.length - 1)
+    }
+  }, [displayEvent, displayImages.length, displayImageSlide])
 
   const PAST_DATE_COLOR = '#4b5563'
 const PAST_DARK_DATE_COLOR = '#BDBDBD'
@@ -2219,71 +2259,7 @@ const effectiveDateColor = isDragging
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
-                <div className="mx-auto max-w-md">
-                  <div className="mb-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase text-orange-500">
-                        Event details
-                      </p>
-                      <p className="mt-1 text-lg font-bold text-gray-950 dark:text-white">
-                        {displayEvent.title || 'Untitled event'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {detailImages.length > 0 && (
-                    <div className="mb-4 flex gap-2 overflow-x-auto">
-                      {detailImages.map((url, index) => (
-                        <button
-                          key={url}
-                          type="button"
-                          onClick={() => openLightboxAt(index)}
-                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
-                        >
-                          <img
-                            src={url}
-                            alt=""
-                            className="h-full w-full object-cover"
-                            draggable={false}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {displayEvent.description ? (
-                    <RichText
-                      text={displayEvent.description}
-                      className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
-                    />
-                  ) : (
-                    <p className="text-sm text-gray-400 dark:text-gray-500">
-                      Event description will appear here.
-                    </p>
-                  )}
-
-                  <div className="mt-5 flex gap-2">
-                    {getPrimaryEventDate(displayEvent) && (
-                      <button
-                        type="button"
-                        onClick={() => addToCalendar(displayEvent)}
-                        className="flex-1 rounded-full bg-gray-100 px-4 py-3 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                      >
-                        Calendar
-                      </button>
-                    )}
-                    {displayEvent.participation_url && (
-                      <button
-                        type="button"
-                        disabled={displayEvent.is_registration_closed}
-                        onClick={() => openParticipationForm(displayEvent)}
-                        className="flex-1 rounded-full bg-orange-500 px-4 py-3 text-xs font-semibold text-white disabled:bg-gray-300 disabled:text-gray-500"
-                      >
-                        {displayEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <div className="mx-auto max-w-md" />
               </div>
             </div>
           </>
@@ -2534,10 +2510,9 @@ const effectiveDateColor = isDragging
                   )
                 })()}
 
-                {/* Right: image pile + front blur panel */}
+                {/* Right: blank event card */}
                 <div
                   className="flex-1"
-                  onClick={() => hasImages && openLightboxAt(0)}
                   style={{
                     position: 'relative',
                     width: eventHeroThumbSize,
@@ -2545,75 +2520,8 @@ const effectiveDateColor = isDragging
                     flex: `0 0 ${eventHeroThumbSize}`,
                     boxSizing: 'border-box',
                     minWidth: 0,
-                    cursor: hasImages ? 'pointer' : 'default',
                   }}
                 >
-                  {/* Back card 2 ??image[1] */}
-                  {hasImages &&
-                    displayImages.length >= 2 &&
-                    (() => {
-                      return (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            backgroundColor: '#d1d5db',
-                            transform:
-                              'rotate(3deg) translate(7px, 7px)',
-                            zIndex: 1,
-                          }}
-                        >
-                          {displayImages[1] && (
-                            <img
-                              src={displayImages[1]}
-                              alt=""
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                              }}
-                              draggable={false}
-                            />
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                  {/* Back card 1 ??image[0] */}
-                  {hasImages &&
-                    (() => {
-                      return (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            backgroundColor: '#e5e7eb',
-                            transform:
-                              'rotate(1.5deg) translate(3.5px, 3.5px)',
-                            zIndex: 2,
-                          }}
-                        >
-                          {displayImages[0] && (
-                            <img
-                              src={displayImages[0]}
-                              alt=""
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                              }}
-                              draggable={false}
-                            />
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                  {/* Front: semi-transparent Gaussian blur panel */}
                   {(() => {
                     return (
                       <div
@@ -2625,9 +2533,7 @@ const effectiveDateColor = isDragging
                           height: '100%',
                           width: '100%',
                           backgroundColor: 'transparent',
-                          border: hasImages
-                            ? 'none'
-                            : `1px solid ${darkMode ? 'rgba(255,255,255,0.18)' : '#d1d5db'}`,
+                          border: `1px solid ${darkMode ? 'rgba(255,255,255,0.18)' : '#d1d5db'}`,
                         }}
                       >
                         <div
@@ -2641,109 +2547,99 @@ const effectiveDateColor = isDragging
                             WebkitBackdropFilter: 'blur(12px)',
                           }}
                         />
-                        <div
-                          style={{
-                            position: 'relative',
-                            height: '100%',
-                            padding: '12px 14px 28px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'flex-start',
-                            gap: '4px',
-                          }}
-                        >
-                          <span
+                        {hasImages && (
+                          <div
+                            onTouchStart={handleEventPreviewTouchStart}
+                            onTouchEnd={handleEventPreviewTouchEnd}
+                            onClick={() => {
+                              if (eventCardOpen) openLightboxAt(displayImageSlide)
+                            }}
                             style={{
-                              fontFamily:
-                                '"Noto Sans KR", system-ui, sans-serif',
-                              fontSize: `calc(${W} * 0.052)`,
-                              fontWeight: 700,
-                              color: frontPanelTextColor,
-                              lineHeight: 1.2,
+                              position: 'relative',
+                              height: '100%',
+                              width: '100%',
+                              overflow: 'hidden',
+                              cursor: eventCardOpen ? 'pointer' : 'default',
+                              touchAction: eventCardOpen ? 'pan-y' : 'none',
                             }}
                           >
-                            {displayEvent.title}
-                          </span>
-                          {getPrimaryEventDate(displayEvent) && (
-                            <span
+                            <div
                               style={{
-                                fontFamily:
-                                  '"Handjet", system-ui, sans-serif',
-                                fontSize: `calc(${W} * 0.042)`,
-                                fontWeight: 700,
-                                color: frontPanelTextColor,
-                                letterSpacing: '0.04em',
+                                display: 'flex',
+                                height: '100%',
+                                transform: `translateX(-${displayImageSlide * 100}%)`,
+                                transition: 'transform 0.3s ease',
                               }}
                             >
-                              {formatTimeRange(displayEvent)}
-                            </span>
-                          )}
-                          {displayEvent.location && (
-                            <span
-                              style={{
-                                fontFamily:
-                                  '"Handjet", system-ui, sans-serif',
-                                fontSize: `calc(${W} * 0.036)`,
-                                fontWeight: 700,
-                                color: frontPanelTextColor,
-                                letterSpacing: '0.04em',
-                              }}
-                            >
-                              {plainText(displayEvent.location)}
-                            </span>
-                          )}
-                          {displayEvent.location_description && (
-                            <span
-                              style={{
-                                fontFamily:
-                                  '"Handjet", system-ui, sans-serif',
-                                fontSize: `calc(${W} * 0.036)`,
-                                fontWeight: 700,
-                                color: frontPanelTextColor,
-                                letterSpacing: '0.04em',
-                              }}
-                            >
-                              {plainText(displayEvent.location_description)}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Image count indicator */}
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: '8px',
-                            right: '10px',
-                            backgroundColor:
-                              'rgba(0,0,0,0.45)',
-                            borderRadius: '999px',
-                            padding: '2px 8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                        >
-                          <svg
-                            width="11"
-                            height="11"
-                            viewBox="0 0 24 24"
-                            fill="white"
-                          >
-                            <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z" />
-                          </svg>
-                          <span
-                            style={{
-                              fontFamily:
-                                '"Handjet", system-ui, sans-serif',
-                              fontSize: 12,
-                              color: '#fff',
-                              fontWeight: 600,
-                              letterSpacing: '0.04em',
-                            }}
-                          >
-                            {displayImages.length}
-                          </span>
-                        </div>
+                              {displayImages.map((url, index) => (
+                                <div
+                                  key={`${url}-${index}`}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                >
+                                  <img
+                                    src={url}
+                                    alt=""
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover',
+                                      display: 'block',
+                                    }}
+                                    draggable={false}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            {displayImages.length > 1 && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  left: 0,
+                                  right: 0,
+                                  bottom: '8px',
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  pointerEvents: eventCardOpen ? 'auto' : 'none',
+                                }}
+                              >
+                                {displayImages.map((_, index) => (
+                                  <button
+                                    key={index}
+                                    type="button"
+                                    aria-label={`Show event image ${index + 1}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      if (eventCardOpen && displayEvent) {
+                                        setSlide(displayEvent.id, index)
+                                      }
+                                    }}
+                                    style={{
+                                      width: index === displayImageSlide ? 8 : 6,
+                                      height: index === displayImageSlide ? 8 : 6,
+                                      borderRadius: '999px',
+                                      border: 0,
+                                      padding: 0,
+                                      backgroundColor:
+                                        index === displayImageSlide
+                                          ? '#ffffff'
+                                          : 'rgba(255,255,255,0.55)',
+                                      boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   })()}
