@@ -383,7 +383,6 @@ function MembershipCarousel() {
   const touchStartYRef = useRef(0)
 
   const slides = MEMBERSHIP_SLIDES
-  const displaySlides = useMemo(() => [...slides, slides[0]], [slides])
   const realActiveSlide = activeSlide % slides.length
 
   const handleImageLoaded = (slideIndex, imageIndex) => {
@@ -397,12 +396,9 @@ function MembershipCarousel() {
   }
 
   const goToSlide = (nextSlide) => {
+    const slideCount = slides.length
     setTransitionEnabled(true)
-    if (nextSlide < 0) {
-      setActiveSlide(slides.length - 1)
-      return
-    }
-    setActiveSlide(nextSlide)
+    setActiveSlide((nextSlide + slideCount) % slideCount)
   }
 
   useEffect(() => {
@@ -486,16 +482,6 @@ function MembershipCarousel() {
     resumeInteraction()
   }
 
-  const handleSlideTransitionEnd = () => {
-    if (activeSlide !== slides.length) return
-
-    setTransitionEnabled(false)
-    setActiveSlide(0)
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => setTransitionEnabled(true))
-    })
-  }
-
   return (
     <div
       className="membership-carousel relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
@@ -509,22 +495,21 @@ function MembershipCarousel() {
     >
       <div
         className="flex h-full"
-        onTransitionEnd={handleSlideTransitionEnd}
         style={{
-          width: `${displaySlides.length * 100}%`,
-          transform: `translateX(calc(-${activeSlide * (100 / displaySlides.length)}% + ${dragOffset}px))`,
+          width: `${slides.length * 100}%`,
+          transform: `translateX(calc(-${activeSlide * (100 / slides.length)}% + ${dragOffset}px))`,
           transition: isDragging || !transitionEnabled
             ? 'none'
             : 'transform 620ms cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
-        {displaySlides.map((slide, slideIndex) => (
+        {slides.map((slide, slideIndex) => (
           <MembershipSlide
             key={`${slide.key}-${slideIndex}`}
             slide={slide}
-            slideIndex={slideIndex % slides.length}
-            slideCount={displaySlides.length}
-            imageIndex={imageIndexes[slideIndex % slides.length]}
+            slideIndex={slideIndex}
+            slideCount={slides.length}
+            imageIndex={imageIndexes[slideIndex]}
             onImageLoaded={handleImageLoaded}
           />
         ))}
