@@ -1305,6 +1305,7 @@ function EventsTab({ events }) {
   const [eventListOpen, setEventListOpen] = useState(getStoredEventListOpen)
   const [eventListClosing, setEventListClosing] = useState(false)
   const [eventListNewestFirst, setEventListNewestFirst] = useState(true)
+  const [eventCardOpen, setEventCardOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
   )
@@ -1322,6 +1323,9 @@ function EventsTab({ events }) {
   })
 
   const containerRef = useRef(null)
+  const eventSwipeStartX = useRef(null)
+  const eventSwipeStartY = useRef(null)
+  const eventCardStartY = useRef(null)
 
   useEffect(() => {
     if (typeof MutationObserver === 'undefined') return undefined
@@ -1703,6 +1707,7 @@ function EventsTab({ events }) {
     window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
     setSelectedEvent(ev)
     setPreviewEvent(ev)
+    setEventCardOpen(false)
     setExpandedId(null)
     setLightboxIndex(null)
     setIsDragging(false)
@@ -1712,6 +1717,50 @@ function EventsTab({ events }) {
       setEventListOpen(false)
       setEventListClosing(false)
     }, 220)
+  }
+
+  const selectAdjacentEvent = (direction) => {
+    if (!allEvents.length) return
+    const currentIndex = allEvents.findIndex((ev) => ev.id === selectedEvent?.id)
+    const baseIndex = currentIndex >= 0 ? currentIndex : 0
+    const nextIndex = Math.max(
+      0,
+      Math.min(baseIndex + direction, allEvents.length - 1),
+    )
+    if (nextIndex === baseIndex) return
+    setSelectedEvent(allEvents[nextIndex])
+    setPreviewEvent(allEvents[nextIndex])
+    setEventCardOpen(false)
+  }
+
+  const handleFrameworkTouchStart = (e) => {
+    eventSwipeStartX.current = e.touches[0].clientX
+    eventSwipeStartY.current = e.touches[0].clientY
+  }
+
+  const handleFrameworkTouchEnd = (e) => {
+    if (eventSwipeStartX.current == null || eventSwipeStartY.current == null) return
+
+    const dx = e.changedTouches[0].clientX - eventSwipeStartX.current
+    const dy = e.changedTouches[0].clientY - eventSwipeStartY.current
+    eventSwipeStartX.current = null
+    eventSwipeStartY.current = null
+
+    if (Math.abs(dx) < 54 || Math.abs(dx) < Math.abs(dy) * 1.25) return
+    selectAdjacentEvent(dx < 0 ? 1 : -1)
+  }
+
+  const handleEventCardTouchStart = (e) => {
+    eventCardStartY.current = e.touches[0].clientY
+  }
+
+  const handleEventCardTouchEnd = (e) => {
+    if (eventCardStartY.current == null) return
+    const dy = e.changedTouches[0].clientY - eventCardStartY.current
+    eventCardStartY.current = null
+
+    if (dy < -42) setEventCardOpen(true)
+    if (dy > 42) setEventCardOpen(false)
   }
 
   const getListDateParts = (ev) => {
@@ -2032,6 +2081,296 @@ const effectiveDateColor = isDragging
       cancelled = true
     }
   }, [displayImages])
+
+  const detailImages = displayEvent?.image_urls || []
+  const eventDateParts = getPrimaryEventDate(displayEvent)
+    ? formatTopDate(getPrimaryEventDate(displayEvent))
+    : null
+
+  return (
+    <>
+      <div
+        className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-white dark:text-gray-950"
+        onTouchStart={handleFrameworkTouchStart}
+        onTouchEnd={handleFrameworkTouchEnd}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setEventListNewestFirst(true)
+            window.sessionStorage.setItem(MEMBER_EVENT_LIST_OPEN_KEY, '1')
+            setEventListOpen(true)
+          }}
+          className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
+          aria-label="Open event list"
+          style={{
+            left: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            zIndex: 70,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <List size={22} weight="bold" />
+        </button>
+
+        {displayEvent ? (
+          <>
+            <div className="absolute inset-0 bg-white" />
+            {detailImages[0] && (
+              <img
+                src={detailImages[0]}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover opacity-14"
+              />
+            )}
+            <div className="absolute inset-0 bg-white/82" />
+
+            <div
+              className="absolute left-0 right-0 px-6"
+              style={{
+                top: 'calc(env(safe-area-inset-top) + 72px)',
+                bottom: eventCardOpen ? '48%' : '250px',
+                transition: 'bottom 0.28s ease',
+                zIndex: 5,
+              }}
+            >
+              <div className="mx-auto max-w-md">
+                {eventDateParts && (
+                  <div className="mb-5 flex items-end gap-3">
+                    <span className="text-[64px] font-black leading-none tracking-tight text-orange-500">
+                      {eventDateParts.dateNum}
+                    </span>
+                    <div className="pb-1">
+                      <p className="text-xs font-bold uppercase text-gray-500">
+                        {eventDateParts.dayName}
+                      </p>
+                      <p className="text-xs font-semibold uppercase text-gray-400">
+                        {eventDateParts.monthName}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <p className="mb-3 inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
+                  {getEventStatus(displayEvent)}
+                </p>
+
+                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950">
+                  {displayEvent.title || 'Untitled event'}
+                </h1>
+
+                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700">
+                  {getPrimaryEventDate(displayEvent) && (
+                    <div className="flex items-center gap-2">
+                      <Calendar size={18} weight="fill" color="#f97316" />
+                      <span>{formatTimeRange(displayEvent)}</span>
+                    </div>
+                  )}
+                  {displayEvent.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin size={18} weight="fill" color="#f97316" />
+                      <span>{plainText(displayEvent.location)}</span>
+                    </div>
+                  )}
+                  {displayEvent.location_description && (
+                    <p className="pl-7 text-xs leading-relaxed text-gray-500">
+                      {plainText(displayEvent.location_description)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="absolute left-0 right-0 bg-white"
+              onTouchStart={handleEventCardTouchStart}
+              onTouchEnd={handleEventCardTouchEnd}
+              style={{
+                bottom: 0,
+                height: eventCardOpen ? '78%' : '238px',
+                zIndex: 20,
+                borderTopLeftRadius: eventCardOpen ? 0 : 18,
+                borderTopRightRadius: eventCardOpen ? 0 : 18,
+                boxShadow: 'none',
+                transition:
+                  'height 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
+                overflow: 'hidden',
+              }}
+            >
+              <div className="flex justify-center pb-3 pt-2.5">
+                <div className="h-1 w-10 rounded-full bg-gray-300" />
+              </div>
+
+              <div
+                className="h-full overflow-y-auto px-5"
+                style={{
+                  paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
+                }}
+              >
+                <div className="mx-auto max-w-md">
+                  <div className="mb-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-orange-500">
+                        Event details
+                      </p>
+                      <p className="mt-1 text-lg font-bold text-gray-950">
+                        {displayEvent.title || 'Untitled event'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {detailImages.length > 0 && (
+                    <div className="mb-4 flex gap-2 overflow-x-auto">
+                      {detailImages.map((url, index) => (
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => openLightboxAt(index)}
+                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100"
+                        >
+                          <img
+                            src={url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            draggable={false}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {displayEvent.description ? (
+                    <RichText
+                      text={displayEvent.description}
+                      className="block text-sm leading-relaxed text-gray-600"
+                    />
+                  ) : (
+                    <p className="text-sm text-gray-400">
+                      Event description will appear here.
+                    </p>
+                  )}
+
+                  <div className="mt-5 flex gap-2">
+                    {getPrimaryEventDate(displayEvent) && (
+                      <button
+                        type="button"
+                        onClick={() => addToCalendar(displayEvent)}
+                        className="flex-1 rounded-full bg-gray-100 px-4 py-3 text-xs font-semibold text-gray-700"
+                      >
+                        Calendar
+                      </button>
+                    )}
+                    {displayEvent.participation_url && (
+                      <button
+                        type="button"
+                        disabled={displayEvent.is_registration_closed}
+                        onClick={() => openParticipationForm(displayEvent)}
+                        className="flex-1 rounded-full bg-orange-500 px-4 py-3 text-xs font-semibold text-white disabled:bg-gray-300 disabled:text-gray-500"
+                      >
+                        {displayEvent.is_registration_closed ? '마감' : '이벤트 참가하기'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex h-full items-center justify-center px-6 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              예정된 이벤트가 없어요.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {eventListOpen && (
+        <div
+          className="fixed inset-0"
+          style={{
+            zIndex: 80,
+            backgroundColor: eventListBg,
+            opacity: eventListClosing ? 0 : 1,
+            transition: 'opacity 0.22s ease',
+          }}
+          onClick={closeEventList}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              closeEventList()
+            }}
+            className="fixed flex h-11 w-11 items-center justify-center"
+            aria-label="Close event list"
+            style={{
+              left: '14px',
+              top: 'calc(env(safe-area-inset-top) + 6px)',
+              zIndex: 90,
+              color: eventListIconColor,
+            }}
+          >
+            <List size={22} weight="bold" />
+          </button>
+
+          <div
+            className="h-full overflow-y-auto px-6 pb-10"
+            style={{ paddingTop: 'calc(env(safe-area-inset-top) + 72px)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto max-w-md space-y-3">
+              {allEvents.map((ev) => {
+                const parts = getListDateParts(ev)
+                const selected = ev.id === displayEvent?.id
+                return (
+                  <button
+                    key={ev.id}
+                    type="button"
+                    onClick={() => selectEventFromList(ev)}
+                    className="w-full rounded-2xl border px-3 py-3 text-left"
+                    style={{
+                      ...eventListCardStyle,
+                      borderColor: selected ? '#f97316' : eventListCardStyle.borderColor,
+                    }}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-14 shrink-0 text-center">
+                        <p className="text-xs font-semibold" style={{ color: eventListMutedColor }}>
+                          {parts.month}
+                        </p>
+                        <p className="text-2xl font-semibold">{parts.day}</p>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">
+                          {ev.title || 'Untitled event'}
+                        </p>
+                        {ev.location && (
+                          <p className="mt-1 truncate text-xs" style={{ color: eventListMutedColor }}>
+                            {plainText(ev.location)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {lightboxIndex !== null && detailImages.length > 0 && (
+        <EventLightbox
+          imgs={detailImages}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
+    </>
+  )
 
   return (
   <>
