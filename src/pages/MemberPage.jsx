@@ -2138,12 +2138,12 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                top: eventCardOpen
-                  ? 'calc(env(safe-area-inset-top) + 70px)'
-                  : 'calc(env(safe-area-inset-top) + 72px)',
-                bottom: eventCardOpen ? 'auto' : '250px',
+                top: 'calc(env(safe-area-inset-top) + 72px)',
+                bottom: '250px',
+                opacity: eventCardOpen ? 0 : 1,
+                pointerEvents: eventCardOpen ? 'none' : 'auto',
                 transition:
-                  'top 0.35s cubic-bezier(0.4,0,0.2,1), bottom 0.35s cubic-bezier(0.4,0,0.2,1)',
+                  'opacity 0.22s ease, top 0.35s cubic-bezier(0.4,0,0.2,1), bottom 0.35s cubic-bezier(0.4,0,0.2,1)',
                 zIndex: 15,
               }}
             >
@@ -2185,16 +2185,7 @@ const effectiveDateColor = isDragging
                 </p>
 
                 <h1
-                  className="font-black leading-tight tracking-normal text-gray-950 dark:text-white"
-                  style={{
-                    fontSize: '34px',
-                    maxWidth: '100%',
-                    opacity: eventCardOpen ? 0 : 1,
-                    transform: eventCardOpen ? 'translateY(-10px)' : 'translateY(0)',
-                    pointerEvents: eventCardOpen ? 'none' : 'auto',
-                    transition:
-                      'opacity 0.22s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-                  }}
+                  className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white"
                 >
                   {displayEvent.title || 'Untitled event'}
                 </h1>
@@ -2241,6 +2232,7 @@ const effectiveDateColor = isDragging
                 height: eventCardOpen ? '100%' : '28%',
                 zIndex: eventCardOpen ? 12 : 8,
                 borderRadius: eventCardOpen ? 0 : 8,
+                backgroundColor: darkMode ? '#121212' : '#ffffff',
                 boxShadow: 'none',
                 transition:
                   'left 0.35s cubic-bezier(0.4,0,0.2,1), right 0.35s cubic-bezier(0.4,0,0.2,1), bottom 0.35s cubic-bezier(0.4,0,0.2,1), height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease',
@@ -2282,7 +2274,7 @@ const effectiveDateColor = isDragging
                   opacity: eventCardOpen ? 1 : 0,
                   pointerEvents: eventCardOpen ? 'auto' : 'none',
                   transition: 'opacity 0.2s ease',
-                  paddingTop: 'calc(env(safe-area-inset-top) + 88px)',
+                  paddingTop: 'calc(env(safe-area-inset-top) + 70px)',
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
@@ -2290,17 +2282,6 @@ const effectiveDateColor = isDragging
                   <h1 className="mb-8 text-[30px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
                     {displayEvent.title || 'Untitled event'}
                   </h1>
-
-                  <div className="mb-4 hidden">
-                    <div>
-                      <p className="text-xs font-semibold uppercase text-orange-500">
-                        Event details
-                      </p>
-                      <p className="mt-1 text-lg font-bold text-gray-950 dark:text-white">
-                        {displayEvent.title || 'Untitled event'}
-                      </p>
-                    </div>
-                  </div>
 
                   {detailImages.length > 0 && (
                     <div
