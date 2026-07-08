@@ -855,7 +855,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
 
   const W = 'min(calc(100vw - 32px), 398px)'
   const cardRestingOffsetY = '34px' // Increase to move the MY membership card lower.
-  const guideTextGapY = '2px' // Increase for more space between the card and guide text.
+  const guideTextGapY = '0px' // Increase for more space between the card and guide text.
   const fs = {
     guide: `calc(${W} * 0.032)`,
   }
@@ -930,53 +930,62 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
           padding: '0 16px',
         }}
       >
-        <MembershipCard
-          member={member}
-          isValid={isValid}
-          onQRScanned={handleQRScanned}
-          disabled={lifted}
-          onFlipChange={setCardFlipped}
-          darkMode={darkMode}
-          scannerOpenSignal={scannerOpenSignal}
-        />
         <div
           style={{
-            position: 'absolute',
-            top: `calc(50% + (${W} * 0.793) + ${cardRestingOffsetY} + ${guideTextGapY})`,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            paddingRight: '36px',
-            gap: 4,
+            position: 'relative',
+            width: W,
           }}
         >
-          {!cardFlipped && (
-            <span
-              style={{
-                fontSize: fs.guide,
-                color: darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)',
-                fontWeight: 500,
-                transition: 'color 0.25s ease',
-              }}
-            >
-              {lifted
-                ? '내려서 Check-IN 하기'
-                : '위로 올려서 최근 활동 보기'}
-            </span>
-          )}
-          {cardFlipped && (
-            <span
-              style={{
-                fontSize: fs.guide,
-                color: darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)',
-                fontWeight: 500,
-              }}
-            >
-              눌러서 돌아가기
-            </span>
-          )}
+          <MembershipCard
+            member={member}
+            isValid={isValid}
+            onQRScanned={handleQRScanned}
+            disabled={lifted}
+            onFlipChange={setCardFlipped}
+            darkMode={darkMode}
+            scannerOpenSignal={scannerOpenSignal}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: `calc(100% + ${guideTextGapY})`,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              paddingRight: '20px',
+              gap: 4,
+            }}
+          >
+            {!cardFlipped && (
+              <span
+                style={{
+                  fontSize: fs.guide,
+                  lineHeight: 1,
+                  color: darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)',
+                  fontWeight: 500,
+                  transition: 'color 0.25s ease',
+                }}
+              >
+                {lifted
+                  ? '내려서 Check-IN 하기'
+                  : '위로 올려서 최근 활동 보기'}
+              </span>
+            )}
+            {cardFlipped && (
+              <span
+                style={{
+                  fontSize: fs.guide,
+                  lineHeight: 1,
+                  color: darkMode ? '#FAFAFA' : 'rgba(44,42,39,0.35)',
+                  fontWeight: 500,
+                }}
+              >
+                눌러서 돌아가기
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
