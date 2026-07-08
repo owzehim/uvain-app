@@ -764,13 +764,16 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
   const touchStartY = useRef(null)
   const liftedRef = useRef(false)
   const W = 'min(calc(100vw - 32px), 398px)'
-  const cardRestingOffsetY = '34px' // Increase to move the MY membership card lower.
+  const cardRestingOffsetPx = 34 // Increase to move the MY membership card lower.
+  const liftedActivityGapPx = 12
+  const cardRestingOffsetY = `${cardRestingOffsetPx}px`
   const guideTextGapY = '2px' // Increase for more space between the card and guide text.
   const fs = {
     guide: `calc(${W} * 0.032)`,
   }
 
-  const getMaxLift = () => activityRef.current?.offsetHeight ?? 260
+  const getMaxLift = () =>
+    (activityRef.current?.offsetHeight ?? 260) + cardRestingOffsetPx + liftedActivityGapPx
 
   const setTranslate = (offset) => {
     if (cardLayerRef.current) {
