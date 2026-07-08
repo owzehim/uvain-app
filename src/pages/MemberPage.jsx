@@ -2090,7 +2090,7 @@ const effectiveDateColor = isDragging
   return (
     <>
       <div
-        className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-white dark:text-gray-950"
+        className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
         onTouchStart={handleFrameworkTouchStart}
         onTouchEnd={handleFrameworkTouchEnd}
       >
@@ -2117,16 +2117,7 @@ const effectiveDateColor = isDragging
 
         {displayEvent ? (
           <>
-            <div className="absolute inset-0 bg-white" />
-            {detailImages[0] && (
-              <img
-                src={detailImages[0]}
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 h-full w-full object-cover opacity-14"
-              />
-            )}
-            <div className="absolute inset-0 bg-white/82" />
+            <div className="absolute inset-0 bg-white dark:bg-[#121212]" />
 
             <div
               className="absolute left-0 right-0 px-6"
@@ -2144,10 +2135,10 @@ const effectiveDateColor = isDragging
                       {eventDateParts.dateNum}
                     </span>
                     <div className="pb-1">
-                      <p className="text-xs font-bold uppercase text-gray-500">
+                      <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">
                         {eventDateParts.dayName}
                       </p>
-                      <p className="text-xs font-semibold uppercase text-gray-400">
+                      <p className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500">
                         {eventDateParts.monthName}
                       </p>
                     </div>
@@ -2158,11 +2149,11 @@ const effectiveDateColor = isDragging
                   {getEventStatus(displayEvent)}
                 </p>
 
-                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950">
+                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
-                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700">
+                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700 dark:text-gray-200">
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
                       <Calendar size={18} weight="fill" color="#f97316" />
@@ -2176,7 +2167,7 @@ const effectiveDateColor = isDragging
                     </div>
                   )}
                   {displayEvent.location_description && (
-                    <p className="pl-7 text-xs leading-relaxed text-gray-500">
+                    <p className="pl-7 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
                       {plainText(displayEvent.location_description)}
                     </p>
                   )}
@@ -2185,7 +2176,7 @@ const effectiveDateColor = isDragging
             </div>
 
             <div
-              className="absolute left-0 right-0 bg-white"
+              className="absolute left-0 right-0 bg-white dark:bg-[#121212]"
               onTouchStart={handleEventCardTouchStart}
               onTouchEnd={handleEventCardTouchEnd}
               style={{
@@ -2218,7 +2209,7 @@ const effectiveDateColor = isDragging
                       <p className="text-xs font-semibold uppercase text-orange-500">
                         Event details
                       </p>
-                      <p className="mt-1 text-lg font-bold text-gray-950">
+                      <p className="mt-1 text-lg font-bold text-gray-950 dark:text-white">
                         {displayEvent.title || 'Untitled event'}
                       </p>
                     </div>
@@ -2231,7 +2222,7 @@ const effectiveDateColor = isDragging
                           key={url}
                           type="button"
                           onClick={() => openLightboxAt(index)}
-                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100"
+                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
                         >
                           <img
                             src={url}
@@ -2247,10 +2238,10 @@ const effectiveDateColor = isDragging
                   {displayEvent.description ? (
                     <RichText
                       text={displayEvent.description}
-                      className="block text-sm leading-relaxed text-gray-600"
+                      className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
                     />
                   ) : (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-400 dark:text-gray-500">
                       Event description will appear here.
                     </p>
                   )}
@@ -2260,7 +2251,7 @@ const effectiveDateColor = isDragging
                       <button
                         type="button"
                         onClick={() => addToCalendar(displayEvent)}
-                        className="flex-1 rounded-full bg-gray-100 px-4 py-3 text-xs font-semibold text-gray-700"
+                        className="flex-1 rounded-full bg-gray-100 px-4 py-3 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200"
                       >
                         Calendar
                       </button>
