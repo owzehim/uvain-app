@@ -2193,13 +2193,55 @@ const effectiveDateColor = isDragging
                 overflow: 'hidden',
               }}
             >
-              <div className="flex justify-center pb-3 pt-2.5">
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  opacity: eventCardOpen ? 0 : 1,
+                  transition: 'opacity 0.28s ease',
+                  backgroundColor: darkMode ? '#121212' : '#ffffff',
+                  zIndex: 0,
+                }}
+              >
+                {detailImages[0] && (
+                  <img
+                    src={detailImages[0]}
+                    alt=""
+                    aria-hidden="true"
+                    draggable={false}
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '50%',
+                      width: '100%',
+                      height: 'auto',
+                      minHeight: '100%',
+                      transform: 'translateY(-50%) scale(1.08)',
+                      filter: 'blur(18px)',
+                      objectFit: 'cover',
+                    }}
+                  />
+                )}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundColor: darkMode
+                      ? 'rgba(0,0,0,0.28)'
+                      : 'rgba(255,255,255,0.18)',
+                  }}
+                />
+              </div>
+
+              <div className="relative z-10 flex justify-center pb-3 pt-2.5">
                 <div className="h-1 w-10 rounded-full bg-gray-300" />
               </div>
 
               <div
-                className="h-full overflow-y-auto px-5"
+                className="relative z-10 h-full px-5"
                 style={{
+                  overflowY: eventCardOpen ? 'auto' : 'hidden',
+                  opacity: eventCardOpen ? 1 : 0,
+                  pointerEvents: eventCardOpen ? 'auto' : 'none',
+                  transition: 'opacity 0.2s ease',
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
