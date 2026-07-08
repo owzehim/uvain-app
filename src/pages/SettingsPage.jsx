@@ -109,8 +109,8 @@ export default function SettingsPage() {
   }, [navigate])
 
   const handleLogout = async () => {
+    navigate('/public', { replace: true })
     await supabase.auth.signOut()
-    navigate('/public')
   }
 
   const handlePasswordPanelToggle = () => {
