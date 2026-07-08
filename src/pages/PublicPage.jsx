@@ -296,7 +296,13 @@ function PublicMapTab({ restaurants }) {
 const MEMBERSHIP_SLIDES = [
   {
     key: 'intro',
-    title: 'UvA 대학 생활의 완벽한 시작',
+    title: (
+      <>
+        UvA 캠퍼스 라이프의 완벽한 시작
+        <br />
+        UvA-IN
+      </>
+    ),
     description: '',
     images: [
       {
