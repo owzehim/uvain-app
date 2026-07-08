@@ -296,7 +296,7 @@ function PublicMapTab({ restaurants }) {
 const MEMBERSHIP_SLIDES = [
   {
     key: 'intro',
-    title: '완벽한 캠퍼스 라이프를 위한 시작, UvA-IN',
+    title: 'UvA 대학 생활의 완벽한 시작',
     description: '',
     images: [
       {
@@ -319,39 +319,26 @@ const MEMBERSHIP_SLIDES = [
     description: '암스테르담 곳곳의 제휴 매장 혜택',
     images: [
       {
-        label: 'Cafe de UvA',
-        style: {
-          background:
-            'radial-gradient(circle at 20% 20%, #fff7ed 0 12%, transparent 13%), linear-gradient(145deg, #fed7aa 0%, #fb923c 48%, #7c2d12 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/restaurant-cafe-1.jpg',
       },
       {
-        label: 'Local brunch spot',
-        style: {
-          background:
-            'radial-gradient(circle at 75% 24%, #ffedd5 0 10%, transparent 11%), linear-gradient(145deg, #fde68a 0%, #f97316 46%, #431407 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/restaurant-cafe-2.jpg',
       },
     ],
   },
   {
     key: 'events',
-    title: 'UvA-IN 이벤트 참여',
-    description: 'UvA-IN 독점 이벤트 지원 혜택',
+    title: 'UvA-IN 이벤트 참여 혜택',
+    description: 'UvA-IN 독점 이벤트 지원 혜택 및 참가비 할인',
     images: [
       {
-        label: 'UvA-IN night',
-        style: {
-          background:
-            'linear-gradient(140deg, #172554 0%, #2563eb 38%, #f97316 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/uvain-event-1.png',
       },
       {
-        label: 'Student gathering',
-        style: {
-          background:
-            'linear-gradient(145deg, #0f172a 0%, #7c3aed 42%, #facc15 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/uvain-event-2.jpg',
+      },
+      {
+        src: '/PublicPage_MembershipTab_Images/uvain-event-3.jpg',
       },
     ],
   },
@@ -361,32 +348,22 @@ const MEMBERSHIP_SLIDES = [
     description: 'UvA 학생 전용 커뮤니티 연결',
     images: [
       {
-        label: 'Global campus',
-        style: {
-          background:
-            'linear-gradient(140deg, #064e3b 0%, #14b8a6 42%, #f97316 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/uvain-network-1.jpg',
       },
       {
-        label: 'UvA student community',
-        style: {
-          background:
-            'linear-gradient(145deg, #111827 0%, #22c55e 48%, #fef3c7 100%)',
-        },
+        src: '/PublicPage_MembershipTab_Images/uvain-network-2.jpeg',
       },
     ],
   },
 ]
 
-const SLIDE_INTERVAL_MS = 7000
+const SLIDE_INTERVAL_MS = 12000
 const IMAGE_INTERVAL_MS = 2600
 const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
-const PLACE_IMAGE_EXTENSIONS = /\.(avif|webp|jpe?g|png)$/i
 
 function MembershipCarousel() {
   const navigate = useNavigate()
   const [activeSlide, setActiveSlide] = useState(0)
-  const [placeImages, setPlaceImages] = useState([])
   const [transitionEnabled, setTransitionEnabled] = useState(true)
   const [imageIndexes, setImageIndexes] = useState(() =>
     MEMBERSHIP_SLIDES.map(() => 0),
@@ -397,15 +374,7 @@ function MembershipCarousel() {
   const touchStartXRef = useRef(0)
   const touchStartYRef = useRef(0)
 
-  const slides = useMemo(
-    () =>
-      MEMBERSHIP_SLIDES.map((slide) =>
-        slide.key === 'discounts' && placeImages.length > 0
-          ? { ...slide, images: placeImages }
-          : slide,
-      ),
-    [placeImages],
-  )
+  const slides = MEMBERSHIP_SLIDES
   const displaySlides = useMemo(() => [...slides, slides[0]], [slides])
   const realActiveSlide = activeSlide % slides.length
 
@@ -425,39 +394,6 @@ function MembershipCarousel() {
 
     return () => window.clearInterval(timer)
   }, [activeSlide, slides.length])
-
-  useEffect(() => {
-    let cancelled = false
-
-    const fetchPlaceImages = async () => {
-      const { data, error } = await supabase.storage
-        .from('place-images')
-        .list('', {
-          limit: 30,
-          sortBy: { column: 'created_at', order: 'desc' },
-        })
-
-      if (cancelled || error || !Array.isArray(data)) return
-
-      const urls = data
-        .filter((file) => file.name && PLACE_IMAGE_EXTENSIONS.test(file.name))
-        .map((file) => {
-          const { data: publicData } = supabase.storage
-            .from('place-images')
-            .getPublicUrl(file.name)
-          return publicData?.publicUrl ? { src: publicData.publicUrl } : null
-        })
-        .filter(Boolean)
-
-      if (urls.length > 0) setPlaceImages(urls)
-    }
-
-    fetchPlaceImages()
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
