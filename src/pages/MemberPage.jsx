@@ -1322,6 +1322,8 @@ function EventsTab({ events }) {
   const [eventListClosing, setEventListClosing] = useState(false)
   const [eventListNewestFirst, setEventListNewestFirst] = useState(true)
   const [eventCardOpen, setEventCardOpen] = useState(false)
+  const [eventSwipeDirection, setEventSwipeDirection] = useState(0)
+  const [loadedEventPreviewImages, setLoadedEventPreviewImages] = useState({})
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
   )
@@ -1381,6 +1383,11 @@ function EventsTab({ events }) {
       ...p,
       [id]: idx,
     }))
+
+  useEffect(() => {
+    if (!selectedEvent?.id) return
+    setSlide(selectedEvent.id, 0)
+  }, [selectedEvent?.id])
 
   // Load image dimensions to detect aspect ratio
   useEffect(() => {
@@ -1776,9 +1783,11 @@ function EventsTab({ events }) {
       Math.min(baseIndex + direction, allEvents.length - 1),
     )
     if (nextIndex === baseIndex) return
+    setEventSwipeDirection(direction)
     setSelectedEvent(allEvents[nextIndex])
     setPreviewEvent(allEvents[nextIndex])
     setEventCardOpen(false)
+    window.setTimeout(() => setEventSwipeDirection(0), 320)
   }
 
   const handleFrameworkTouchStart = (e) => {
@@ -2145,6 +2154,16 @@ const effectiveDateColor = isDragging
 
   return (
     <>
+      <style>{`
+        @keyframes eventContentSlideInFromRight {
+          from { opacity: 0; transform: translateX(28px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes eventContentSlideInFromLeft {
+          from { opacity: 0; transform: translateX(-28px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
       <div
         className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
         onTouchStart={handleFrameworkTouchStart}
@@ -2178,13 +2197,22 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 72px)',
+                top: 'calc(env(safe-area-inset-top) + 44px)',
                 bottom: eventCardOpen ? '48%' : '250px',
                 transition: 'bottom 0.28s ease',
                 zIndex: 5,
               }}
             >
-              <div className="mx-auto max-w-md">
+              <div
+                key={`event-bg-${displayEvent.id}`}
+                className="mx-auto max-w-md"
+                style={{
+                  animation:
+                    eventSwipeDirection === 0
+                      ? 'none'
+                      : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)`,
+                }}
+              >
                 {eventDateParts && (
                   <div className="mb-5 flex items-end gap-3">
                     <span className="text-[64px] font-black leading-none tracking-tight text-orange-500">
@@ -2259,7 +2287,16 @@ const effectiveDateColor = isDragging
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
-                <div className="mx-auto max-w-md">
+                <div
+                  key={`event-card-${displayEvent.id}`}
+                  className="mx-auto max-w-md"
+                  style={{
+                    animation:
+                      eventSwipeDirection === 0
+                        ? 'none'
+                        : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)`,
+                  }}
+                >
                   <div
                     className="overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800"
                     style={{ aspectRatio: '1 / 1' }}
@@ -2300,11 +2337,19 @@ const effectiveDateColor = isDragging
                               <img
                                 src={url}
                                 alt=""
+                                onLoad={() =>
+                                  setLoadedEventPreviewImages((prev) => ({
+                                    ...prev,
+                                    [url]: true,
+                                  }))
+                                }
                                 style={{
                                   width: '100%',
                                   height: '100%',
                                   objectFit: 'cover',
                                   display: 'block',
+                                  opacity: loadedEventPreviewImages[url] ? 1 : 0,
+                                  transition: 'opacity 0.28s ease',
                                 }}
                                 draggable={false}
                               />
