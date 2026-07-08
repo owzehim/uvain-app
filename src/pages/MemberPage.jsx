@@ -1746,20 +1746,7 @@ function EventsTab({ events }) {
     eventSwipeStartX.current = null
     eventSwipeStartY.current = null
 
-    if (Math.abs(dy) > 54 && Math.abs(dy) > Math.abs(dx) * 1.15) {
-      setEventCardOpen(dy < 0)
-      return
-    }
-
     if (Math.abs(dx) < 54 || Math.abs(dx) < Math.abs(dy) * 1.25) return
-    if (eventCardOpen && displayEvent && detailImages.length > 1) {
-      const nextSlide = dx < 0 ? detailSlideIndex + 1 : detailSlideIndex - 1
-      setSlide(
-        displayEvent.id,
-        Math.max(0, Math.min(nextSlide, detailImages.length - 1)),
-      )
-      return
-    }
     selectAdjacentEvent(dx < 0 ? 1 : -1)
   }
 
@@ -2096,9 +2083,6 @@ const effectiveDateColor = isDragging
   }, [displayImages])
 
   const detailImages = displayEvent?.image_urls || []
-  const detailSlideIndex = displayEvent
-    ? Math.min(slideIndexes[displayEvent.id] || 0, Math.max(detailImages.length - 1, 0))
-    : 0
   const eventDateParts = getPrimaryEventDate(displayEvent)
     ? formatTopDate(getPrimaryEventDate(displayEvent))
     : null
@@ -2139,26 +2123,14 @@ const effectiveDateColor = isDragging
               className="absolute left-0 right-0 px-6"
               style={{
                 top: 'calc(env(safe-area-inset-top) + 72px)',
-                bottom: '250px',
-                opacity: eventCardOpen ? 0 : 1,
-                pointerEvents: eventCardOpen ? 'none' : 'auto',
-                transition:
-                  'opacity 0.22s ease, top 0.35s cubic-bezier(0.4,0,0.2,1), bottom 0.35s cubic-bezier(0.4,0,0.2,1)',
-                zIndex: 15,
+                bottom: eventCardOpen ? '48%' : '250px',
+                transition: 'bottom 0.28s ease',
+                zIndex: 5,
               }}
             >
               <div className="mx-auto max-w-md">
                 {eventDateParts && (
-                  <div
-                    className="mb-5 flex items-end gap-3"
-                    style={{
-                      opacity: eventCardOpen ? 0 : 1,
-                      transform: eventCardOpen ? 'translateY(-10px)' : 'translateY(0)',
-                      transition:
-                        'opacity 0.22s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-                      pointerEvents: eventCardOpen ? 'none' : 'auto',
-                    }}
-                  >
+                  <div className="mb-5 flex items-end gap-3">
                     <span className="text-[64px] font-black leading-none tracking-tight text-orange-500">
                       {eventDateParts.dateNum}
                     </span>
@@ -2173,33 +2145,15 @@ const effectiveDateColor = isDragging
                   </div>
                 )}
 
-                <p
-                  className="mb-3 inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white"
-                  style={{
-                    opacity: eventCardOpen ? 0 : 1,
-                    transition: 'opacity 0.22s ease',
-                    pointerEvents: eventCardOpen ? 'none' : 'auto',
-                  }}
-                >
+                <p className="mb-3 inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
                   {getEventStatus(displayEvent)}
                 </p>
 
-                <h1
-                  className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white"
-                >
+                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
-                <div
-                  className="mt-6 space-y-3 text-sm font-medium text-gray-700 dark:text-gray-200"
-                  style={{
-                    opacity: eventCardOpen ? 0 : 1,
-                    transform: eventCardOpen ? 'translateY(-8px)' : 'translateY(0)',
-                    transition:
-                      'opacity 0.22s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-                    pointerEvents: eventCardOpen ? 'none' : 'auto',
-                  }}
-                >
+                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700 dark:text-gray-200">
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
                       <Calendar size={18} weight="fill" color="#f97316" />
@@ -2222,20 +2176,20 @@ const effectiveDateColor = isDragging
             </div>
 
             <div
-              className="absolute"
+              className="absolute left-0 right-0 bg-white dark:bg-[#121212]"
+              onTouchStart={handleEventCardTouchStart}
+              onTouchEnd={handleEventCardTouchEnd}
               style={{
-                left: eventCardOpen ? 0 : '20px',
-                right: eventCardOpen ? 0 : '20px',
-                bottom: eventCardOpen
-                  ? 0
-                  : 'calc(env(safe-area-inset-bottom) + 92px)',
-                height: eventCardOpen ? '100%' : '28%',
-                zIndex: eventCardOpen ? 12 : 8,
-                borderRadius: eventCardOpen ? 0 : 8,
-                backgroundColor: darkMode ? '#121212' : '#ffffff',
+                bottom: 0,
+                height: eventCardOpen
+                  ? '100%'
+                  : `${Math.min(window.innerHeight * 0.38, 260)}px`,
+                zIndex: 20,
+                borderTopLeftRadius: eventCardOpen ? 0 : 20,
+                borderTopRightRadius: eventCardOpen ? 0 : 20,
                 boxShadow: 'none',
                 transition:
-                  'left 0.35s cubic-bezier(0.4,0,0.2,1), right 0.35s cubic-bezier(0.4,0,0.2,1), bottom 0.35s cubic-bezier(0.4,0,0.2,1), height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease',
+                  'height 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
                 overflow: 'hidden',
               }}
             >
@@ -2256,15 +2210,29 @@ const effectiveDateColor = isDragging
                     draggable={false}
                     style={{
                       position: 'absolute',
-                      inset: 0,
+                      left: 0,
+                      top: '50%',
                       width: '100%',
-                      height: '100%',
-                      transform: 'none',
-                      filter: 'none',
+                      height: 'auto',
+                      minHeight: '100%',
+                      transform: 'translateY(-50%) scale(1.08)',
+                      filter: 'blur(18px)',
                       objectFit: 'cover',
                     }}
                   />
                 )}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundColor: darkMode
+                      ? 'rgba(0,0,0,0.28)'
+                      : 'rgba(255,255,255,0.18)',
+                  }}
+                />
+              </div>
+
+              <div className="relative z-10 flex justify-center pb-3 pt-2.5">
+                <div className="h-1 w-10 rounded-full bg-gray-300" />
               </div>
 
               <div
@@ -2274,102 +2242,53 @@ const effectiveDateColor = isDragging
                   opacity: eventCardOpen ? 1 : 0,
                   pointerEvents: eventCardOpen ? 'auto' : 'none',
                   transition: 'opacity 0.2s ease',
-                  paddingTop: 'calc(env(safe-area-inset-top) + 70px)',
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
                 <div className="mx-auto max-w-md">
-                  <h1 className="mb-8 text-[30px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
-                    {displayEvent.title || 'Untitled event'}
-                  </h1>
+                  <div className="mb-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-orange-500">
+                        Event details
+                      </p>
+                      <p className="mt-1 text-lg font-bold text-gray-950 dark:text-white">
+                        {displayEvent.title || 'Untitled event'}
+                      </p>
+                    </div>
+                  </div>
 
                   {detailImages.length > 0 && (
-                    <div
-                      className="relative mb-16 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
-                      style={{ aspectRatio: '1/1' }}
-                      onTouchStart={(e) => {
-                        e.currentTarget._sx = e.touches[0].clientX
-                      }}
-                      onTouchEnd={(e) => {
-                        const sx = e.currentTarget._sx
-                        if (sx == null || !displayEvent) return
-                        const dx = e.changedTouches[0].clientX - sx
-                        if (Math.abs(dx) < 36) return
-                        const nextSlide = dx < 0 ? detailSlideIndex + 1 : detailSlideIndex - 1
-                        setSlide(
-                          displayEvent.id,
-                          Math.max(0, Math.min(nextSlide, detailImages.length - 1)),
-                        )
-                      }}
-                    >
-                      <div
-                        className="flex h-full"
-                        style={{
-                          transform: `translateX(-${detailSlideIndex * 100}%)`,
-                          transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
-                        }}
-                      >
-                        {detailImages.map((url, index) => (
-                          <button
-                            key={url}
-                            type="button"
-                            onClick={() => openLightboxAt(index)}
-                            className="h-full w-full flex-shrink-0 bg-gray-100 dark:bg-gray-800"
-                          >
-                            <img
-                              src={url}
-                              alt=""
-                              className="h-full w-full object-cover"
-                              draggable={false}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                      {detailImages.length > 1 && (
-                        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-                          {detailImages.map((_, index) => (
-                            <button
-                              key={index}
-                              type="button"
-                              onClick={() => displayEvent && setSlide(displayEvent.id, index)}
-                              className="rounded-full bg-white transition-all"
-                              style={{
-                                width: index === detailSlideIndex ? 8 : 6,
-                                height: index === detailSlideIndex ? 8 : 6,
-                                opacity: index === detailSlideIndex ? 1 : 0.55,
-                              }}
-                              aria-label={`Show event image ${index + 1}`}
-                            />
-                          ))}
-                        </div>
-                      )}
+                    <div className="mb-4 flex gap-2 overflow-x-auto">
+                      {detailImages.map((url, index) => (
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => openLightboxAt(index)}
+                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
+                        >
+                          <img
+                            src={url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            draggable={false}
+                          />
+                        </button>
+                      ))}
                     </div>
                   )}
 
-                  {displayEvent.description && (
+                  {displayEvent.description ? (
                     <RichText
                       text={displayEvent.description}
                       className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
                     />
+                  ) : (
+                    <p className="text-sm text-gray-400 dark:text-gray-500">
+                      Event description will appear here.
+                    </p>
                   )}
 
-                  <div className="hidden">
-                    <p className="mb-5 text-2xl font-black text-gray-950 dark:text-white">
-                      내용
-                    </p>
-                    {displayEvent.description ? (
-                      <RichText
-                        text={displayEvent.description}
-                        className="block text-left text-sm leading-relaxed text-gray-600 dark:text-gray-300"
-                      />
-                    ) : (
-                      <p className="text-sm text-gray-400 dark:text-gray-500">
-                        Event description will appear here.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="hidden">
+                  <div className="mt-5 flex gap-2">
                     {getPrimaryEventDate(displayEvent) && (
                       <button
                         type="button"
