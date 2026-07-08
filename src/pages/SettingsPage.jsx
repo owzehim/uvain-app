@@ -110,7 +110,7 @@ export default function SettingsPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    navigate('/login')
+    navigate('/public')
   }
 
   const handlePasswordPanelToggle = () => {
