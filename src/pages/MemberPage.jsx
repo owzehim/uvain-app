@@ -2273,20 +2273,10 @@ const effectiveDateColor = isDragging
                   className="absolute inset-0"
                   style={{
                     background: darkMode
-                      ? 'linear-gradient(to bottom, #121212 0%, rgba(18,18,18,0.72) 28%, rgba(18,18,18,0.08) 100%)'
-                      : 'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.72) 28%, rgba(255,255,255,0.08) 100%)',
+                      ? 'linear-gradient(to bottom, #121212 0%, rgba(18,18,18,0.96) 18%, rgba(18,18,18,0.66) 44%, rgba(18,18,18,0.2) 72%, #121212 100%)'
+                      : 'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.96) 18%, rgba(255,255,255,0.66) 44%, rgba(255,255,255,0.2) 72%, #ffffff 100%)',
                   }}
                 />
-              </div>
-
-              <div
-                className="relative z-10 flex justify-center pb-3 pt-2.5"
-                style={{
-                  opacity: eventCardOpen ? 0 : 1,
-                  transition: 'opacity 0.2s ease',
-                }}
-              >
-                <div className="h-1 w-10 rounded-full bg-gray-300" />
               </div>
 
               <div
