@@ -374,10 +374,11 @@ export function SpotCard({
     selected?.spot_card_height === 'full' || selected?.spot_card_height === 'tall'
       ? 'full'
       : 'compact'
-  const COMPACT_HEIGHT = Math.min(WIN_H * 0.28, 190)
+  const COMPACT_HEIGHT = Math.min(WIN_H * 0.22, 150)
   const FULL_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MIN_HEIGHT = spotCardHeightMode === 'full' ? FULL_HEIGHT : COMPACT_HEIGHT
   const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
+  const SHEET_RADIUS = 20
 
   // Trigger animation on mount
   useEffect(() => {
@@ -417,7 +418,7 @@ export function SpotCard({
   const handleTouchStart = (e) => {
     startYRef.current = e.touches[0].clientY
     lastYRef.current = e.touches[0].clientY
-    startHeightRef.current = hasImages
+    startHeightRef.current = spotCardHeightMode === 'full'
       ? cardHeight
       : cardRef.current?.offsetHeight || MIN_HEIGHT
     setIsDragging(true)
@@ -445,7 +446,7 @@ export function SpotCard({
     const wasMax = startH >= MAX_HEIGHT * 0.85
     const wasMin = startH <= MIN_HEIGHT * 1.15
 
-    if (!hasImages) {
+    if (spotCardHeightMode !== 'full') {
       if (delta < -40) triggerClose()
       return
     }
@@ -522,14 +523,14 @@ export function SpotCard({
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          borderTopLeftRadius: isMax ? 0 : 16,
-          borderTopRightRadius: isMax ? 0 : 16,
+          borderTopLeftRadius: isMax ? 0 : SHEET_RADIUS,
+          borderTopRightRadius: isMax ? 0 : SHEET_RADIUS,
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onWheel={(e) => {
-          if (!hasImages) {
+          if (spotCardHeightMode !== 'full') {
             if (e.deltaY < 0) triggerClose()
           } else {
             if (e.deltaY > 0) snapTo(MAX_HEIGHT)
