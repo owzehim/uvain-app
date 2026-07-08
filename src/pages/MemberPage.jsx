@@ -1746,7 +1746,20 @@ function EventsTab({ events }) {
     eventSwipeStartX.current = null
     eventSwipeStartY.current = null
 
+    if (Math.abs(dy) > 54 && Math.abs(dy) > Math.abs(dx) * 1.15) {
+      setEventCardOpen(dy < 0)
+      return
+    }
+
     if (Math.abs(dx) < 54 || Math.abs(dx) < Math.abs(dy) * 1.25) return
+    if (eventCardOpen && displayEvent && detailImages.length > 1) {
+      const nextSlide = dx < 0 ? detailSlideIndex + 1 : detailSlideIndex - 1
+      setSlide(
+        displayEvent.id,
+        Math.max(0, Math.min(nextSlide, detailImages.length - 1)),
+      )
+      return
+    }
     selectAdjacentEvent(dx < 0 ? 1 : -1)
   }
 
@@ -2083,6 +2096,9 @@ const effectiveDateColor = isDragging
   }, [displayImages])
 
   const detailImages = displayEvent?.image_urls || []
+  const detailSlideIndex = displayEvent
+    ? Math.min(slideIndexes[displayEvent.id] || 0, Math.max(detailImages.length - 1, 0))
+    : 0
   const eventDateParts = getPrimaryEventDate(displayEvent)
     ? formatTopDate(getPrimaryEventDate(displayEvent))
     : null
@@ -2122,15 +2138,27 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 72px)',
-                bottom: eventCardOpen ? '48%' : '250px',
-                transition: 'bottom 0.28s ease',
-                zIndex: 5,
+                top: eventCardOpen
+                  ? 'calc(env(safe-area-inset-top) + 58px)'
+                  : 'calc(env(safe-area-inset-top) + 72px)',
+                bottom: eventCardOpen ? 'auto' : '250px',
+                transition:
+                  'top 0.35s cubic-bezier(0.4,0,0.2,1), bottom 0.35s cubic-bezier(0.4,0,0.2,1)',
+                zIndex: 15,
               }}
             >
               <div className="mx-auto max-w-md">
                 {eventDateParts && (
-                  <div className="mb-5 flex items-end gap-3">
+                  <div
+                    className="mb-5 flex items-end gap-3"
+                    style={{
+                      opacity: eventCardOpen ? 0 : 1,
+                      transform: eventCardOpen ? 'translateY(-10px)' : 'translateY(0)',
+                      transition:
+                        'opacity 0.22s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+                      pointerEvents: eventCardOpen ? 'none' : 'auto',
+                    }}
+                  >
                     <span className="text-[64px] font-black leading-none tracking-tight text-orange-500">
                       {eventDateParts.dateNum}
                     </span>
@@ -2145,15 +2173,39 @@ const effectiveDateColor = isDragging
                   </div>
                 )}
 
-                <p className="mb-3 inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
+                <p
+                  className="mb-3 inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white"
+                  style={{
+                    opacity: eventCardOpen ? 0 : 1,
+                    transition: 'opacity 0.22s ease',
+                    pointerEvents: eventCardOpen ? 'none' : 'auto',
+                  }}
+                >
                   {getEventStatus(displayEvent)}
                 </p>
 
-                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
+                <h1
+                  className="font-black leading-tight tracking-normal text-gray-950 dark:text-white"
+                  style={{
+                    fontSize: eventCardOpen ? '24px' : '34px',
+                    maxWidth: eventCardOpen ? '78%' : '100%',
+                    transition:
+                      'font-size 0.35s cubic-bezier(0.4,0,0.2,1), max-width 0.35s cubic-bezier(0.4,0,0.2,1)',
+                  }}
+                >
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
-                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div
+                  className="mt-6 space-y-3 text-sm font-medium text-gray-700 dark:text-gray-200"
+                  style={{
+                    opacity: eventCardOpen ? 0 : 1,
+                    transform: eventCardOpen ? 'translateY(-8px)' : 'translateY(0)',
+                    transition:
+                      'opacity 0.22s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+                    pointerEvents: eventCardOpen ? 'none' : 'auto',
+                  }}
+                >
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
                       <Calendar size={18} weight="fill" color="#f97316" />
@@ -2176,20 +2228,16 @@ const effectiveDateColor = isDragging
             </div>
 
             <div
-              className="absolute left-0 right-0 bg-white dark:bg-[#121212]"
-              onTouchStart={handleEventCardTouchStart}
-              onTouchEnd={handleEventCardTouchEnd}
+              className="absolute left-0 right-0"
               style={{
                 bottom: 0,
-                height: eventCardOpen
-                  ? '100%'
-                  : `${Math.min(window.innerHeight * 0.38, 260)}px`,
-                zIndex: 20,
-                borderTopLeftRadius: eventCardOpen ? 0 : 20,
-                borderTopRightRadius: eventCardOpen ? 0 : 20,
+                height: eventCardOpen ? '100%' : '34%',
+                zIndex: eventCardOpen ? 12 : 8,
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
                 boxShadow: 'none',
                 transition:
-                  'height 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
+                  'height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease',
                 overflow: 'hidden',
               }}
             >
@@ -2211,12 +2259,12 @@ const effectiveDateColor = isDragging
                     style={{
                       position: 'absolute',
                       left: 0,
-                      top: '50%',
+                      bottom: '-24%',
                       width: '100%',
                       height: 'auto',
-                      minHeight: '100%',
-                      transform: 'translateY(-50%) scale(1.08)',
-                      filter: 'blur(18px)',
+                      minHeight: '92%',
+                      transform: 'scale(1.08)',
+                      filter: 'blur(14px)',
                       objectFit: 'cover',
                     }}
                   />
@@ -2224,14 +2272,20 @@ const effectiveDateColor = isDragging
                 <div
                   className="absolute inset-0"
                   style={{
-                    backgroundColor: darkMode
-                      ? 'rgba(0,0,0,0.28)'
-                      : 'rgba(255,255,255,0.18)',
+                    background: darkMode
+                      ? 'linear-gradient(to bottom, #121212 0%, rgba(18,18,18,0.72) 28%, rgba(18,18,18,0.08) 100%)'
+                      : 'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.72) 28%, rgba(255,255,255,0.08) 100%)',
                   }}
                 />
               </div>
 
-              <div className="relative z-10 flex justify-center pb-3 pt-2.5">
+              <div
+                className="relative z-10 flex justify-center pb-3 pt-2.5"
+                style={{
+                  opacity: eventCardOpen ? 0 : 1,
+                  transition: 'opacity 0.2s ease',
+                }}
+              >
                 <div className="h-1 w-10 rounded-full bg-gray-300" />
               </div>
 
@@ -2242,11 +2296,12 @@ const effectiveDateColor = isDragging
                   opacity: eventCardOpen ? 1 : 0,
                   pointerEvents: eventCardOpen ? 'auto' : 'none',
                   transition: 'opacity 0.2s ease',
+                  paddingTop: 'calc(env(safe-area-inset-top) + 120px)',
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
                 <div className="mx-auto max-w-md">
-                  <div className="mb-4">
+                  <div className="mb-4 hidden">
                     <div>
                       <p className="text-xs font-semibold uppercase text-orange-500">
                         Event details
@@ -2258,22 +2313,65 @@ const effectiveDateColor = isDragging
                   </div>
 
                   {detailImages.length > 0 && (
-                    <div className="mb-4 flex gap-2 overflow-x-auto">
-                      {detailImages.map((url, index) => (
-                        <button
-                          key={url}
-                          type="button"
-                          onClick={() => openLightboxAt(index)}
-                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
-                        >
-                          <img
-                            src={url}
-                            alt=""
-                            className="h-full w-full object-cover"
-                            draggable={false}
-                          />
-                        </button>
-                      ))}
+                    <div
+                      className="relative mb-8 overflow-hidden rounded-[28px] bg-gray-100 dark:bg-gray-800"
+                      style={{ aspectRatio: '1/1' }}
+                      onTouchStart={(e) => {
+                        e.currentTarget._sx = e.touches[0].clientX
+                      }}
+                      onTouchEnd={(e) => {
+                        const sx = e.currentTarget._sx
+                        if (sx == null || !displayEvent) return
+                        const dx = e.changedTouches[0].clientX - sx
+                        if (Math.abs(dx) < 36) return
+                        const nextSlide = dx < 0 ? detailSlideIndex + 1 : detailSlideIndex - 1
+                        setSlide(
+                          displayEvent.id,
+                          Math.max(0, Math.min(nextSlide, detailImages.length - 1)),
+                        )
+                      }}
+                    >
+                      <div
+                        className="flex h-full"
+                        style={{
+                          transform: `translateX(-${detailSlideIndex * 100}%)`,
+                          transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
+                        }}
+                      >
+                        {detailImages.map((url, index) => (
+                          <button
+                            key={url}
+                            type="button"
+                            onClick={() => openLightboxAt(index)}
+                            className="h-full w-full flex-shrink-0 bg-gray-100 dark:bg-gray-800"
+                          >
+                            <img
+                              src={url}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              draggable={false}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                      {detailImages.length > 1 && (
+                        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+                          {detailImages.map((_, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => displayEvent && setSlide(displayEvent.id, index)}
+                              className="rounded-full bg-white transition-all"
+                              style={{
+                                width: index === detailSlideIndex ? 8 : 6,
+                                height: index === detailSlideIndex ? 8 : 6,
+                                opacity: index === detailSlideIndex ? 1 : 0.55,
+                              }}
+                              aria-label={`Show event image ${index + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
