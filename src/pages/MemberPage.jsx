@@ -1246,6 +1246,7 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
 
 // Events Tab
 function EventsTab({ events }) {
+  const navigate = useNavigate()
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -1455,6 +1456,7 @@ function EventsTab({ events }) {
 
   const dateParts = formatDateParts(getPrimaryEventDateTime(selectedEvent))
   const extended = viewState === 'extended'
+  const eventImage = images[photoIndex]
 
   return (
     <>
@@ -1481,20 +1483,39 @@ function EventsTab({ events }) {
         >
           <List size={22} weight="bold" />
         </button>
+        <button
+          type="button"
+          onClick={() => navigate('/settings')}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
+          aria-label="Settings"
+          style={{
+            right: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            zIndex: 70,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <Gear size={22} weight="bold" />
+        </button>
 
         {selectedEvent ? (
-          <div
-            className="absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-            style={{
-              transform: extended ? 'translateY(-34%)' : 'translateY(0)',
-            }}
-          >
+          <>
             <section
-              className="relative flex h-full flex-col px-6"
-              style={{ paddingTop: 'calc(env(safe-area-inset-top) + 72px)' }}
+              className="absolute inset-x-0 px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                top: 'calc(env(safe-area-inset-top) + 96px)',
+                zIndex: 10,
+                opacity: extended ? 0 : 1,
+                transform: extended ? 'translateY(-18px)' : 'translateY(0)',
+                pointerEvents: extended ? 'none' : 'auto',
+              }}
             >
-              <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center pb-28">
-                <div className="mb-8 flex items-end justify-between">
+              <div className="mx-auto max-w-md">
+                <div className="flex items-end justify-between">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">
                       {dateParts.weekday}
@@ -1513,17 +1534,7 @@ function EventsTab({ events }) {
                   </span>
                 </div>
 
-                <h1
-                  className="font-black leading-tight text-gray-950 transition-all duration-500 dark:text-white"
-                  style={{
-                    fontSize: extended ? '26px' : '46px',
-                    transform: extended ? 'translateY(34vh)' : 'translateY(0)',
-                  }}
-                >
-                  {selectedEvent.title}
-                </h1>
-
-                <div className="mt-7 space-y-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                <div className="mt-56 space-y-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
                   <div className="flex items-center gap-2">
                     <Calendar size={18} weight="fill" color="#f97316" />
                     <span>{formatTimeRange(selectedEvent)}</span>
@@ -1538,25 +1549,54 @@ function EventsTab({ events }) {
               </div>
             </section>
 
-            <section className="min-h-full px-6 pb-28 pt-6">
+            <div
+              className="absolute inset-x-0 px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                bottom: extended ? 'calc(env(safe-area-inset-bottom) + 96px)' : '-28%',
+                zIndex: extended ? 35 : 8,
+                opacity: eventImage ? 1 : 0,
+              }}
+            >
+              <div
+                className="mx-auto aspect-[4/5] max-w-md overflow-hidden rounded-[8px] bg-gray-100 dark:bg-[#1f1f1f]"
+                onTouchStart={handlePhotoTouchStart}
+                onTouchEnd={handlePhotoTouchEnd}
+                onClick={() => extended && images.length && setLightboxIndex(photoIndex)}
+              >
+                {eventImage && (
+                  <img
+                    src={eventImage}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    draggable={false}
+                  />
+                )}
+              </div>
+            </div>
+
+            <section
+              className="absolute inset-0 bg-white px-6 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] dark:bg-[#121212]"
+              style={{
+                zIndex: 25,
+                transform: extended ? 'translateY(0)' : 'translateY(100%)',
+                paddingTop: 'calc(env(safe-area-inset-top) + 86px)',
+                paddingBottom: 'calc(env(safe-area-inset-bottom) + 96px)',
+              }}
+            >
               <div className="mx-auto max-w-md">
                 <div
-                  className="relative aspect-[4/5] w-full overflow-hidden rounded-[8px] bg-gray-100 dark:bg-[#1f1f1f]"
+                  className="relative mt-20 aspect-[4/5] w-full overflow-hidden rounded-[8px] bg-gray-100 dark:bg-[#1f1f1f]"
                   onTouchStart={handlePhotoTouchStart}
                   onTouchEnd={handlePhotoTouchEnd}
                   onClick={() => images.length && setLightboxIndex(photoIndex)}
                 >
-                  {images.length ? (
+                  {eventImage && (
                     <img
-                      src={images[photoIndex]}
+                      src={eventImage}
                       alt=""
                       className="h-full w-full object-cover"
                       draggable={false}
                     />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-gray-400">
-                      No photos
-                    </div>
                   )}
                   {images.length > 1 && (
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
@@ -1577,20 +1617,22 @@ function EventsTab({ events }) {
                     </div>
                   )}
                 </div>
-
-                <div className="mt-7">
-                  {selectedEvent.description ? (
-                    <RichText
-                      text={selectedEvent.description}
-                      className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
-                    />
-                  ) : (
-                    <p className="text-sm text-gray-400">Event description will appear here.</p>
-                  )}
-                </div>
               </div>
             </section>
-          </div>
+
+            <h1
+              className="absolute px-6 font-black leading-tight text-gray-950 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] dark:text-white"
+              style={{
+                left: 0,
+                right: 0,
+                top: extended ? 'calc(env(safe-area-inset-top) + 74px)' : 'calc(env(safe-area-inset-top) + 330px)',
+                zIndex: 45,
+                fontSize: extended ? '34px' : '46px',
+              }}
+            >
+              <span className="mx-auto block max-w-md">{selectedEvent.title}</span>
+            </h1>
+          </>
         ) : (
           <div className="flex h-full items-center justify-center px-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">No events yet.</p>
