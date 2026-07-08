@@ -439,16 +439,42 @@ function MembershipCarousel() {
             return loadedIndexes[nextLoadedIndex]
           }
 
-          const imageCount = slides[slideIndex]?.images.length || 0
-          return imageCount > 1 && loadedIndexes.length === 0
-            ? (imageIndex + 1) % imageCount
-            : imageIndex
+          return loadedIndexes[0] ?? imageIndex
         }),
       )
     }, IMAGE_INTERVAL_MS)
 
     return () => window.clearInterval(timer)
   }, [loadedImageIndexes, slides])
+
+  useEffect(() => {
+    const preloaders = []
+
+    slides.forEach((slide, slideIndex) => {
+      slide.images.forEach((image, imageIndex) => {
+        const candidates = image.srcCandidates || (image.src ? [image.src] : [])
+        const tryCandidate = (candidateIndex) => {
+          const src = candidates[candidateIndex]
+          if (!src) return
+
+          const imagePreloader = new Image()
+          preloaders.push(imagePreloader)
+          imagePreloader.onload = () => handleImageLoaded(slideIndex, imageIndex)
+          imagePreloader.onerror = () => tryCandidate(candidateIndex + 1)
+          imagePreloader.src = src
+        }
+
+        tryCandidate(0)
+      })
+    })
+
+    return () => {
+      preloaders.forEach((imagePreloader) => {
+        imagePreloader.onload = null
+        imagePreloader.onerror = null
+      })
+    }
+  }, [slides])
 
   const pauseInteraction = () => {
     interactionPausedRef.current = true
@@ -524,7 +550,11 @@ function MembershipCarousel() {
             slide={slide}
             slideIndex={slideIndex}
             slideCount={slides.length}
-            imageIndex={imageIndexes[slideIndex]}
+            imageIndex={
+              loadedImageIndexes[slideIndex]?.includes(imageIndexes[slideIndex])
+                ? imageIndexes[slideIndex]
+                : loadedImageIndexes[slideIndex]?.[0] ?? imageIndexes[slideIndex]
+            }
             onImageLoaded={handleImageLoaded}
           />
         ))}
