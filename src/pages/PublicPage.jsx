@@ -293,6 +293,22 @@ function PublicMapTab({ restaurants }) {
   )
 }
 
+const MEMBERSHIP_IMAGE_BASE = '/PublicPage_MembershipTab_Images'
+const MEMBERSHIP_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp']
+
+function membershipImage(prefix, index, preferredExtension = 'jpg') {
+  const orderedExtensions = [
+    preferredExtension,
+    ...MEMBERSHIP_IMAGE_EXTENSIONS.filter((ext) => ext !== preferredExtension),
+  ]
+
+  return {
+    srcCandidates: orderedExtensions.map(
+      (ext) => `${MEMBERSHIP_IMAGE_BASE}/${prefix}-${index}.${ext}`,
+    ),
+  }
+}
+
 const MEMBERSHIP_SLIDES = [
   {
     key: 'intro',
@@ -305,18 +321,10 @@ const MEMBERSHIP_SLIDES = [
     ),
     description: '',
     images: [
-      {
-        src: '/PublicPage_MembershipTab_Images/uva-campus-1.jpg',
-      },
-      {
-        src: '/PublicPage_MembershipTab_Images/uva-campus-2.jpg',
-      },
-      {
-        src: '/PublicPage_MembershipTab_Images/uva-campus-3.jpg',
-      },
-      {
-        src: '/PublicPage_MembershipTab_Images/uva-campus-4.jpg',
-      },
+      membershipImage('uva-campus', 1),
+      membershipImage('uva-campus', 2),
+      membershipImage('uva-campus', 3),
+      membershipImage('uva-campus', 4),
     ],
   },
   {
@@ -324,12 +332,10 @@ const MEMBERSHIP_SLIDES = [
     title: '로컬 맛집 & 카페 제휴 할인',
     description: '암스테르담 곳곳의 제휴 매장 혜택',
     images: [
-      {
-        src: '/PublicPage_MembershipTab_Images/restaurant-cafe-1.jpg',
-      },
-      {
-        src: '/PublicPage_MembershipTab_Images/restaurant-cafe-2.jpg',
-      },
+      membershipImage('restaurant-cafe', 1),
+      membershipImage('restaurant-cafe', 2),
+      membershipImage('restaurant-cafe', 3),
+      membershipImage('restaurant-cafe', 4),
     ],
   },
   {
@@ -337,15 +343,10 @@ const MEMBERSHIP_SLIDES = [
     title: 'UvA-IN 이벤트 참여 혜택',
     description: 'UvA-IN 독점 이벤트 지원 혜택 및 참가비 할인',
     images: [
-      {
-        src: '/PublicPage_MembershipTab_Images/uvain-event-1.png',
-      },
-      {
-        src: '/PublicPage_MembershipTab_Images/uvain-event-2.jpg',
-      },
-      {
-        src: '/PublicPage_MembershipTab_Images/uvain-event-3.jpg',
-      },
+      membershipImage('uvain-event', 1, 'png'),
+      membershipImage('uvain-event', 2),
+      membershipImage('uvain-event', 3),
+      membershipImage('uvain-event', 4),
     ],
   },
   {
@@ -353,12 +354,10 @@ const MEMBERSHIP_SLIDES = [
     title: '글로벌 캠퍼스 네트워크',
     description: 'UvA 학생 전용 커뮤니티 연결',
     images: [
-      {
-        src: '/PublicPage_MembershipTab_Images/uvain-network-1.jpg',
-      },
-      {
-        src: '/PublicPage_MembershipTab_Images/uvain-network-2.jpeg',
-      },
+      membershipImage('uvain-network', 1),
+      membershipImage('uvain-network', 2, 'jpeg'),
+      membershipImage('uvain-network', 3),
+      membershipImage('uvain-network', 4),
     ],
   },
 ]
@@ -374,6 +373,9 @@ function MembershipCarousel() {
   const [imageIndexes, setImageIndexes] = useState(() =>
     MEMBERSHIP_SLIDES.map(() => 0),
   )
+  const [loadedImageIndexes, setLoadedImageIndexes] = useState(() =>
+    MEMBERSHIP_SLIDES.map(() => []),
+  )
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const interactionPausedRef = useRef(false)
@@ -383,6 +385,16 @@ function MembershipCarousel() {
   const slides = MEMBERSHIP_SLIDES
   const displaySlides = useMemo(() => [...slides, slides[0]], [slides])
   const realActiveSlide = activeSlide % slides.length
+
+  const handleImageLoaded = (slideIndex, imageIndex) => {
+    setLoadedImageIndexes((current) => {
+      if (current[slideIndex]?.includes(imageIndex)) return current
+
+      return current.map((indexes, index) =>
+        index === slideIndex ? [...indexes, imageIndex].sort((a, b) => a - b) : indexes,
+      )
+    })
+  }
 
   const goToSlide = (nextSlide) => {
     setTransitionEnabled(true)
@@ -406,14 +418,26 @@ function MembershipCarousel() {
       if (interactionPausedRef.current) return
       setImageIndexes((current) =>
         current.map((imageIndex, slideIndex) => {
+          const loadedIndexes = loadedImageIndexes[slideIndex] || []
+          if (loadedIndexes.length > 1) {
+            const currentLoadedIndex = loadedIndexes.indexOf(imageIndex)
+            const nextLoadedIndex =
+              currentLoadedIndex >= 0
+                ? (currentLoadedIndex + 1) % loadedIndexes.length
+                : 0
+            return loadedIndexes[nextLoadedIndex]
+          }
+
           const imageCount = slides[slideIndex]?.images.length || 0
-          return imageCount > 1 ? (imageIndex + 1) % imageCount : imageIndex
+          return imageCount > 1 && loadedIndexes.length === 0
+            ? (imageIndex + 1) % imageCount
+            : imageIndex
         }),
       )
     }, IMAGE_INTERVAL_MS)
 
     return () => window.clearInterval(timer)
-  }, [slides])
+  }, [loadedImageIndexes, slides])
 
   const pauseInteraction = () => {
     interactionPausedRef.current = true
@@ -498,8 +522,10 @@ function MembershipCarousel() {
           <MembershipSlide
             key={`${slide.key}-${slideIndex}`}
             slide={slide}
+            slideIndex={slideIndex % slides.length}
             slideCount={displaySlides.length}
             imageIndex={imageIndexes[slideIndex % slides.length]}
+            onImageLoaded={handleImageLoaded}
           />
         ))}
       </div>
@@ -583,34 +609,88 @@ function MembershipCarousel() {
   )
 }
 
-function MembershipSlide({ slide, slideCount, imageIndex }) {
+function MembershipSlide({
+  slide,
+  slideIndex,
+  slideCount,
+  imageIndex,
+  onImageLoaded,
+}) {
   return (
     <section
       className="relative h-full flex-shrink-0 overflow-hidden bg-neutral-400 dark:bg-neutral-700"
       style={{ width: `${100 / slideCount}%` }}
     >
       {slide.images.map((image, index) => (
-        <div
-          key={image.src || image.label || index}
-          className="absolute inset-0 bg-neutral-400 bg-cover bg-center transition-opacity duration-1000 ease-out dark:bg-neutral-700"
-          style={{
-            ...image.style,
-            backgroundImage: image.src ? `url("${image.src}")` : image.style?.background,
-            opacity: index === imageIndex ? 1 : 0,
-          }}
-        >
-          {!image.src && (
-            <div className="absolute inset-x-8 top-[16%] grid grid-cols-2 gap-3 opacity-80">
-              <div className="h-40 rounded-[8px] bg-white/18 backdrop-blur-[1px]" />
-              <div className="mt-10 h-52 rounded-[8px] bg-black/12 backdrop-blur-[1px]" />
-              <div className="h-36 rounded-[8px] bg-black/14 backdrop-blur-[1px]" />
-              <div className="h-32 rounded-[8px] bg-white/20 backdrop-blur-[1px]" />
-            </div>
-          )}
-        </div>
+        <MembershipImageLayer
+          key={(image.srcCandidates || [image.src || image.label || index]).join('|')}
+          image={image}
+          active={index === imageIndex}
+          slideIndex={slideIndex}
+          imageIndex={index}
+          onImageLoaded={onImageLoaded}
+        />
       ))}
 
     </section>
+  )
+}
+
+function MembershipImageLayer({
+  image,
+  active,
+  slideIndex,
+  imageIndex,
+  onImageLoaded,
+}) {
+  const candidates = image.srcCandidates || (image.src ? [image.src] : [])
+  const [candidateIndex, setCandidateIndex] = useState(0)
+  const [loaded, setLoaded] = useState(false)
+  const src = candidates[candidateIndex]
+
+  useEffect(() => {
+    setCandidateIndex(0)
+    setLoaded(false)
+  }, [candidates.join('|')])
+
+  if (!src && !image.style) return null
+
+  if (!src) {
+    return (
+      <div
+        className="absolute inset-0 bg-neutral-400 transition-opacity duration-1000 ease-out dark:bg-neutral-700"
+        style={{
+          ...image.style,
+          opacity: active ? 1 : 0,
+        }}
+      >
+        <div className="absolute inset-x-8 top-[16%] grid grid-cols-2 gap-3 opacity-80">
+          <div className="h-40 rounded-[8px] bg-white/18 backdrop-blur-[1px]" />
+          <div className="mt-10 h-52 rounded-[8px] bg-black/12 backdrop-blur-[1px]" />
+          <div className="h-36 rounded-[8px] bg-black/14 backdrop-blur-[1px]" />
+          <div className="h-32 rounded-[8px] bg-white/20 backdrop-blur-[1px]" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out"
+      style={{ opacity: active && loaded ? 1 : 0 }}
+      onLoad={() => {
+        setLoaded(true)
+        onImageLoaded(slideIndex, imageIndex)
+      }}
+      onError={() => {
+        if (candidateIndex < candidates.length - 1) {
+          setCandidateIndex((current) => current + 1)
+        }
+      }}
+    />
   )
 }
 
