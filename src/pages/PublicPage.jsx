@@ -298,7 +298,7 @@ const MEMBERSHIP_SLIDES = [
     key: 'intro',
     title: (
       <>
-        UvA 캠퍼스 라이프의 완벽한 시작
+        완벽한 UvA 캠퍼스 라이프,
         <br />
         UvA-IN
       </>

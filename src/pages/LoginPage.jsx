@@ -36,38 +36,62 @@ export default function LoginPage() {
     const previousBodyOverflow = body.style.overflow
     const previousBodyHeight = body.style.height
     const previousBodyTouchAction = body.style.touchAction
+    const previousLoginViewportHeight = html.style.getPropertyValue(
+      '--login-viewport-height',
+    )
 
     html.style.overflow = 'hidden'
     body.style.overflow = 'hidden'
     body.style.height = '100dvh'
     body.style.touchAction = 'manipulation'
 
-    const keepAtTop = () => window.scrollTo(0, 0)
-    const preventPageDrag = (e) => {
-      if (e.touches?.length === 1) e.preventDefault()
+    const syncLoginViewportHeight = () => {
+      html.style.setProperty(
+        '--login-viewport-height',
+        `${window.visualViewport?.height || window.innerHeight}px`,
+      )
+      window.scrollTo(0, 0)
     }
 
-    window.addEventListener('scroll', keepAtTop, { passive: true })
-    window.visualViewport?.addEventListener('resize', keepAtTop)
-    window.visualViewport?.addEventListener('scroll', keepAtTop)
-    document.addEventListener('touchmove', preventPageDrag, { passive: false })
+    window.addEventListener('scroll', syncLoginViewportHeight, { passive: true })
+    window.visualViewport?.addEventListener('resize', syncLoginViewportHeight)
+    window.visualViewport?.addEventListener('scroll', syncLoginViewportHeight)
 
-    keepAtTop()
+    syncLoginViewportHeight()
 
     return () => {
       html.style.overflow = previousHtmlOverflow
       body.style.overflow = previousBodyOverflow
       body.style.height = previousBodyHeight
       body.style.touchAction = previousBodyTouchAction
-      window.removeEventListener('scroll', keepAtTop)
-      window.visualViewport?.removeEventListener('resize', keepAtTop)
-      window.visualViewport?.removeEventListener('scroll', keepAtTop)
-      document.removeEventListener('touchmove', preventPageDrag)
+      if (previousLoginViewportHeight) {
+        html.style.setProperty(
+          '--login-viewport-height',
+          previousLoginViewportHeight,
+        )
+      } else {
+        html.style.removeProperty('--login-viewport-height')
+      }
+      window.removeEventListener('scroll', syncLoginViewportHeight)
+      window.visualViewport?.removeEventListener(
+        'resize',
+        syncLoginViewportHeight,
+      )
+      window.visualViewport?.removeEventListener(
+        'scroll',
+        syncLoginViewportHeight,
+      )
     }
   }, [])
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center overflow-hidden bg-white px-4 pt-[16vh] dark:bg-[#121212]">
+    <div
+      className="fixed inset-x-0 top-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 pt-[16vh] dark:bg-[#121212]"
+      style={{
+        height: 'var(--login-viewport-height, 100dvh)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
+      }}
+    >
       <button
         type="button"
         onClick={isStandaloneStep ? handleBack : () => navigate('/public')}
