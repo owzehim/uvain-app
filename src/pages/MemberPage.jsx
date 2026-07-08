@@ -2259,7 +2259,103 @@ const effectiveDateColor = isDragging
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
-                <div className="mx-auto max-w-md" />
+                <div className="mx-auto max-w-md">
+                  <div
+                    className="overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800"
+                    style={{ aspectRatio: '1 / 1' }}
+                  >
+                    {hasImages && (
+                      <div
+                        onTouchStart={handleEventPreviewTouchStart}
+                        onTouchEnd={handleEventPreviewTouchEnd}
+                        onClick={() => {
+                          if (eventCardOpen) openLightboxAt(displayImageSlide)
+                        }}
+                        style={{
+                          position: 'relative',
+                          height: '100%',
+                          width: '100%',
+                          overflow: 'hidden',
+                          cursor: eventCardOpen ? 'pointer' : 'default',
+                          touchAction: eventCardOpen ? 'pan-y' : 'none',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            height: '100%',
+                            transform: `translateX(-${displayImageSlide * 100}%)`,
+                            transition: 'transform 0.3s ease',
+                          }}
+                        >
+                          {displayImages.map((url, index) => (
+                            <div
+                              key={`${url}-${index}`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <img
+                                src={url}
+                                alt=""
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                  display: 'block',
+                                }}
+                                draggable={false}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        {displayImages.length > 1 && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              right: 0,
+                              bottom: '10px',
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              gap: '6px',
+                              pointerEvents: eventCardOpen ? 'auto' : 'none',
+                            }}
+                          >
+                            {displayImages.map((_, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                aria-label={`Show event image ${index + 1}`}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (eventCardOpen && displayEvent) {
+                                    setSlide(displayEvent.id, index)
+                                  }
+                                }}
+                                style={{
+                                  width: index === displayImageSlide ? 8 : 6,
+                                  height: index === displayImageSlide ? 8 : 6,
+                                  borderRadius: '999px',
+                                  border: 0,
+                                  padding: 0,
+                                  backgroundColor:
+                                    index === displayImageSlide
+                                      ? '#ffffff'
+                                      : 'rgba(255,255,255,0.55)',
+                                  boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </>
