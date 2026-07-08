@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import { SpotCard } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
-import { MapPin, Lock, ForkKnife, Calendar, Users } from '@phosphor-icons/react'
+import { MapPin, Lock, ForkKnife, CalendarDots, Users } from '@phosphor-icons/react'
 
 const PUBLIC_ACTIVE_TAB_KEY = 'uvain_public_active_tab'
 
@@ -329,7 +329,12 @@ const MEMBERSHIP_SLIDES = [
   },
   {
     key: 'discounts',
-    title: '로컬 맛집 & 카페 제휴 할인',
+    title: (
+      <span className="inline-flex items-center gap-2">
+        <ForkKnife size={30} weight="fill" color="#f97316" />
+        <span>로컬 맛집 & 카페 제휴 할인</span>
+      </span>
+    ),
     description: '암스테르담 곳곳의 제휴 매장 혜택',
     images: [
       membershipImage('restaurant-cafe', 1),
@@ -340,7 +345,12 @@ const MEMBERSHIP_SLIDES = [
   },
   {
     key: 'events',
-    title: 'UvA-IN 이벤트 참여 혜택',
+    title: (
+      <span className="inline-flex items-center gap-2">
+        <CalendarDots size={30} weight="fill" color="#3b82f6" />
+        <span>UvA-IN 이벤트 참여 혜택</span>
+      </span>
+    ),
     description: 'UvA-IN 독점 이벤트 지원 혜택 및 참가비 할인',
     images: [
       membershipImage('uvain-event', 1, 'png'),
@@ -351,7 +361,12 @@ const MEMBERSHIP_SLIDES = [
   },
   {
     key: 'network',
-    title: '글로벌 캠퍼스 네트워크',
+    title: (
+      <span className="inline-flex items-center gap-2">
+        <Users size={30} weight="fill" color="#22c55e" />
+        <span>글로벌 캠퍼스 네트워크</span>
+      </span>
+    ),
     description: 'UvA 학생 전용 커뮤니티 연결',
     images: [
       membershipImage('uvain-network', 1),
@@ -362,7 +377,7 @@ const MEMBERSHIP_SLIDES = [
   },
 ]
 
-const SLIDE_INTERVAL_MS = 10000
+const SLIDE_INTERVAL_MS = 12000
 const IMAGE_INTERVAL_MS = 2600
 const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
 
