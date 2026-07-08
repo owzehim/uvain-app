@@ -370,7 +370,13 @@ export function SpotCard({
   )
 
   const isDesktop = WIN_W >= 768
-  const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
+  const spotCardHeightMode =
+    selected?.spot_card_height === 'full' || selected?.spot_card_height === 'tall'
+      ? 'full'
+      : 'compact'
+  const COMPACT_HEIGHT = Math.min(WIN_H * 0.28, 190)
+  const FULL_HEIGHT = Math.min(WIN_H * 0.38, 260)
+  const MIN_HEIGHT = spotCardHeightMode === 'full' ? FULL_HEIGHT : COMPACT_HEIGHT
   const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
 
   // Trigger animation on mount
@@ -480,8 +486,8 @@ export function SpotCard({
       : 'translateY(110%)',
     transition: isDragging
       ? 'none'
-      : 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-    height: 'auto',
+      : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+    height: cardHeight + 'px',
   }
 
   const imageStyle = {

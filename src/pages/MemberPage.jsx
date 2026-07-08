@@ -2090,7 +2090,7 @@ const effectiveDateColor = isDragging
   return (
     <>
       <div
-        className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
+        className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-white dark:text-gray-950"
         onTouchStart={handleFrameworkTouchStart}
         onTouchEnd={handleFrameworkTouchEnd}
       >
@@ -2117,16 +2117,16 @@ const effectiveDateColor = isDragging
 
         {displayEvent ? (
           <>
-            <div className="absolute inset-0 bg-[#f4f4f5] dark:bg-[#121212]" />
+            <div className="absolute inset-0 bg-white" />
             {detailImages[0] && (
               <img
                 src={detailImages[0]}
                 alt=""
                 aria-hidden="true"
-                className="absolute inset-0 h-full w-full object-cover opacity-20 dark:opacity-28"
+                className="absolute inset-0 h-full w-full object-cover opacity-14"
               />
             )}
-            <div className="absolute inset-0 bg-white/70 dark:bg-black/58" />
+            <div className="absolute inset-0 bg-white/82" />
 
             <div
               className="absolute left-0 right-0 px-6"
@@ -2144,10 +2144,10 @@ const effectiveDateColor = isDragging
                       {eventDateParts.dateNum}
                     </span>
                     <div className="pb-1">
-                      <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">
+                      <p className="text-xs font-bold uppercase text-gray-500">
                         {eventDateParts.dayName}
                       </p>
-                      <p className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500">
+                      <p className="text-xs font-semibold uppercase text-gray-400">
                         {eventDateParts.monthName}
                       </p>
                     </div>
@@ -2158,11 +2158,11 @@ const effectiveDateColor = isDragging
                   {getEventStatus(displayEvent)}
                 </p>
 
-                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
+                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950">
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
-                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700">
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
                       <Calendar size={18} weight="fill" color="#f97316" />
@@ -2176,7 +2176,7 @@ const effectiveDateColor = isDragging
                     </div>
                   )}
                   {displayEvent.location_description && (
-                    <p className="pl-7 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                    <p className="pl-7 text-xs leading-relaxed text-gray-500">
                       {plainText(displayEvent.location_description)}
                     </p>
                   )}
@@ -2185,7 +2185,7 @@ const effectiveDateColor = isDragging
             </div>
 
             <div
-              className="absolute left-0 right-0 bg-white dark:bg-[#111111]"
+              className="absolute left-0 right-0 bg-white"
               onTouchStart={handleEventCardTouchStart}
               onTouchEnd={handleEventCardTouchEnd}
               style={{
@@ -2194,14 +2194,14 @@ const effectiveDateColor = isDragging
                 zIndex: 20,
                 borderTopLeftRadius: eventCardOpen ? 0 : 18,
                 borderTopRightRadius: eventCardOpen ? 0 : 18,
-                boxShadow: '0 -12px 32px rgba(15,23,42,0.16)',
+                boxShadow: 'none',
                 transition:
-                  'height 0.32s cubic-bezier(0.22,1,0.36,1), border-radius 0.32s ease',
+                  'height 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
                 overflow: 'hidden',
               }}
             >
               <div className="flex justify-center pb-3 pt-2.5">
-                <div className="h-1 w-10 rounded-full bg-gray-300 dark:bg-gray-700" />
+                <div className="h-1 w-10 rounded-full bg-gray-300" />
               </div>
 
               <div
@@ -2211,22 +2211,15 @@ const effectiveDateColor = isDragging
                 }}
               >
                 <div className="mx-auto max-w-md">
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-4">
                     <div>
                       <p className="text-xs font-semibold uppercase text-orange-500">
                         Event details
                       </p>
-                      <p className="mt-1 text-lg font-bold text-gray-950 dark:text-white">
+                      <p className="mt-1 text-lg font-bold text-gray-950">
                         {displayEvent.title || 'Untitled event'}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setEventCardOpen((open) => !open)}
-                      className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                    >
-                      {eventCardOpen ? 'Close' : 'Open'}
-                    </button>
                   </div>
 
                   {detailImages.length > 0 && (
@@ -2236,7 +2229,7 @@ const effectiveDateColor = isDragging
                           key={url}
                           type="button"
                           onClick={() => openLightboxAt(index)}
-                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
+                          className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100"
                         >
                           <img
                             src={url}
@@ -2252,10 +2245,10 @@ const effectiveDateColor = isDragging
                   {displayEvent.description ? (
                     <RichText
                       text={displayEvent.description}
-                      className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
+                      className="block text-sm leading-relaxed text-gray-600"
                     />
                   ) : (
-                    <p className="text-sm text-gray-400 dark:text-gray-500">
+                    <p className="text-sm text-gray-400">
                       Event description will appear here.
                     </p>
                   )}
@@ -2265,7 +2258,7 @@ const effectiveDateColor = isDragging
                       <button
                         type="button"
                         onClick={() => addToCalendar(displayEvent)}
-                        className="flex-1 rounded-full bg-gray-100 px-4 py-3 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        className="flex-1 rounded-full bg-gray-100 px-4 py-3 text-xs font-semibold text-gray-700"
                       >
                         Calendar
                       </button>

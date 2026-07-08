@@ -2263,6 +2263,34 @@ function RestaurantForm({
 </div>
 
 {/* 스탬프 카드 사용 여부 */}
+<div>
+  <label className="text-sm text-gray-500 block mb-1">
+    SpotCard preview height
+  </label>
+  <div className="grid grid-cols-2 gap-2">
+    {[
+      { value: 'compact', label: 'Compact' },
+      { value: 'full', label: 'Full' },
+    ].map((option) => (
+      <button
+        key={option.value}
+        type="button"
+        onClick={() =>
+          setForm((f) => ({ ...f, spot_card_height: option.value }))
+        }
+        className={
+          'rounded-lg border px-3 py-2 text-sm font-medium transition-colors ' +
+          (form.spot_card_height === option.value
+            ? 'border-orange-500 bg-orange-50 text-orange-600'
+            : 'border-gray-200 bg-white text-gray-500')
+        }
+      >
+        {option.label}
+      </button>
+    ))}
+  </div>
+</div>
+
 <div className="flex items-center justify-between mt-3">
   <span className="text-sm text-gray-500">스탬프 카드 사용</span>
   <button
@@ -2430,6 +2458,7 @@ function RestaurantsTab() {
     is_sponsored: false,
     show_rating: true,
     stamp_card_enabled: false,
+    spot_card_height: 'compact',
   })
 
   const [imageFiles, setImageFiles] = useState([])
@@ -2527,6 +2556,7 @@ function RestaurantsTab() {
       is_sponsored: false,
       show_rating: true,
       stamp_card_enabled: false,
+      spot_card_height: 'compact',
     })
     setImageFiles([])
     setImagePreviews([])
@@ -2604,6 +2634,8 @@ function RestaurantsTab() {
       is_sponsored: form.is_sponsored,
       show_rating: form.show_rating,
       stamp_card_enabled: form.stamp_card_enabled,
+      spot_card_height:
+        form.spot_card_height === 'full' ? 'full' : 'compact',
       image_urls,
     }
 
@@ -2656,6 +2688,7 @@ function RestaurantsTab() {
       is_sponsored: r.is_sponsored || false,
       show_rating: typeof r.show_rating === 'boolean' ? r.show_rating : true,
       stamp_card_enabled: r.stamp_card_enabled || false,
+      spot_card_height: r.spot_card_height === 'full' ? 'full' : 'compact',
     })
 
     setRichEditorKey((k) => k + 1)
@@ -2685,6 +2718,7 @@ function RestaurantsTab() {
       is_sponsored: false,
       show_rating: true,
       stamp_card_enabled: false,
+      spot_card_height: 'compact',
     })
     setRichEditorKey((k) => k + 1)
     setImageFiles([])
