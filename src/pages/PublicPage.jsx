@@ -362,7 +362,7 @@ const MEMBERSHIP_SLIDES = [
   },
 ]
 
-const SLIDE_INTERVAL_MS = 12000
+const SLIDE_INTERVAL_MS = 10000
 const IMAGE_INTERVAL_MS = 2600
 const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
 
