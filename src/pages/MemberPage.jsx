@@ -855,7 +855,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
 
   const W = 'min(calc(100vw - 32px), 398px)'
   const cardRestingOffsetY = '34px' // Increase to move the MY membership card lower.
-  const guideTextGapY = '0px' // Increase for more space between the card and guide text.
+  const guideTextGapY = '2px' // Increase for more space between the card and guide text.
   const fs = {
     guide: `calc(${W} * 0.032)`,
   }
