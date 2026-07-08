@@ -1552,9 +1552,10 @@ function EventsTab({ events }) {
             <div
               className="absolute inset-x-0 px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
-                bottom: extended ? 'calc(env(safe-area-inset-bottom) + 96px)' : '-28%',
-                zIndex: extended ? 35 : 8,
-                opacity: eventImage ? 1 : 0,
+                bottom: 'calc(env(safe-area-inset-bottom) - 285px)',
+                zIndex: 8,
+                opacity: eventImage && !extended ? 1 : 0,
+                pointerEvents: extended ? 'none' : 'auto',
               }}
             >
               <div
@@ -1585,7 +1586,7 @@ function EventsTab({ events }) {
             >
               <div className="mx-auto max-w-md">
                 <div
-                  className="relative mt-20 aspect-[4/5] w-full overflow-hidden rounded-[8px] bg-gray-100 dark:bg-[#1f1f1f]"
+                  className="relative mt-28 aspect-[4/5] w-full overflow-hidden rounded-[8px] bg-gray-100 dark:bg-[#1f1f1f]"
                   onTouchStart={handlePhotoTouchStart}
                   onTouchEnd={handlePhotoTouchEnd}
                   onClick={() => images.length && setLightboxIndex(photoIndex)}
@@ -1628,6 +1629,7 @@ function EventsTab({ events }) {
                 top: extended ? 'calc(env(safe-area-inset-top) + 74px)' : 'calc(env(safe-area-inset-top) + 330px)',
                 zIndex: 45,
                 fontSize: extended ? '34px' : '46px',
+                pointerEvents: 'none',
               }}
             >
               <span className="mx-auto block max-w-md">{selectedEvent.title}</span>
