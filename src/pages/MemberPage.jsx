@@ -2139,7 +2139,7 @@ const effectiveDateColor = isDragging
               className="absolute left-0 right-0 px-6"
               style={{
                 top: eventCardOpen
-                  ? 'calc(env(safe-area-inset-top) + 58px)'
+                  ? 'calc(env(safe-area-inset-top) + 70px)'
                   : 'calc(env(safe-area-inset-top) + 72px)',
                 bottom: eventCardOpen ? 'auto' : '250px',
                 transition:
@@ -2187,8 +2187,8 @@ const effectiveDateColor = isDragging
                 <h1
                   className="font-black leading-tight tracking-normal text-gray-950 dark:text-white"
                   style={{
-                    fontSize: eventCardOpen ? '24px' : '34px',
-                    maxWidth: eventCardOpen ? '78%' : '100%',
+                    fontSize: eventCardOpen ? '30px' : '34px',
+                    maxWidth: eventCardOpen ? '100%' : '100%',
                     transition:
                       'font-size 0.35s cubic-bezier(0.4,0,0.2,1), max-width 0.35s cubic-bezier(0.4,0,0.2,1)',
                   }}
@@ -2286,7 +2286,7 @@ const effectiveDateColor = isDragging
                   opacity: eventCardOpen ? 1 : 0,
                   pointerEvents: eventCardOpen ? 'auto' : 'none',
                   transition: 'opacity 0.2s ease',
-                  paddingTop: 'calc(env(safe-area-inset-top) + 120px)',
+                  paddingTop: 'calc(env(safe-area-inset-top) + 140px)',
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
@@ -2304,7 +2304,7 @@ const effectiveDateColor = isDragging
 
                   {detailImages.length > 0 && (
                     <div
-                      className="relative mb-8 overflow-hidden rounded-[28px] bg-gray-100 dark:bg-gray-800"
+                      className="relative mb-16 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
                       style={{ aspectRatio: '1/1' }}
                       onTouchStart={(e) => {
                         e.currentTarget._sx = e.touches[0].clientX
@@ -2365,16 +2365,21 @@ const effectiveDateColor = isDragging
                     </div>
                   )}
 
-                  {displayEvent.description ? (
-                    <RichText
-                      text={displayEvent.description}
-                      className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
-                    />
-                  ) : (
-                    <p className="text-sm text-gray-400 dark:text-gray-500">
-                      Event description will appear here.
+                  <div className="text-center">
+                    <p className="mb-5 text-2xl font-black text-gray-950 dark:text-white">
+                      내용
                     </p>
-                  )}
+                    {displayEvent.description ? (
+                      <RichText
+                        text={displayEvent.description}
+                        className="block text-left text-sm leading-relaxed text-gray-600 dark:text-gray-300"
+                      />
+                    ) : (
+                      <p className="text-sm text-gray-400 dark:text-gray-500">
+                        Event description will appear here.
+                      </p>
+                    )}
+                  </div>
 
                   <div className="mt-5 flex gap-2">
                     {getPrimaryEventDate(displayEvent) && (
