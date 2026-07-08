@@ -1248,6 +1248,431 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
 function EventsTab({ events }) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [viewState, setViewState] = useState('collapsed')
+  const [photoIndexes, setPhotoIndexes] = useState({})
+  const [lightboxIndex, setLightboxIndex] = useState(null)
+  const [eventListOpen, setEventListOpen] = useState(getStoredEventListOpen)
+  const touchStart = useRef(null)
+  const photoTouchStart = useRef(null)
+
+  const toLocalDateKey = (value) => {
+    if (!value) return ''
+    const s = String(value)
+    if (s.includes('T') || s.includes('Z') || /[+-]\d{2}:\d{2}$/.test(s)) {
+      const d = new Date(s)
+      if (!Number.isNaN(d.getTime())) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+          d.getDate(),
+        ).padStart(2, '0')}`
+      }
+    }
+    return s.slice(0, 10)
+  }
+
+  const parseLocalDate = (value) => {
+    if (!value) return new Date(NaN)
+    const [year, month, day] = toLocalDateKey(value).split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+
+  const plainText = (value) => {
+    if (!value || typeof document === 'undefined') return value || ''
+    const el = document.createElement('div')
+    el.innerHTML = value
+    return (el.textContent || el.innerText || '').trim()
+  }
+
+  const getPrimaryEventDateTime = (ev) => {
+    const dates = Array.isArray(ev?.event_dates) ? ev.event_dates : []
+    return dates[0] || ev?.event_date
+  }
+
+  const getDayDiff = (value) => {
+    const d = parseLocalDate(value)
+    return Math.round(
+      (new Date(d.getFullYear(), d.getMonth(), d.getDate()) - todayStart) / 86400000,
+    )
+  }
+
+  const orderedEvents = useMemo(() => {
+    const dated = events.filter((ev) => getPrimaryEventDateTime(ev))
+    const past = dated
+      .filter((ev) => new Date(getPrimaryEventDateTime(ev)) < now)
+      .sort((a, b) => new Date(getPrimaryEventDateTime(a)) - new Date(getPrimaryEventDateTime(b)))
+    const future = dated
+      .filter((ev) => new Date(getPrimaryEventDateTime(ev)) >= now)
+      .sort((a, b) => new Date(getPrimaryEventDateTime(a)) - new Date(getPrimaryEventDateTime(b)))
+    const tbd = events
+      .filter((ev) => !getPrimaryEventDateTime(ev))
+      .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')))
+
+    return [...past, ...future, ...tbd]
+  }, [events])
+
+  const initialIndex = useMemo(() => {
+    const firstFuture = orderedEvents.findIndex((ev) => {
+      const date = getPrimaryEventDateTime(ev)
+      return date && new Date(date) >= now
+    })
+    return firstFuture >= 0 ? firstFuture : Math.max(orderedEvents.length - 1, 0)
+  }, [orderedEvents])
+
+  useEffect(() => {
+    if (!orderedEvents.length) {
+      setSelectedIndex(0)
+      return
+    }
+    setSelectedIndex((idx) => Math.min(Math.max(idx || initialIndex, 0), orderedEvents.length - 1))
+  }, [orderedEvents, initialIndex])
+
+  useEffect(() => {
+    if (orderedEvents.length) setSelectedIndex(initialIndex)
+  }, [initialIndex])
+
+  const selectedEvent = orderedEvents[selectedIndex] || null
+  const images = selectedEvent?.image_urls || []
+  const photoIndex = selectedEvent ? photoIndexes[selectedEvent.id] || 0 : 0
+
+  const formatDateParts = (value) => {
+    if (!value) return { day: '--', month: 'TBD', weekday: '' }
+    const d = parseLocalDate(value)
+    return {
+      day: String(d.getDate()).padStart(2, '0'),
+      month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      weekday: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+    }
+  }
+
+  const formatTimeRange = (ev) => {
+    const startDate = getPrimaryEventDateTime(ev)
+    if (!startDate) return 'Time TBD'
+    const start = new Date(startDate)
+    const end = ev.event_end_date ? new Date(ev.event_end_date) : null
+    const fmt = (date) =>
+      date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })
+    if (!end || Number.isNaN(end.getTime())) return fmt(start)
+    return `${fmt(start)} - ${fmt(end)}`
+  }
+
+  const getEventStatus = (ev) => {
+    const date = getPrimaryEventDateTime(ev)
+    if (!date) return 'TBD'
+    const days = getDayDiff(date)
+    if (days < 0) return 'PAST'
+    if (days === 0) return 'D-DAY'
+    return selectedIndex === initialIndex ? `D-${days}` : 'FUTURE'
+  }
+
+  const getListDateParts = (ev) => {
+    const date = getPrimaryEventDateTime(ev)
+    if (!date) return { month: 'TBD', day: '--', year: '' }
+    const d = parseLocalDate(date)
+    return {
+      month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      day: String(d.getDate()).padStart(2, '0'),
+      year: String(d.getFullYear()),
+    }
+  }
+
+  const moveEvent = (delta) => {
+    setSelectedIndex((idx) => {
+      const next = Math.max(0, Math.min(idx + delta, orderedEvents.length - 1))
+      return next
+    })
+    setViewState('collapsed')
+  }
+
+  const setPhotoIndex = (idx) => {
+    if (!selectedEvent || !images.length) return
+    const next = Math.max(0, Math.min(idx, images.length - 1))
+    setPhotoIndexes((prev) => ({ ...prev, [selectedEvent.id]: next }))
+  }
+
+  const handleTouchStart = (e) => {
+    touchStart.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    }
+  }
+
+  const handleTouchEnd = (e) => {
+    if (!touchStart.current) return
+    const dx = e.changedTouches[0].clientX - touchStart.current.x
+    const dy = e.changedTouches[0].clientY - touchStart.current.y
+    touchStart.current = null
+
+    if (Math.abs(dy) > 48 && Math.abs(dy) > Math.abs(dx) * 1.15) {
+      setViewState(dy < 0 ? 'extended' : 'collapsed')
+      return
+    }
+
+    if (viewState !== 'collapsed') return
+    if (Math.abs(dx) > 54 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      moveEvent(dx > 0 ? 1 : -1)
+    }
+  }
+
+  const handlePhotoTouchStart = (e) => {
+    photoTouchStart.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    }
+  }
+
+  const handlePhotoTouchEnd = (e) => {
+    if (!photoTouchStart.current) return
+    const dx = e.changedTouches[0].clientX - photoTouchStart.current.x
+    const dy = e.changedTouches[0].clientY - photoTouchStart.current.y
+    photoTouchStart.current = null
+    if (Math.abs(dx) < 38 || Math.abs(dx) < Math.abs(dy) * 1.15) return
+    setPhotoIndex(photoIndex + (dx < 0 ? 1 : -1))
+  }
+
+  const openEventList = (e) => {
+    e?.stopPropagation()
+    window.sessionStorage.setItem(MEMBER_EVENT_LIST_OPEN_KEY, '1')
+    setEventListOpen(true)
+  }
+
+  const closeEventList = (e) => {
+    e?.stopPropagation()
+    window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
+    setEventListOpen(false)
+  }
+
+  const selectEventFromList = (eventIndex) => {
+    window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
+    setSelectedIndex(eventIndex)
+    setViewState('collapsed')
+    setLightboxIndex(null)
+    setEventListOpen(false)
+  }
+
+  const dateParts = formatDateParts(getPrimaryEventDateTime(selectedEvent))
+  const extended = viewState === 'extended'
+
+  return (
+    <>
+      <div
+        className="relative h-full overflow-hidden bg-white text-gray-950 dark:bg-[#121212] dark:text-white"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <button
+          type="button"
+          onClick={openEventList}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
+          aria-label="Open event list"
+          style={{
+            left: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            zIndex: 70,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <List size={22} weight="bold" />
+        </button>
+
+        {selectedEvent ? (
+          <div
+            className="absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            style={{
+              transform: extended ? 'translateY(-34%)' : 'translateY(0)',
+            }}
+          >
+            <section
+              className="relative flex h-full flex-col px-6"
+              style={{ paddingTop: 'calc(env(safe-area-inset-top) + 72px)' }}
+            >
+              <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center pb-28">
+                <div className="mb-8 flex items-end justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">
+                      {dateParts.weekday}
+                    </p>
+                    <div className="mt-1 flex items-end gap-2">
+                      <span className="text-[72px] font-black leading-none text-orange-500">
+                        {dateParts.day}
+                      </span>
+                      <span className="pb-2 text-2xl font-black uppercase text-gray-900 dark:text-white">
+                        {dateParts.month}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="mb-2 rounded-full bg-orange-500 px-3 py-1 text-xs font-black text-white">
+                    {getEventStatus(selectedEvent)}
+                  </span>
+                </div>
+
+                <h1
+                  className="font-black leading-tight text-gray-950 transition-all duration-500 dark:text-white"
+                  style={{
+                    fontSize: extended ? '26px' : '46px',
+                    transform: extended ? 'translateY(34vh)' : 'translateY(0)',
+                  }}
+                >
+                  {selectedEvent.title}
+                </h1>
+
+                <div className="mt-7 space-y-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={18} weight="fill" color="#f97316" />
+                    <span>{formatTimeRange(selectedEvent)}</span>
+                  </div>
+                  {selectedEvent.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin size={18} weight="fill" color="#f97316" />
+                      <span>{plainText(selectedEvent.location)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="min-h-full px-6 pb-28 pt-6">
+              <div className="mx-auto max-w-md">
+                <div
+                  className="relative aspect-[4/5] w-full overflow-hidden rounded-[8px] bg-gray-100 dark:bg-[#1f1f1f]"
+                  onTouchStart={handlePhotoTouchStart}
+                  onTouchEnd={handlePhotoTouchEnd}
+                  onClick={() => images.length && setLightboxIndex(photoIndex)}
+                >
+                  {images.length ? (
+                    <img
+                      src={images[photoIndex]}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                      No photos
+                    </div>
+                  )}
+                  {images.length > 1 && (
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+                      {images.map((url, idx) => (
+                        <button
+                          key={url}
+                          type="button"
+                          aria-label={`Show photo ${idx + 1}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPhotoIndex(idx)
+                          }}
+                          className={`h-1.5 rounded-full transition-all ${
+                            idx === photoIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/50'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-7">
+                  {selectedEvent.description ? (
+                    <RichText
+                      text={selectedEvent.description}
+                      className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
+                    />
+                  ) : (
+                    <p className="text-sm text-gray-400">Event description will appear here.</p>
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        ) : (
+          <div className="flex h-full items-center justify-center px-6 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">No events yet.</p>
+          </div>
+        )}
+      </div>
+
+      {lightboxIndex !== null && images.length > 0 && (
+        <EventLightbox imgs={images} startIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      )}
+
+      {eventListOpen && (
+        <div
+          className="fixed inset-0 bg-white text-gray-950 dark:bg-[#121212] dark:text-white"
+          style={{ zIndex: 80 }}
+          onClick={closeEventList}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={closeEventList}
+            className="fixed flex h-11 w-11 items-center justify-center text-gray-600 dark:text-gray-200"
+            aria-label="Close event list"
+            style={{
+              left: '14px',
+              top: 'calc(env(safe-area-inset-top) + 6px)',
+              zIndex: 90,
+            }}
+          >
+            <List size={22} weight="bold" />
+          </button>
+
+          <div
+            className="h-full overflow-y-auto px-6 pb-10"
+            style={{ paddingTop: 'calc(env(safe-area-inset-top) + 72px)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto max-w-md space-y-3">
+              {orderedEvents.map((ev, idx) => {
+                const parts = getListDateParts(ev)
+                const selected = idx === selectedIndex
+                return (
+                  <button
+                    key={ev.id}
+                    type="button"
+                    onClick={() => selectEventFromList(idx)}
+                    className="w-full rounded-[8px] border px-3 py-3 text-left transition-colors"
+                    style={{
+                      borderColor: selected ? '#f97316' : 'rgba(156, 163, 175, 0.28)',
+                      backgroundColor: selected ? 'rgba(249, 115, 22, 0.08)' : 'transparent',
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 shrink-0 text-center">
+                        <p className="text-[11px] font-black text-gray-400">{parts.month}</p>
+                        <p className="text-2xl font-black leading-none text-orange-500">
+                          {parts.day}
+                        </p>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold">{ev.title || 'Untitled event'}</p>
+                        <p className="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">
+                          {ev.location ? plainText(ev.location) : parts.year}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// Legacy Events Tab kept temporarily while the new collapsed/extended framework settles.
+function LegacyEventsTab({ events }) {
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   const toLocalDateKey = (value) => {
     if (!value) return ''
