@@ -22,6 +22,8 @@ import {
 const SKIP_OTP_EMAIL_KEY = 'uvain_skip_otp_once_email'
 const OTP_PENDING_KEY = 'uvain_otp_pending_email'
 const OTP_PENDING_EVENT = 'uvain-otp-pending-change'
+const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
+const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
 
 function emitOtpPendingChange() {
   if (typeof window !== 'undefined') {
@@ -44,6 +46,12 @@ function clearOtpPendingEmail() {
   if (typeof window === 'undefined') return
   window.sessionStorage.removeItem(OTP_PENDING_KEY)
   emitOtpPendingChange()
+}
+
+function resetMemberEntryState() {
+  if (typeof window === 'undefined') return
+  window.sessionStorage.removeItem(MEMBER_ACTIVE_TAB_KEY)
+  window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
 }
 
 function shouldSkipOtpOnce(email) {
@@ -92,6 +100,7 @@ export function useLogin() {
       // Right after first signup email confirmation, let the user into the app
       // once without asking for an OTP again.
       if (shouldSkipOtpOnce(email)) {
+        resetMemberEntryState()
         clearOtpPendingEmail()
         return
       }
@@ -99,6 +108,7 @@ export function useLogin() {
       // OTP-exempt accounts (e.g. admin/test) are fully logged in now.
       // App.jsx onAuthStateChange will handle navigation.
       if (isOtpExempt(email)) {
+        resetMemberEntryState()
         clearOtpPendingEmail()
         return
       }
@@ -142,6 +152,7 @@ export function useLogin() {
     setLoading(true)
     try {
       await verifyLoginOtp(email, otp)
+      resetMemberEntryState()
       clearOtpPendingEmail()
       // On success, Supabase sets the session automatically.
       // App.jsx onAuthStateChange will redirect to /member or /admin.
