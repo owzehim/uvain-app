@@ -1455,6 +1455,7 @@ function EventsTab({ events }) {
 
   const dateParts = formatDateParts(getPrimaryEventDateTime(selectedEvent))
   const extended = viewState === 'extended'
+  const eventImage = images[photoIndex]
 
   return (
     <>
@@ -1481,116 +1482,165 @@ function EventsTab({ events }) {
         >
           <List size={22} weight="bold" />
         </button>
+        <button
+          type="button"
+          onClick={() => navigate('/settings')}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          className="fixed flex h-11 w-11 items-center justify-center text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
+          aria-label="Settings"
+          style={{
+            right: '14px',
+            top: 'calc(env(safe-area-inset-top) + 6px)',
+            zIndex: 70,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <Gear size={22} weight="bold" />
+        </button>
 
         {selectedEvent ? (
-          <div
-            className="absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-            style={{
-              transform: extended ? 'translateY(-34%)' : 'translateY(0)',
-            }}
-          >
-            <section
-              className="relative flex h-full flex-col px-6"
-              style={{ paddingTop: 'calc(env(safe-area-inset-top) + 72px)' }}
+          <>
+            <div
+              className="absolute inset-x-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                top: extended ? 'calc(env(safe-area-inset-top) + 72px)' : '62%',
+                bottom: extended ? 'calc(env(safe-area-inset-bottom) + 92px)' : '-13%',
+                zIndex: extended ? 15 : 5,
+              }}
             >
-              <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center pb-28">
-                <div className="mb-8 flex items-end justify-between">
+              <div
+                className="relative mx-auto h-full max-w-md overflow-hidden bg-gray-100 transition-all duration-500 dark:bg-[#1f1f1f]"
+                style={{
+                  borderTopLeftRadius: extended ? 8 : 28,
+                  borderTopRightRadius: extended ? 8 : 28,
+                  borderBottomLeftRadius: extended ? 8 : 0,
+                  borderBottomRightRadius: extended ? 8 : 0,
+                }}
+                onTouchStart={handlePhotoTouchStart}
+                onTouchEnd={handlePhotoTouchEnd}
+                onClick={() => extended && images.length && setLightboxIndex(photoIndex)}
+              >
+                {eventImage ? (
+                  <img
+                    src={eventImage}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                    No photos
+                  </div>
+                )}
+
+                {images.length > 1 && extended && (
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+                    {images.map((url, idx) => (
+                      <button
+                        key={url}
+                        type="button"
+                        aria-label={`Show photo ${idx + 1}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPhotoIndex(idx)
+                        }}
+                        className={`h-1.5 rounded-full transition-all ${
+                          idx === photoIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-500"
+              style={{
+                height: '42%',
+                zIndex: 10,
+                opacity: extended ? 0 : 1,
+                background:
+                  'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.86) 52%, #ffffff 100%)',
+              }}
+            />
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 hidden transition-opacity duration-500 dark:block"
+              style={{
+                height: '42%',
+                zIndex: 10,
+                opacity: extended ? 0 : 1,
+                background:
+                  'linear-gradient(to bottom, rgba(18,18,18,0), rgba(18,18,18,0.86) 52%, #121212 100%)',
+              }}
+            />
+
+            <section
+              className="absolute inset-x-0 px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                top: 'calc(env(safe-area-inset-top) + 120px)',
+                zIndex: 20,
+                opacity: extended ? 0 : 1,
+                transform: extended ? 'translateY(-24px)' : 'translateY(0)',
+                pointerEvents: extended ? 'none' : 'auto',
+              }}
+            >
+              <div className="mx-auto max-w-md">
+                <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">
+                    <p className="text-[54px] font-black leading-none text-gray-950 dark:text-white">
+                      {dateParts.day}.{dateParts.month}
+                    </p>
+                    <p className="mt-2 text-xs font-black uppercase tracking-[0.22em] text-gray-400">
                       {dateParts.weekday}
                     </p>
-                    <div className="mt-1 flex items-end gap-2">
-                      <span className="text-[72px] font-black leading-none text-orange-500">
-                        {dateParts.day}
-                      </span>
-                      <span className="pb-2 text-2xl font-black uppercase text-gray-900 dark:text-white">
-                        {dateParts.month}
-                      </span>
-                    </div>
                   </div>
-                  <span className="mb-2 rounded-full bg-orange-500 px-3 py-1 text-xs font-black text-white">
+                  <p className="text-[54px] font-black leading-none text-gray-950 dark:text-white">
                     {getEventStatus(selectedEvent)}
-                  </span>
+                  </p>
                 </div>
 
-                <h1
-                  className="font-black leading-tight text-gray-950 transition-all duration-500 dark:text-white"
-                  style={{
-                    fontSize: extended ? '26px' : '46px',
-                    transform: extended ? 'translateY(34vh)' : 'translateY(0)',
-                  }}
-                >
+                <h1 className="mt-28 text-[46px] font-black leading-tight text-gray-950 dark:text-white">
                   {selectedEvent.title}
                 </h1>
 
-                <div className="mt-7 space-y-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={18} weight="fill" color="#f97316" />
-                    <span>{formatTimeRange(selectedEvent)}</span>
-                  </div>
-                  {selectedEvent.location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin size={18} weight="fill" color="#f97316" />
-                      <span>{plainText(selectedEvent.location)}</span>
-                    </div>
-                  )}
+                <div className="mt-14 space-y-5 text-[25px] font-black leading-tight text-gray-950 dark:text-white">
+                  <p>{formatTimeRange(selectedEvent)}</p>
+                  {selectedEvent.location && <p>{plainText(selectedEvent.location)}</p>}
                 </div>
               </div>
             </section>
 
-            <section className="min-h-full px-6 pb-28 pt-6">
+            <section
+              className="absolute inset-x-0 px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                top: 'calc(env(safe-area-inset-top) + 70px)',
+                zIndex: 25,
+                opacity: extended ? 1 : 0,
+                transform: extended ? 'translateY(0)' : 'translateY(18px)',
+                pointerEvents: extended ? 'auto' : 'none',
+              }}
+            >
               <div className="mx-auto max-w-md">
+                <h1 className="text-[26px] font-black leading-tight text-gray-950 dark:text-white">
+                  {selectedEvent.title}
+                </h1>
                 <div
-                  className="relative aspect-[4/5] w-full overflow-hidden rounded-[8px] bg-gray-100 dark:bg-[#1f1f1f]"
-                  onTouchStart={handlePhotoTouchStart}
-                  onTouchEnd={handlePhotoTouchEnd}
-                  onClick={() => images.length && setLightboxIndex(photoIndex)}
+                  className="overflow-y-auto pt-5 text-sm leading-relaxed text-gray-600 dark:text-gray-300"
+                  style={{ maxHeight: '30vh' }}
                 >
-                  {images.length ? (
-                    <img
-                      src={images[photoIndex]}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-gray-400">
-                      No photos
-                    </div>
-                  )}
-                  {images.length > 1 && (
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-                      {images.map((url, idx) => (
-                        <button
-                          key={url}
-                          type="button"
-                          aria-label={`Show photo ${idx + 1}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setPhotoIndex(idx)
-                          }}
-                          className={`h-1.5 rounded-full transition-all ${
-                            idx === photoIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/50'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-7">
                   {selectedEvent.description ? (
-                    <RichText
-                      text={selectedEvent.description}
-                      className="block text-sm leading-relaxed text-gray-600 dark:text-gray-300"
-                    />
+                    <RichText text={selectedEvent.description} className="block" />
                   ) : (
-                    <p className="text-sm text-gray-400">Event description will appear here.</p>
+                    <p className="text-gray-400">Event description will appear here.</p>
                   )}
                 </div>
               </div>
             </section>
-          </div>
+          </>
         ) : (
           <div className="flex h-full items-center justify-center px-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">No events yet.</p>
