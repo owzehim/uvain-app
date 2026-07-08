@@ -277,7 +277,7 @@ export default function MemberPage() {
               onLiftChange={(lifted) => setQrCardLifted(lifted)}
             />
           )}
-          {activeTab === 'events' && <EventsTab events={events} />}
+          {activeTab === 'events' && <EventsTabV2 events={events} />}
           {activeTab === 'map' && (
   <MapTab
     restaurants={restaurants}
@@ -1227,6 +1227,258 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
         )}
       </div>
     </>
+  )
+}
+
+function EventsTabV2({ events }) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [expanded, setExpanded] = useState(false)
+  const touchStartRef = useRef(null)
+  const scrollRef = useRef(null)
+
+  const sortedEvents = useMemo(() => {
+    const now = new Date()
+    return [...events]
+      .filter((ev) => !ev.is_archived)
+      .sort((a, b) => {
+        const aDate = a.event_date ? new Date(a.event_date) : null
+        const bDate = b.event_date ? new Date(b.event_date) : null
+        if (!aDate && !bDate) return new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        if (!aDate) return 1
+        if (!bDate) return -1
+
+        const aFuture = aDate >= now
+        const bFuture = bDate >= now
+        if (aFuture !== bFuture) return aFuture ? -1 : 1
+        return aFuture ? aDate - bDate : bDate - aDate
+      })
+  }, [events])
+
+  const activeEvent = sortedEvents[activeIndex] || null
+  const images = activeEvent
+    ? [...(activeEvent.image_urls || []), activeEvent.image_url].filter(Boolean)
+    : []
+  const heroImage = images[0] || '/PublicPage_MembershipTab_Images/uvain-event-1.png'
+  const eventDate = activeEvent?.event_date ? new Date(activeEvent.event_date) : null
+  const isPast = eventDate ? eventDate < new Date() : false
+  const dateNumber = eventDate ? String(eventDate.getDate()).padStart(2, '0') : 'TBD'
+  const weekday = eventDate
+    ? eventDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
+    : ''
+  const month = eventDate
+    ? eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+    : ''
+  const timeLabel = eventDate
+    ? eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    : 'Time TBA'
+
+  useEffect(() => {
+    if (activeIndex <= sortedEvents.length - 1) return
+    setActiveIndex(Math.max(0, sortedEvents.length - 1))
+  }, [activeIndex, sortedEvents.length])
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' })
+  }, [activeIndex, expanded])
+
+  const moveEvent = (direction) => {
+    if (expanded || sortedEvents.length <= 1) return
+    setActiveIndex((current) =>
+      Math.max(0, Math.min(current + direction, sortedEvents.length - 1)),
+    )
+  }
+
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0]
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      scrollTop: scrollRef.current?.scrollTop || 0,
+    }
+  }
+
+  const handleTouchEnd = (e) => {
+    const start = touchStartRef.current
+    if (!start) return
+
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - start.x
+    const dy = touch.clientY - start.y
+    const horizontal = Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 55
+    const vertical = Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 45
+
+    if (horizontal && !expanded) {
+      moveEvent(dx < 0 ? 1 : -1)
+    } else if (vertical && dy < 0 && !expanded) {
+      setExpanded(true)
+    } else if (vertical && dy > 0 && expanded && start.scrollTop <= 4) {
+      setExpanded(false)
+    }
+
+    touchStartRef.current = null
+  }
+
+  const handleWheel = (e) => {
+    if (!expanded && e.deltaY > 30) {
+      setExpanded(true)
+      return
+    }
+
+    if (expanded && e.deltaY < -30 && (scrollRef.current?.scrollTop || 0) <= 4) {
+      setExpanded(false)
+    }
+  }
+
+  if (!activeEvent) {
+    return (
+      <div className="h-full flex items-center justify-center px-8 text-center bg-white text-gray-400 dark:bg-[#121212] dark:text-gray-500">
+        <p className="text-sm font-semibold">No events yet.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="relative h-full overflow-hidden bg-white text-gray-950 dark:bg-[#121212] dark:text-white"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onWheel={handleWheel}
+    >
+      <div
+        ref={scrollRef}
+        className="h-full overflow-y-auto overscroll-contain"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 112px)',
+          scrollbarWidth: 'none',
+        }}
+      >
+        <section
+          className="relative min-h-full px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{
+            paddingTop: expanded ? 8 : 88,
+          }}
+        >
+          <div
+            className="transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            style={{
+              opacity: expanded ? 0 : 1,
+              transform: expanded ? 'translateY(-24px)' : 'translateY(0)',
+              pointerEvents: expanded ? 'none' : 'auto',
+              maxHeight: expanded ? 0 : 360,
+              overflow: 'hidden',
+            }}
+          >
+            <div className="flex items-end gap-3">
+              <div className="text-[86px] font-black leading-none tracking-normal text-orange-500">
+                {dateNumber}
+              </div>
+              <div className="pb-3 text-lg font-black leading-tight text-gray-400 dark:text-gray-500">
+                <div>{weekday}</div>
+                <div>{month}</div>
+              </div>
+            </div>
+
+            <div className="mt-7 inline-flex rounded-full bg-orange-500 px-5 py-2 text-sm font-black text-white">
+              {isPast ? 'PAST' : 'UPCOMING'}
+            </div>
+
+            <h1 className="mt-7 text-[42px] font-black leading-tight tracking-normal">
+              {activeEvent.title}
+            </h1>
+
+            <div className="mt-8 space-y-4 text-xl font-bold text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-4">
+                <Calendar size={24} weight="fill" className="text-orange-500" />
+                <span>{timeLabel}</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <MapPin size={24} weight="fill" className="text-orange-500" />
+                <span>{activeEvent.location || 'Location TBA'}</span>
+              </div>
+            </div>
+          </div>
+
+          <h1
+            className="sticky top-0 z-20 bg-white pb-4 text-3xl font-black leading-tight tracking-normal transition-all duration-500 dark:bg-[#121212]"
+            style={{
+              opacity: expanded ? 1 : 0,
+              transform: expanded ? 'translateY(0)' : 'translateY(16px)',
+              pointerEvents: expanded ? 'auto' : 'none',
+            }}
+          >
+            {activeEvent.title}
+          </h1>
+
+          <div
+            className="relative overflow-hidden border border-gray-100 bg-gray-100 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] dark:border-gray-800 dark:bg-gray-900"
+            style={{
+              marginTop: expanded ? 0 : 98,
+              height: expanded ? 'min(58vh, 520px)' : '34vh',
+              transform: expanded ? 'translateY(0)' : 'translateY(10px)',
+            }}
+          >
+            <img
+              src={heroImage}
+              alt={activeEvent.title}
+              className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{ transform: expanded ? 'scale(1)' : 'scale(1.06)' }}
+            />
+            <div
+              className="absolute inset-0 bg-white transition-opacity duration-500 dark:bg-[#121212]"
+              style={{ opacity: expanded ? 0 : 0.55 }}
+            />
+          </div>
+
+          <div
+            className="transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            style={{
+              opacity: expanded ? 1 : 0,
+              transform: expanded ? 'translateY(0)' : 'translateY(22px)',
+              pointerEvents: expanded ? 'auto' : 'none',
+            }}
+          >
+            <div className="mt-8 flex flex-wrap gap-3 text-sm font-black">
+              <span className="rounded-full bg-orange-500 px-4 py-2 text-white">
+                {isPast ? 'PAST' : 'UPCOMING'}
+              </span>
+              <span className="rounded-full bg-gray-100 px-4 py-2 text-gray-600 dark:bg-gray-800 dark:text-gray-200">
+                {eventDate ? `${weekday} ${dateNumber} ${month}` : 'DATE TBA'}
+              </span>
+              <span className="rounded-full bg-gray-100 px-4 py-2 text-gray-600 dark:bg-gray-800 dark:text-gray-200">
+                {timeLabel}
+              </span>
+            </div>
+
+            <div className="mt-8 space-y-5 text-base font-semibold leading-7 text-gray-700 dark:text-gray-300">
+              <div className="flex items-start gap-3">
+                <MapPin size={22} weight="fill" className="mt-1 flex-shrink-0 text-orange-500" />
+                <span>{activeEvent.location || 'Location TBA'}</span>
+              </div>
+              {activeEvent.description ? (
+                <RichText html={activeEvent.description} />
+              ) : (
+                <p>Event details will be added soon.</p>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {!expanded && sortedEvents.length > 1 && (
+        <div className="pointer-events-none absolute bottom-5 left-0 right-0 flex justify-center gap-1.5">
+          {sortedEvents.map((ev, idx) => (
+            <span
+              key={ev.id}
+              className="h-1.5 rounded-full transition-all duration-300"
+              style={{
+                width: idx === activeIndex ? 18 : 6,
+                background: idx === activeIndex ? '#f97316' : '#d1d5db',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
