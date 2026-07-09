@@ -2247,13 +2247,13 @@ const effectiveDateColor = isDragging
                     <span
   className="text-[89px] font-black leading-[0.82] tracking-normal text-gray-950 dark:text-white"
   style={{
-    transform: 'scaleY(1.15)',
+    transform: 'scaleY(1.25)',
     transformOrigin: 'top left',
   }}
 >
   {eventDateParts.dateNum}
 </span>
-                    <p className="mt-5 text-[34px] font-black leading-none uppercase text-gray-950 dark:text-white">
+                    <p className="mt-10 text-[34px] font-black leading-none uppercase text-gray-950 dark:text-white">
                       {eventDateParts.monthName}
                     </p>
                     <div className="mt-1 flex items-baseline gap-5">
