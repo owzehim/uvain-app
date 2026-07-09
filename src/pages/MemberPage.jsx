@@ -2247,6 +2247,7 @@ const effectiveDateColor = isDragging
                     <span
   className="text-[89px] font-black leading-[0.82] tracking-normal text-gray-950 dark:text-white"
   style={{
+    fontFamily: '"Handjet", system-ui, sans-serif',
     transform: 'scaleY(1.25)',
     transformOrigin: 'top left',
   }}
@@ -2256,10 +2257,13 @@ const effectiveDateColor = isDragging
                     <p className="mt-5 text-[34px] font-black leading-none uppercase text-gray-950 dark:text-white">
                       {eventDateParts.monthName}
                     </p>
-                    <div className="mt-1 flex items-baseline gap-5">
+                    <div className="mt-1 flex items-baseline gap-2">
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.dayName}
                       </p>
+                      <span className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
+                        •
+                      </span>
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.year}
                       </p>
