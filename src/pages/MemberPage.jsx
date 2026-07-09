@@ -1732,9 +1732,9 @@ function EventsTab({ events }) {
   const eventDateBottomNudge = '6px'
   const eventDateNumberStretch = 1.35
   const eventTopInset = 'max(env(safe-area-inset-top), 44px)'
-  const eventListButtonTop = `calc(${eventTopInset} + 6px)`
-  const eventDateTop = `calc(${eventTopInset} + 48px)`
+  const eventDateTop = `calc(${eventTopInset} + 22px)`
   const eventDetailsTop = `calc(${eventTopInset} + 142px)`
+  const eventCollapsedCardHeight = '260px'
   const displayEvent = selectedEvent
 
   const eventsByDate = {}
@@ -2216,7 +2216,7 @@ const effectiveDateColor = isDragging
           aria-label="Open event list"
           style={{
             left: '14px',
-            top: eventListButtonTop,
+            top: 'calc(env(safe-area-inset-top) + 6px)',
             zIndex: 70,
             userSelect: 'none',
             WebkitUserSelect: 'none',
@@ -2322,7 +2322,7 @@ const effectiveDateColor = isDragging
                 bottom: 0,
                 height: eventCardOpen
                   ? '100%'
-                  : `${Math.min(window.innerHeight * 0.38, 260)}px`,
+                  : eventCollapsedCardHeight,
                 zIndex: 20,
                 borderTopLeftRadius: eventCardOpen ? 0 : 20,
                 borderTopRightRadius: eventCardOpen ? 0 : 20,
