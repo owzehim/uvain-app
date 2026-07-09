@@ -1731,9 +1731,8 @@ function EventsTab({ events }) {
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
   const eventDateNumberStretch = 1.35
-  const eventTopInset = 'max(env(safe-area-inset-top), 44px)'
-  const eventDateTop = `calc(${eventTopInset} + 22px)`
-  const eventDetailsTop = `calc(${eventTopInset} + 142px)`
+  const eventDateTop = '66px'
+  const eventDetailsTop = '186px'
   const eventCollapsedCardHeight = '260px'
   const displayEvent = selectedEvent
 
