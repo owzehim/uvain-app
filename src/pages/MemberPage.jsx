@@ -1734,6 +1734,9 @@ function EventsTab({ events }) {
   const eventDateTop = '66px'
   const eventDetailsTop = '186px'
   const eventCollapsedCardHeight = '260px'
+  const eventCardTranslateY = eventCardOpen
+    ? '0'
+    : `calc(100% - ${eventCollapsedCardHeight})`
   const displayEvent = selectedEvent
 
   const eventsByDate = {}
@@ -2319,16 +2322,16 @@ const effectiveDateColor = isDragging
               onTouchEnd={handleEventCardTouchEnd}
               style={{
                 bottom: 0,
-                height: eventCardOpen
-                  ? '100%'
-                  : eventCollapsedCardHeight,
+                height: '100%',
+                transform: `translateY(${eventCardTranslateY})`,
                 zIndex: 20,
                 borderTopLeftRadius: eventCardOpen ? 0 : 20,
                 borderTopRightRadius: eventCardOpen ? 0 : 20,
                 boxShadow: 'none',
                 transition:
-                  'height 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
+                  'transform 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
                 overflow: 'hidden',
+                willChange: 'transform',
               }}
             >
               <div className="flex justify-center pb-3 pt-2.5">
