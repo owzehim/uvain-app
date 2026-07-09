@@ -212,7 +212,13 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+      <div
+        className="bg-white border-b border-gray-100 px-4 pb-3 flex items-center justify-between"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 12px)',
+          minHeight: 'calc(env(safe-area-inset-top) + 56px)',
+        }}
+      >
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/member')}

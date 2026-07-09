@@ -86,7 +86,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="fixed inset-x-0 top-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 pt-[16vh] dark:bg-[#121212]"
+      className="fixed inset-x-0 top-0 flex items-center justify-center overflow-y-auto overscroll-contain bg-white px-4 py-6 dark:bg-[#121212]"
       style={{
         height: 'var(--login-viewport-height, 100dvh)',
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',

@@ -854,6 +854,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
       <div
         className="h-full flex flex-col items-center justify-center px-4 py-6 no-highlight-zone"
         style={{
+          transform: `translate3d(0, ${cardRestingOffsetY}, 0)`,
           userSelect: 'none',
           WebkitUserSelect: 'none',
           WebkitTapHighlightColor: 'transparent',
