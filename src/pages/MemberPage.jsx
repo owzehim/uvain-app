@@ -1732,6 +1732,61 @@ function EventsTab({ events }) {
     ? '0'
     : `calc(100% - ${eventCollapsedCardHeight})`
   const displayEvent = selectedEvent
+  const pillDigitMap = {
+    '0': ['111', '101', '101', '101', '101', '101', '111'],
+    '1': ['010', '110', '010', '010', '010', '010', '111'],
+    '2': ['111', '001', '001', '111', '100', '100', '111'],
+    '3': ['111', '001', '001', '111', '001', '001', '111'],
+    '4': ['101', '101', '101', '111', '001', '001', '001'],
+    '5': ['111', '100', '100', '111', '001', '001', '111'],
+    '6': ['111', '100', '100', '111', '101', '101', '111'],
+    '7': ['111', '001', '001', '010', '010', '010', '010'],
+    '8': ['111', '101', '101', '111', '101', '101', '111'],
+    '9': ['111', '101', '101', '111', '001', '001', '111'],
+  }
+
+  const renderPillGlyph = (char, index) => {
+    if (char === '.') {
+      return (
+        <div className="event-pill-dot" key={`${char}-${index}`}>
+          <span />
+        </div>
+      )
+    }
+
+    const rows = pillDigitMap[char] || pillDigitMap['0']
+
+    return (
+      <div className="event-pill-glyph" key={`${char}-${index}`}>
+        {rows.map((row, rowIndex) => {
+          const runs = []
+          let start = -1
+
+          for (let i = 0; i <= row.length; i += 1) {
+            if (row[i] === '1' && start === -1) start = i
+            if ((row[i] !== '1' || i === row.length) && start !== -1) {
+              runs.push({ start, length: i - start })
+              start = -1
+            }
+          }
+
+          return (
+            <div className="event-pill-row" key={rowIndex}>
+              {runs.map((run) => (
+                <span
+                  key={`${rowIndex}-${run.start}`}
+                  className="event-pill-segment"
+                  style={{
+                    gridColumn: `${run.start + 1} / span ${run.length}`,
+                  }}
+                />
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
 
   const eventsByDate = {}
   datedEvents.forEach((ev) => {
@@ -2201,13 +2256,13 @@ const effectiveDateColor = isDragging
           overflow: hidden;
           border: 1px solid rgba(156, 163, 175, 0.42);
           background:
-            radial-gradient(circle, rgba(17, 24, 39, 0.11) 1.15px, transparent 1.45px) 0 0 / 12px 12px,
+            repeating-linear-gradient(0deg, transparent 0 11px, rgba(156, 163, 175, 0.18) 11px 12px),
             linear-gradient(135deg, rgba(249, 250, 251, 0.98), rgba(243, 244, 246, 0.96));
         }
         .dark .event-date-poster {
           border-color: rgba(255, 255, 255, 0.16);
           background:
-            radial-gradient(circle, rgba(255, 255, 255, 0.1) 1.15px, transparent 1.45px) 0 0 / 12px 12px,
+            repeating-linear-gradient(0deg, transparent 0 11px, rgba(255, 255, 255, 0.1) 11px 12px),
             linear-gradient(135deg, rgba(28, 28, 30, 0.98), rgba(18, 18, 18, 0.96));
         }
         .event-date-poster::before,
@@ -2224,16 +2279,47 @@ const effectiveDateColor = isDragging
           border: 0;
           background: linear-gradient(90deg, transparent, rgba(107, 114, 128, 0.42), transparent);
         }
-        .event-date-poster-dot {
-          position: absolute;
-          width: 4px;
-          height: 4px;
+        .event-pill-date {
+          --pill-unit: clamp(10px, 3.1vw, 15px);
+          --pill-gap: clamp(4px, 1.1vw, 6px);
+          display: flex;
+          align-items: flex-end;
+          gap: clamp(7px, 1.8vw, 10px);
+        }
+        .event-pill-glyph {
+          display: grid;
+          grid-template-rows: repeat(7, var(--pill-unit));
+          gap: var(--pill-gap);
+          width: calc((var(--pill-unit) * 3) + (var(--pill-gap) * 2));
+        }
+        .event-pill-row {
+          display: grid;
+          grid-template-columns: repeat(3, var(--pill-unit));
+          gap: var(--pill-gap);
+        }
+        .event-pill-segment {
           border-radius: 999px;
-          background: rgba(75, 85, 99, 0.34);
-          box-shadow:
-            12px 8px 0 rgba(107, 114, 128, 0.2),
-            24px -2px 0 rgba(17, 24, 39, 0.16),
-            38px 11px 0 rgba(156, 163, 175, 0.3);
+          background: #2f3033;
+          box-shadow: 0 1px 0 rgba(255, 255, 255, 0.34) inset;
+        }
+        .event-pill-dot {
+          position: relative;
+          width: calc(var(--pill-unit) * 0.86);
+          height: calc((var(--pill-unit) * 7) + (var(--pill-gap) * 6));
+        }
+        .event-pill-dot span {
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: calc(var(--pill-unit) * 0.86);
+          height: calc(var(--pill-unit) * 0.86);
+          border-radius: 999px;
+          background: #2f3033;
+        }
+        .dark .event-pill-segment,
+        .dark .event-pill-dot span {
+          background: #e5e7eb;
+          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.22) inset;
         }
       `}</style>
       <div
@@ -2284,23 +2370,18 @@ const effectiveDateColor = isDragging
                 }}
               >
                 {eventDateParts && (
-                  <div className="event-date-poster rounded-[6px] px-6 py-5 text-gray-900 dark:text-white">
-                    <span className="event-date-poster-dot left-[58%] top-8" />
-                    <span className="event-date-poster-dot bottom-8 left-8 opacity-60" />
+                  <div className="event-date-poster rounded-[6px] px-5 py-5 text-gray-900 dark:text-white">
                     <div className="relative z-10 flex h-full min-h-[92px] items-end justify-between gap-4">
-                      <div>
-                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500">
-                          {eventDateParts.dayName}
-                        </p>
-                        <p className="text-[68px] font-black leading-[0.86] tracking-normal text-gray-800 dark:text-gray-100">
-                          {eventDateParts.dateNum}
-                        </p>
+                      <div className="event-pill-date" aria-label={eventDateParts.dateNum}>
+                        {eventDateParts.dateNum
+                          .split('')
+                          .map((char, index) => renderPillGlyph(char, index))}
                       </div>
                       <div className="pb-1 text-right">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-                          DATE
+                          {eventDateParts.dayName}
                         </p>
-                        <p className="mt-1 text-[30px] font-black uppercase leading-none text-gray-500 dark:text-gray-300">
+                        <p className="mt-1 text-[28px] font-black uppercase leading-none text-gray-500 dark:text-gray-300">
                           {eventDateParts.monthName}
                         </p>
                       </div>
