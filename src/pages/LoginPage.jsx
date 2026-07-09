@@ -36,9 +36,6 @@ export default function LoginPage() {
     const previousBodyOverflow = body.style.overflow
     const previousBodyHeight = body.style.height
     const previousBodyTouchAction = body.style.touchAction
-    const previousLoginViewportHeight = html.style.getPropertyValue(
-      '--login-viewport-height',
-    )
 
     html.style.overflow = 'hidden'
     body.style.overflow = 'hidden'
@@ -46,16 +43,10 @@ export default function LoginPage() {
     body.style.touchAction = 'manipulation'
 
     const syncLoginViewportHeight = () => {
-      html.style.setProperty(
-        '--login-viewport-height',
-        `${window.visualViewport?.height || window.innerHeight}px`,
-      )
       window.scrollTo(0, 0)
     }
 
     window.addEventListener('scroll', syncLoginViewportHeight, { passive: true })
-    window.visualViewport?.addEventListener('resize', syncLoginViewportHeight)
-    window.visualViewport?.addEventListener('scroll', syncLoginViewportHeight)
 
     syncLoginViewportHeight()
 
@@ -64,23 +55,7 @@ export default function LoginPage() {
       body.style.overflow = previousBodyOverflow
       body.style.height = previousBodyHeight
       body.style.touchAction = previousBodyTouchAction
-      if (previousLoginViewportHeight) {
-        html.style.setProperty(
-          '--login-viewport-height',
-          previousLoginViewportHeight,
-        )
-      } else {
-        html.style.removeProperty('--login-viewport-height')
-      }
       window.removeEventListener('scroll', syncLoginViewportHeight)
-      window.visualViewport?.removeEventListener(
-        'resize',
-        syncLoginViewportHeight,
-      )
-      window.visualViewport?.removeEventListener(
-        'scroll',
-        syncLoginViewportHeight,
-      )
     }
   }, [])
 
@@ -88,8 +63,8 @@ export default function LoginPage() {
     <div
       className="fixed inset-x-0 top-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 pt-[16vh] dark:bg-[#121212]"
       style={{
-        height: 'var(--login-viewport-height, 100dvh)',
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
+        height: '100dvh',
+        paddingBottom: 'calc(min(env(safe-area-inset-bottom), 12px) + 24px)',
       }}
     >
       <button
