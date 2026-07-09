@@ -12,7 +12,6 @@ import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import StampCardMini from '../features/stampCard/components/StampCardMini'
 import StampCardModal from '../features/stampCard/components/StampCardModal'
-import { useAppViewportHeight } from '../hooks/useAppViewportHeight'
 
 const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
@@ -30,8 +29,6 @@ function getStoredEventListOpen() {
 }
 
 export default function MemberPage() {
-  useAppViewportHeight()
-
   const [authUserId, setAuthUserId] = useState(null)
   const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -155,8 +152,7 @@ export default function MemberPage() {
 
   return (
     <div
-      className="member-app-shell relative flex flex-col bg-white overflow-hidden dark:bg-[#121212]"
-      style={{ height: 'var(--app-viewport-height, 100dvh)' }}
+      className="member-app-shell fixed inset-0 flex flex-col bg-white overflow-hidden dark:bg-[#121212]"
     >
       {/* Review modal */}
       <ReviewModal

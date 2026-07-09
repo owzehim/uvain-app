@@ -34,13 +34,6 @@ export default function LoginPage() {
       document.activeElement.blur()
     }
 
-    const height = Math.max(
-      window.innerHeight || 0,
-      document.documentElement.clientHeight || 0,
-      window.visualViewport?.height || 0,
-    )
-    document.documentElement.style.setProperty('--app-viewport-height', `${height}px`)
-
     window.setTimeout(() => navigate('/public'), 80)
   }
 
