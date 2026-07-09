@@ -1147,11 +1147,11 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
         @keyframes lightboxImageSlideInFromRight {
-          from { opacity: 0.72; transform: translate(28px, -18px); }
+          from { opacity: 0.68; transform: translate(44px, -18px); }
           to { opacity: 1; transform: translate(0, -18px); }
         }
         @keyframes lightboxImageSlideInFromLeft {
-          from { opacity: 0.72; transform: translate(-28px, -18px); }
+          from { opacity: 0.68; transform: translate(-44px, -18px); }
           to { opacity: 1; transform: translate(0, -18px); }
         }
         @keyframes lightboxImageFadeIn {
@@ -1159,13 +1159,13 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
           to { opacity: 1; transform: translateY(-18px); }
         }
         .lightbox-image-slide {
-          animation: lightboxImageFadeIn 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageFadeIn 0.34s cubic-bezier(0.22,1,0.36,1);
         }
         .lightbox-image-slide-right {
-          animation: lightboxImageSlideInFromRight 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageSlideInFromRight 0.34s cubic-bezier(0.22,1,0.36,1);
         }
         .lightbox-image-slide-left {
-          animation: lightboxImageSlideInFromLeft 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageSlideInFromLeft 0.34s cubic-bezier(0.22,1,0.36,1);
         }
       `}</style>
       <div
@@ -2180,11 +2180,19 @@ const effectiveDateColor = isDragging
     <>
       <style>{`
         @keyframes eventContentSlideInFromRight {
-          from { opacity: 0; transform: translateX(28px); }
+          from { opacity: 0; transform: translateX(44px); }
           to { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventContentSlideInFromLeft {
-          from { opacity: 0; transform: translateX(-28px); }
+          from { opacity: 0; transform: translateX(-44px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes eventPreviewImageSlideInFromRight {
+          from { opacity: 0.68; transform: translateX(44px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes eventPreviewImageSlideInFromLeft {
+          from { opacity: 0.68; transform: translateX(-44px); }
           to { opacity: 1; transform: translateX(0); }
         }
       `}</style>
@@ -2234,7 +2242,7 @@ const effectiveDateColor = isDragging
                   animation:
                     eventSwipeDirection === 0
                       ? 'none'
-                      : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)`,
+                      : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                 }}
               >
                 {eventDateParts && (
@@ -2318,7 +2326,7 @@ const effectiveDateColor = isDragging
                     animation:
                       eventSwipeDirection === 0
                         ? 'none'
-                        : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.28s cubic-bezier(0.22,1,0.36,1)`,
+                        : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                   }}
                 >
                   <div
@@ -2342,11 +2350,16 @@ const effectiveDateColor = isDragging
                         }}
                       >
                         <div
+                          key={`event-preview-images-${displayEvent.id}`}
                           style={{
                             display: 'flex',
                             height: '100%',
                             transform: `translateX(-${displayImageSlide * 100}%)`,
                             transition: 'transform 0.3s ease',
+                            animation:
+                              eventSwipeDirection === 0
+                                ? 'none'
+                                : `${eventSwipeDirection > 0 ? 'eventPreviewImageSlideInFromRight' : 'eventPreviewImageSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                           }}
                         >
                           {displayImages.map((url, index) => (
