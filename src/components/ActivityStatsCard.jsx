@@ -62,7 +62,7 @@ export default function ActivityStatsCard({ userId }) {
           margin: '0 auto',
           background: theme.cardBg,
           borderRadius: '16px',
-          padding: '16px 20px',
+          padding: '10px 20px 16px',
           boxSizing: 'border-box',
         }}
       >
