@@ -28,18 +28,29 @@ export default function LoginPage() {
   const isOtpStep = step === 'otp'
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
+  const handleCloseLogin = () => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo(0, 0)
+      navigate('/public', { replace: true })
+    })
+  }
+
   return (
     <div
-      className="fixed inset-x-0 top-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 dark:bg-[#121212]"
+      className="fixed inset-x-0 top-0 flex items-center justify-center overflow-y-auto overscroll-contain bg-white px-4 dark:bg-[#121212]"
       style={{
-        height: '100svh',
-        paddingTop: '16svh',
+        height: '100dvh',
+        paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
         paddingBottom: 24,
       }}
     >
       <button
         type="button"
-        onClick={isStandaloneStep ? handleBack : () => navigate('/public')}
+        onClick={isStandaloneStep ? handleBack : handleCloseLogin}
         className="text-[#374151] dark:text-[#c7c7cc]"
         style={loginBackButtonStyle}
         aria-label={isStandaloneStep ? 'Back to login' : 'Close login'}
