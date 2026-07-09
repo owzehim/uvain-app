@@ -2247,7 +2247,7 @@ const effectiveDateColor = isDragging
                     <span
   className="text-[89px] font-medium leading-[0.82] tracking-normal text-gray-950 dark:text-white"
   style={{
-    fontFamily: '"Handjet", system-ui, sans-serif',
+    fontFamily: '"Odibee Sans", system-ui, sans-serif',
     transform: 'scaleY(1.25)',
     transformOrigin: 'top left',
   }}
