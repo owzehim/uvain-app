@@ -401,7 +401,8 @@ export function SpotCard({
   const COMPACT_HEIGHT = Math.min(WIN_H * 0.22, 150)
   const FULL_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MIN_HEIGHT = spotCardHeightMode === 'full' ? FULL_HEIGHT : COMPACT_HEIGHT
-  const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.82
+  const CATEGORY_SLIDER_BOTTOM = 92
+  const MAX_HEIGHT = isDesktop ? 460 : Math.max(320, WIN_H - CATEGORY_SLIDER_BOTTOM)
   const SHEET_RADIUS = 20
 
   // Trigger animation on mount
@@ -503,28 +504,19 @@ export function SpotCard({
     .replace(/\s/g, '')
   const discountTerms = cleanedTerms ? selected.discount_terms : null
 
-  const noImageStyle = {
-    transform: closing
-      ? 'translateY(110%)'
-      : isVisible
-      ? 'translateY(0)'
-      : 'translateY(110%)',
-    transition: isDragging
-      ? 'none'
-      : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-    height: cardHeight + 'px',
-  }
+  const sheetTranslateY = closing || !isVisible
+    ? '110%'
+    : `${Math.max(0, MAX_HEIGHT - cardHeight)}px`
 
-  const imageStyle = {
-    height: cardHeight + 'px',
+  const sheetStyle = {
+    height: MAX_HEIGHT + 'px',
     transform: closing
       ? 'translateY(110%)'
-      : isVisible
-      ? 'translateY(0)'
-      : 'translateY(110%)',
+      : `translateY(${sheetTranslateY})`,
     transition: isDragging
       ? 'none'
-      : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+      : 'transform 0.35s cubic-bezier(0.4,0,0.2,1), border-radius 0.35s cubic-bezier(0.4,0,0.2,1)',
+    willChange: 'transform',
   }
 
   return (
@@ -541,7 +533,7 @@ export function SpotCard({
         ref={cardRef}
         className="absolute bottom-0 left-0 right-0 bg-white"
         style={{
-          ...(hasImages ? imageStyle : noImageStyle),
+          ...sheetStyle,
           zIndex: 1000,
           boxShadow: '0 -4px 24px rgba(0,0,0,0.13)',
           display: 'flex',
