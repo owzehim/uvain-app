@@ -6,6 +6,7 @@ import { SpotCard } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { MapPin, Lock, ForkKnife, CalendarDots, Users } from '@phosphor-icons/react'
+import { useAppViewportHeight } from '../hooks/useAppViewportHeight'
 
 const PUBLIC_ACTIVE_TAB_KEY = 'uvain_public_active_tab'
 
@@ -14,6 +15,8 @@ function getStoredPublicTab() {
 }
 
 export default function PublicPage() {
+  useAppViewportHeight()
+
   const [activeTab, setActiveTab] = useState(getStoredPublicTab)
   const [restaurants, setRestaurants] = useState([])
   const navigate = useNavigate()
@@ -46,7 +49,7 @@ export default function PublicPage() {
           : 'bg-white dark:bg-[#121212]')
       }
       style={{
-        height: '100dvh',
+        height: 'var(--app-viewport-height, 100dvh)',
         userSelect: 'none',
         WebkitUserSelect: 'none',
         WebkitTapHighlightColor: 'transparent',

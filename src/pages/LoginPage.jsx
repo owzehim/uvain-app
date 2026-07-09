@@ -29,6 +29,13 @@ export default function LoginPage() {
   const isOtpStep = step === 'otp'
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
+  const handleCloseLogin = () => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+    requestAnimationFrame(() => navigate('/public'))
+  }
+
   useEffect(() => {
     const html = document.documentElement
     const body = document.body
@@ -43,7 +50,7 @@ export default function LoginPage() {
     html.style.overflow = 'hidden'
     body.style.overflow = 'hidden'
     body.style.height = '100dvh'
-    body.style.touchAction = 'manipulation'
+    body.style.touchAction = 'none'
 
     const syncLoginViewportHeight = () => {
       html.style.setProperty(
@@ -86,15 +93,17 @@ export default function LoginPage() {
 
   return (
     <div
-      className="fixed inset-x-0 top-0 flex items-center justify-center overflow-y-auto overscroll-contain bg-white px-4 py-6 dark:bg-[#121212]"
+      className="fixed inset-x-0 top-0 flex items-center justify-center overflow-hidden overscroll-none bg-white px-4 py-6 dark:bg-[#121212]"
       style={{
         height: 'var(--login-viewport-height, 100dvh)',
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
+        touchAction: 'none',
       }}
+      onTouchMove={(e) => e.preventDefault()}
     >
       <button
         type="button"
-        onClick={isStandaloneStep ? handleBack : () => navigate('/public')}
+        onClick={isStandaloneStep ? handleBack : handleCloseLogin}
         className="text-[#374151] dark:text-[#c7c7cc]"
         style={loginBackButtonStyle}
         aria-label={isStandaloneStep ? 'Back to login' : 'Close login'}
