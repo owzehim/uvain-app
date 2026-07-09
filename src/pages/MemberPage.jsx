@@ -1725,8 +1725,8 @@ function EventsTab({ events }) {
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
   const eventDateNumberStretch = 1.35
-  const eventDateTop = '66px'
-  const eventDetailsTop = '186px'
+  const eventDateTop = '64px'
+  const eventDetailsTop = '220px'
   const eventCollapsedCardHeight = '260px'
   const eventCardTranslateY = eventCardOpen
     ? '0'
@@ -2195,6 +2195,46 @@ const effectiveDateColor = isDragging
           from { opacity: 0.68; transform: translateX(-44px); }
           to { opacity: 1; transform: translateX(0); }
         }
+        .event-date-poster {
+          position: relative;
+          min-height: 132px;
+          overflow: hidden;
+          border: 1px solid rgba(156, 163, 175, 0.42);
+          background:
+            radial-gradient(circle, rgba(17, 24, 39, 0.11) 1.15px, transparent 1.45px) 0 0 / 12px 12px,
+            linear-gradient(135deg, rgba(249, 250, 251, 0.98), rgba(243, 244, 246, 0.96));
+        }
+        .dark .event-date-poster {
+          border-color: rgba(255, 255, 255, 0.16);
+          background:
+            radial-gradient(circle, rgba(255, 255, 255, 0.1) 1.15px, transparent 1.45px) 0 0 / 12px 12px,
+            linear-gradient(135deg, rgba(28, 28, 30, 0.98), rgba(18, 18, 18, 0.96));
+        }
+        .event-date-poster::before,
+        .event-date-poster::after {
+          content: "";
+          position: absolute;
+          pointer-events: none;
+          inset: 14px;
+          border: 1px solid rgba(156, 163, 175, 0.26);
+        }
+        .event-date-poster::after {
+          inset: auto 18px 17px 18px;
+          height: 1px;
+          border: 0;
+          background: linear-gradient(90deg, transparent, rgba(107, 114, 128, 0.42), transparent);
+        }
+        .event-date-poster-dot {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          border-radius: 999px;
+          background: rgba(75, 85, 99, 0.34);
+          box-shadow:
+            12px 8px 0 rgba(107, 114, 128, 0.2),
+            24px -2px 0 rgba(17, 24, 39, 0.16),
+            38px 11px 0 rgba(156, 163, 175, 0.3);
+        }
       `}</style>
       <div
         className="relative h-full overflow-hidden bg-white text-gray-950 no-highlight-zone dark:bg-[#121212] dark:text-white"
@@ -2244,17 +2284,26 @@ const effectiveDateColor = isDragging
                 }}
               >
                 {eventDateParts && (
-                  <div className="flex items-end gap-3">
-                    <span className="text-[64px] font-black leading-none tracking-tight text-orange-500">
-                      {eventDateParts.dateNum}
-                    </span>
-                    <div className="pb-1">
-                      <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">
-                        {eventDateParts.dayName}
-                      </p>
-                      <p className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500">
-                        {eventDateParts.monthName}
-                      </p>
+                  <div className="event-date-poster rounded-[6px] px-6 py-5 text-gray-900 dark:text-white">
+                    <span className="event-date-poster-dot left-[58%] top-8" />
+                    <span className="event-date-poster-dot bottom-8 left-8 opacity-60" />
+                    <div className="relative z-10 flex h-full min-h-[92px] items-end justify-between gap-4">
+                      <div>
+                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500">
+                          {eventDateParts.dayName}
+                        </p>
+                        <p className="text-[68px] font-black leading-[0.86] tracking-normal text-gray-800 dark:text-gray-100">
+                          {eventDateParts.dateNum}
+                        </p>
+                      </div>
+                      <div className="pb-1 text-right">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+                          DATE
+                        </p>
+                        <p className="mt-1 text-[30px] font-black uppercase leading-none text-gray-500 dark:text-gray-300">
+                          {eventDateParts.monthName}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
