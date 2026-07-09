@@ -16,6 +16,7 @@ import StampCardModal from '../features/stampCard/components/StampCardModal'
 const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
 const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
+const MEMBER_BOTTOM_TAB_PADDING = 42
 
 function getStoredMemberTab() {
   if (typeof window === 'undefined') return 'qr'
@@ -293,7 +294,7 @@ export default function MemberPage() {
       <div
   className="bg-white flex flex-shrink-0 dark:bg-[#121212]"
   style={{
-    paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+    paddingBottom: MEMBER_BOTTOM_TAB_PADDING,
     userSelect: 'none',
     WebkitUserSelect: 'none',
     position: 'relative',
