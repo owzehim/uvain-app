@@ -919,7 +919,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
           transform: `translate3d(0, calc(${cardRestingOffsetY} - ${cardLiftOffset}px), 0)`,
           transition: isCardDragging
             ? 'none'
-            : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+            : 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
           willChange: 'transform',
         }}
       >
