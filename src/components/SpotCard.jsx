@@ -373,6 +373,7 @@ export function SpotCard({
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [isVisible, setIsVisible] = useState(false)
   const [darkMode, setDarkMode] = useState(() => isDarkMode())
+  const [sheetMaxHeight, setSheetMaxHeight] = useState(0)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -401,13 +402,14 @@ export function SpotCard({
   const COMPACT_HEIGHT = Math.min(WIN_H * 0.22, 150)
   const FULL_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MIN_HEIGHT = spotCardHeightMode === 'full' ? FULL_HEIGHT : COMPACT_HEIGHT
-  const EXPANDED_TOP_LIMIT = 248
-  const MAX_HEIGHT = isDesktop ? 460 : Math.max(320, WIN_H - EXPANDED_TOP_LIMIT)
+  const MAX_HEIGHT = isDesktop ? 460 : Math.max(320, sheetMaxHeight || WIN_H)
   const SHEET_RADIUS = 20
 
   // Trigger animation on mount
   useEffect(() => {
     if (selected) {
+      const parentHeight = cardRef.current?.parentElement?.clientHeight
+      if (parentHeight) setSheetMaxHeight(parentHeight)
       setIsVisible(false)
       setCardHeight(MIN_HEIGHT)
       setClosing(false)
@@ -415,6 +417,23 @@ export function SpotCard({
       requestAnimationFrame(() => setIsVisible(true))
     }
   }, [selected, MIN_HEIGHT])
+
+  useEffect(() => {
+    if (!selected || isDesktop) return undefined
+
+    const measureSheet = () => {
+      const parentHeight = cardRef.current?.parentElement?.clientHeight
+      if (parentHeight) setSheetMaxHeight(parentHeight)
+    }
+
+    measureSheet()
+    window.addEventListener('resize', measureSheet)
+    return () => window.removeEventListener('resize', measureSheet)
+  }, [selected, isDesktop])
+
+  useEffect(() => {
+    if (cardHeight > MAX_HEIGHT) setCardHeight(MAX_HEIGHT)
+  }, [cardHeight, MAX_HEIGHT])
 
   // Watch dark mode changes
   useEffect(() => {
