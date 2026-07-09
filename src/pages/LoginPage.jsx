@@ -54,7 +54,6 @@ export default function LoginPage() {
 
       <div
         className="mx-auto flex min-h-[100dvh] w-full max-w-sm items-center px-2 py-8"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 32px)' }}
       >
         <div className="w-full">
           {!isStandaloneStep && (
