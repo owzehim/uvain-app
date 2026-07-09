@@ -1731,6 +1731,10 @@ function EventsTab({ events }) {
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
   const eventDateNumberStretch = 1.35
+  const eventTopInset = 'max(env(safe-area-inset-top), 44px)'
+  const eventListButtonTop = `calc(${eventTopInset} + 6px)`
+  const eventDateTop = `calc(${eventTopInset} + 48px)`
+  const eventDetailsTop = `calc(${eventTopInset} + 142px)`
   const displayEvent = selectedEvent
 
   const eventsByDate = {}
@@ -2212,7 +2216,7 @@ const effectiveDateColor = isDragging
           aria-label="Open event list"
           style={{
             left: '14px',
-            top: 'calc(env(safe-area-inset-top) + 6px)',
+            top: eventListButtonTop,
             zIndex: 70,
             userSelect: 'none',
             WebkitUserSelect: 'none',
@@ -2229,7 +2233,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 22px)',
+                top: eventDateTop,
                 zIndex: 5,
               }}
             >
@@ -2264,7 +2268,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 142px)',
+                top: eventDetailsTop,
                 bottom: eventCardOpen ? '48%' : '250px',
                 transition: 'bottom 0.28s ease',
                 zIndex: 5,
