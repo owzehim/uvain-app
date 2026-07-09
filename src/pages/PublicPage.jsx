@@ -19,6 +19,17 @@ export default function PublicPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    document.activeElement?.blur?.()
+    window.scrollTo(0, 0)
+
+    const frame = window.requestAnimationFrame(() => {
+      window.scrollTo(0, 0)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
+
+  useEffect(() => {
     const fetchRestaurants = async () => {
       const { data } = await supabase
         .from('restaurants')

@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CaretLeft } from '@phosphor-icons/react'
 import { useLogin } from '../hooks/useLogin'
@@ -29,72 +28,22 @@ export default function LoginPage() {
   const isOtpStep = step === 'otp'
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
-  useEffect(() => {
-    const html = document.documentElement
-    const body = document.body
-    const previousHtmlOverflow = html.style.overflow
-    const previousBodyOverflow = body.style.overflow
-    const previousBodyHeight = body.style.height
-    const previousBodyTouchAction = body.style.touchAction
-    const previousLoginViewportHeight = html.style.getPropertyValue(
-      '--login-viewport-height',
-    )
-
-    html.style.overflow = 'hidden'
-    body.style.overflow = 'hidden'
-    body.style.height = '100dvh'
-    body.style.touchAction = 'manipulation'
-
-    const syncLoginViewportHeight = () => {
-      html.style.setProperty(
-        '--login-viewport-height',
-        `${window.visualViewport?.height || window.innerHeight}px`,
-      )
-      window.scrollTo(0, 0)
-    }
-
-    window.addEventListener('scroll', syncLoginViewportHeight, { passive: true })
-    window.visualViewport?.addEventListener('resize', syncLoginViewportHeight)
-    window.visualViewport?.addEventListener('scroll', syncLoginViewportHeight)
-
-    syncLoginViewportHeight()
-
-    return () => {
-      html.style.overflow = previousHtmlOverflow
-      body.style.overflow = previousBodyOverflow
-      body.style.height = previousBodyHeight
-      body.style.touchAction = previousBodyTouchAction
-      if (previousLoginViewportHeight) {
-        html.style.setProperty(
-          '--login-viewport-height',
-          previousLoginViewportHeight,
-        )
-      } else {
-        html.style.removeProperty('--login-viewport-height')
-      }
-      window.removeEventListener('scroll', syncLoginViewportHeight)
-      window.visualViewport?.removeEventListener(
-        'resize',
-        syncLoginViewportHeight,
-      )
-      window.visualViewport?.removeEventListener(
-        'scroll',
-        syncLoginViewportHeight,
-      )
-    }
-  }, [])
+  const leaveLogin = () => {
+    document.activeElement?.blur?.()
+    window.scrollTo(0, 0)
+    navigate('/public')
+  }
 
   return (
     <div
-      className="fixed inset-x-0 top-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 pt-[16vh] dark:bg-[#121212]"
+      className="fixed inset-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 pt-[16vh] dark:bg-[#121212]"
       style={{
-        height: 'var(--login-viewport-height, 100dvh)',
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
       }}
     >
       <button
         type="button"
-        onClick={isStandaloneStep ? handleBack : () => navigate('/public')}
+        onClick={isStandaloneStep ? handleBack : leaveLogin}
         className="text-[#374151] dark:text-[#c7c7cc]"
         style={loginBackButtonStyle}
         aria-label={isStandaloneStep ? 'Back to login' : 'Close login'}
