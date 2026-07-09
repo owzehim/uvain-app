@@ -2229,14 +2229,12 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 44px)',
-                bottom: eventCardOpen ? '48%' : '250px',
-                transition: 'bottom 0.28s ease',
+                top: 'calc(env(safe-area-inset-top) + 48px)',
                 zIndex: 5,
               }}
             >
               <div
-                key={`event-bg-${displayEvent.id}`}
+                key={`event-bg-date-${displayEvent.id}`}
                 className="mx-auto max-w-md"
                 style={{
                   animation:
@@ -2246,7 +2244,7 @@ const effectiveDateColor = isDragging
                 }}
               >
                 {eventDateParts && (
-                  <div className="mb-5 flex items-end gap-3">
+                  <div className="flex items-end gap-3">
                     <span className="text-[64px] font-black leading-none tracking-tight text-orange-500">
                       {eventDateParts.dateNum}
                     </span>
@@ -2260,7 +2258,28 @@ const effectiveDateColor = isDragging
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
 
+            <div
+              className="absolute left-0 right-0 px-6"
+              style={{
+                top: 'calc(env(safe-area-inset-top) + 142px)',
+                bottom: eventCardOpen ? '48%' : '250px',
+                transition: 'bottom 0.28s ease',
+                zIndex: 5,
+              }}
+            >
+              <div
+                key={`event-bg-details-${displayEvent.id}`}
+                className="mx-auto max-w-md"
+                style={{
+                  animation:
+                    eventSwipeDirection === 0
+                      ? 'none'
+                      : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
+                }}
+              >
                 <p className="mb-3 inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
                   {getEventStatus(displayEvent)}
                 </p>
