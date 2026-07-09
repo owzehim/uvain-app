@@ -755,6 +755,8 @@ function MembershipCard({
 function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
+  const [cardLiftOffset, setCardLiftOffset] = useState(0)
+  const [isCardDragging, setIsCardDragging] = useState(false)
   const [cardFlipped, setCardFlipped] = useState(false)
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
@@ -775,19 +777,10 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
   const getMaxLift = () =>
     (activityRef.current?.offsetHeight ?? 260) + cardRestingOffsetPx + liftedActivityGapPx
 
-  const setTranslate = (offset) => {
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transform =
-        `translateY(calc(${cardRestingOffsetY} - ${offset}px))`
-    }
-  }
-
   const handleTouchStart = (e) => {
     if (cardFlipped) return
     touchStartY.current = e.touches[0].clientY
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'none'
-    }
+    setIsCardDragging(true)
   }
 
   const handleTouchMove = (e) => {
@@ -813,22 +806,15 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
       nextLifted = false
     }
 
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition =
-        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
-    }
-    setTranslate(nextLifted ? max : 0)
+    setCardLiftOffset(nextLifted ? max : 0)
     liftedRef.current = nextLifted
     setLifted(nextLifted)
+    setIsCardDragging(false)
     touchStartY.current = null
   }
 
   useEffect(() => {
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition =
-        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
-    }
-    setTranslate(lifted ? getMaxLift() : 0)
+    setCardLiftOffset(lifted ? getMaxLift() : 0)
     if (onLiftChange) onLiftChange(lifted)
   }, [lifted, onLiftChange])
 
@@ -930,6 +916,11 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
           alignItems: 'center',
           justifyContent: 'center',
           padding: '0 16px',
+          transform: `translate3d(0, calc(${cardRestingOffsetY} - ${cardLiftOffset}px), 0)`,
+          transition: isCardDragging
+            ? 'none'
+            : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+          willChange: 'transform',
         }}
       >
         <div
