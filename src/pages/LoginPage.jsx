@@ -55,7 +55,12 @@ export default function LoginPage() {
       <div
         className="mx-auto flex min-h-[100dvh] w-full max-w-sm items-center px-2 py-8"
       >
-        <div className="w-full">
+        <div
+          className="w-full"
+          style={{
+            transform: step === 'credentials' ? 'translateY(-28px)' : undefined,
+          }}
+        >
           {!isStandaloneStep && (
             <>
               <div className="mb-3 flex justify-center">
