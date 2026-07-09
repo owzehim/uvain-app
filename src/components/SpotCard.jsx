@@ -222,11 +222,11 @@ function Lightbox({ imgs, startIndex, onClose }) {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
         @keyframes lightboxImageSlideInFromRight {
-          from { opacity: 0.72; transform: translate(28px, -18px); }
+          from { opacity: 0.68; transform: translate(44px, -18px); }
           to { opacity: 1; transform: translate(0, -18px); }
         }
         @keyframes lightboxImageSlideInFromLeft {
-          from { opacity: 0.72; transform: translate(-28px, -18px); }
+          from { opacity: 0.68; transform: translate(-44px, -18px); }
           to { opacity: 1; transform: translate(0, -18px); }
         }
         @keyframes lightboxImageFadeIn {
@@ -234,13 +234,13 @@ function Lightbox({ imgs, startIndex, onClose }) {
           to { opacity: 1; transform: translateY(-18px); }
         }
         .lightbox-image-slide {
-          animation: lightboxImageFadeIn 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageFadeIn 0.34s cubic-bezier(0.22,1,0.36,1);
         }
         .lightbox-image-slide-right {
-          animation: lightboxImageSlideInFromRight 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageSlideInFromRight 0.34s cubic-bezier(0.22,1,0.36,1);
         }
         .lightbox-image-slide-left {
-          animation: lightboxImageSlideInFromLeft 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageSlideInFromLeft 0.34s cubic-bezier(0.22,1,0.36,1);
         }
       `}</style>
 
