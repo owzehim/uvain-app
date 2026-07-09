@@ -2229,7 +2229,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                top: 'calc(env(safe-area-inset-top) + 48px)',
+                top: 'calc(env(safe-area-inset-top) + 22px)',
                 zIndex: 5,
               }}
             >
