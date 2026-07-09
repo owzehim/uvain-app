@@ -20,6 +20,26 @@ export default function PublicPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    const resetScroll = () => {
+      window.scrollTo(0, 0)
+      document.scrollingElement?.scrollTo?.(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+
+    resetScroll()
+    const frame = window.requestAnimationFrame(resetScroll)
+    const shortTimer = window.setTimeout(resetScroll, 120)
+    const keyboardTimer = window.setTimeout(resetScroll, 420)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(shortTimer)
+      window.clearTimeout(keyboardTimer)
+    }
+  }, [])
+
+  useEffect(() => {
     const fetchRestaurants = async () => {
       const { data } = await supabase
         .from('restaurants')
