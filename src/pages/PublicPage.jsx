@@ -8,6 +8,7 @@ import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { MapPin, Lock, ForkKnife, CalendarDots, Users } from '@phosphor-icons/react'
 
 const PUBLIC_ACTIVE_TAB_KEY = 'uvain_public_active_tab'
+const PUBLIC_BOTTOM_TAB_PADDING = 42
 
 function getStoredPublicTab() {
   return 'membership'
@@ -19,14 +20,23 @@ export default function PublicPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    document.activeElement?.blur?.()
-    window.scrollTo(0, 0)
-
-    const frame = window.requestAnimationFrame(() => {
+    const resetScroll = () => {
       window.scrollTo(0, 0)
-    })
+      document.scrollingElement?.scrollTo?.(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
 
-    return () => window.cancelAnimationFrame(frame)
+    resetScroll()
+    const frame = window.requestAnimationFrame(resetScroll)
+    const shortTimer = window.setTimeout(resetScroll, 120)
+    const keyboardTimer = window.setTimeout(resetScroll, 420)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(shortTimer)
+      window.clearTimeout(keyboardTimer)
+    }
   }, [])
 
   useEffect(() => {
@@ -133,10 +143,12 @@ export default function PublicPage() {
       <div
         className="bg-white flex flex-shrink-0 select-none dark:bg-[#121212]"
         style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+          paddingBottom: PUBLIC_BOTTOM_TAB_PADDING,
           userSelect: 'none',
           WebkitUserSelect: 'none',
           WebkitTapHighlightColor: 'transparent',
+          position: 'relative',
+          zIndex: 40,
         }}
       >
         {[
@@ -390,7 +402,7 @@ const MEMBERSHIP_SLIDES = [
 
 const SLIDE_INTERVAL_MS = 12000
 const IMAGE_INTERVAL_MS = 2600
-const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
+const BOTTOM_TAB_OFFSET = `${PUBLIC_BOTTOM_TAB_PADDING + 45}px`
 
 function MembershipCarousel() {
   const navigate = useNavigate()
