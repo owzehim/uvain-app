@@ -1724,7 +1724,7 @@ function EventsTab({ events }) {
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
   const eventDateNumberStretch = 1.35
-  const eventDateTop = '42px'
+  const eventDateTop = '20px'
   const eventDetailsTop = '186px'
   const eventCollapsedCardHeight = '260px'
   const eventCardTranslateY = eventCardOpen
