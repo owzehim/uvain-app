@@ -2291,7 +2291,7 @@ const effectiveDateColor = isDragging
                       : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                 }}
               >
-                <p className="mb-3 inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
+                <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.12em] text-orange-500">
                   {getEventStatus(displayEvent)}
                 </p>
 
