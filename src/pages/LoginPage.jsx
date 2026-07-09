@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { CaretLeft } from '@phosphor-icons/react'
 import { useLogin } from '../hooks/useLogin'
 
+const KEYBOARD_CLOSE_DELAY_MS = 360
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const {
@@ -31,7 +33,11 @@ export default function LoginPage() {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur()
     }
-    navigate('/public', { replace: true })
+
+    window.setTimeout(() => {
+      window.scrollTo(0, 0)
+      navigate('/public', { replace: true })
+    }, KEYBOARD_CLOSE_DELAY_MS)
   }
 
   return (
