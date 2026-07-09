@@ -8,6 +8,9 @@ import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { MapPin, Lock, ForkKnife, CalendarDots, Users } from '@phosphor-icons/react'
 
 const PUBLIC_ACTIVE_TAB_KEY = 'uvain_public_active_tab'
+const PUBLIC_TAB_BAR_HEIGHT = 236
+const PUBLIC_TAB_CONTENT_TOP = 28
+const PUBLIC_HERO_CONTROLS_BOTTOM = 48
 
 function getStoredPublicTab() {
   return 'membership'
@@ -40,13 +43,13 @@ export default function PublicPage() {
   return (
     <div
       className={
-        'flex flex-col overflow-hidden no-highlight-zone ' +
+        'fixed inset-x-0 top-0 overflow-hidden no-highlight-zone ' +
         (activeTab === 'membership'
           ? 'bg-black'
           : 'bg-white dark:bg-[#121212]')
       }
       style={{
-        height: '100dvh',
+        height: '100svh',
         userSelect: 'none',
         WebkitUserSelect: 'none',
         WebkitTapHighlightColor: 'transparent',
@@ -112,7 +115,10 @@ export default function PublicPage() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div
+        className="absolute inset-x-0 top-0 overflow-hidden"
+        style={{ bottom: PUBLIC_TAB_BAR_HEIGHT }}
+      >
         <div key={activeTab} className="h-full">
           {activeTab === 'map' && <PublicMapTab restaurants={restaurants} />}
           {activeTab === 'membership' && <MembershipCarousel />}
@@ -120,9 +126,10 @@ export default function PublicPage() {
       </div>
 
       <div
-        className="bg-white flex flex-shrink-0 select-none dark:bg-[#121212]"
+        className="absolute inset-x-0 bottom-0 bg-white flex select-none dark:bg-[#121212]"
         style={{
-          paddingBottom: 'calc(min(env(safe-area-inset-bottom), 12px) + 8px)',
+          height: PUBLIC_TAB_BAR_HEIGHT,
+          paddingTop: PUBLIC_TAB_CONTENT_TOP,
           userSelect: 'none',
           WebkitUserSelect: 'none',
           WebkitTapHighlightColor: 'transparent',
@@ -379,7 +386,6 @@ const MEMBERSHIP_SLIDES = [
 
 const SLIDE_INTERVAL_MS = 12000
 const IMAGE_INTERVAL_MS = 2600
-const BOTTOM_TAB_OFFSET = 'calc(min(env(safe-area-inset-bottom), 12px) + 8px + 45px)'
 
 function MembershipCarousel() {
   const navigate = useNavigate()
@@ -576,7 +582,7 @@ function MembershipCarousel() {
       <div
         className="pointer-events-none absolute left-0 right-0 px-6 text-left"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 62px)`,
+          bottom: PUBLIC_HERO_CONTROLS_BOTTOM + 104,
           zIndex: 20,
         }}
       >
@@ -593,7 +599,7 @@ function MembershipCarousel() {
       <div
         className="pointer-events-none absolute left-0 right-0 flex justify-center gap-1.5"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} + 24px)`,
+          bottom: PUBLIC_HERO_CONTROLS_BOTTOM + 66,
           zIndex: 25,
         }}
       >
@@ -619,7 +625,7 @@ function MembershipCarousel() {
       <div
         className="absolute left-0 right-0 px-5"
         style={{
-          bottom: `calc(${BOTTOM_TAB_OFFSET} - 42px)`,
+          bottom: PUBLIC_HERO_CONTROLS_BOTTOM,
           zIndex: 30,
         }}
       >

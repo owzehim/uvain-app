@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CaretLeft } from '@phosphor-icons/react'
 import { useLogin } from '../hooks/useLogin'
@@ -29,42 +28,13 @@ export default function LoginPage() {
   const isOtpStep = step === 'otp'
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
-  useEffect(() => {
-    const html = document.documentElement
-    const body = document.body
-    const previousHtmlOverflow = html.style.overflow
-    const previousBodyOverflow = body.style.overflow
-    const previousBodyHeight = body.style.height
-    const previousBodyTouchAction = body.style.touchAction
-
-    html.style.overflow = 'hidden'
-    body.style.overflow = 'hidden'
-    body.style.height = '100dvh'
-    body.style.touchAction = 'manipulation'
-
-    const syncLoginViewportHeight = () => {
-      window.scrollTo(0, 0)
-    }
-
-    window.addEventListener('scroll', syncLoginViewportHeight, { passive: true })
-
-    syncLoginViewportHeight()
-
-    return () => {
-      html.style.overflow = previousHtmlOverflow
-      body.style.overflow = previousBodyOverflow
-      body.style.height = previousBodyHeight
-      body.style.touchAction = previousBodyTouchAction
-      window.removeEventListener('scroll', syncLoginViewportHeight)
-    }
-  }, [])
-
   return (
     <div
-      className="fixed inset-x-0 top-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 pt-[16vh] dark:bg-[#121212]"
+      className="fixed inset-x-0 top-0 flex items-start justify-center overflow-y-auto overscroll-contain bg-white px-4 dark:bg-[#121212]"
       style={{
-        height: '100dvh',
-        paddingBottom: 'calc(min(env(safe-area-inset-bottom), 12px) + 24px)',
+        height: '100svh',
+        paddingTop: '16svh',
+        paddingBottom: 24,
       }}
     >
       <button
@@ -297,7 +267,7 @@ function LoginField({ label, children }) {
 const loginBackButtonStyle = {
   position: 'fixed',
   left: '14px',
-  top: 'calc(env(safe-area-inset-top) + 6px)',
+  top: 'max(18px, calc(env(safe-area-inset-top) + 6px))',
   zIndex: 10,
   background: 'none',
   border: 'none',
