@@ -2249,7 +2249,7 @@ const effectiveDateColor = isDragging
               >
                 {eventDateParts && (
                   <div className="flex items-end gap-3">
-                    <span className="text-[24px] font-black leading-none tracking-tight text-orange-500">
+                    <span className="text-[64px] font-black leading-none tracking-tight text-orange-500">
                       {eventDateParts.dateNum}
                     </span>
                     <div className="pb-1">
