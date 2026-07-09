@@ -121,7 +121,7 @@ export default function PublicPage() {
       <div
         className="bg-white flex flex-shrink-0 select-none dark:bg-[#121212]"
         style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+          paddingBottom: `calc(${PUBLIC_SAFE_AREA_BOTTOM} + 8px)`,
           userSelect: 'none',
           WebkitUserSelect: 'none',
           WebkitTapHighlightColor: 'transparent',
@@ -378,7 +378,8 @@ const MEMBERSHIP_SLIDES = [
 
 const SLIDE_INTERVAL_MS = 12000
 const IMAGE_INTERVAL_MS = 2600
-const BOTTOM_TAB_OFFSET = 'calc(env(safe-area-inset-bottom) + 8px + 45px)'
+const PUBLIC_SAFE_AREA_BOTTOM = 'min(env(safe-area-inset-bottom), 34px)'
+const BOTTOM_TAB_OFFSET = `calc(${PUBLIC_SAFE_AREA_BOTTOM} + 8px + 45px)`
 
 function MembershipCarousel() {
   const navigate = useNavigate()
