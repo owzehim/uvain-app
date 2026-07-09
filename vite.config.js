@@ -4,16 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  define: {
-    __APP_BUILD_ID__: JSON.stringify(new Date().toISOString()),
-  },
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
-      cleanupOutdatedCaches: true,
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
