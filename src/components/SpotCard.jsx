@@ -401,8 +401,8 @@ export function SpotCard({
   const COMPACT_HEIGHT = Math.min(WIN_H * 0.22, 150)
   const FULL_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MIN_HEIGHT = spotCardHeightMode === 'full' ? FULL_HEIGHT : COMPACT_HEIGHT
-  const CATEGORY_SLIDER_BOTTOM = 92
-  const MAX_HEIGHT = isDesktop ? 460 : Math.max(320, WIN_H - CATEGORY_SLIDER_BOTTOM)
+  const EXPANDED_TOP_LIMIT = 248
+  const MAX_HEIGHT = isDesktop ? 460 : Math.max(320, WIN_H - EXPANDED_TOP_LIMIT)
   const SHEET_RADIUS = 20
 
   // Trigger animation on mount
