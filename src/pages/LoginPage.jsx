@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CaretLeft } from '@phosphor-icons/react'
 import { useLogin } from '../hooks/useLogin'
@@ -7,7 +6,6 @@ const KEYBOARD_CLOSE_DELAY_MS = 360
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const scrollResetFrameRef = useRef(null)
   const {
     step,
     email,
@@ -31,57 +29,19 @@ export default function LoginPage() {
 
   const isStandaloneStep = step === 'otp' || step === 'forgot'
 
-  const resetDocumentScroll = () => {
-    window.scrollTo(0, 0)
-    document.scrollingElement?.scrollTo?.(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-  }
-
-  useEffect(() => {
-    const keepLoginAnchored = () => {
-      if (scrollResetFrameRef.current) return
-
-      scrollResetFrameRef.current = window.requestAnimationFrame(() => {
-        scrollResetFrameRef.current = null
-        resetDocumentScroll()
-      })
-    }
-
-    resetDocumentScroll()
-    window.addEventListener('scroll', keepLoginAnchored, { passive: true })
-    window.visualViewport?.addEventListener('scroll', keepLoginAnchored)
-    window.visualViewport?.addEventListener('resize', keepLoginAnchored)
-
-    return () => {
-      window.removeEventListener('scroll', keepLoginAnchored)
-      window.visualViewport?.removeEventListener('scroll', keepLoginAnchored)
-      window.visualViewport?.removeEventListener('resize', keepLoginAnchored)
-      if (scrollResetFrameRef.current) {
-        window.cancelAnimationFrame(scrollResetFrameRef.current)
-        scrollResetFrameRef.current = null
-      }
-      resetDocumentScroll()
-    }
-  }, [])
-
   const closeLogin = () => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur()
     }
 
-    resetDocumentScroll()
     window.setTimeout(() => {
-      resetDocumentScroll()
+      window.scrollTo(0, 0)
       navigate('/public', { replace: true })
     }, KEYBOARD_CLOSE_DELAY_MS)
   }
 
   return (
-    <main
-      className="fixed inset-0 overflow-hidden bg-white px-4 dark:bg-[#121212]"
-      onTouchMove={(event) => event.preventDefault()}
-    >
+    <main className="relative min-h-[100dvh] overflow-y-auto bg-white px-4 dark:bg-[#121212]">
       <button
         type="button"
         onClick={isStandaloneStep ? handleBack : closeLogin}
@@ -93,7 +53,7 @@ export default function LoginPage() {
       </button>
 
       <div
-        className="mx-auto flex h-full w-full max-w-sm items-center px-2 py-8"
+        className="mx-auto flex min-h-[100dvh] w-full max-w-sm items-center px-2 py-8"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 32px)' }}
       >
         <div className="w-full">
