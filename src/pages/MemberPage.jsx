@@ -1052,12 +1052,16 @@ function NavBtn({ onClick, children, style = {} }) {
 function EventLightbox({ imgs, startIndex = 0, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
+  const [slideDirection, setSlideDirection] = useState(0)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
   const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 10px)'
 
   const goToIndex = (nextIndex) => {
-    setIndex(Math.max(0, Math.min(nextIndex, imgs.length - 1)))
+    const clampedIndex = Math.max(0, Math.min(nextIndex, imgs.length - 1))
+    if (clampedIndex === index) return
+    setSlideDirection(clampedIndex > index ? 1 : -1)
+    setIndex(clampedIndex)
   }
 
   // zoom-in + fade-in on open
@@ -1078,19 +1082,19 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
 
   useEffect(() => {
     setIndex(startIndex)
+    setSlideDirection(0)
   }, [startIndex, imgs])
 
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') handleClose()
-      if (e.key === 'ArrowRight')
-        setIndex((i) => Math.min(i + 1, imgs.length - 1))
-      if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
+      if (e.key === 'ArrowRight') goToIndex(index + 1)
+      if (e.key === 'ArrowLeft') goToIndex(index - 1)
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imgs.length])
+  }, [imgs.length, index])
 
   const handleClose = () => {
     setVisible(false)
@@ -1142,12 +1146,26 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
-        @keyframes lightboxImageSlideIn {
-          from { opacity: 0.72; transform: translate(22px, -18px); }
+        @keyframes lightboxImageSlideInFromRight {
+          from { opacity: 0.72; transform: translate(28px, -18px); }
           to { opacity: 1; transform: translate(0, -18px); }
         }
+        @keyframes lightboxImageSlideInFromLeft {
+          from { opacity: 0.72; transform: translate(-28px, -18px); }
+          to { opacity: 1; transform: translate(0, -18px); }
+        }
+        @keyframes lightboxImageFadeIn {
+          from { opacity: 0.72; transform: translateY(-18px); }
+          to { opacity: 1; transform: translateY(-18px); }
+        }
         .lightbox-image-slide {
-          animation: lightboxImageSlideIn 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageFadeIn 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        .lightbox-image-slide-right {
+          animation: lightboxImageSlideInFromRight 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        .lightbox-image-slide-left {
+          animation: lightboxImageSlideInFromLeft 0.28s cubic-bezier(0.22,1,0.36,1);
         }
       `}</style>
       <div
@@ -1188,7 +1206,13 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
           {/* Image */}
           <img
             key={index}
-            className="lightbox-image-slide"
+            className={
+              slideDirection > 0
+                ? 'lightbox-image-slide-right'
+                : slideDirection < 0
+                  ? 'lightbox-image-slide-left'
+                  : 'lightbox-image-slide'
+            }
             src={imgs[index]}
             decoding="async"
             fetchPriority="high"

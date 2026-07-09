@@ -133,12 +133,16 @@ function TagBarChart({ tagCounts, reviewCount }) {
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
+  const [slideDirection, setSlideDirection] = useState(0)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
   const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 10px)'
 
   const goToIndex = (nextIndex) => {
-    setIndex(Math.max(0, Math.min(nextIndex, imgs.length - 1)))
+    const clampedIndex = Math.max(0, Math.min(nextIndex, imgs.length - 1))
+    if (clampedIndex === index) return
+    setSlideDirection(clampedIndex > index ? 1 : -1)
+    setIndex(clampedIndex)
   }
 
   // zoom-in + fade-in on open
@@ -217,12 +221,26 @@ function Lightbox({ imgs, startIndex, onClose }) {
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
-        @keyframes lightboxImageSlideIn {
-          from { opacity: 0.72; }
-          to { opacity: 1; }
+        @keyframes lightboxImageSlideInFromRight {
+          from { opacity: 0.72; transform: translate(28px, -18px); }
+          to { opacity: 1; transform: translate(0, -18px); }
+        }
+        @keyframes lightboxImageSlideInFromLeft {
+          from { opacity: 0.72; transform: translate(-28px, -18px); }
+          to { opacity: 1; transform: translate(0, -18px); }
+        }
+        @keyframes lightboxImageFadeIn {
+          from { opacity: 0.72; transform: translateY(-18px); }
+          to { opacity: 1; transform: translateY(-18px); }
         }
         .lightbox-image-slide {
-          animation: lightboxImageSlideIn 0.28s cubic-bezier(0.22,1,0.36,1);
+          animation: lightboxImageFadeIn 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        .lightbox-image-slide-right {
+          animation: lightboxImageSlideInFromRight 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        .lightbox-image-slide-left {
+          animation: lightboxImageSlideInFromLeft 0.28s cubic-bezier(0.22,1,0.36,1);
         }
       `}</style>
 
@@ -249,7 +267,13 @@ function Lightbox({ imgs, startIndex, onClose }) {
           alt={'사진 ' + (index + 1)}
           onClick={(e) => e.stopPropagation()}
           key={index}
-          className={`${visible ? 'lightbox-zoom-enter ' : ''}lightbox-image-slide`}
+          className={`${visible ? 'lightbox-zoom-enter ' : ''}${
+            slideDirection > 0
+              ? 'lightbox-image-slide-right'
+              : slideDirection < 0
+                ? 'lightbox-image-slide-left'
+                : 'lightbox-image-slide'
+          }`}
           decoding="async"
           fetchPriority="high"
           loading="eager"
