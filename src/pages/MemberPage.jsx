@@ -2245,7 +2245,7 @@ const effectiveDateColor = isDragging
                 {eventDateParts && (
                   <div className="flex flex-col items-start">
                     <span
-  className="text-[89px] font-black leading-[0.82] tracking-normal text-gray-950 dark:text-white"
+  className="text-[89px] font-medium leading-[0.82] tracking-normal text-gray-950 dark:text-white"
   style={{
     fontFamily: '"Handjet", system-ui, sans-serif',
     transform: 'scaleY(1.25)',
