@@ -1724,8 +1724,8 @@ function EventsTab({ events }) {
   const eventDateTopNudge = '-4px'
   const eventDateBottomNudge = '6px'
   const eventDateNumberStretch = 1.35
-  const eventDateTop = '66px'
-  const eventDetailsTop = '186px'
+  const eventDateTop = '42px'
+  const eventDetailsTop = '250px'
   const eventCollapsedCardHeight = '260px'
   const eventCardTranslateY = eventCardOpen
     ? '0'
@@ -2244,17 +2244,17 @@ const effectiveDateColor = isDragging
               >
                 {eventDateParts && (
                   <div className="flex flex-col items-start">
-                    <span className="text-[92px] font-black leading-[0.82] tracking-normal text-gray-950 dark:text-white">
+                    <span className="text-[55px] font-black leading-[0.82] tracking-normal text-gray-950 dark:text-white">
                       {eventDateParts.dateNum}
                     </span>
-                    <p className="mt-3 text-[22px] font-black leading-none uppercase text-gray-950 dark:text-white">
+                    <p className="mt-3 text-[34px] font-black leading-none uppercase text-gray-950 dark:text-white">
                       {eventDateParts.monthName}
                     </p>
                     <div className="mt-1 flex items-baseline gap-5">
-                      <p className="text-[22px] font-bold leading-none text-gray-500 dark:text-gray-400">
+                      <p className="text-[34px] font-bold leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.dayName}
                       </p>
-                      <p className="text-[22px] font-medium leading-none text-gray-400 dark:text-gray-500">
+                      <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.year}
                       </p>
                     </div>
@@ -2290,7 +2290,7 @@ const effectiveDateColor = isDragging
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
-                <div className="mt-6 space-y-3 text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className="mt-6 space-y-3 text-[13px] font-medium text-gray-700 dark:text-gray-200">
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
                       <Calendar size={18} weight="fill" color="#f97316" />
