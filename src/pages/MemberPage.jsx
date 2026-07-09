@@ -152,7 +152,8 @@ export default function MemberPage() {
 
   return (
     <div
-      className="member-app-shell fixed inset-0 flex flex-col bg-white overflow-hidden dark:bg-[#121212]"
+      className="member-app-shell relative flex flex-col bg-white overflow-hidden dark:bg-[#121212]"
+      style={{ height: '100dvh' }}
     >
       {/* Review modal */}
       <ReviewModal

@@ -2,10 +2,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --app-safe-area-bottom: min(env(safe-area-inset-bottom), 12px);
-}
-
 html,
 body {
   overscroll-behavior: none;
