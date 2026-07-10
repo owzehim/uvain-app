@@ -699,17 +699,17 @@ export function SpotCard({
                 <img
                   src="/spotcard-speech-bubble.png"
                   alt=""
-                  className="block w-[96%] origin-left select-none"
+                  className="block w-[97.5%] origin-left select-none"
                   draggable={false}
                 />
 
                 <div
                   className="absolute flex items-center justify-center px-6 sm:px-8 md:px-10"
                   style={{
-                    left: '4%',
-                    right: '4%',
+                    left: '8%',
+                    right: '8%',
                     top: '10%',
-                    bottom: '0%',
+                    bottom: '15%',
                     overflow: 'hidden',
                     border: '1px dashed rgba(255,255,255,0.8)',
                   }}
