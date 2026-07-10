@@ -5,7 +5,7 @@ import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
-import { QrCode, Calendar, MapPin, NavigationArrow, Door, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
+import { QrCode, Calendar, Clock, MapPin, NavigationArrow, Door, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -2311,7 +2311,7 @@ const effectiveDateColor = isDragging
                 <div className="mt-6 space-y-3 text-[13px] font-medium text-gray-700 dark:text-gray-200">
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
-                      <Calendar size={18} weight="fill" color="#f97316" />
+                      <Clock size={18} weight="fill" color="#f97316" />
                       <span>{formatTimeRange(displayEvent)}</span>
                     </div>
                   )}
