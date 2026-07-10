@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, Ticket, Star } from '@phosphor-icons/react'
+import { MapPin, Ticket, Star, ChefHat, Notepad, UserCheck } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
@@ -84,7 +84,10 @@ function TagBarChart({ tagCounts, reviewCount }) {
     <div className="pb-4">
       <div className="pt-3">
         <div className="mb-3">
-          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+            <UserCheck size={14} weight="regular" />
+            멤버 평가
+          </p>
         </div>
 
         <div className="flex flex-col gap-2.5">
@@ -395,6 +398,7 @@ export function SpotCard({
   )
 
   const isDesktop = WIN_W >= 768
+  const isTallSpotCard = selected?.spot_card_height === 'tall'
   const spotCardHeightMode =
     selected?.spot_card_height === 'full' || selected?.spot_card_height === 'tall'
       ? 'full'
@@ -508,6 +512,13 @@ export function SpotCard({
   }
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
+  const isCollapsed = cardHeight < MAX_HEIGHT * 0.85
+  const isTallCollapsed = isTallSpotCard && isCollapsed
+  const speechBubbleGapPx = isTallSpotCard && !hasImages
+    ? isCollapsed
+      ? 8
+      : 16
+    : 32
   const iconSvg = CATEGORY_ICONS[selected.category]
 
   // default: show stars unless admin explicitly turned them off
@@ -685,41 +696,33 @@ export function SpotCard({
           )}
 
           {/* 한 줄 평가 */}
-          {selected.one_line_review && (
-            <div className="mt-8 mb-3">
-              <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
-                한줄평
+          {selected.one_line_review && (!isTallCollapsed || !hasImages) && (
+            <div className="mb-3" style={{ marginTop: speechBubbleGapPx }}>
+              <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
+                <ChefHat size={14} weight="regular" />
+                우슐랭 평가원
               </p>
               <div className="relative w-full">
-                <svg
-                  className="w-full"
-                  viewBox="0 0 360 80"
-                  preserveAspectRatio="xMidYMid meet"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{ minHeight: '56px' }}
-                >
-                  <rect
-                    x="0"
-                    y="0"
-                    width="360"
-                    height="56"
-                    rx="16"
-                    ry="16"
-                    fill="#f97316"
-                  />
-                  <path
-                    d="M 40 56 C 30 60 20 65 15 75 C 18 70 22 62 25 56 Z"
-                    fill="#f97316"
-                  />
-                </svg>
+                <img
+                  src="/spotcard-speech-bubble.png"
+                  alt=""
+                  className="block w-[97.5%] origin-left select-none"
+                  draggable={false}
+                />
 
                 <div
-                  className="absolute left-0 right-0 top-0 flex items-center justify-center px-3 sm:px-4 md:px-6"
-                  style={{ height: '56px' }}
+                  className="absolute flex items-center justify-center px-6 sm:px-8 md:px-10"
+                  style={{
+                    left: '8%',
+                    right: '8%',
+                    top: '10%',
+                    bottom: '15%',
+                    overflow: 'hidden',
+                  }}
                 >
                   <RichText
                     text={selected.one_line_review}
-                    className="font-semibold text-white text-base sm:text-lg text-center block"
+                    className="block max-w-full break-keep text-center text-[clamp(14px,4vw,18px)] font-semibold leading-tight text-white"
                   />
                 </div>
               </div>
@@ -727,7 +730,7 @@ export function SpotCard({
           )}
 
           {/* Member review bar chart */}
-          {hasReviews && (
+          {hasReviews && !isTallCollapsed && (
             <TagBarChart
               tagCounts={summary.tag_counts}
               reviewCount={summary.review_count}
@@ -735,11 +738,12 @@ export function SpotCard({
           )}
 
           {/* 임원 리뷰 */}
-          {(selected.review || selected.reviewer_name) && (
+          {!isTallCollapsed && (selected.review || selected.reviewer_name) && (
             <div className="pb-4">
               <div className="pt-3">
-                <p className="text-xs font-semibold text-gray-500 mb-1.5">
-                  임원 리뷰
+                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                  <Notepad size={14} weight="regular" />
+                  임원 추천 메뉴
                 </p>
                 {selected.review && (
                   <RichText
