@@ -5,7 +5,7 @@ import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
-import { QrCode, Calendar, MapPin, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
+import { QrCode, Calendar, MapPin, NavigationArrow, Door, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -2317,14 +2317,15 @@ const effectiveDateColor = isDragging
                   )}
                   {displayEvent.location && (
                     <div className="flex items-center gap-2">
-                      <MapPin size={18} weight="fill" color="#f97316" />
+                      <NavigationArrow size={18} weight="fill" color="#f97316" />
                       <span>{plainText(displayEvent.location)}</span>
                     </div>
                   )}
                   {displayEvent.location_description && (
-                    <p className="pl-7 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
-                      {plainText(displayEvent.location_description)}
-                    </p>
+                    <div className="flex items-center gap-2 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                      <Door size={18} weight="fill" color="#f97316" />
+                      <span>{plainText(displayEvent.location_description)}</span>
+                    </div>
                   )}
                 </div>
               </div>
