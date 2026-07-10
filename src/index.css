@@ -64,8 +64,37 @@ body {
   display: none;
 }
 
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 .event-participation-float {
   animation: participationSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.event-description-rich,
+.event-description-rich * {
+  color: #111827 !important;
+}
+
+.dark .event-description-rich,
+.dark .event-description-rich * {
+  color: #ffffff !important;
+}
+
+.event-description-rich a,
+.event-description-rich a * {
+  color: #2563eb !important;
+}
+
+.dark .event-description-rich a,
+.dark .event-description-rich a * {
+  color: #60a5fa !important;
 }
 
 html {

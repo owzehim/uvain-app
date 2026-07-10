@@ -41,7 +41,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-[100dvh] overflow-y-auto bg-white px-4 dark:bg-[#121212]">
+    <main className="scrollbar-hidden relative min-h-[100dvh] overflow-y-auto bg-white px-4 dark:bg-[#121212]">
       <button
         type="button"
         onClick={isStandaloneStep ? handleBack : closeLogin}
