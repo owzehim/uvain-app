@@ -90,7 +90,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
           </p>
         </div>
 
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2.5 pl-4">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
             const pct =
@@ -339,7 +339,7 @@ function ImageThumbnails({ imgs, onTap }) {
     >
       {imgs.map((url, i) => (
         <div
-          key={i}
+          key={`${url}-${i}`}
           onClick={() => onTap(i)}
           className="flex-shrink-0 rounded-xl overflow-hidden bg-gray-100"
           style={{
@@ -351,7 +351,9 @@ function ImageThumbnails({ imgs, onTap }) {
           <img
             src={url}
             alt={'사진 ' + (i + 1)}
-            loading={i === 0 ? 'eager' : 'lazy'}
+            loading="eager"
+            decoding="async"
+            fetchPriority={i === 0 ? 'high' : 'auto'}
             style={{
               width: '100px',
               height: '125px',
@@ -408,6 +410,15 @@ export function SpotCard({
   const MIN_HEIGHT = spotCardHeightMode === 'full' ? FULL_HEIGHT : COMPACT_HEIGHT
   const MAX_HEIGHT = isDesktop ? 460 : Math.max(320, sheetMaxHeight || WIN_H)
   const SHEET_RADIUS = 20
+
+  useEffect(() => {
+    if (typeof Image === 'undefined' || imgs.length === 0) return
+    imgs.forEach((url) => {
+      const img = new Image()
+      img.decoding = 'async'
+      img.src = url
+    })
+  }, [imgs])
 
   // Trigger animation on mount
   useEffect(() => {
@@ -700,7 +711,7 @@ export function SpotCard({
             <div className="mb-3" style={{ marginTop: speechBubbleGapPx }}>
               <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
                 <ChefHat size={14} weight="regular" />
-                우슐랭 평가원
+                우슐랭 평가
               </p>
               <div className="relative w-full">
                 <img
@@ -748,11 +759,11 @@ export function SpotCard({
                 {selected.review && (
                   <RichText
                     text={selected.review}
-                    className="text-xs text-gray-600 block"
+                    className="block pl-4 text-xs text-gray-600"
                   />
                 )}
                 {selected.reviewer_name && (
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="mt-0.5 pl-4 text-xs text-gray-400">
                     {'— ' + selected.reviewer_name}
                   </p>
                 )}
