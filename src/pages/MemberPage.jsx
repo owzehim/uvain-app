@@ -744,16 +744,7 @@ function MembershipCard({
               justifyContent: 'center',
             }}
           >
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                opacity: flipped ? 1 : 0,
-                pointerEvents: flipped ? 'auto' : 'none',
-              }}
-            >
-              <QRScanner onScan={onQRScanned} darkMode={darkMode} />
-            </div>
+            {flipped && <QRScanner onScan={onQRScanned} darkMode={darkMode} />}
           </div>
         </div>
       </div>
