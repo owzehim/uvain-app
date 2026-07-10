@@ -1484,6 +1484,20 @@ function EventsTab({ events }) {
     selectedEventRef.current = selectedEvent
   }, [allEvents, selectedEvent])
 
+  useEffect(() => {
+    if (typeof Image === 'undefined' || !allEvents.length) return
+
+    const nearbyImageUrls = [activeEventIndex - 1, activeEventIndex, activeEventIndex + 1]
+      .map((idx) => allEvents[idx]?.image_urls?.[0])
+      .filter(Boolean)
+
+    Array.from(new Set(nearbyImageUrls)).forEach((url) => {
+      const img = new Image()
+      img.decoding = 'async'
+      img.src = url
+    })
+  }, [allEvents, activeEventIndex])
+
   const resetDragState = () => {
     pointerStartY.current = null
     dragBaseIdxRef.current = activeEventIndex
@@ -2244,7 +2258,7 @@ const effectiveDateColor = isDragging
                   WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                <InstagramLogo size={22} weight="fill" />
+                <InstagramLogo size={22} weight="regular" />
               </a>
             )}
 
