@@ -2265,7 +2265,7 @@ const effectiveDateColor = isDragging
 >
   {eventDateParts.dateNum}
 </span>
-                    <p className="mt-5 text-[34px] font-semibold leading-none uppercase text-gray-950 dark:text-white">
+                    <p className="mt-3 text-[34px] font-semibold leading-none uppercase text-gray-950 dark:text-white">
                       {eventDateParts.monthName}
                     </p>
                     <div className="mt-1 flex w-full items-baseline gap-2">
@@ -2363,7 +2363,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                bottom: `calc(${eventCollapsedCardHeight} + 14px)`,
+                bottom: `calc(${eventCollapsedCardHeight} + 6px)`,
                 zIndex: 10,
               }}
             >
