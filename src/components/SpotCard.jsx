@@ -688,7 +688,7 @@ export function SpotCard({
           {selected.one_line_review && (
             <div
               className={`${
-                spotCardHeightMode !== 'full' && !hasImages ? 'mt-6' : 'mt-8'
+                spotCardHeightMode !== 'full' && !hasImages ? 'mt-3' : 'mt-8'
               } mb-3`}
             >
               <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
