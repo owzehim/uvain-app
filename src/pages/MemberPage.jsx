@@ -1857,7 +1857,10 @@ function EventsTab({ events }) {
     if (dy < -42) setEventCardOpen(true)
     if (dy > 42) {
       const scrollTop = eventCardScrollRef.current?.scrollTop || 0
-      if (!eventCardOpen || scrollTop <= 0) setEventCardOpen(false)
+      if (!eventCardOpen || scrollTop <= 0) {
+        if (eventCardScrollRef.current) eventCardScrollRef.current.scrollTop = 0
+        setEventCardOpen(false)
+      }
     }
   }
 
@@ -2083,6 +2086,12 @@ function EventsTab({ events }) {
       setSlide(displayEvent.id, displayImages.length - 1)
     }
   }, [displayEvent, displayImages.length, displayImageSlide])
+
+  useEffect(() => {
+    if (!eventCardOpen && eventCardScrollRef.current) {
+      eventCardScrollRef.current.scrollTop = 0
+    }
+  }, [eventCardOpen, displayEvent?.id])
 
   const PAST_DATE_COLOR = '#4b5563'
 const PAST_DARK_DATE_COLOR = '#BDBDBD'
@@ -2596,7 +2605,7 @@ const effectiveDateColor = isDragging
                     >
                       <RichText
                         text={displayEvent.description}
-                        className="block text-sm leading-relaxed text-gray-700 dark:text-white"
+                        className="event-description-rich block text-sm leading-relaxed text-gray-700 dark:text-white"
                       />
                     </div>
                   )}
