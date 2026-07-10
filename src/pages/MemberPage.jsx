@@ -699,7 +699,7 @@ function MembershipCard({
           height: '100%',
           position: 'relative',
           transformStyle: 'preserve-3d',
-          transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+          transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
@@ -922,7 +922,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
           transform: `translate3d(0, calc(${cardRestingOffsetY} - ${cardLiftOffset}px), 0)`,
           transition: isCardDragging
             ? 'none'
-            : 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+            : 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
           willChange: 'transform',
         }}
       >
@@ -2596,7 +2596,7 @@ const effectiveDateColor = isDragging
                     >
                       <RichText
                         text={displayEvent.description}
-                        className="block text-sm leading-relaxed text-gray-700 dark:text-gray-200"
+                        className="block text-sm leading-relaxed text-gray-700 dark:text-white"
                       />
                     </div>
                   )}
