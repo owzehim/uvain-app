@@ -2256,7 +2256,7 @@ const effectiveDateColor = isDragging
                     <p className="mt-5 text-[34px] font-semibold leading-none uppercase text-gray-950 dark:text-white">
                       {eventDateParts.monthName}
                     </p>
-                    <div className="mt-1 flex items-baseline gap-2">
+                    <div className="mt-1 flex w-full items-baseline gap-2">
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.dayName}
                       </p>
@@ -2266,18 +2266,18 @@ const effectiveDateColor = isDragging
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.year}
                       </p>
-                      <span className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
+                      <span className="hidden text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         •
                       </span>
                       <p
                         className={
-                          'text-[34px] font-medium leading-none ' +
+                          'ml-auto shrink-0 text-right text-[34px] font-medium leading-none ' +
                           (isNextSelected
                             ? 'text-orange-500'
                             : 'text-gray-700 dark:text-gray-200')
                         }
                       >
-                        {getEventStatus(displayEvent)}
+                        ({getEventStatus(displayEvent)})
                       </p>
                     </div>
                   </div>
@@ -2332,7 +2332,7 @@ const effectiveDateColor = isDragging
                     onClick={() => openParticipationForm(displayEvent)}
                     disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
                     className={
-                      'mt-5 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
+                      'mt-5 hidden w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
                       (displayEvent.participation_url && !displayEvent.is_registration_closed
                         ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
                         : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
@@ -2345,6 +2345,34 @@ const effectiveDateColor = isDragging
                       : '참가 링크 없음'}
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <div
+              className="absolute left-0 right-0 px-6"
+              style={{
+                bottom: `calc(${eventCollapsedCardHeight} + 14px)`,
+                zIndex: 10,
+              }}
+            >
+              <div className="mx-auto max-w-md">
+                <button
+                  type="button"
+                  onClick={() => openParticipationForm(displayEvent)}
+                  disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
+                  className={
+                    'flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
+                    (displayEvent.participation_url && !displayEvent.is_registration_closed
+                      ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
+                      : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
+                  }
+                >
+                  {displayEvent.participation_url
+                    ? displayEvent.is_registration_closed
+                      ? '신청 마감'
+                      : '이벤트 참가'
+                    : '참가 링크 없음'}
+                </button>
               </div>
             </div>
 
