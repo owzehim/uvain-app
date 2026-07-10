@@ -675,12 +675,22 @@ export function SpotCard({
           </div>
 
           {/* Images */}
-          {hasImages && (
+          {(hasImages || spotCardHeightMode === 'full') && (
             <div className="mb-3">
-              <ImageThumbnails
-                imgs={imgs}
-                onTap={(i) => setLightboxIndex(i)}
-              />
+              {hasImages ? (
+                <ImageThumbnails
+                  imgs={imgs}
+                  onTap={(i) => setLightboxIndex(i)}
+                />
+              ) : (
+                <div
+                  className="rounded-xl bg-gray-200 dark:bg-gray-800"
+                  style={{
+                    width: '100px',
+                    height: '125px',
+                  }}
+                />
+              )}
             </div>
           )}
 
@@ -705,7 +715,7 @@ export function SpotCard({
                     left: '7%',
                     right: '4%',
                     top: '10%',
-                    height: '58%',
+                    bottom: '52%',
                     overflow: 'hidden',
                     border: '1px dashed rgba(255,255,255,0.8)',
                   }}
