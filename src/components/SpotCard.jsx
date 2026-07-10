@@ -136,7 +136,6 @@ function TagBarChart({ tagCounts, reviewCount }) {
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
-  const [slideDirection, setSlideDirection] = useState(0)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
   const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 10px)'
@@ -144,7 +143,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
   const goToIndex = (nextIndex) => {
     const clampedIndex = Math.max(0, Math.min(nextIndex, imgs.length - 1))
     if (clampedIndex === index) return
-    setSlideDirection(clampedIndex > index ? 1 : -1)
     setIndex(clampedIndex)
   }
 
@@ -224,27 +222,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
-        @keyframes lightboxImageSlideInFromRight {
-          from { opacity: 0.68; transform: translate(44px, -18px); }
-          to { opacity: 1; transform: translate(0, -18px); }
-        }
-        @keyframes lightboxImageSlideInFromLeft {
-          from { opacity: 0.68; transform: translate(-44px, -18px); }
-          to { opacity: 1; transform: translate(0, -18px); }
-        }
-        @keyframes lightboxImageFadeIn {
-          from { opacity: 0.72; transform: translateY(-18px); }
-          to { opacity: 1; transform: translateY(-18px); }
-        }
-        .lightbox-image-slide {
-          animation: lightboxImageFadeIn 0.34s cubic-bezier(0.22,1,0.36,1);
-        }
-        .lightbox-image-slide-right {
-          animation: lightboxImageSlideInFromRight 0.34s cubic-bezier(0.22,1,0.36,1);
-        }
-        .lightbox-image-slide-left {
-          animation: lightboxImageSlideInFromLeft 0.34s cubic-bezier(0.22,1,0.36,1);
-        }
       `}</style>
 
       <div
@@ -264,33 +241,60 @@ function Lightbox({ imgs, startIndex, onClose }) {
           touchAction: 'none',
         }}
       >
-        {/* Image */}
-        <img
-          src={imgs[index]}
-          alt={'사진 ' + (index + 1)}
+        <div
           onClick={(e) => e.stopPropagation()}
-          key={index}
-          className={`${visible ? 'lightbox-zoom-enter ' : ''}${
-            slideDirection > 0
-              ? 'lightbox-image-slide-right'
-              : slideDirection < 0
-                ? 'lightbox-image-slide-left'
-                : 'lightbox-image-slide'
-          }`}
-          decoding="async"
-          fetchPriority="high"
-          loading="eager"
+          className={visible ? 'lightbox-zoom-enter' : ''}
           style={{
+            width: '100%',
             maxWidth: '90vw',
+            height: '90vh',
             maxHeight: '90vh',
-            objectFit: 'contain',
-            borderRadius: 12,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
+            overflow: 'hidden',
             transform: 'translateY(-18px)',
           }}
-        />
+        >
+          <div
+            style={{
+              display: 'flex',
+              width: '100%',
+              height: '100%',
+              transform: `translateX(-${index * 100}%)`,
+              transition: 'transform 0.3s ease',
+            }}
+          >
+            {imgs.map((src, imgIndex) => (
+              <div
+                key={`${src}-${imgIndex}`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <img
+                  src={src}
+                  alt={'Photo ' + (imgIndex + 1)}
+                  decoding="async"
+                  fetchPriority={imgIndex === index ? 'high' : 'auto'}
+                  loading={Math.abs(imgIndex - index) <= 1 ? 'eager' : 'lazy'}
+                  style={{
+                    maxWidth: '90vw',
+                    maxHeight: '90vh',
+                    objectFit: 'contain',
+                    borderRadius: 12,
+                    boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                  }}
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Dots */}
         {imgs.length > 1 && (

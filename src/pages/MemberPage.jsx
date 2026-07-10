@@ -744,16 +744,7 @@ function MembershipCard({
               justifyContent: 'center',
             }}
           >
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                opacity: flipped ? 1 : 0,
-                pointerEvents: flipped ? 'auto' : 'none',
-              }}
-            >
-              <QRScanner onScan={onQRScanned} darkMode={darkMode} />
-            </div>
+            {flipped && <QRScanner onScan={onQRScanned} darkMode={darkMode} />}
           </div>
         </div>
       </div>
@@ -1055,7 +1046,6 @@ function NavBtn({ onClick, children, style = {} }) {
 function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
-  const [slideDirection, setSlideDirection] = useState(0)
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
   const lightboxDotsBottom = 'calc(env(safe-area-inset-bottom) + 10px)'
@@ -1063,7 +1053,6 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
   const goToIndex = (nextIndex) => {
     const clampedIndex = Math.max(0, Math.min(nextIndex, imgs.length - 1))
     if (clampedIndex === index) return
-    setSlideDirection(clampedIndex > index ? 1 : -1)
     setIndex(clampedIndex)
     onIndexChange?.(clampedIndex)
   }
@@ -1086,7 +1075,6 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
 
   useEffect(() => {
     setIndex(startIndex)
-    setSlideDirection(0)
   }, [startIndex, imgs])
 
   useEffect(() => {
@@ -1144,32 +1132,11 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
     <>
       <style>{`
         @keyframes lightboxZoomIn {
-          from { transform: scale(0.9); }
-          to { transform: scale(1); }
+          from { transform: translateY(-18px) scale(0.9); }
+          to { transform: translateY(-18px) scale(1); }
         }
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
-        }
-        @keyframes lightboxImageSlideInFromRight {
-          from { opacity: 0.68; transform: translate(44px, -18px); }
-          to { opacity: 1; transform: translate(0, -18px); }
-        }
-        @keyframes lightboxImageSlideInFromLeft {
-          from { opacity: 0.68; transform: translate(-44px, -18px); }
-          to { opacity: 1; transform: translate(0, -18px); }
-        }
-        @keyframes lightboxImageFadeIn {
-          from { opacity: 0.72; transform: translateY(-18px); }
-          to { opacity: 1; transform: translateY(-18px); }
-        }
-        .lightbox-image-slide {
-          animation: lightboxImageFadeIn 0.34s cubic-bezier(0.22,1,0.36,1);
-        }
-        .lightbox-image-slide-right {
-          animation: lightboxImageSlideInFromRight 0.34s cubic-bezier(0.22,1,0.36,1);
-        }
-        .lightbox-image-slide-left {
-          animation: lightboxImageSlideInFromLeft 0.34s cubic-bezier(0.22,1,0.36,1);
         }
       `}</style>
       <div
@@ -1207,33 +1174,58 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
             gap: 12,
           }}
         >
-          {/* Image */}
-          <img
-            key={index}
-            className={
-              slideDirection > 0
-                ? 'lightbox-image-slide-right'
-                : slideDirection < 0
-                  ? 'lightbox-image-slide-left'
-                  : 'lightbox-image-slide'
-            }
-            src={imgs[index]}
-            decoding="async"
-            fetchPriority="high"
-            loading="eager"
-            alt={`사진 ${index + 1}`}
+          <div
             style={{
+              width: '100%',
               maxWidth: '90vw',
+              height: '90vh',
               maxHeight: '90vh',
-              objectFit: 'contain',
-              borderRadius: 12,
-              boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
+              overflow: 'hidden',
               transform: 'translateY(-18px)',
             }}
-          />
-
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                height: '100%',
+                transform: `translateX(-${index * 100}%)`,
+                transition: 'transform 0.3s ease',
+              }}
+            >
+              {imgs.map((src, imgIndex) => (
+                <div
+                  key={`${src}-${imgIndex}`}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <img
+                    src={src}
+                    decoding="async"
+                    fetchPriority={imgIndex === index ? 'high' : 'auto'}
+                    loading={Math.abs(imgIndex - index) <= 1 ? 'eager' : 'lazy'}
+                    alt={`사진 ${imgIndex + 1}`}
+                    style={{
+                      maxWidth: '90vw',
+                      maxHeight: '90vh',
+                      objectFit: 'contain',
+                      borderRadius: 12,
+                      boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                    }}
+                    draggable={false}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Dots */}
@@ -1375,6 +1367,7 @@ function EventsTab({ events }) {
   const eventCardScrollRef = useRef(null)
   const eventPreviewTouchStartX = useRef(null)
   const eventPreviewTouchStartY = useRef(null)
+  const eventPreviewSuppressClick = useRef(false)
 
   useEffect(() => {
     if (typeof MutationObserver === 'undefined') return undefined
@@ -1414,8 +1407,12 @@ function EventsTab({ events }) {
     }))
 
   const closeEventCard = (eventId = selectedEventRef.current?.id) => {
-    if (eventId) setSlide(eventId, 0)
     setEventCardOpen(false)
+    if (eventId) {
+      window.setTimeout(() => {
+        setSlide(eventId, 0)
+      }, 350)
+    }
   }
 
   useEffect(() => {
@@ -1603,7 +1600,7 @@ function EventsTab({ events }) {
     if (!eventCardOpen) return
     e.stopPropagation()
     if (eventPreviewTouchStartX.current == null || eventPreviewTouchStartY.current == null) return
-    if (!displayEvent || displayImages.length <= 1) return
+    if (!displayEvent) return
 
     const dx = e.changedTouches[0].clientX - eventPreviewTouchStartX.current
     const dy = e.changedTouches[0].clientY - eventPreviewTouchStartY.current
@@ -1611,8 +1608,12 @@ function EventsTab({ events }) {
     const absDy = Math.abs(dy)
     const currentSlide = slideIndexes[displayEvent.id] || 0
 
-    if (absDx > absDy && absDx > 40) {
+    if (dy > 42 && absDy > absDx * 1.1) {
+      eventPreviewSuppressClick.current = true
+      closeEventCard(displayEvent.id)
+    } else if (displayImages.length > 1 && absDx > absDy && absDx > 40) {
       e.stopPropagation()
+      eventPreviewSuppressClick.current = true
       if (dx < 0) {
         setSlide(displayEvent.id, Math.min(currentSlide + 1, displayImages.length - 1))
       } else {
@@ -2520,6 +2521,10 @@ const effectiveDateColor = isDragging
                         onTouchStart={handleEventPreviewTouchStart}
                         onTouchEnd={handleEventPreviewTouchEnd}
                         onClick={() => {
+                          if (eventPreviewSuppressClick.current) {
+                            eventPreviewSuppressClick.current = false
+                            return
+                          }
                           if (eventCardOpen) openLightboxAt(displayImageSlide)
                         }}
                         style={{
@@ -2528,7 +2533,7 @@ const effectiveDateColor = isDragging
                           width: '100%',
                           overflow: 'hidden',
                           cursor: eventCardOpen ? 'pointer' : 'default',
-                          touchAction: eventCardOpen ? 'pan-y' : 'none',
+                          touchAction: 'none',
                         }}
                       >
                         <div
