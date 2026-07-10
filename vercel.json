@@ -1,5 +1,18 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/scan",
+      "destination": "https://app.uva-in.nl/scan",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "uvain-app.vercel.app"
+        }
+      ]
+    }
   ]
 }
