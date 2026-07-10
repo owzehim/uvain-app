@@ -1052,7 +1052,7 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 // Event Lightbox (SpotCard-style)
-function EventLightbox({ imgs, startIndex = 0, onClose }) {
+function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
@@ -1065,6 +1065,7 @@ function EventLightbox({ imgs, startIndex = 0, onClose }) {
     if (clampedIndex === index) return
     setSlideDirection(clampedIndex > index ? 1 : -1)
     setIndex(clampedIndex)
+    onIndexChange?.(clampedIndex)
   }
 
   // zoom-in + fade-in on open
@@ -1411,6 +1412,11 @@ function EventsTab({ events }) {
       ...p,
       [id]: idx,
     }))
+
+  const closeEventCard = (eventId = selectedEventRef.current?.id) => {
+    if (eventId) setSlide(eventId, 0)
+    setEventCardOpen(false)
+  }
 
   useEffect(() => {
     if (!selectedEvent?.id) return
@@ -1811,7 +1817,7 @@ function EventsTab({ events }) {
     window.sessionStorage.removeItem(MEMBER_EVENT_LIST_OPEN_KEY)
     setSelectedEvent(ev)
     setPreviewEvent(ev)
-    setEventCardOpen(false)
+    closeEventCard(ev.id)
     setExpandedId(null)
     setLightboxIndex(null)
     setIsDragging(false)
@@ -1835,7 +1841,7 @@ function EventsTab({ events }) {
     setEventSwipeDirection(direction)
     setSelectedEvent(allEvents[nextIndex])
     setPreviewEvent(allEvents[nextIndex])
-    setEventCardOpen(false)
+    closeEventCard(allEvents[nextIndex].id)
     window.setTimeout(() => setEventSwipeDirection(0), 320)
   }
 
@@ -1862,6 +1868,19 @@ function EventsTab({ events }) {
     eventCardStartY.current = e.touches[0].clientY
   }
 
+  const handleEventCardTouchMove = (e) => {
+    if (!eventCardOpen || eventCardStartY.current == null) return
+
+    const dy = e.touches[0].clientY - eventCardStartY.current
+    const scrollTop = eventCardScrollRef.current?.scrollTop || 0
+
+    if (dy > 42 && scrollTop <= 0) {
+      if (eventCardScrollRef.current) eventCardScrollRef.current.scrollTop = 0
+      eventCardStartY.current = null
+      closeEventCard()
+    }
+  }
+
   const handleEventCardTouchEnd = (e) => {
     if (eventCardStartY.current == null) return
     const dy = e.changedTouches[0].clientY - eventCardStartY.current
@@ -1872,7 +1891,7 @@ function EventsTab({ events }) {
       const scrollTop = eventCardScrollRef.current?.scrollTop || 0
       if (!eventCardOpen || scrollTop <= 0) {
         if (eventCardScrollRef.current) eventCardScrollRef.current.scrollTop = 0
-        setEventCardOpen(false)
+        closeEventCard()
       }
     }
   }
@@ -2454,6 +2473,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 bg-white dark:bg-[#121212]"
               onTouchStart={handleEventCardTouchStart}
+              onTouchMove={handleEventCardTouchMove}
               onTouchEnd={handleEventCardTouchEnd}
               style={{
                 bottom: 0,
@@ -2824,6 +2844,9 @@ const effectiveDateColor = isDragging
           imgs={detailImages}
           startIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
+          onIndexChange={(index) => {
+            if (displayEvent?.id) setSlide(displayEvent.id, index)
+          }}
         />
       )}
     </>
