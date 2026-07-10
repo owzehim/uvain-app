@@ -699,7 +699,7 @@ function MembershipCard({
           height: '100%',
           position: 'relative',
           transformStyle: 'preserve-3d',
-          transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
+          transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
@@ -2448,8 +2448,9 @@ const effectiveDateColor = isDragging
               </div>
 
               <div
-                className="h-full overflow-y-auto px-5"
+                className="h-full px-5"
                 style={{
+                  overflowY: eventCardOpen ? 'auto' : 'hidden',
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
                 }}
               >
@@ -2582,7 +2583,14 @@ const effectiveDateColor = isDragging
                     </a>
                   )}
                   {displayEvent.description && (
-                    <div className="mt-4 rounded-2xl bg-gray-50 px-4 py-4 dark:bg-gray-900">
+                    <div
+                      className="mt-4 rounded-2xl bg-gray-50 px-4 py-4 dark:bg-gray-900"
+                      style={{
+                        maxHeight: eventCardOpen ? '180px' : '0px',
+                        overflowY: eventCardOpen ? 'auto' : 'hidden',
+                        WebkitOverflowScrolling: 'touch',
+                      }}
+                    >
                       <RichText
                         text={displayEvent.description}
                         className="block text-sm leading-relaxed text-gray-700 dark:text-gray-200"
