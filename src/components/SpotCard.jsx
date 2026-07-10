@@ -514,11 +514,11 @@ export function SpotCard({
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
   const isCollapsed = cardHeight < MAX_HEIGHT * 0.85
   const isTallCollapsed = isTallSpotCard && isCollapsed
-  const speechBubbleGapClass = isTallSpotCard && !hasImages
+  const speechBubbleGapPx = isTallSpotCard && !hasImages
     ? isCollapsed
-      ? 'mt-2'
-      : 'mt-4'
-    : 'mt-8'
+      ? 8
+      : 16
+    : 32
   const iconSvg = CATEGORY_ICONS[selected.category]
 
   // default: show stars unless admin explicitly turned them off
@@ -697,9 +697,7 @@ export function SpotCard({
 
           {/* 한 줄 평가 */}
           {selected.one_line_review && (!isTallCollapsed || !hasImages) && (
-            <div
-              className={`${speechBubbleGapClass} mb-3`}
-            >
+            <div className="mb-3" style={{ marginTop: speechBubbleGapPx }}>
               <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
                 <ChefHat size={14} weight="regular" />
                 우슐랭 평가원
