@@ -691,7 +691,7 @@ export function SpotCard({
           {selected.one_line_review && (!isTallCollapsed || !hasImages) && (
             <div
               className={`${
-                isTallCollapsed && !hasImages ? 'mt-4' : 'mt-8'
+                isTallCollapsed && !hasImages ? 'mt-2' : 'mt-8'
               } mb-3`}
             >
               <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
