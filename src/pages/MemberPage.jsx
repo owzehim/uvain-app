@@ -2265,7 +2265,7 @@ const effectiveDateColor = isDragging
 >
   {eventDateParts.dateNum}
 </span>
-                    <p className="mt-3 text-[34px] font-semibold leading-none uppercase text-gray-950 dark:text-white">
+                    <p className="mt-5 text-[34px] font-semibold leading-none uppercase text-gray-950 dark:text-white">
                       {eventDateParts.monthName}
                     </p>
                     <div className="mt-1 flex w-full items-baseline gap-2">
@@ -2316,7 +2316,7 @@ const effectiveDateColor = isDragging
                       : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                 }}
               >
-                <h1 className="mt-5 text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
+                <h1 className="mt-3 text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
