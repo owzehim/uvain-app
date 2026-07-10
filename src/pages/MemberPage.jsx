@@ -2304,7 +2304,7 @@ const effectiveDateColor = isDragging
                       : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                 }}
               >
-                <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
+                <h1 className="mt-10 text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
