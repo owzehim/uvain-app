@@ -2243,7 +2243,19 @@ const effectiveDateColor = isDragging
                 }}
               >
                 {eventDateParts && (
-                  <div className="flex flex-col items-start">
+                  <div
+                    className="flex cursor-pointer flex-col items-start"
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Add event to calendar"
+                    onClick={() => addToCalendar(displayEvent)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        addToCalendar(displayEvent)
+                      }
+                    }}
+                  >
                     <span
   className="text-[89px] font-medium leading-[0.82] tracking-normal text-gray-950 dark:text-white"
   style={{
@@ -2277,7 +2289,7 @@ const effectiveDateColor = isDragging
                             : 'text-gray-700 dark:text-gray-200')
                         }
                       >
-                        ({getEventStatus(displayEvent)})
+                        {getEventStatus(displayEvent)}
                       </p>
                     </div>
                   </div>
@@ -2522,6 +2534,16 @@ const effectiveDateColor = isDragging
                       </div>
                     )}
                   </div>
+                  {displayEvent.instagram_url && (
+                    <a
+                      href={displayEvent.instagram_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white transition-colors active:bg-orange-600"
+                    >
+                      Instagram 에서 열기
+                    </a>
+                  )}
                   {displayEvent.description && (
                     <div className="mt-4 rounded-2xl bg-gray-50 px-4 py-4 dark:bg-gray-900">
                       <RichText
