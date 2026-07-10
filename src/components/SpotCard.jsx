@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, Ticket, Star } from '@phosphor-icons/react'
+import { MapPin, Ticket, Star, ChefHat } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
@@ -687,7 +687,8 @@ export function SpotCard({
           {/* 한 줄 평가 */}
           {selected.one_line_review && (
             <div className="mt-8 mb-3">
-              <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
+              <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
+                <ChefHat size={14} weight="regular" />
                 우슐랭 평가원
               </p>
               <div className="relative w-full">
@@ -705,11 +706,13 @@ export function SpotCard({
                     right: '4%',
                     top: '10%',
                     height: '58%',
+                    overflow: 'hidden',
+                    border: '1px dashed rgba(255,255,255,0.8)',
                   }}
                 >
                   <RichText
                     text={selected.one_line_review}
-                    className="font-semibold text-white text-base sm:text-lg text-center block"
+                    className="block max-w-full break-keep text-center text-[clamp(14px,4vw,18px)] font-semibold leading-tight text-white"
                   />
                 </div>
               </div>
