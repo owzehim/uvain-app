@@ -395,6 +395,7 @@ export function SpotCard({
   )
 
   const isDesktop = WIN_W >= 768
+  const isTallSpotCard = selected?.spot_card_height === 'tall'
   const spotCardHeightMode =
     selected?.spot_card_height === 'full' || selected?.spot_card_height === 'tall'
       ? 'full'
@@ -509,6 +510,7 @@ export function SpotCard({
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
   const isCollapsed = cardHeight < MAX_HEIGHT * 0.85
+  const isTallCollapsed = isTallSpotCard && isCollapsed
   const iconSvg = CATEGORY_ICONS[selected.category]
 
   // default: show stars unless admin explicitly turned them off
@@ -686,10 +688,10 @@ export function SpotCard({
           )}
 
           {/* 한 줄 평가 */}
-          {selected.one_line_review && (
+          {selected.one_line_review && (!isTallCollapsed || !hasImages) && (
             <div
               className={`${
-                isCollapsed && !hasImages ? 'mt-3' : 'mt-8'
+                isTallCollapsed && !hasImages ? 'mt-4' : 'mt-8'
               } mb-3`}
             >
               <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
@@ -724,7 +726,7 @@ export function SpotCard({
           )}
 
           {/* Member review bar chart */}
-          {hasReviews && (
+          {hasReviews && !isTallCollapsed && (
             <TagBarChart
               tagCounts={summary.tag_counts}
               reviewCount={summary.review_count}
@@ -732,7 +734,7 @@ export function SpotCard({
           )}
 
           {/* 임원 리뷰 */}
-          {(selected.review || selected.reviewer_name) && (
+          {!isTallCollapsed && (selected.review || selected.reviewer_name) && (
             <div className="pb-4">
               <div className="pt-3">
                 <p className="text-xs font-semibold text-gray-500 mb-1.5">
