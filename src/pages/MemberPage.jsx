@@ -1588,12 +1588,14 @@ function EventsTab({ events }) {
 
   const handleEventPreviewTouchStart = (e) => {
     if (!eventCardOpen) return
+    e.stopPropagation()
     eventPreviewTouchStartX.current = e.touches[0].clientX
     eventPreviewTouchStartY.current = e.touches[0].clientY
   }
 
   const handleEventPreviewTouchEnd = (e) => {
     if (!eventCardOpen) return
+    e.stopPropagation()
     if (eventPreviewTouchStartX.current == null || eventPreviewTouchStartY.current == null) return
     if (!displayEvent || displayImages.length <= 1) return
 
@@ -1838,11 +1840,13 @@ function EventsTab({ events }) {
   }
 
   const handleFrameworkTouchStart = (e) => {
+    if (eventCardOpen) return
     eventSwipeStartX.current = e.touches[0].clientX
     eventSwipeStartY.current = e.touches[0].clientY
   }
 
   const handleFrameworkTouchEnd = (e) => {
+    if (eventCardOpen) return
     if (eventSwipeStartX.current == null || eventSwipeStartY.current == null) return
 
     const dx = e.changedTouches[0].clientX - eventSwipeStartX.current
