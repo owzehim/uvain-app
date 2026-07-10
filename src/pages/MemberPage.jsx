@@ -2471,7 +2471,7 @@ const effectiveDateColor = isDragging
 
               <div
                 ref={eventCardScrollRef}
-                className="h-full px-5"
+                className="scrollbar-hidden h-full px-5"
                 style={{
                   overflowY: eventCardOpen ? 'auto' : 'hidden',
                   paddingBottom: 'calc(env(safe-area-inset-bottom) + 116px)',
