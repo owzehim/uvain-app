@@ -1362,6 +1362,7 @@ function EventsTab({ events }) {
   const eventSwipeStartX = useRef(null)
   const eventSwipeStartY = useRef(null)
   const eventCardStartY = useRef(null)
+  const eventCardScrollRef = useRef(null)
   const eventPreviewTouchStartX = useRef(null)
   const eventPreviewTouchStartY = useRef(null)
 
@@ -1854,7 +1855,10 @@ function EventsTab({ events }) {
     eventCardStartY.current = null
 
     if (dy < -42) setEventCardOpen(true)
-    if (dy > 42) setEventCardOpen(false)
+    if (dy > 42) {
+      const scrollTop = eventCardScrollRef.current?.scrollTop || 0
+      if (!eventCardOpen || scrollTop <= 0) setEventCardOpen(false)
+    }
   }
 
   const getListDateParts = (ev) => {
@@ -2390,8 +2394,8 @@ const effectiveDateColor = isDragging
                     {displayEvent.participation_url
                       ? displayEvent.is_registration_closed
                         ? '신청 마감'
-                        : '이벤트 참가'
-                      : '참가 링크 없음'}
+                        : '참여하기'
+                      : '준비 중'}
                   </button>
                 </div>
               </div>
@@ -2448,6 +2452,7 @@ const effectiveDateColor = isDragging
               </div>
 
               <div
+                ref={eventCardScrollRef}
                 className="h-full px-5"
                 style={{
                   overflowY: eventCardOpen ? 'auto' : 'hidden',
@@ -2586,9 +2591,7 @@ const effectiveDateColor = isDragging
                     <div
                       className="mt-4 rounded-2xl bg-gray-50 px-4 py-4 dark:bg-gray-900"
                       style={{
-                        maxHeight: eventCardOpen ? '180px' : '0px',
-                        overflowY: eventCardOpen ? 'auto' : 'hidden',
-                        WebkitOverflowScrolling: 'touch',
+                        display: eventCardOpen ? 'block' : 'none',
                       }}
                     >
                       <RichText
