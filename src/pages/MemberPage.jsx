@@ -2363,7 +2363,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                bottom: `calc(${eventCollapsedCardHeight} + 6px)`,
+                bottom: `calc(${eventCollapsedCardHeight} + 5px)`,
                 zIndex: 10,
               }}
             >
