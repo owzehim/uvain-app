@@ -2327,6 +2327,23 @@ const effectiveDateColor = isDragging
                       <span>{plainText(displayEvent.location_description)}</span>
                     </div>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => openParticipationForm(displayEvent)}
+                    disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
+                    className={
+                      'mt-5 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
+                      (displayEvent.participation_url && !displayEvent.is_registration_closed
+                        ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
+                        : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
+                    }
+                  >
+                    {displayEvent.participation_url
+                      ? displayEvent.is_registration_closed
+                        ? '신청 마감'
+                        : '이벤트 참가'
+                      : '참가 링크 없음'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -2477,6 +2494,14 @@ const effectiveDateColor = isDragging
                       </div>
                     )}
                   </div>
+                  {displayEvent.description && (
+                    <div className="mt-4 rounded-2xl bg-gray-50 px-4 py-4 dark:bg-gray-900">
+                      <RichText
+                        text={displayEvent.description}
+                        className="block text-sm leading-relaxed text-gray-700 dark:text-gray-200"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2496,11 +2521,22 @@ const effectiveDateColor = isDragging
           style={{
             zIndex: 80,
             backgroundColor: eventListBg,
+            backdropFilter: 'blur(22px)',
+            WebkitBackdropFilter: 'blur(22px)',
             opacity: eventListClosing ? 0 : 1,
             transition: 'opacity 0.22s ease',
+            animation: eventListClosing ? 'none' : 'fadeIn 0.2s ease-out',
           }}
           onClick={closeEventList}
         >
+          <div
+            className="fixed left-0 right-0 top-0"
+            style={{
+              height: 'calc(env(safe-area-inset-top) + 64px)',
+              backgroundColor: eventListBg,
+              zIndex: 4,
+            }}
+          />
           <button
             type="button"
             onClick={(e) => {
@@ -2514,52 +2550,150 @@ const effectiveDateColor = isDragging
               top: 'calc(env(safe-area-inset-top) + 6px)',
               zIndex: 90,
               color: eventListIconColor,
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
             <List size={22} weight="bold" />
           </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setEventListNewestFirst((v) => !v)
+            }}
+            className="fixed flex h-11 w-11 items-center justify-center"
+            aria-label={eventListNewestFirst ? 'Sort events old to new' : 'Sort events new to old'}
+            style={{
+              right: '14px',
+              top: 'calc(env(safe-area-inset-top) + 6px)',
+              zIndex: 90,
+              color: eventListIconColor,
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            {eventListNewestFirst ? (
+              <SortDescending size={22} weight="bold" />
+            ) : (
+              <SortAscending size={22} weight="bold" />
+            )}
+          </button>
 
           <div
-            className="h-full overflow-y-auto px-6 pb-10"
-            style={{ paddingTop: 'calc(env(safe-area-inset-top) + 72px)' }}
+            className="absolute left-0 right-0 top-0 px-6"
+            style={{
+              zIndex: 2,
+              paddingTop: 'calc(env(safe-area-inset-top) + 48px)',
+              paddingBottom: '10px',
+              backgroundColor: eventListBg,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <div
+            className="pointer-events-none absolute left-0 right-0"
+            style={{
+              top: 'calc(env(safe-area-inset-top) + 50px)',
+              height: 36,
+              zIndex: 2,
+              background: eventListFade,
+            }}
+          />
+
+          <div
+            className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
+            style={{
+              paddingTop: 'calc(env(safe-area-inset-top) + 72px)',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto max-w-md space-y-3">
-              {allEvents.map((ev) => {
-                const parts = getListDateParts(ev)
-                const selected = ev.id === displayEvent?.id
-                return (
-                  <button
-                    key={ev.id}
-                    type="button"
-                    onClick={() => selectEventFromList(ev)}
-                    className="w-full rounded-2xl border px-3 py-3 text-left"
+            <div className="mx-auto w-full max-w-md">
+              <div className="space-y-4">
+                {groupedListEvents.map((yearGroup) => (
+                  <section key={yearGroup.year} className="space-y-2.5">
+                    <p
+                      className="pb-1 pl-3 pt-1 text-sm font-semibold leading-none"
+                      style={{ color: eventListYearColor }}
+                    >
+                      {yearGroup.year}
+                    </p>
+                    <div className="space-y-2">
+                      {yearGroup.months.flatMap((monthGroup) => monthGroup.events).map((ev) => {
+                        const parts = getListDateParts(ev)
+                        const selected = ev.id === displayEvent?.id
+                        const hasActiveParticipation = !!ev.participation_url && !ev.is_registration_closed
+                        const RowCaret = hasActiveParticipation ? CaretDoubleRight : CaretRight
+                        return (
+                          <button
+                            key={ev.id}
+                            type="button"
+                            onClick={() => selectEventFromList(ev)}
+                            className="w-full rounded-2xl border px-3 py-2.5 text-left transition-transform active:scale-[0.99]"
+                            style={{
+                              ...eventListCardStyle,
+                              borderColor: selected ? '#f97316' : eventListCardStyle.borderColor,
+                            }}
+                          >
+                            <div className="flex min-h-[48px] items-center">
+                              <div className="w-[46px] shrink-0 text-center">
+                                <p
+                                  className="text-xs font-semibold leading-none"
+                                  style={{ color: eventListMutedColor }}
+                                >
+                                  {parts.month}
+                                </p>
+                                <p className="mt-0.5 text-2xl font-medium leading-none">
+                                  {parts.day}
+                                </p>
+                              </div>
+                              <div
+                                className="ml-2 mr-4 h-9 w-px shrink-0"
+                                style={{ backgroundColor: eventListDividerColor }}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-semibold">
+                                  {ev.title || 'Untitled event'}
+                                </p>
+                                {ev.location && (
+                                  <p
+                                    className="mt-1 truncate text-xs"
+                                    style={{ color: eventListMutedColor }}
+                                  >
+                                    {plainText(ev.location)}
+                                  </p>
+                                )}
+                              </div>
+                              <RowCaret
+                                className="ml-3 shrink-0"
+                                size={18}
+                                weight="bold"
+                                color={eventListChevronColor}
+                              />
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </section>
+                ))}
+
+                {allEvents.length === 0 && (
+                  <div
+                    className="rounded-xl border px-4 py-8 text-center text-sm"
                     style={{
                       ...eventListCardStyle,
-                      borderColor: selected ? '#f97316' : eventListCardStyle.borderColor,
+                      color: eventListMutedColor,
                     }}
                   >
-                    <div className="flex items-center">
-                      <div className="w-14 shrink-0 text-center">
-                        <p className="text-xs font-semibold" style={{ color: eventListMutedColor }}>
-                          {parts.month}
-                        </p>
-                        <p className="text-2xl font-semibold">{parts.day}</p>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold">
-                          {ev.title || 'Untitled event'}
-                        </p>
-                        {ev.location && (
-                          <p className="mt-1 truncate text-xs" style={{ color: eventListMutedColor }}>
-                            {plainText(ev.location)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                )
-              })}
+                    No events yet.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
