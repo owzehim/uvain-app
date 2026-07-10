@@ -686,7 +686,11 @@ export function SpotCard({
 
           {/* 한 줄 평가 */}
           {selected.one_line_review && (
-            <div className="mt-8 mb-3">
+            <div
+              className={`${
+                spotCardHeightMode !== 'full' && !hasImages ? 'mt-4' : 'mt-8'
+              } mb-3`}
+            >
               <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
                 <ChefHat size={14} weight="regular" />
                 우슐랭 평가원
@@ -695,7 +699,7 @@ export function SpotCard({
                 <img
                   src="/spotcard-speech-bubble.png"
                   alt=""
-                  className="block w-full select-none"
+                  className="block w-[96%] origin-left select-none"
                   draggable={false}
                 />
 
@@ -703,7 +707,7 @@ export function SpotCard({
                   className="absolute flex items-center justify-center px-6 sm:px-8 md:px-10"
                   style={{
                     left: '4%',
-                    right: '8%',
+                    right: '4%',
                     top: '10%',
                     bottom: '0%',
                     overflow: 'hidden',
