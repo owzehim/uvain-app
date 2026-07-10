@@ -2266,6 +2266,19 @@ const effectiveDateColor = isDragging
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.year}
                       </p>
+                      <span className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
+                        •
+                      </span>
+                      <p
+                        className={
+                          'text-[34px] font-medium leading-none ' +
+                          (isNextSelected
+                            ? 'text-orange-500'
+                            : 'text-gray-700 dark:text-gray-200')
+                        }
+                      >
+                        {getEventStatus(displayEvent)}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -2291,10 +2304,6 @@ const effectiveDateColor = isDragging
                       : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                 }}
               >
-                <p className="mb-4 inline-flex rounded-full border border-orange-200 bg-orange-100 px-3 py-1.5 text-[13px] font-bold uppercase tracking-[0.04em] text-orange-600 dark:border-orange-500/30 dark:bg-orange-500/15 dark:text-orange-400">
-                  {getEventStatus(displayEvent)}
-                </p>
-
                 <h1 className="text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
                   {displayEvent.title || 'Untitled event'}
                 </h1>
