@@ -691,31 +691,16 @@ export function SpotCard({
                 한줄평
               </p>
               <div className="relative w-full">
-                <svg
-                  className="w-full"
-                  viewBox="0 0 360 80"
-                  preserveAspectRatio="xMidYMid meet"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{ minHeight: '56px' }}
-                >
-                  <rect
-                    x="0"
-                    y="0"
-                    width="360"
-                    height="56"
-                    rx="16"
-                    ry="16"
-                    fill="#f97316"
-                  />
-                  <path
-                    d="M 40 56 C 30 60 20 65 15 75 C 18 70 22 62 25 56 Z"
-                    fill="#f97316"
-                  />
-                </svg>
+                <img
+                  src="/spotcard-speech-bubble.png"
+                  alt=""
+                  className="block w-full select-none"
+                  draggable={false}
+                />
 
                 <div
-                  className="absolute left-0 right-0 top-0 flex items-center justify-center px-3 sm:px-4 md:px-6"
-                  style={{ height: '56px' }}
+                  className="absolute left-0 right-0 top-0 flex items-center justify-center px-6 sm:px-8 md:px-10"
+                  style={{ height: '72%' }}
                 >
                   <RichText
                     text={selected.one_line_review}
