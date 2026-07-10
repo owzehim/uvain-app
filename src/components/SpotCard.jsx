@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, Ticket, Star, ChefHat } from '@phosphor-icons/react'
+import { MapPin, Ticket, Star, ChefHat, Notepad, UserCheck } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
@@ -84,7 +84,10 @@ function TagBarChart({ tagCounts, reviewCount }) {
     <div className="pb-4">
       <div className="pt-3">
         <div className="mb-3">
-          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+            <UserCheck size={14} weight="regular" />
+            멤버 평가
+          </p>
         </div>
 
         <div className="flex flex-col gap-2.5">
@@ -511,6 +514,11 @@ export function SpotCard({
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
   const isCollapsed = cardHeight < MAX_HEIGHT * 0.85
   const isTallCollapsed = isTallSpotCard && isCollapsed
+  const speechBubbleGapClass = isTallSpotCard && !hasImages
+    ? isCollapsed
+      ? 'mt-2'
+      : 'mt-4'
+    : 'mt-8'
   const iconSvg = CATEGORY_ICONS[selected.category]
 
   // default: show stars unless admin explicitly turned them off
@@ -690,9 +698,7 @@ export function SpotCard({
           {/* 한 줄 평가 */}
           {selected.one_line_review && (!isTallCollapsed || !hasImages) && (
             <div
-              className={`${
-                isTallCollapsed && !hasImages ? 'mt-2' : 'mt-8'
-              } mb-3`}
+              className={`${speechBubbleGapClass} mb-3`}
             >
               <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
                 <ChefHat size={14} weight="regular" />
@@ -737,8 +743,9 @@ export function SpotCard({
           {!isTallCollapsed && (selected.review || selected.reviewer_name) && (
             <div className="pb-4">
               <div className="pt-3">
-                <p className="text-xs font-semibold text-gray-500 mb-1.5">
-                  임원 리뷰
+                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                  <Notepad size={14} weight="regular" />
+                  임원 추천 메뉴
                 </p>
                 {selected.review && (
                   <RichText
