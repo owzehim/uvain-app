@@ -2320,7 +2320,7 @@ const effectiveDateColor = isDragging
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
-                <div className="mt-5 space-y-1 text-[13px] font-medium text-gray-700 dark:text-gray-200">
+                <div className="mt-3 space-y-2 text-[13px] font-medium text-gray-700 dark:text-gray-200">
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
                       <Clock size={18} weight="fill" color="#f97316" />
@@ -2363,7 +2363,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                bottom: `calc(${eventCollapsedCardHeight} + 6px)`,
+                bottom: `calc(${eventCollapsedCardHeight} + 5px)`,
                 zIndex: 10,
               }}
             >
