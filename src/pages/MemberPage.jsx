@@ -5,7 +5,7 @@ import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
-import { QrCode, Calendar, Clock, MapPin, NavigationArrow, Door, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
+import { QrCode, Calendar, Clock, MapPin, NavigationArrow, Door, InstagramLogo, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -2225,6 +2225,29 @@ const effectiveDateColor = isDragging
           <>
             <div className="absolute inset-0 bg-white dark:bg-[#121212]" />
 
+            {displayEvent.instagram_url && (
+              <a
+                href={displayEvent.instagram_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={
+                  'fixed flex h-11 w-11 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition-opacity duration-200 active:bg-orange-600 ' +
+                  (eventCardOpen ? 'opacity-100' : 'pointer-events-none opacity-0')
+                }
+                aria-label="Open on Instagram"
+                style={{
+                  right: '14px',
+                  top: 'calc(env(safe-area-inset-top) + 6px)',
+                  zIndex: 95,
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <InstagramLogo size={22} weight="fill" />
+              </a>
+            )}
+
             <div
               className="absolute left-0 right-0 px-6"
               style={{
@@ -2316,11 +2339,11 @@ const effectiveDateColor = isDragging
                       : `${eventSwipeDirection > 0 ? 'eventContentSlideInFromRight' : 'eventContentSlideInFromLeft'} 0.34s cubic-bezier(0.22,1,0.36,1)`,
                 }}
               >
-                <h1 className="mt-3 text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
+                <h1 className="mt-1 text-[34px] font-black leading-tight tracking-normal text-gray-950 dark:text-white">
                   {displayEvent.title || 'Untitled event'}
                 </h1>
 
-                <div className="mt-6 space-y-3 text-[13px] font-medium text-gray-700 dark:text-gray-200">
+                <div className="mt-3 space-y-1 text-[13px] font-medium text-gray-700 dark:text-gray-200">
                   {getPrimaryEventDate(displayEvent) && (
                     <div className="flex items-center gap-2">
                       <Clock size={18} weight="fill" color="#f97316" />
@@ -2363,7 +2386,7 @@ const effectiveDateColor = isDragging
             <div
               className="absolute left-0 right-0 px-6"
               style={{
-                bottom: `calc(${eventCollapsedCardHeight} + 6px)`,
+                bottom: `calc(${eventCollapsedCardHeight} + 2px)`,
                 zIndex: 10,
               }}
             >
@@ -2539,7 +2562,7 @@ const effectiveDateColor = isDragging
                       href={displayEvent.instagram_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-4 flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white transition-colors active:bg-orange-600"
+                      className="hidden"
                     >
                       Instagram 에서 열기
                     </a>
