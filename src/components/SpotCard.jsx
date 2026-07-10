@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, Ticket, Star, ChefHat, ImageSquare } from '@phosphor-icons/react'
+import { MapPin, Ticket, Star, ChefHat } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
@@ -675,27 +675,12 @@ export function SpotCard({
           </div>
 
           {/* Images */}
-          {(hasImages || spotCardHeightMode === 'full') && (
+          {hasImages && (
             <div className="mb-3">
-              {hasImages ? (
-                <ImageThumbnails
-                  imgs={imgs}
-                  onTap={(i) => setLightboxIndex(i)}
-                />
-              ) : (
-                <div
-                  className="flex flex-col items-center justify-center rounded-xl bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-500"
-                  style={{
-                    width: '100px',
-                    height: '125px',
-                  }}
-                >
-                  <ImageSquare size={24} weight="regular" />
-                  <span className="mt-1 text-[11px] font-medium leading-none">
-                    no image
-                  </span>
-                </div>
-              )}
+              <ImageThumbnails
+                imgs={imgs}
+                onTap={(i) => setLightboxIndex(i)}
+              />
             </div>
           )}
 
@@ -717,10 +702,10 @@ export function SpotCard({
                 <div
                   className="absolute flex items-center justify-center px-6 sm:px-8 md:px-10"
                   style={{
-                    left: '9%',
-                    right: '4%',
+                    left: '4%',
+                    right: '8%',
                     top: '10%',
-                    bottom: '52%',
+                    bottom: '0%',
                     overflow: 'hidden',
                     border: '1px dashed rgba(255,255,255,0.8)',
                   }}
