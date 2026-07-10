@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+﻿import { useEffect, useState, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
@@ -2441,8 +2441,8 @@ const effectiveDateColor = isDragging
                   {displayEvent.participation_url
                     ? displayEvent.is_registration_closed
                       ? '신청 마감'
-                      : '이벤트 참가'
-                    : '참가 링크 없음'}
+                      : '참여하기'
+                    : '준비 중'}
                 </button>
               </div>
             </div>
@@ -3015,3 +3015,4 @@ if (typeof document !== 'undefined' && !document.getElementById('no-highlight-zo
   `
   document.head.appendChild(style)
 }
+
