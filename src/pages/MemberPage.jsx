@@ -2390,8 +2390,8 @@ const effectiveDateColor = isDragging
                     {displayEvent.participation_url
                       ? displayEvent.is_registration_closed
                         ? '신청 마감'
-                        : '이벤트 참가'
-                      : '참가 링크 없음'}
+                        : '참여하기'
+                      : '준비 중'}
                   </button>
                 </div>
               </div>
