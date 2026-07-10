@@ -688,7 +688,7 @@ export function SpotCard({
           {selected.one_line_review && (
             <div className="mt-8 mb-3">
               <p className="text-xs font-semibold text-gray-500 mb-2 text-left">
-                한줄평
+                우슐랭 평가원
               </p>
               <div className="relative w-full">
                 <img
@@ -699,8 +699,13 @@ export function SpotCard({
                 />
 
                 <div
-                  className="absolute left-0 right-0 top-0 flex items-center justify-center px-6 sm:px-8 md:px-10"
-                  style={{ height: '72%' }}
+                  className="absolute flex items-center justify-center px-6 sm:px-8 md:px-10"
+                  style={{
+                    left: '7%',
+                    right: '4%',
+                    top: '10%',
+                    height: '58%',
+                  }}
                 >
                   <RichText
                     text={selected.one_line_review}
