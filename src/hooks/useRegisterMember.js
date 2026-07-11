@@ -92,7 +92,7 @@ async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.
 }
 
 export function useRegisterMember() {
-  // 'about' | 'personal' | 'academic' | 'account' | 'review' | 'email'
+  // 'about' | 'personal' | 'academic' | 'account' | 'email'
   const [step, setStep] = useState('about');
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [profileFile, setProfileFile] = useState(null);
@@ -122,14 +122,12 @@ export function useRegisterMember() {
       if (prev === 'about') return 'personal';
       if (prev === 'personal') return 'academic';
       if (prev === 'academic') return 'account';
-      if (prev === 'account') return 'review';
       return prev;
     });
   };
 
   const goBack = () => {
     setStep((prev) => {
-      if (prev === 'review') return 'account';
       if (prev === 'account') return 'academic';
       if (prev === 'academic') return 'personal';
       if (prev === 'personal') return 'about';
