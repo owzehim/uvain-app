@@ -2,44 +2,37 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import * as maptilersdk from '@maptiler/sdk'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
 
-// Optimize map rendering
+import { getMapIconSvg, MAP_CATEGORIES } from '../lib/mapCategories'
+import { MapPinSimple } from '@phosphor-icons/react'
+
 if (typeof window !== 'undefined' && !document.getElementById('map-view-performance-style')) {
   const style = document.createElement('style')
   style.id = 'map-view-performance-style'
   style.textContent = `
     .maplibregl-canvas { image-rendering: optimizeSpeed; }
-    .maplibregl-marker.custom-marker {
-      contain: layout style;
-      backface-visibility: hidden;
-      transform-style: preserve-3d;
-    }
-    .map-is-moving .maplibregl-marker.custom-marker {
-      pointer-events: none;
-      will-change: transform;
-    }
-    .map-is-moving .custom-marker .marker-circle {
-      transition: none !important;
-    }
     .maplibregl-ctrl-top-left { display: none !important; }
     .maplibregl-ctrl-top-right { display: none !important; }
     .maplibregl-ctrl-bottom-left { display: none !important; }
     .maplibregl-ctrl-bottom-right { display: none !important; }
-    
-    .custom-marker[data-selected="true"] .marker-circle {
-      border: 3px solid #f97316 !important;
-      box-shadow: 0 3px 12px rgba(249,115,22,0.5) !important;
-    }
   `
   document.head.appendChild(style)
 }
 
-import { getMapIconSvg } from '../lib/mapCategories'
-import { MapPinSimple } from '@phosphor-icons/react'
-
-// Set your API key
 const API_KEY = import.meta.env.VITE_MAPTILER_API_KEY
 const LIGHT_MAP_STYLE_ID = '019eb88d-92dc-70b4-b9c2-008b7e4a977d'
 const DARK_MAP_STYLE_ID = '019e33af-3185-79df-9f26-1bc6d896eeee'
+
+const SPOTS_SOURCE_ID = 'uvain-spots'
+const SPOTS_CIRCLE_LAYER_ID = 'uvain-spots-circles'
+const SPOTS_ICON_LAYER_ID = 'uvain-spots-icons'
+const SPOTS_LABEL_LAYER_ID = 'uvain-spots-labels'
+const SPOT_ICON_PREFIX = 'uvain-spot-icon-'
+const SPOT_INTERACTIVE_LAYER_IDS = [
+  SPOTS_CIRCLE_LAYER_ID,
+  SPOTS_ICON_LAYER_ID,
+  SPOTS_LABEL_LAYER_ID,
+]
+
 maptilersdk.config.apiKey = API_KEY
 
 function getMapStyleUrl(isDark) {
@@ -51,164 +44,215 @@ function isDarkMode() {
   return typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
 }
 
+function getIconId(category, isSponsored, dark) {
+  const color = isSponsored ? (dark ? '#121212' : 'white') : '#f97316'
+  return `${SPOT_ICON_PREFIX}${category || 'default'}-${color.replace('#', '')}`
+}
+
+function createImageFromSvg(svg) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = reject
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+  })
+}
+
+function buildSpotFeatures(restaurants, selectedId, dark) {
+  return {
+    type: 'FeatureCollection',
+    features: (restaurants || [])
+      .filter((r) => r.latitude && r.longitude)
+      .map((r) => {
+        const isSponsored = !!r.is_sponsored
+        const isSelected = r.id === selectedId
+        const label = r.map_label || r.name || ''
+
+        return {
+          type: 'Feature',
+          id: r.id,
+          geometry: {
+            type: 'Point',
+            coordinates: [Number(r.longitude), Number(r.latitude)],
+          },
+          properties: {
+            id: r.id,
+            label,
+            category: r.category || 'default',
+            isSponsored,
+            isSelected,
+            iconId: getIconId(r.category, isSponsored, dark),
+            circleSize: isSponsored ? 42 : 34,
+            iconSize: isSponsored ? 24 : 16,
+            circleColor: isSponsored ? '#f97316' : dark ? '#121212' : 'white',
+            circleStrokeColor: isSelected
+              ? '#f97316'
+              : isSponsored
+                ? dark ? '#121212' : 'white'
+                : dark ? '#f97316' : '#e5e7eb',
+            circleStrokeWidth: isSponsored || isSelected ? 3 : 2,
+            labelColor: dark ? '#ffffff' : '#374151',
+            labelHaloColor: dark ? '#121212' : 'white',
+          },
+        }
+      }),
+  }
+}
+
+function getExistingInteractiveLayerIds(mapInstance) {
+  return SPOT_INTERACTIVE_LAYER_IDS.filter((layerId) => mapInstance.getLayer(layerId))
+}
+
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapContainer = useRef(null)
   const map = useRef(null)
-  const markersRef = useRef(new Map())
   const userLocationMarkerRef = useRef(null)
   const locationWatchIdRef = useRef(null)
   const initializedRef = useRef(false)
   const mapReadyRef = useRef(false)
   const activeStyleRef = useRef(null)
-  const selectedMarkerIdRef = useRef(null)
+  const restaurantsRef = useRef(restaurants)
   const selectedRef = useRef(selected)
-  const movingClassTimeoutRef = useRef(null)
+  const onSelectRef = useRef(onSelect)
+  const iconLoadRef = useRef(new Set())
   const [isTrackingLocation, setIsTrackingLocation] = useState(false)
   const [darkMapControls, setDarkMapControls] = useState(isDarkMode)
+
+  useEffect(() => {
+    restaurantsRef.current = restaurants
+  }, [restaurants])
 
   useEffect(() => {
     selectedRef.current = selected
   }, [selected])
 
-  // ─── Helper: Create marker element ──────────────────────────────────────
-  const createMarkerElement = useCallback((r, isSelected = false) => {
+  useEffect(() => {
+    onSelectRef.current = onSelect
+  }, [onSelect])
+
+  const loadMarkerIcons = useCallback(async () => {
+    if (!map.current) return
     const dark = isDarkMode()
-    const isSponsored = r.is_sponsored
-    const size = isSponsored ? 42 : 34
-    const bg = isSponsored ? '#f97316' : dark ? '#121212' : 'white'
-    const border = isSponsored
-      ? `3px solid ${dark ? '#121212' : 'white'}`
-      : isSelected
-        ? '3px solid #f97316'
-        : `2px solid ${dark ? '#f97316' : '#e5e7eb'}`
-    const shadow = isSelected
-      ? '0 3px 12px rgba(249,115,22,0.5)'
-      : isSponsored
-        ? '0 3px 12px rgba(249,115,22,0.4)'
-        : dark
-          ? '0 2px 10px rgba(0,0,0,0.55)'
-          : '0 2px 6px rgba(0,0,0,0.15)'
-    const displayName = r.map_label || r.name || ''
-    const name =
-      displayName.length > 12 ? displayName.slice(0, 12) + '…' : displayName
-    const iconColor = isSponsored ? (dark ? '#121212' : 'white') : '#f97316'
-    const iconSvg = getMapIconSvg(r.category, iconColor)
+    const categories = new Set([
+      ...MAP_CATEGORIES,
+      ...(restaurantsRef.current || []).map((r) => r.category || 'default'),
+    ])
 
-    const el = document.createElement('div')
-    el.className = 'custom-marker'
-    el.setAttribute('data-id', r.id)
-    el.setAttribute('data-selected', isSelected ? 'true' : 'false')
-    el.style.cssText = `
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      cursor: pointer;
-    `
+    await Promise.all(
+      Array.from(categories).flatMap((category) => {
+        return [false, true].map(async (isSponsored) => {
+          const iconId = getIconId(category, isSponsored, dark)
+          if (!map.current || map.current.hasImage(iconId) || iconLoadRef.current.has(iconId)) {
+            return
+          }
 
-    const markerCircle = document.createElement('div')
-    markerCircle.className = 'marker-circle'
-    markerCircle.style.cssText = `
-      width: ${size}px;
-      height: ${size}px;
-      background: ${bg};
-      border: ${border};
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: ${shadow};
-      flex-shrink: 0;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    `
-
-    const iconContainer = document.createElement('div')
-    iconContainer.style.cssText = `
-      width: ${isSponsored ? 24 : 16}px;
-      height: ${isSponsored ? 24 : 16}px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `
-    iconContainer.innerHTML = iconSvg
-    markerCircle.appendChild(iconContainer)
-
-    const label = document.createElement('div')
-    label.style.cssText = `
-      background: ${dark ? '#121212' : 'white'};
-      color: ${dark ? '#ffffff' : '#374151'};
-      font-size: 9px;
-      font-weight: 600;
-      line-height: 12px;
-      padding: 1px 4px;
-      border-radius: 4px;
-      white-space: nowrap;
-      border: ${dark ? '1px solid #2c2c2e' : 'none'};
-      box-shadow: ${dark ? '0 2px 8px rgba(0,0,0,0.5)' : '0 1px 3px rgba(0,0,0,0.1)'};
-      max-width: 90px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    `
-    label.textContent = name
-
-    el.appendChild(markerCircle)
-    el.appendChild(label)
-
-    return el
+          iconLoadRef.current.add(iconId)
+          const color = isSponsored ? (dark ? '#121212' : 'white') : '#f97316'
+          const image = await createImageFromSvg(getMapIconSvg(category, color))
+          if (map.current && !map.current.hasImage(iconId)) {
+            map.current.addImage(iconId, image, { sdf: false, pixelRatio: 2 })
+          }
+        })
+      }),
+    )
   }, [])
 
-  // ─── Render all markers (only on initial load or restaurant list change) ──
-  const renderMarkers = useCallback((data) => {
+  const ensureSpotLayers = useCallback(async () => {
+    if (!map.current) return
+
+    await loadMarkerIcons()
+
+    if (!map.current.getSource(SPOTS_SOURCE_ID)) {
+      map.current.addSource(SPOTS_SOURCE_ID, {
+        type: 'geojson',
+        data: buildSpotFeatures([], null, isDarkMode()),
+      })
+    }
+
+    if (!map.current.getLayer(SPOTS_CIRCLE_LAYER_ID)) {
+      map.current.addLayer({
+        id: SPOTS_CIRCLE_LAYER_ID,
+        type: 'circle',
+        source: SPOTS_SOURCE_ID,
+        paint: {
+          'circle-radius': ['/', ['get', 'circleSize'], 2],
+          'circle-color': ['get', 'circleColor'],
+          'circle-stroke-color': ['get', 'circleStrokeColor'],
+          'circle-stroke-width': ['get', 'circleStrokeWidth'],
+          'circle-blur': 0,
+        },
+      })
+    }
+
+    if (!map.current.getLayer(SPOTS_ICON_LAYER_ID)) {
+      map.current.addLayer({
+        id: SPOTS_ICON_LAYER_ID,
+        type: 'symbol',
+        source: SPOTS_SOURCE_ID,
+        layout: {
+          'icon-image': ['get', 'iconId'],
+          'icon-size': ['/', ['get', 'iconSize'], 16],
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      })
+    }
+
+    if (!map.current.getLayer(SPOTS_LABEL_LAYER_ID)) {
+      map.current.addLayer({
+        id: SPOTS_LABEL_LAYER_ID,
+        type: 'symbol',
+        source: SPOTS_SOURCE_ID,
+        layout: {
+          'text-field': ['get', 'label'],
+          'text-size': 9,
+          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Regular'],
+          'text-anchor': 'top',
+          'text-offset': [0, 2.4],
+          'text-max-width': 100,
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': ['get', 'labelColor'],
+          'text-halo-color': ['get', 'labelHaloColor'],
+          'text-halo-width': 2,
+          'text-halo-blur': 0.5,
+        },
+      })
+    }
+  }, [loadMarkerIcons])
+
+  const syncSpotLayers = useCallback(async (data, { fitBounds = false } = {}) => {
     if (!map.current || !mapReadyRef.current) return
 
-    // Remove all old markers
-    markersRef.current.forEach(({ marker }) => marker.remove())
-    markersRef.current.clear()
-    selectedMarkerIdRef.current = null
+    await ensureSpotLayers()
 
     const valid = (data || []).filter((r) => r.latitude && r.longitude)
-    if (valid.length === 0) return
+    const source = map.current.getSource(SPOTS_SOURCE_ID)
+    source?.setData(buildSpotFeatures(valid, selectedRef.current?.id ?? null, isDarkMode()))
 
-    const sorted = [...valid].sort(
-      (a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0)
-    )
+    if (!fitBounds || valid.length === 0) return
 
-    const selectedId = selectedRef.current?.id ?? null
-
-    sorted.forEach((r) => {
-      const isSelected = r.id === selectedId
-      const el = createMarkerElement(r, isSelected)
-      const marker = new maptilersdk.Marker({ element: el })
-        .setLngLat([r.longitude, r.latitude])
-        .addTo(map.current)
-
-      el.addEventListener('click', () => onSelect(r))
-
-      markersRef.current.set(r.id, { marker, element: el, isSponsored: r.is_sponsored })
-    })
-
-    selectedMarkerIdRef.current = markersRef.current.has(selectedId) ? selectedId : null
-
-    // Fit bounds
     if (valid.length === 1) {
       map.current.flyTo({
         center: [valid[0].longitude, valid[0].latitude],
         zoom: 15,
         duration: 1000,
       })
-    } else if (valid.length > 1) {
-      const bounds = valid.reduce(
-        (b, r) => b.extend([r.longitude, r.latitude]),
-        new maptilersdk.LngLatBounds(
-          [valid[0].longitude, valid[0].latitude],
-          [valid[0].longitude, valid[0].latitude]
-        )
-      )
-      map.current.fitBounds(bounds, { padding: 40, duration: 1000 })
+      return
     }
-  }, [createMarkerElement, onSelect])
 
-  // ─── Initialize map once ──────────────────────────────────────────────
+    const bounds = valid.reduce(
+      (b, r) => b.extend([r.longitude, r.latitude]),
+      new maptilersdk.LngLatBounds(
+        [valid[0].longitude, valid[0].latitude],
+        [valid[0].longitude, valid[0].latitude],
+      ),
+    )
+    map.current.fitBounds(bounds, { padding: 40, duration: 1000 })
+  }, [ensureSpotLayers])
+
   useEffect(() => {
     if (initializedRef.current || !mapContainer.current) return
     initializedRef.current = true
@@ -230,45 +274,49 @@ export default function MapView({ restaurants, selected, onSelect }) {
     map.current.dragRotate.disable()
     map.current.touchZoomRotate.disableRotation()
 
-    const setMapMovingClass = (isMoving) => {
-      if (!mapContainer.current) return
-      if (movingClassTimeoutRef.current != null) {
-        window.clearTimeout(movingClassTimeoutRef.current)
-        movingClassTimeoutRef.current = null
-      }
-
-      if (isMoving) {
-        mapContainer.current.classList.add('map-is-moving')
-        return
-      }
-
-      movingClassTimeoutRef.current = window.setTimeout(() => {
-        mapContainer.current?.classList.remove('map-is-moving')
-        movingClassTimeoutRef.current = null
-      }, 120)
+    const handleSpotClick = (event) => {
+      if (!map.current) return
+      const layers = getExistingInteractiveLayerIds(map.current)
+      if (layers.length === 0) return
+      const feature = map.current.queryRenderedFeatures(event.point, {
+        layers,
+      })?.[0]
+      const id = feature?.properties?.id
+      const spot = restaurantsRef.current?.find((r) => String(r.id) === String(id))
+      if (spot) onSelectRef.current?.(spot)
     }
 
-    map.current.on('movestart', () => setMapMovingClass(true))
-    map.current.on('moveend', () => setMapMovingClass(false))
+    const handlePointerMove = (event) => {
+      if (!map.current) return
+      const layers = getExistingInteractiveLayerIds(map.current)
+      if (layers.length === 0) {
+        map.current.getCanvas().style.cursor = ''
+        return
+      }
+      const features = map.current.queryRenderedFeatures(event.point, {
+        layers,
+      })
+      map.current.getCanvas().style.cursor = features.length ? 'pointer' : ''
+    }
 
-    // Wait for map to be fully loaded before rendering markers
-    map.current.on('load', () => {
+    map.current.on('load', async () => {
       mapReadyRef.current = true
       activeStyleRef.current = getMapStyleUrl(isDarkMode())
-      renderMarkers(restaurants)
+      await syncSpotLayers(restaurantsRef.current, { fitBounds: true })
+      map.current?.on('click', handleSpotClick)
+      map.current?.on('mousemove', handlePointerMove)
+      map.current?.on('mouseout', () => {
+        if (map.current) map.current.getCanvas().style.cursor = ''
+      })
     })
 
     return () => {
-      if (movingClassTimeoutRef.current != null) {
-        window.clearTimeout(movingClassTimeoutRef.current)
-      }
       map.current?.remove()
       map.current = null
       initializedRef.current = false
       mapReadyRef.current = false
-      markersRef.current.clear()
     }
-  }, [])
+  }, [syncSpotLayers])
 
   useEffect(() => {
     if (!map.current || typeof MutationObserver === 'undefined') return undefined
@@ -276,14 +324,18 @@ export default function MapView({ restaurants, selected, onSelect }) {
     const syncMapStyle = () => {
       setDarkMapControls(isDarkMode())
       const nextStyle = getMapStyleUrl(isDarkMode())
-      if (activeStyleRef.current === nextStyle) return
+      if (activeStyleRef.current === nextStyle) {
+        syncSpotLayers(restaurantsRef.current)
+        return
+      }
 
       activeStyleRef.current = nextStyle
       mapReadyRef.current = false
+      iconLoadRef.current.clear()
       map.current.setStyle(nextStyle)
-      map.current.once('style.load', () => {
+      map.current.once('style.load', async () => {
         mapReadyRef.current = true
-        renderMarkers(restaurants)
+        await syncSpotLayers(restaurantsRef.current)
       })
     }
 
@@ -296,69 +348,25 @@ export default function MapView({ restaurants, selected, onSelect }) {
     syncMapStyle()
 
     return () => observer.disconnect()
-  }, [restaurants, renderMarkers])
+  }, [syncSpotLayers])
 
-  // ─── Re-render markers only when restaurants list changes ──────────────
   useEffect(() => {
     if (mapReadyRef.current) {
-      renderMarkers(restaurants)
+      syncSpotLayers(restaurants, { fitBounds: true })
     }
-  }, [restaurants, renderMarkers])
+  }, [restaurants, syncSpotLayers])
 
-  // ─── Update selection styling using data attributes ──────────────────────
   useEffect(() => {
-    if (!mapReadyRef.current) return
-    const dark = isDarkMode()
+    if (!map.current || !mapReadyRef.current) return
+    syncSpotLayers(restaurantsRef.current)
 
-    const setMarkerSelected = (markerData, isSelected) => {
-      if (!markerData) return
-      const { element, isSponsored } = markerData
-      element.setAttribute('data-selected', isSelected ? 'true' : 'false')
-      const circle = element.querySelector('.marker-circle')
-      if (!circle) return
-
-      if (isSelected) {
-        circle.style.border = '3px solid #f97316'
-        circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.5)'
-        return
-      }
-
-      if (isSponsored) {
-        circle.style.border = `3px solid ${dark ? '#121212' : 'white'}`
-        circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.4)'
-      } else {
-        circle.style.border = `2px solid ${dark ? '#f97316' : '#e5e7eb'}`
-        circle.style.boxShadow = dark
-          ? '0 2px 10px rgba(0,0,0,0.55)'
-          : '0 2px 6px rgba(0,0,0,0.15)'
-      }
-    }
-
-    const previousSelectedId = selectedMarkerIdRef.current
-    const nextSelectedId = selected?.id ?? null
-
-    if (previousSelectedId !== nextSelectedId) {
-      setMarkerSelected(markersRef.current.get(previousSelectedId), false)
-      setMarkerSelected(markersRef.current.get(nextSelectedId), true)
-      selectedMarkerIdRef.current = nextSelectedId
-      return
-    }
-
-    markersRef.current.forEach((markerData) => {
-      const isSelected = markerData.element.getAttribute('data-selected') === 'true'
-      setMarkerSelected(markerData, isSelected)
-    })
-  }, [selected, darkMapControls])
-
-  // ─── Pan to selected spot ──────────────────────────────────────────────
-  useEffect(() => {
-    if (!map.current || !selected) return
+    if (!selected) return
     map.current.flyTo({
       center: [selected.longitude, selected.latitude],
       zoom: 16,
       duration: 1000,
     })
-  }, [selected])
+  }, [selected, syncSpotLayers])
 
   const removeUserLocationMarker = useCallback(() => {
     if (userLocationMarkerRef.current) {
@@ -406,7 +414,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
     }
   }, [])
 
-  // ─── Locate me toggle ──────────────────────────────────────────────────
   const toggleLocationTracking = () => {
     if (!map.current || !navigator.geolocation) {
       alert('현재 위치 기능을 사용할 수 없어요.')
@@ -432,7 +439,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
             stopLocationTracking()
             alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
           },
-          { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 },
         )
         locationWatchIdRef.current = watchId
         setIsTrackingLocation(true)
@@ -440,7 +447,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
       () => {
         alert('위치를 가져올 수 없어요. 위치 권한을 허용해주세요.')
       },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 },
     )
   }
 
