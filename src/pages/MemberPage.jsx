@@ -2762,7 +2762,7 @@ const effectiveDateColor = isDragging
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 54px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 74px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
