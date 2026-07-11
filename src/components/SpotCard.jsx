@@ -357,7 +357,7 @@ function ImageThumbnails({ imgs, onTap }) {
             alt={'사진 ' + (i + 1)}
             loading="eager"
             decoding="async"
-            fetchPriority={i === 0 ? 'high' : 'auto'}
+            fetchPriority={i === 0 ? 'high' : 'low'}
             style={{
               width: '100px',
               height: '125px',
@@ -389,6 +389,7 @@ export function SpotCard({
   const cardRef = useRef(null)
 
   const imgs = selected['image_urls'] || []
+  const imagesKey = imgs.join('|')
   const hasImages = imgs.length > 0
 
   const { summary, loading: summaryLoading } = useStoreReviewSummary(
@@ -416,13 +417,41 @@ export function SpotCard({
   const SHEET_RADIUS = 20
 
   useEffect(() => {
-    if (typeof Image === 'undefined' || imgs.length === 0) return
-    imgs.forEach((url) => {
-      const img = new Image()
-      img.decoding = 'async'
-      img.src = url
-    })
-  }, [imgs])
+    if (typeof window === 'undefined' || typeof Image === 'undefined' || imgs.length === 0) {
+      return undefined
+    }
+
+    let cancelled = false
+    let idleId = null
+
+    const preloadImages = () => {
+      if (cancelled) return
+
+      imgs.forEach((url, index) => {
+        const img = new Image()
+        img.decoding = 'async'
+        img.fetchPriority = index === 0 ? 'high' : 'low'
+        img.src = url
+        img.decode?.().catch(() => {})
+      })
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        idleId = window.requestIdleCallback(preloadImages, { timeout: 1500 })
+      } else {
+        preloadImages()
+      }
+    }, 350)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+      if (idleId != null && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId)
+      }
+    }
+  }, [imgs, imagesKey])
 
   // Trigger animation on mount
   useEffect(() => {

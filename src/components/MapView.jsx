@@ -54,6 +54,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const initializedRef = useRef(false)
   const mapReadyRef = useRef(false)
   const activeStyleRef = useRef(null)
+  const selectedMarkerIdRef = useRef(null)
   const [isTrackingLocation, setIsTrackingLocation] = useState(false)
   const [darkMapControls, setDarkMapControls] = useState(isDarkMode)
 
@@ -263,44 +264,49 @@ export default function MapView({ restaurants, selected, onSelect }) {
   }, [restaurants, renderMarkers])
 
   // ─── Update selection styling using data attributes ──────────────────────
-useEffect(() => {
-  if (!mapReadyRef.current) return
-  const dark = isDarkMode()
+  useEffect(() => {
+    if (!mapReadyRef.current) return
+    const dark = isDarkMode()
 
-  // Remove selection from all markers
-  markersRef.current.forEach(({ element, isSponsored }) => {
-    element.setAttribute('data-selected', 'false')
-    const circle = element.querySelector('.marker-circle')
-    if (!circle) return
-
-    if (isSponsored) {
-      // 제휴 spot: keep orange bg + white outline when not selected
-      circle.style.border = `3px solid ${dark ? '#121212' : 'white'}`
-      circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.4)'
-    } else {
-      // Normal spot: grey outline when not selected
-      circle.style.border = `2px solid ${dark ? '#f97316' : '#e5e7eb'}`
-      circle.style.boxShadow = dark
-        ? '0 2px 10px rgba(0,0,0,0.55)'
-        : '0 2px 6px rgba(0,0,0,0.15)'
-    }
-  })
-
-  // Add selection to current marker
-  if (selected) {
-    const selectedData = markersRef.current.get(selected.id)
-    if (selectedData) {
-      const { element } = selectedData
-      element.setAttribute('data-selected', 'true')
+    const setMarkerSelected = (markerData, isSelected) => {
+      if (!markerData) return
+      const { element, isSponsored } = markerData
+      element.setAttribute('data-selected', isSelected ? 'true' : 'false')
       const circle = element.querySelector('.marker-circle')
-      if (circle) {
-        // Selected: orange outline for both sponsored + normal
+      if (!circle) return
+
+      if (isSelected) {
         circle.style.border = '3px solid #f97316'
         circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.5)'
+        return
+      }
+
+      if (isSponsored) {
+        circle.style.border = `3px solid ${dark ? '#121212' : 'white'}`
+        circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.4)'
+      } else {
+        circle.style.border = `2px solid ${dark ? '#f97316' : '#e5e7eb'}`
+        circle.style.boxShadow = dark
+          ? '0 2px 10px rgba(0,0,0,0.55)'
+          : '0 2px 6px rgba(0,0,0,0.15)'
       }
     }
-  }
-}, [selected, darkMapControls])
+
+    const previousSelectedId = selectedMarkerIdRef.current
+    const nextSelectedId = selected?.id ?? null
+
+    if (previousSelectedId !== nextSelectedId) {
+      setMarkerSelected(markersRef.current.get(previousSelectedId), false)
+      setMarkerSelected(markersRef.current.get(nextSelectedId), true)
+      selectedMarkerIdRef.current = nextSelectedId
+      return
+    }
+
+    markersRef.current.forEach((markerData) => {
+      const isSelected = markerData.element.getAttribute('data-selected') === 'true'
+      setMarkerSelected(markerData, isSelected)
+    })
+  }, [selected, darkMapControls])
 
   // ─── Pan to selected spot ──────────────────────────────────────────────
   useEffect(() => {
