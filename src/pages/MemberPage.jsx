@@ -1344,6 +1344,7 @@ function EventsTab({ events }) {
   const [eventCardOpen, setEventCardOpen] = useState(false)
   const [eventSwipeDirection, setEventSwipeDirection] = useState(0)
   const [loadedEventPreviewImages, setLoadedEventPreviewImages] = useState({})
+  const [eventPreviewFadingToFirst, setEventPreviewFadingToFirst] = useState(false)
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
   )
@@ -1410,7 +1411,14 @@ function EventsTab({ events }) {
     setEventCardOpen(false)
     if (eventId) {
       window.setTimeout(() => {
-        setSlide(eventId, 0)
+        if ((slideIndexes[eventId] || 0) === 0) return
+        setEventPreviewFadingToFirst(true)
+        window.setTimeout(() => {
+          setSlide(eventId, 0)
+          window.requestAnimationFrame(() => {
+            setEventPreviewFadingToFirst(false)
+          })
+        }, 160)
       }, 350)
     }
   }
@@ -2541,8 +2549,11 @@ const effectiveDateColor = isDragging
                           style={{
                             display: 'flex',
                             height: '100%',
+                            opacity: eventPreviewFadingToFirst ? 0 : 1,
                             transform: `translateX(-${displayImageSlide * 100}%)`,
-                            transition: 'transform 0.3s ease',
+                            transition: eventPreviewFadingToFirst
+                              ? 'opacity 0.16s ease'
+                              : 'transform 0.3s ease, opacity 0.18s ease',
                             animation:
                               eventSwipeDirection === 0
                                 ? 'none'
@@ -2751,14 +2762,14 @@ const effectiveDateColor = isDragging
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 92px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 74px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto w-full max-w-md">
-              <div className="space-y-4">
+              <div className="space-y-8">
                 {groupedListEvents.map((yearGroup) => (
                   <section key={yearGroup.year} className="space-y-2.5">
                     <p
