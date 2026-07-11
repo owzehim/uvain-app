@@ -1408,18 +1408,21 @@ function EventsTab({ events }) {
     }))
 
   const closeEventCard = (eventId = selectedEventRef.current?.id) => {
-    setEventCardOpen(false)
-    if (eventId) {
+    const shouldFadeToFirst = eventId && (slideIndexes[eventId] || 0) !== 0
+
+    if (shouldFadeToFirst) {
+      setEventPreviewFadingToFirst(true)
       window.setTimeout(() => {
-        if ((slideIndexes[eventId] || 0) === 0) return
-        setEventPreviewFadingToFirst(true)
-        window.setTimeout(() => {
-          setSlide(eventId, 0)
-          window.requestAnimationFrame(() => {
-            setEventPreviewFadingToFirst(false)
-          })
-        }, 160)
-      }, 350)
+        setSlide(eventId, 0)
+      }, 140)
+    }
+
+    setEventCardOpen(false)
+
+    if (shouldFadeToFirst) {
+      window.setTimeout(() => {
+        setEventPreviewFadingToFirst(false)
+      }, 360)
     }
   }
 
@@ -1508,8 +1511,14 @@ function EventsTab({ events }) {
   useEffect(() => {
     if (typeof Image === 'undefined' || !allEvents.length) return
 
-    const nearbyImageUrls = [activeEventIndex - 1, activeEventIndex, activeEventIndex + 1]
-      .map((idx) => allEvents[idx]?.image_urls?.[0])
+    const nearbyImageUrls = [
+      activeEventIndex - 2,
+      activeEventIndex - 1,
+      activeEventIndex,
+      activeEventIndex + 1,
+      activeEventIndex + 2,
+    ]
+      .flatMap((idx) => allEvents[idx]?.image_urls?.slice(0, 2) || [])
       .filter(Boolean)
 
     Array.from(new Set(nearbyImageUrls)).forEach((url) => {
@@ -2553,7 +2562,7 @@ const effectiveDateColor = isDragging
                             transform: `translateX(-${displayImageSlide * 100}%)`,
                             transition: eventPreviewFadingToFirst
                               ? 'opacity 0.16s ease'
-                              : 'transform 0.3s ease, opacity 0.18s ease',
+                              : 'transform 0.3s ease, opacity 0.22s ease',
                             animation:
                               eventSwipeDirection === 0
                                 ? 'none'
@@ -2762,7 +2771,7 @@ const effectiveDateColor = isDragging
           <div
             className="event-list-scroll h-full overflow-y-auto px-6 pb-10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 74px)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 84px)',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
