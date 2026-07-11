@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, CaretLeft, CheckCircle, EnvelopeSimple, UserCircle } from '@phosphor-icons/react';
+import { Camera, CaretLeft, EnvelopeSimple, UserCircle } from '@phosphor-icons/react';
 import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
@@ -422,13 +422,6 @@ const translations = {
     confirmPassword: 'Confirm password *',
     profilePicture: 'Profile picture (optional)',
     next: 'Next',
-    reviewApplication: 'Review application',
-    reviewTitle: 'Membership Application',
-    reviewSubtitle: 'Review your student information',
-    submitForVerification: 'Submit for verification',
-    profilePhoto: 'Profile photo',
-    added: 'Added',
-    notAdded: 'Not added',
     back: 'Back',
     createAccount: 'Create account',
     creatingAccount: 'Creating account...',
@@ -475,13 +468,6 @@ const translations = {
     confirmPassword: '비밀번호 확인 *',
     profilePicture: '프로필 사진 (선택사항)',
     next: '다음',
-    reviewApplication: '신청 정보 확인',
-    reviewTitle: '멤버십 신청서',
-    reviewSubtitle: '학생 정보를 확인해주세요',
-    submitForVerification: '인증 신청하기',
-    profilePhoto: '프로필 사진',
-    added: '추가됨',
-    notAdded: '없음',
     back: '뒤로',
     createAccount: '계정 만들기',
     creatingAccount: '계정 생성 중...',
@@ -685,11 +671,6 @@ export default function RegistrationPage() {
     });
   };
 
-  const handleAccountContinue = (event) => {
-    event.preventDefault();
-    goNext();
-  };
-
   const profileHeroProps = {
     fileInputRef,
     profilePreviewUrl,
@@ -834,7 +815,7 @@ export default function RegistrationPage() {
           <AccountStep
             formData={formData}
             handleChange={handleChange}
-            handleSubmit={handleAccountContinue}
+            handleSubmit={handleAccountSubmit}
             loading={loading}
             navigate={navigate}
             t={t}
@@ -843,18 +824,6 @@ export default function RegistrationPage() {
             onAgreementChange={handleAgreementChange}
             onOpenLegalDocument={setActiveLegalDoc}
             profileHeroProps={profileHeroProps}
-          />
-        </div>
-      )}
-
-      {step === 'review' && (
-        <div key="review" className="registration-step registration-step-review" style={s.stepShell}>
-          <ReviewStep
-            formData={formData}
-            profilePreviewUrl={profilePreviewUrl}
-            handleSubmit={handleAccountSubmit}
-            loading={loading}
-            t={t}
           />
         </div>
       )}
@@ -1320,68 +1289,7 @@ function AccountStep({
             cursor: loading || !isComplete ? 'not-allowed' : 'pointer',
           }}
         >
-          {t.reviewApplication}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function ReviewStep({
-  formData,
-  profilePreviewUrl,
-  handleSubmit,
-  loading,
-  t,
-}) {
-  const fullName = `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || '-';
-  const koreanName = `${formData.lastNameKorean || ''}${formData.firstNameKorean || ''}`.trim();
-  const programme = [formData.educationLevel, formData.yearNumber ? `${t.year} ${formData.yearNumber}` : '']
-    .filter(Boolean)
-    .join(' / ') || '-';
-  const rows = [
-    ['Full Name', fullName],
-    ['Korean Name', koreanName || '-'],
-    ['Student ID', formData.studentNumber || '-'],
-    ['University', formData.university || '-'],
-    ['Major', formData.major || '-'],
-    ['Programme', programme],
-    ['Email', formData.email || '-'],
-    [t.profilePhoto, profilePreviewUrl ? t.added : t.notAdded],
-  ];
-
-  return (
-    <form onSubmit={handleSubmit} style={s.reviewForm}>
-      <div style={s.reviewContent}>
-        <div style={s.reviewHeader}>
-          <div style={s.reviewIcon}>
-            <CheckCircle size={54} weight="regular" color="#16a34a" />
-          </div>
-          <h1 style={s.reviewTitle}>{t.reviewTitle}</h1>
-          <p style={s.reviewSubtitle}>{t.reviewSubtitle}</p>
-        </div>
-
-        <div style={s.reviewBox}>
-          {rows.map(([label, value]) => (
-            <div key={label} style={s.reviewRow}>
-              <span style={s.reviewLabel}>{label}</span>
-              <span style={s.reviewValue}>{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={s.bottomAction}>
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            ...s.submitBtn,
-            opacity: loading ? 0.6 : 1,
-            cursor: loading ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {loading ? t.creatingAccount : t.submitForVerification}
+          {loading ? t.creatingAccount : t.createAccount}
         </button>
       </div>
     </form>
@@ -2019,78 +1927,6 @@ const s = {
     display: 'flex',
     gap: '10px',
     marginTop: '8px',
-  },
-  reviewForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-    width: '100%',
-    flex: 1,
-    minHeight: 0,
-    justifyContent: 'space-between',
-    padding: '6px 0 14px',
-  },
-  reviewContent: {
-    flex: 1,
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    gap: '26px',
-    paddingTop: '34px',
-  },
-  reviewHeader: {
-    textAlign: 'center',
-  },
-  reviewIcon: {
-    width: '88px',
-    height: '88px',
-    borderRadius: '50%',
-    backgroundColor: '#dcfce7',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 18px',
-  },
-  reviewTitle: {
-    margin: 0,
-    color: 'var(--reg-text)',
-    fontSize: '26px',
-    fontWeight: 800,
-    letterSpacing: '-0.01em',
-  },
-  reviewSubtitle: {
-    margin: '12px 0 0',
-    color: 'var(--reg-subtext)',
-    fontSize: '15px',
-    fontWeight: 500,
-  },
-  reviewBox: {
-    border: '3px solid #f97316',
-    borderRadius: '20px',
-    padding: '22px 18px',
-    backgroundColor: 'var(--reg-card-bg)',
-    boxShadow: '0 8px 20px rgba(249,115,22,0.12)',
-  },
-  reviewRow: {
-    display: 'grid',
-    gridTemplateColumns: '118px 1fr',
-    gap: '10px',
-    alignItems: 'center',
-    minHeight: '44px',
-    borderBottom: '1px solid var(--reg-soft-border)',
-  },
-  reviewLabel: {
-    color: 'var(--reg-subtext)',
-    fontSize: '13px',
-    fontWeight: 600,
-  },
-  reviewValue: {
-    color: 'var(--reg-text)',
-    fontSize: '14px',
-    fontWeight: 800,
-    textAlign: 'right',
-    overflowWrap: 'anywhere',
   },
   submitBtn: {
     marginTop: '2px',
