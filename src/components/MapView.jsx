@@ -3,10 +3,17 @@ import * as maptilersdk from '@maptiler/sdk'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
 
 // Optimize map rendering
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !document.getElementById('map-view-performance-style')) {
   const style = document.createElement('style')
+  style.id = 'map-view-performance-style'
   style.textContent = `
     .maplibregl-canvas { image-rendering: optimizeSpeed; }
+    .maplibregl-marker.custom-marker {
+      contain: layout style paint;
+      will-change: transform;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+    }
     .maplibregl-ctrl-top-left { display: none !important; }
     .maplibregl-ctrl-top-right { display: none !important; }
     .maplibregl-ctrl-bottom-left { display: none !important; }
@@ -99,7 +106,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
       justify-content: center;
       box-shadow: ${shadow};
       flex-shrink: 0;
-      transition: all 0.2s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     `
 
     const iconContainer = document.createElement('div')
@@ -192,12 +199,17 @@ export default function MapView({ restaurants, selected, onSelect }) {
       style: getMapStyleUrl(isDarkMode()),
       center: [4.9041, 52.3676],
       zoom: 13,
+      antialias: false,
       attributionControl: false,
+      fadeDuration: 0,
       optimizeForTerrain: false,
       preserveDrawingBuffer: false,
       pitch: 0,
       bearing: 0,
     })
+
+    map.current.dragRotate.disable()
+    map.current.touchZoomRotate.disableRotation()
 
     // Wait for map to be fully loaded before rendering markers
     map.current.on('load', () => {
@@ -207,7 +219,11 @@ export default function MapView({ restaurants, selected, onSelect }) {
     })
 
     return () => {
-      // Cleanup if needed
+      map.current?.remove()
+      map.current = null
+      initializedRef.current = false
+      mapReadyRef.current = false
+      markersRef.current.clear()
     }
   }, [])
 
