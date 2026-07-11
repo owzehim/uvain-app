@@ -9,10 +9,16 @@ if (typeof window !== 'undefined' && !document.getElementById('map-view-performa
   style.textContent = `
     .maplibregl-canvas { image-rendering: optimizeSpeed; }
     .maplibregl-marker.custom-marker {
-      contain: layout style paint;
-      will-change: transform;
+      contain: layout style;
       backface-visibility: hidden;
       transform-style: preserve-3d;
+    }
+    .map-is-moving .maplibregl-marker.custom-marker {
+      pointer-events: none;
+      will-change: transform;
+    }
+    .map-is-moving .custom-marker .marker-circle {
+      transition: none !important;
     }
     .maplibregl-ctrl-top-left { display: none !important; }
     .maplibregl-ctrl-top-right { display: none !important; }
@@ -55,8 +61,14 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const mapReadyRef = useRef(false)
   const activeStyleRef = useRef(null)
   const selectedMarkerIdRef = useRef(null)
+  const selectedRef = useRef(selected)
+  const movingClassTimeoutRef = useRef(null)
   const [isTrackingLocation, setIsTrackingLocation] = useState(false)
   const [darkMapControls, setDarkMapControls] = useState(isDarkMode)
+
+  useEffect(() => {
+    selectedRef.current = selected
+  }, [selected])
 
   // ─── Helper: Create marker element ──────────────────────────────────────
   const createMarkerElement = useCallback((r, isSelected = false) => {
@@ -152,6 +164,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     // Remove all old markers
     markersRef.current.forEach(({ marker }) => marker.remove())
     markersRef.current.clear()
+    selectedMarkerIdRef.current = null
 
     const valid = (data || []).filter((r) => r.latitude && r.longitude)
     if (valid.length === 0) return
@@ -160,8 +173,11 @@ export default function MapView({ restaurants, selected, onSelect }) {
       (a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0)
     )
 
+    const selectedId = selectedRef.current?.id ?? null
+
     sorted.forEach((r) => {
-      const el = createMarkerElement(r, false)
+      const isSelected = r.id === selectedId
+      const el = createMarkerElement(r, isSelected)
       const marker = new maptilersdk.Marker({ element: el })
         .setLngLat([r.longitude, r.latitude])
         .addTo(map.current)
@@ -170,6 +186,8 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
       markersRef.current.set(r.id, { marker, element: el, isSponsored: r.is_sponsored })
     })
+
+    selectedMarkerIdRef.current = markersRef.current.has(selectedId) ? selectedId : null
 
     // Fit bounds
     if (valid.length === 1) {
@@ -212,6 +230,27 @@ export default function MapView({ restaurants, selected, onSelect }) {
     map.current.dragRotate.disable()
     map.current.touchZoomRotate.disableRotation()
 
+    const setMapMovingClass = (isMoving) => {
+      if (!mapContainer.current) return
+      if (movingClassTimeoutRef.current != null) {
+        window.clearTimeout(movingClassTimeoutRef.current)
+        movingClassTimeoutRef.current = null
+      }
+
+      if (isMoving) {
+        mapContainer.current.classList.add('map-is-moving')
+        return
+      }
+
+      movingClassTimeoutRef.current = window.setTimeout(() => {
+        mapContainer.current?.classList.remove('map-is-moving')
+        movingClassTimeoutRef.current = null
+      }, 120)
+    }
+
+    map.current.on('movestart', () => setMapMovingClass(true))
+    map.current.on('moveend', () => setMapMovingClass(false))
+
     // Wait for map to be fully loaded before rendering markers
     map.current.on('load', () => {
       mapReadyRef.current = true
@@ -220,6 +259,9 @@ export default function MapView({ restaurants, selected, onSelect }) {
     })
 
     return () => {
+      if (movingClassTimeoutRef.current != null) {
+        window.clearTimeout(movingClassTimeoutRef.current)
+      }
       map.current?.remove()
       map.current = null
       initializedRef.current = false
