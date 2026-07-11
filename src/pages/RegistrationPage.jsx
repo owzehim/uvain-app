@@ -866,56 +866,43 @@ function ProfileHero({
   const showIntro = Boolean(firstLine || secondLine);
   return (
     <div style={academic ? s.academicHero : compact ? s.compactHero : s.aboutTopGrid}>
-      <div style={s.applicationHeroCard}>
-        <div style={s.applicationHeroTop}>
-          <div style={s.profilePicker}>
-            <button
-              type="button"
-              onClick={allowUpload ? onProfileClick : undefined}
-              style={academic ? s.avatarButtonAcademic : compact ? s.avatarButtonCompact : s.avatarButton}
-              aria-label={t.profilePicture}
-            >
-              <div
-                style={{
-                  ...(academic ? s.avatarCircleAcademic : compact ? s.avatarCircleCompact : s.avatarCircle),
-                  background: profilePreviewUrl ? 'transparent' : pastelBg,
-                }}
-              >
-                {profilePreviewUrl ? (
-                  <img src={profilePreviewUrl} alt="Profile" style={s.avatarImage} />
-                ) : (
-                  <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
-                )}
-              </div>
-              {allowUpload && (
-                <span style={academic ? s.cameraBadgeAcademic : compact ? s.cameraBadgeCompact : s.cameraBadge}>
-                  <Camera size={academic || compact ? 12 : 19} weight="fill" color="var(--reg-text)" />
-                </span>
-              )}
-            </button>
-          </div>
-
-          <div style={s.applicationHeroCopy}>
-            <p style={s.applicationEyebrow}>UvA-IN Membership</p>
-            {showIntro && (
-              <div style={s.applicationIntro}>
-                {firstLine && (
-                  <p style={academic || compact ? s.compactIntroLine : equalIntroTextSize ? s.aboutIntroKo : s.aboutIntroEn}>{firstLine}</p>
-                )}
-                {secondLine && (
-                  <p style={academic || compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
-                )}
-              </div>
+      <div style={s.profilePicker}>
+        <button
+          type="button"
+          onClick={allowUpload ? onProfileClick : undefined}
+          style={academic ? s.avatarButtonAcademic : compact ? s.avatarButtonCompact : s.avatarButton}
+          aria-label={t.profilePicture}
+        >
+          <div
+            style={{
+              ...(academic ? s.avatarCircleAcademic : compact ? s.avatarCircleCompact : s.avatarCircle),
+              background: profilePreviewUrl ? 'transparent' : pastelBg,
+            }}
+          >
+            {profilePreviewUrl ? (
+              <img src={profilePreviewUrl} alt="Profile" style={s.avatarImage} />
+            ) : (
+              <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
             )}
           </div>
-        </div>
-
-        <div style={s.applicationChips}>
-          <span style={s.applicationChip}>Profile</span>
-          <span style={s.applicationChip}>Student</span>
-          <span style={s.applicationChip}>Account</span>
-        </div>
+          {allowUpload && (
+            <span style={academic ? s.cameraBadgeAcademic : compact ? s.cameraBadgeCompact : s.cameraBadge}>
+              <Camera size={academic || compact ? 12 : 19} weight="fill" color="var(--reg-text)" />
+            </span>
+          )}
+        </button>
       </div>
+
+      {showIntro && (
+        <div style={academic || compact ? s.compactIntro : s.aboutIntro}>
+          {firstLine && (
+            <p style={academic || compact ? s.compactIntroLine : equalIntroTextSize ? s.aboutIntroKo : s.aboutIntroEn}>{firstLine}</p>
+          )}
+          {secondLine && (
+            <p style={academic || compact ? s.compactIntroName : s.aboutIntroKo}>{secondLine}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1424,36 +1411,34 @@ const rowStyle = {
 const fieldStyle = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '7px',
-  height: '62px',
-  minHeight: '62px',
-  padding: '10px 14px 9px',
+  gap: '5px',
+  height: '54px',
+  minHeight: '54px',
+  padding: '8px 12px 7px',
   border: '1px solid var(--reg-border)',
-  borderRadius: '14px',
+  borderRadius: '8px',
   backgroundColor: 'var(--reg-field-bg)',
   boxSizing: 'border-box',
   justifyContent: 'center',
-  boxShadow: '0 6px 16px rgba(15,23,42,0.04)',
 };
 
 const groupFieldStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: '7px',
-  minHeight: '62px',
-  padding: '10px 14px',
+  minHeight: '54px',
+  padding: '8px 12px',
   border: '1px solid var(--reg-border)',
-  borderRadius: '14px',
+  borderRadius: '8px',
   backgroundColor: 'var(--reg-field-bg)',
   boxSizing: 'border-box',
   justifyContent: 'center',
-  boxShadow: '0 6px 16px rgba(15,23,42,0.04)',
 };
 
 const labelStyle = {
   fontSize: '12px',
-  fontWeight: 700,
-  color: 'var(--reg-soft-muted)',
+  fontWeight: 400,
+  color: 'var(--reg-muted)',
   lineHeight: 1,
 };
 
@@ -1623,15 +1608,15 @@ const s = {
   formContent: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '14px',
+    gap: '10px',
     flex: 1,
     minHeight: 0,
     justifyContent: 'flex-start',
-    paddingTop: '82px',
+    paddingTop: '104px',
   },
   academicContent: {
-    gap: '14px',
-    paddingTop: '82px',
+    gap: '9px',
+    paddingTop: '104px',
   },
   bottomAction: {
     flexShrink: 0,
@@ -1645,55 +1630,12 @@ const s = {
     textAlign: 'left',
   },
   aboutTopGrid: {
-    display: 'block',
-    minHeight: '150px',
-  },
-  applicationHeroCard: {
-    border: '1px solid var(--reg-avatar-border)',
-    borderRadius: '20px',
-    backgroundColor: 'var(--reg-card-bg)',
-    padding: '16px',
-    boxShadow: '0 12px 28px rgba(15,23,42,0.08)',
-  },
-  applicationHeroTop: {
     display: 'grid',
-    gridTemplateColumns: '74px 1fr',
+    gridTemplateColumns: '94px 1fr',
     gap: '14px',
     alignItems: 'center',
-  },
-  applicationHeroCopy: {
-    minWidth: 0,
-  },
-  applicationEyebrow: {
-    margin: '0 0 6px',
-    fontFamily: '"Handjet", system-ui, sans-serif',
-    fontSize: '14px',
-    fontWeight: 800,
-    color: '#f97316',
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-  },
-  applicationIntro: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  applicationChips: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '7px',
-    marginTop: '14px',
-  },
-  applicationChip: {
-    minHeight: '26px',
-    borderRadius: '999px',
-    backgroundColor: 'rgba(249,115,22,0.08)',
-    color: '#f97316',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '11px',
-    fontWeight: 800,
+    height: '96px',
+    minHeight: '96px',
   },
   profilePicker: {
     display: 'flex',
@@ -1767,13 +1709,20 @@ const s = {
     maxWidth: '100%',
   },
   compactHero: {
-    display: 'block',
+    display: 'grid',
+    gridTemplateColumns: '60px 1fr',
+    gap: '12px',
+    alignItems: 'center',
     alignSelf: 'stretch',
   },
   academicHero: {
-    display: 'block',
-    minHeight: '126px',
-    marginTop: '0',
+    display: 'grid',
+    gridTemplateColumns: '42px 1fr',
+    gap: '12px',
+    alignItems: 'center',
+    height: '44px',
+    minHeight: '44px',
+    marginTop: '-4px',
     alignSelf: 'stretch',
   },
   avatarButtonCompact: {
@@ -1859,8 +1808,8 @@ const s = {
   nameGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gap: '10px',
-    marginTop: '0',
+    gap: '8px',
+    marginTop: '8px',
   },
   nameGroupGap: {
     height: '4px',
@@ -1868,7 +1817,7 @@ const s = {
   fieldStack: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px',
+    gap: '8px',
   },
   touchableField: {
     cursor: 'text',
@@ -1876,14 +1825,13 @@ const s = {
   academicGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gap: '10px',
+    gap: '8px',
   },
   input: {
     padding: '0',
     borderRadius: '0',
     border: 'none',
-    fontSize: '15px',
-    fontWeight: 700,
+    fontSize: '13px',
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
@@ -1895,8 +1843,7 @@ const s = {
     padding: '0',
     borderRadius: '0',
     border: 'none',
-    fontSize: '15px',
-    fontWeight: 700,
+    fontSize: '14px',
     backgroundColor: 'var(--reg-field-bg)',
     color: 'var(--reg-text)',
     outline: 'none',
