@@ -304,11 +304,10 @@ function getRegistrationStepComplete(step, formData, yearOptions = []) {
   if (!isProductionEnv) return true;
 
   if (step === 'about') {
-    return filled(formData.firstName) && filled(formData.lastName);
-  }
-
-  if (step === 'personal') {
     return (
+      filled(formData.firstName) &&
+      filled(formData.lastName) &&
+      filled(formData.email) &&
       filled(formData.yearOfBirth) &&
       filled(formData.gender) &&
       filled(formData.countryOfOrigin)
@@ -322,6 +321,15 @@ function getRegistrationStepComplete(step, formData, yearOptions = []) {
       filled(formData.studentNumber) &&
       filled(formData.educationLevel) &&
       (yearOptions.length === 0 || filled(formData.yearNumber))
+    );
+  }
+
+  if (step === 'account') {
+    return (
+      filled(formData.password) &&
+      filled(formData.confirmPassword) &&
+      formData.password === formData.confirmPassword &&
+      formData.password.length >= 6
     );
   }
 
@@ -660,6 +668,8 @@ export default function RegistrationPage() {
     setCroppedAreaPixels(null);
   };
 
+  const [signatureDataUrl, setSignatureDataUrl] = useState('');
+
   const handleAgreementChange = (name, checked) => {
     setLegalAgreements((current) => ({ ...current, [name]: checked }));
   };
@@ -686,8 +696,8 @@ export default function RegistrationPage() {
     goBack();
   };
   const aboutComplete = getRegistrationStepComplete('about', formData, yearOptions);
-  const personalComplete = getRegistrationStepComplete('personal', formData, yearOptions);
   const academicComplete = getRegistrationStepComplete('academic', formData, yearOptions);
+  const accountComplete = getRegistrationStepComplete('account', formData, yearOptions);
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
@@ -764,30 +774,13 @@ export default function RegistrationPage() {
 
       {step === 'about' && (
         <div key="about" className="registration-step" style={s.stepShell}>
-          <NameStep
+          <StageOneInfoStep
             formData={formData}
             handleChange={handleChange}
             goNext={goNext}
             language={language}
             t={t}
-            profileHeroProps={profileHeroProps}
             isComplete={aboutComplete}
-          />
-        </div>
-      )}
-
-      {step === 'personal' && (
-        <div key="personal" className="registration-step" style={s.stepShell}>
-          <PersonalStep
-            formData={formData}
-            handleChange={handleChange}
-            goNext={goNext}
-            language={language}
-            t={t}
-            displayName={displayName}
-            greetingName={greetingName}
-            profileHeroProps={profileHeroProps}
-            isComplete={personalComplete}
           />
         </div>
       )}
@@ -812,18 +805,32 @@ export default function RegistrationPage() {
 
       {step === 'account' && (
         <div key="account" className="registration-step registration-step-account" style={s.stepShell}>
-          <AccountStep
+          <StageThreeAccountStep
             formData={formData}
             handleChange={handleChange}
+            goNext={goNext}
+            t={t}
+            profileHeroProps={profileHeroProps}
+            isComplete={accountComplete}
+          />
+        </div>
+      )}
+
+      {step === 'card' && (
+        <div key="card" className="registration-step registration-step-account" style={s.stepShell}>
+          <StageFourMembershipStep
+            formData={formData}
             handleSubmit={handleAccountSubmit}
             loading={loading}
-            navigate={navigate}
             t={t}
             language={language}
             legalAgreements={legalAgreements}
             onAgreementChange={handleAgreementChange}
             onOpenLegalDocument={setActiveLegalDoc}
-            profileHeroProps={profileHeroProps}
+            profilePreviewUrl={profilePreviewUrl}
+            pastelBg={pastelBg}
+            signatureDataUrl={signatureDataUrl}
+            onSignatureChange={setSignatureDataUrl}
           />
         </div>
       )}
@@ -967,6 +974,105 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
   );
 }
 
+function StageOneInfoStep({ formData, handleChange, goNext, language, t, isComplete }) {
+  return (
+    <div style={s.form}>
+      <div style={{ ...s.formContent, paddingTop: '42px' }}>
+        <h1 style={s.registrationPrompt}>회원가입에 필요한 정보들을 입력해주세요</h1>
+
+        <div style={s.fieldStack}>
+          <Row>
+            <Field label={t.firstName}>
+              <input
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+            <Field label={t.lastName}>
+              <input
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+          </Row>
+
+          <Row>
+            <Field label={t.firstNameKorean}>
+              <input
+                name="firstNameKorean"
+                value={formData.firstNameKorean || ''}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+            <Field label={t.lastNameKorean}>
+              <input
+                name="lastNameKorean"
+                value={formData.lastNameKorean || ''}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+          </Row>
+
+          <Field label={t.email}>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              style={s.input}
+            />
+          </Field>
+
+          <Row>
+            <Field label={t.yearOfBirth}>
+              <input
+                type="number"
+                name="yearOfBirth"
+                value={formData.yearOfBirth}
+                onChange={handleChange}
+                style={s.input}
+                min="1950"
+                max="2015"
+              />
+            </Field>
+            <Field label={t.gender}>
+              <TypeaheadSelect
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
+                placeholder=""
+              />
+            </Field>
+          </Row>
+
+          <Field label={t.nationality}>
+            <TypeaheadSelect
+              name="countryOfOrigin"
+              value={formData.countryOfOrigin}
+              onChange={handleChange}
+              options={SORTED_COUNTRIES}
+              placeholder=""
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div style={s.bottomAction}>
+        <button type="button" onClick={goNext} disabled={!isComplete} style={getNextButtonStyle(isComplete)}>
+          {t.next}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PersonalStep({ formData, handleChange, goNext, language, t, greetingName, profileHeroProps, isComplete }) {
   const greetingFirstLine = language === 'ko' ? '안녕하세요,' : 'Greetings,';
   const greetingSecondLine = language === 'ko' ? `${greetingName}님` : greetingName;
@@ -1021,6 +1127,285 @@ function PersonalStep({ formData, handleChange, goNext, language, t, greetingNam
           {t.next}
         </button>
       </div>
+    </div>
+  );
+}
+
+function StageThreeAccountStep({
+  formData,
+  handleChange,
+  goNext,
+  t,
+  profileHeroProps,
+  isComplete,
+}) {
+  return (
+    <div style={s.form}>
+      <div style={{ ...s.formContent, paddingTop: '48px' }}>
+        <ProfileHero
+          profileHeroProps={profileHeroProps}
+          variant="compact"
+          firstLine={t.finalStep}
+          allowUpload
+          compact
+        />
+
+        <div style={s.fieldStack}>
+          <Row>
+            <Field label={t.password}>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+            <Field label={t.confirmPassword}>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                style={s.input}
+              />
+            </Field>
+          </Row>
+
+          {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+            <p style={{ ...s.helperText, color: 'var(--reg-danger-text)' }}>
+              {t.passwordMismatch}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div style={s.bottomAction}>
+        <button type="button" onClick={goNext} disabled={!isComplete} style={getNextButtonStyle(isComplete)}>
+          {t.next}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StageFourMembershipStep({
+  formData,
+  handleSubmit,
+  loading,
+  t,
+  language,
+  legalAgreements,
+  onAgreementChange,
+  onOpenLegalDocument,
+  profilePreviewUrl,
+  pastelBg,
+  signatureDataUrl,
+  onSignatureChange,
+}) {
+  const allLegalAccepted = Object.values(legalAgreements).every(Boolean);
+  const signatureComplete = Boolean(signatureDataUrl);
+  const canSubmit = allLegalAccepted && signatureComplete;
+  const fullName =
+    `${formData.firstName || ''} ${formData.lastName || ''}`.trim() ||
+    `${formData.lastNameKorean || ''}${formData.firstNameKorean || ''}`.trim() ||
+    'Member';
+
+  return (
+    <form onSubmit={handleSubmit} style={s.form}>
+      <div style={{ ...s.formContent, paddingTop: '24px', gap: '12px' }}>
+        <RegistrationMembershipCard
+          fullName={fullName}
+          profilePreviewUrl={profilePreviewUrl}
+          pastelBg={pastelBg}
+          signatureDataUrl={signatureDataUrl}
+          onSignatureChange={onSignatureChange}
+        />
+
+        <LegalAgreementList
+          agreements={legalAgreements}
+          onAgreementChange={onAgreementChange}
+          onOpenDocument={onOpenLegalDocument}
+          language={language}
+        />
+      </div>
+
+      <div style={s.bottomAction}>
+        <button
+          type="submit"
+          disabled={loading || !canSubmit}
+          style={{
+            ...s.submitBtn,
+            flex: 1,
+            background: !loading && canSubmit
+              ? 'linear-gradient(135deg, #fb923c 0%, #f97316 48%, #ea580c 100%)'
+              : '#fb923c',
+            opacity: loading || !canSubmit ? 0.6 : 1,
+            cursor: loading || !canSubmit ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? t.creatingAccount : t.createAccount}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function RegistrationMembershipCard({
+  fullName,
+  profilePreviewUrl,
+  pastelBg,
+  signatureDataUrl,
+  onSignatureChange,
+}) {
+  return (
+    <div style={s.registrationCardPreview}>
+      <div style={s.registrationCardHeader}>
+        <div style={{ ...s.registrationCardAvatar, background: profilePreviewUrl ? 'transparent' : pastelBg }}>
+          {profilePreviewUrl ? (
+            <img src={profilePreviewUrl} alt="Profile preview" style={s.avatarImage} />
+          ) : (
+            <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
+          )}
+        </div>
+        <div style={s.registrationCardLogo} />
+      </div>
+
+      <div style={s.registrationCardQr}>
+        <QrCodePreview />
+      </div>
+
+      <div style={s.registrationCardDetails}>
+        <div>name: {fullName}</div>
+        <div>signature:</div>
+        <SignaturePad value={signatureDataUrl} onChange={onSignatureChange} />
+      </div>
+
+      <div style={s.registrationCardValid}>Valid Until Pending</div>
+    </div>
+  );
+}
+
+function QrCodePreview() {
+  return (
+    <div style={s.registrationQrFrame}>
+      {[ 
+        { top: 0, left: 0, borderTop: true, borderLeft: true, radius: '4px 0 0 0' },
+        { top: 0, right: 0, borderTop: true, borderRight: true, radius: '0 4px 0 0' },
+        { bottom: 0, left: 0, borderBottom: true, borderLeft: true, radius: '0 0 0 4px' },
+        { bottom: 0, right: 0, borderBottom: true, borderRight: true, radius: '0 0 4px 0' },
+      ].map((corner, index) => (
+        <span
+          key={index}
+          style={{
+            position: 'absolute',
+            width: 28,
+            height: 28,
+            ...(corner.top !== undefined && { top: corner.top }),
+            ...(corner.bottom !== undefined && { bottom: corner.bottom }),
+            ...(corner.left !== undefined && { left: corner.left }),
+            ...(corner.right !== undefined && { right: corner.right }),
+            ...(corner.borderTop && { borderTop: '3px solid rgba(44,42,39,0.3)' }),
+            ...(corner.borderBottom && { borderBottom: '3px solid rgba(44,42,39,0.3)' }),
+            ...(corner.borderLeft && { borderLeft: '3px solid rgba(44,42,39,0.3)' }),
+            ...(corner.borderRight && { borderRight: '3px solid rgba(44,42,39,0.3)' }),
+            borderRadius: corner.radius,
+          }}
+        />
+      ))}
+      <div style={s.registrationQrContent}>
+        <span style={s.registrationQrIcon}>▦</span>
+        <span>눌러서 Check-IN 하기</span>
+      </div>
+    </div>
+  );
+}
+
+function SignaturePad({ value, onChange }) {
+  const canvasRef = useRef(null);
+  const drawingRef = useRef(false);
+  const lastPointRef = useRef(null);
+
+  const getPoint = (event) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const pointer = event.touches?.[0] || event;
+    return {
+      x: pointer.clientX - rect.left,
+      y: pointer.clientY - rect.top,
+    };
+  };
+
+  const commit = () => {
+    const canvas = canvasRef.current;
+    onChange(canvas.toDataURL('image/png'));
+  };
+
+  const start = (event) => {
+    event.preventDefault();
+    drawingRef.current = true;
+    lastPointRef.current = getPoint(event);
+  };
+
+  const move = (event) => {
+    if (!drawingRef.current) return;
+    event.preventDefault();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const nextPoint = getPoint(event);
+    const lastPoint = lastPointRef.current || nextPoint;
+    ctx.strokeStyle = '#2C2A27';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(lastPoint.x, lastPoint.y);
+    ctx.lineTo(nextPoint.x, nextPoint.y);
+    ctx.stroke();
+    lastPointRef.current = nextPoint;
+  };
+
+  const end = () => {
+    if (!drawingRef.current) return;
+    drawingRef.current = false;
+    lastPointRef.current = null;
+    commit();
+  };
+
+  const clear = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    onChange('');
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !value) return;
+    const ctx = canvas.getContext('2d');
+    const image = new Image();
+    image.onload = () => ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    image.src = value;
+  }, [value]);
+
+  return (
+    <div style={s.signatureWrap}>
+      <canvas
+        ref={canvasRef}
+        width={280}
+        height={72}
+        style={s.signatureCanvas}
+        onMouseDown={start}
+        onMouseMove={move}
+        onMouseUp={end}
+        onMouseLeave={end}
+        onTouchStart={start}
+        onTouchMove={move}
+        onTouchEnd={end}
+      />
+      <button type="button" onClick={clear} style={s.signatureClearButton}>
+        clear
+      </button>
     </div>
   );
 }
@@ -1629,6 +2014,14 @@ const s = {
     margin: '0 0 4px',
     textAlign: 'left',
   },
+  registrationPrompt: {
+    margin: '0 0 18px',
+    fontSize: '24px',
+    lineHeight: 1.28,
+    fontWeight: 700,
+    color: 'var(--reg-text)',
+    letterSpacing: 0,
+  },
   aboutTopGrid: {
     display: 'grid',
     gridTemplateColumns: '94px 1fr',
@@ -2150,6 +2543,129 @@ const s = {
     fontSize: '12px',
     fontWeight: 700,
     cursor: 'pointer',
+  },
+  registrationCardPreview: {
+    position: 'relative',
+    width: 'min(100%, 330px)',
+    aspectRatio: '0.63',
+    margin: '0 auto',
+    borderRadius: '16px',
+    border: '1px solid #d6d3c0',
+    background: '#F6F4F1',
+    boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
+    padding: '22px',
+    boxSizing: 'border-box',
+    color: '#2C2A27',
+  },
+  registrationCardHeader: {
+    position: 'absolute',
+    top: '22px',
+    left: '22px',
+    right: '22px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  registrationCardAvatar: {
+    width: '74px',
+    height: '74px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  registrationCardLogo: {
+    width: '74px',
+    height: '74px',
+    backgroundColor: 'rgba(44,42,39,0.3)',
+    WebkitMaskImage: 'url("/uva-in%20logo%20outline.png")',
+    maskImage: 'url("/uva-in%20logo%20outline.png")',
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center',
+    maskPosition: 'center',
+    WebkitMaskSize: 'contain',
+    maskSize: 'contain',
+  },
+  registrationCardQr: {
+    position: 'absolute',
+    top: '138px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+  },
+  registrationQrFrame: {
+    position: 'relative',
+    width: '210px',
+    height: '210px',
+  },
+  registrationQrContent: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    color: 'rgba(44,42,39,0.4)',
+    fontSize: '13px',
+    fontWeight: 600,
+    letterSpacing: '0.05em',
+  },
+  registrationQrIcon: {
+    fontSize: '32px',
+    lineHeight: 1,
+  },
+  registrationCardDetails: {
+    position: 'absolute',
+    left: '22px',
+    right: '22px',
+    top: '364px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    color: 'rgba(44,42,39,0.3)',
+    fontSize: '14px',
+    fontWeight: 600,
+  },
+  signatureWrap: {
+    position: 'relative',
+    width: '100%',
+    height: '72px',
+    border: '1px dashed rgba(44,42,39,0.22)',
+    borderRadius: '8px',
+    background: 'rgba(255,255,255,0.24)',
+    overflow: 'hidden',
+  },
+  signatureCanvas: {
+    width: '100%',
+    height: '100%',
+    display: 'block',
+    touchAction: 'none',
+  },
+  signatureClearButton: {
+    position: 'absolute',
+    right: '8px',
+    bottom: '6px',
+    border: 'none',
+    background: 'rgba(44,42,39,0.08)',
+    color: 'rgba(44,42,39,0.5)',
+    borderRadius: '9999px',
+    padding: '4px 8px',
+    fontSize: '11px',
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  registrationCardValid: {
+    position: 'absolute',
+    left: '22px',
+    right: '22px',
+    bottom: '18px',
+    textAlign: 'center',
+    color: '#6b6a5e',
+    fontSize: '11px',
+    fontWeight: 600,
+    textTransform: 'uppercase',
   },
   legalModalBody: {
     padding: '14px 16px 20px',
