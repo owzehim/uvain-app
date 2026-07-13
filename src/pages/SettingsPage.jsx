@@ -87,6 +87,7 @@ export default function SettingsPage() {
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState('')
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false)
   const fileInputRef = useRef(null)
 
   const [cropImageSrc, setCropImageSrc] = useState(null)
@@ -211,6 +212,22 @@ export default function SettingsPage() {
     } finally {
       setUploading(false)
     }
+  }
+
+  const handleSignatureSave = (signatureDataUrl) => {
+    if (!member?.user_id) return
+    const storageKey = `uvain-signature-${member.user_id}`
+    if (signatureDataUrl) {
+      window.localStorage.setItem(storageKey, signatureDataUrl)
+    } else {
+      window.localStorage.removeItem(storageKey)
+    }
+    window.dispatchEvent(
+      new CustomEvent('uvain-signature-updated', {
+        detail: { userId: member.user_id, signatureDataUrl },
+      }),
+    )
+    setSignatureModalOpen(false)
   }
 
   if (loading) {
@@ -369,6 +386,14 @@ export default function SettingsPage() {
               비밀번호 바꾸기
             </button>
 
+            <button
+              type="button"
+              onClick={() => setSignatureModalOpen(true)}
+              className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 text-center shadow-sm dark:border-[#2c2c2e] dark:bg-[#111111] dark:text-gray-200"
+            >
+              Change signature
+            </button>
+
             {passwordPanelOpen && (
               <form
                 onSubmit={handlePasswordChange}
@@ -465,6 +490,139 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {signatureModalOpen && (
+        <SignatureModal
+          initialValue={
+            member?.user_id
+              ? window.localStorage.getItem(`uvain-signature-${member.user_id}`) || ''
+              : ''
+          }
+          onCancel={() => setSignatureModalOpen(false)}
+          onSave={handleSignatureSave}
+        />
+      )}
+    </div>
+  )
+}
+
+function SignatureModal({ initialValue, onCancel, onSave }) {
+  const canvasRef = useRef(null)
+  const drawingRef = useRef(false)
+  const lastPointRef = useRef(null)
+  const [hasSignature, setHasSignature] = useState(Boolean(initialValue))
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !initialValue) return
+    const ctx = canvas.getContext('2d')
+    const image = new Image()
+    image.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+    }
+    image.src = initialValue
+  }, [initialValue])
+
+  const getPoint = (event) => {
+    const canvas = canvasRef.current
+    const rect = canvas.getBoundingClientRect()
+    const pointer = event.touches?.[0] || event
+    return {
+      x: (pointer.clientX - rect.left) * (canvas.width / rect.width),
+      y: (pointer.clientY - rect.top) * (canvas.height / rect.height),
+    }
+  }
+
+  const start = (event) => {
+    event.preventDefault()
+    drawingRef.current = true
+    lastPointRef.current = getPoint(event)
+  }
+
+  const move = (event) => {
+    if (!drawingRef.current) return
+    event.preventDefault()
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    const nextPoint = getPoint(event)
+    const lastPoint = lastPointRef.current || nextPoint
+    ctx.strokeStyle = '#2C2A27'
+    ctx.lineWidth = 3
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.moveTo(lastPoint.x, lastPoint.y)
+    ctx.lineTo(nextPoint.x, nextPoint.y)
+    ctx.stroke()
+    lastPointRef.current = nextPoint
+    setHasSignature(true)
+  }
+
+  const end = () => {
+    drawingRef.current = false
+    lastPointRef.current = null
+  }
+
+  const clear = () => {
+    const canvas = canvasRef.current
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    setHasSignature(false)
+  }
+
+  const save = () => {
+    const canvas = canvasRef.current
+    onSave(hasSignature ? canvas.toDataURL('image/png') : '')
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-4 dark:bg-[#111111]">
+        <h2 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
+          Change signature
+        </h2>
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-2 dark:border-[#2c2c2e] dark:bg-[#121212]">
+          <canvas
+            ref={canvasRef}
+            width={640}
+            height={180}
+            className="block h-36 w-full rounded-lg bg-white"
+            style={{ touchAction: 'none' }}
+            onMouseDown={start}
+            onMouseMove={move}
+            onMouseUp={end}
+            onMouseLeave={end}
+            onTouchStart={start}
+            onTouchMove={move}
+            onTouchEnd={end}
+          />
+        </div>
+        <div className="mt-4 flex justify-between gap-2">
+          <button
+            type="button"
+            onClick={clear}
+            className="rounded-full px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            Clear
+          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-full px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              className="rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white dark:bg-gray-100 dark:text-gray-950"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

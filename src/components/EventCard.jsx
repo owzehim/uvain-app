@@ -45,7 +45,7 @@ export default function EventCard({ event, isExpanded, onToggle }) {
               {/* Day name */}
               <span
                 style={{
-                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontFamily: 'var(--font-app)',
                   fontSize: fs.day,
                   fontWeight: 500,
                   color: '#9ca3af',
@@ -60,7 +60,7 @@ export default function EventCard({ event, isExpanded, onToggle }) {
               {/* Date number */}
               <span
                 style={{
-                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontFamily: 'var(--font-app)',
                   fontSize: fs.date,
                   fontWeight: 800,
                   color: '#1f2937',
@@ -75,7 +75,7 @@ export default function EventCard({ event, isExpanded, onToggle }) {
               {/* Month name */}
               <span
                 style={{
-                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontFamily: 'var(--font-app)',
                   fontSize: fs.month,
                   fontWeight: 700,
                   color: '#f97316',
@@ -95,7 +95,7 @@ export default function EventCard({ event, isExpanded, onToggle }) {
             {/* Event Title */}
             <h3
               style={{
-                fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                fontFamily: 'var(--font-app)',
                 fontSize: fs.title,
                 fontWeight: 600,
                 color: '#1f2937',
@@ -111,7 +111,7 @@ export default function EventCard({ event, isExpanded, onToggle }) {
                 <MapPin size={14} weight="fill" className="text-gray-400 flex-shrink-0" />
                 <span
                   style={{
-                    fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                    fontFamily: 'var(--font-app)',
                     fontSize: fs.location,
                     fontWeight: 400,
                     color: '#6b7280',

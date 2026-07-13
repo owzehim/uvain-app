@@ -138,7 +138,7 @@ export default function QRScanner({ onScan, darkMode = false }) {
             fontSize: '14px',
             fontWeight: 600,
             color: darkMode ? '#F7F8F9' : '#2C2A27',
-            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontFamily: 'var(--font-app)',
             letterSpacing: '0.04em',
             margin: 0,
           }}
@@ -149,7 +149,7 @@ export default function QRScanner({ onScan, darkMode = false }) {
           style={{
             fontSize: '12px',
             color: darkMode ? '#A1A1AA' : 'rgba(44,42,39,0.45)',
-            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontFamily: 'var(--font-app)',
             letterSpacing: '0.02em',
             margin: 0,
           }}

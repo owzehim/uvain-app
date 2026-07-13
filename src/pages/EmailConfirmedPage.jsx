@@ -120,7 +120,7 @@ const styles = {
     alignItems: 'flex-start',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
-    fontFamily: '"Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: 'var(--font-app)',
     padding: 'calc(env(safe-area-inset-top) + 120px) 16px 24px',
     boxSizing: 'border-box',
   },

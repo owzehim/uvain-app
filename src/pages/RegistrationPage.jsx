@@ -1,4 +1,4 @@
-﻿// src/pages/RegistrationPage.jsx
+// src/pages/RegistrationPage.jsx
 //
 // Presentation only ??all logic lives in useRegisterMember hook.
 // ??Do NOT copy to React Native ??rewrite UI with RN components.
@@ -692,7 +692,7 @@ export default function RegistrationPage() {
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
     return (
-      <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
+      <div style={{ ...s.page, fontFamily: 'var(--font-app)' }}>
         <style>{registrationMotionCss}</style>
         <div style={s.topBar}>
           <button
@@ -732,7 +732,7 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div style={{ ...s.page, fontFamily: '"Noto Sans KR", sans-serif' }}>
+    <div style={{ ...s.page, fontFamily: 'var(--font-app)' }}>
       <style>{registrationMotionCss}</style>
       {/* Top Bar with Back Button and Language Toggle */}
       <div style={s.topBar}>
