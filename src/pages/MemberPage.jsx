@@ -370,21 +370,25 @@ function MembershipCard({
     valid: `calc(${W} * 0.026)`,
     cardDetail: `calc(${W} * 0.034)`,
   }
-  const cardLayout = {
-    headerTop: `calc(${W} * 0.07)`,
-    headerLeft: `calc(${W} * 0.07)`,
-    qrTop: `calc(${W} * 0.45)`,
-    detailsTop: `calc(${W} * 0.110)`,
-    detailsGap: `calc(${W} * 0.026)`,
-    validBottom: `calc(${W} * 0.07)`,
-  }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
   const avatarSize = `calc(${W} * 0.21)`
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
-  const BRACKET = 24
+  const qrTop = `calc(${W} * 0.415)`
+  const detailsGapAfterQr = `calc(${W} * 0.08)`
+  const cardLayout = {
+    headerTop: `calc(${W} * 0.07)`,
+    headerLeft: `calc(${W} * 0.07)`,
+    qrTop,
+    detailsGapAfterQr,
+    detailsTop: `calc(${qrTop} + ${qrOutlineSize} + ${detailsGapAfterQr})`,
+    detailsGap: `calc(${W} * 0.026)`,
+    validBottom: `calc(${W} * 0.05)`,
+  }
+  const QR_BRACKET_SIZE = 28
+  const QR_BRACKET_STROKE = 3
   const cardBg = darkMode ? '#1C1C1E' : '#F6F4F1'
   const cardBorder = darkMode ? '#2C2C2E' : '#d6d3c0'
   const cardShadow = darkMode
@@ -481,10 +485,10 @@ function MembershipCard({
             position: 'absolute',
             top: 0,
             left: 0,
-            width: BRACKET,
-            height: BRACKET,
-            borderTop: `2.5px solid ${scannerLine}`,
-            borderLeft: `2.5px solid ${scannerLine}`,
+            width: QR_BRACKET_SIZE,
+            height: QR_BRACKET_SIZE,
+            borderTop: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
+            borderLeft: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
             borderRadius: '4px 0 0 0',
           }}
         />
@@ -493,10 +497,10 @@ function MembershipCard({
             position: 'absolute',
             top: 0,
             right: 0,
-            width: BRACKET,
-            height: BRACKET,
-            borderTop: `2.5px solid ${scannerLine}`,
-            borderRight: `2.5px solid ${scannerLine}`,
+            width: QR_BRACKET_SIZE,
+            height: QR_BRACKET_SIZE,
+            borderTop: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
+            borderRight: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
             borderRadius: '0 4px 0 0',
           }}
         />
@@ -505,10 +509,10 @@ function MembershipCard({
             position: 'absolute',
             bottom: 0,
             left: 0,
-            width: BRACKET,
-            height: BRACKET,
-            borderBottom: `2.5px solid ${scannerLine}`,
-            borderLeft: `2.5px solid ${scannerLine}`,
+            width: QR_BRACKET_SIZE,
+            height: QR_BRACKET_SIZE,
+            borderBottom: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
+            borderLeft: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
             borderRadius: '0 0 0 4px',
           }}
         />
@@ -517,10 +521,10 @@ function MembershipCard({
             position: 'absolute',
             bottom: 0,
             right: 0,
-            width: BRACKET,
-            height: BRACKET,
-            borderBottom: `2.5px solid ${scannerLine}`,
-            borderRight: `2.5px solid ${scannerLine}`,
+            width: QR_BRACKET_SIZE,
+            height: QR_BRACKET_SIZE,
+            borderBottom: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
+            borderRight: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
             borderRadius: '0 0 4px 0',
           }}
         />
@@ -566,7 +570,7 @@ function MembershipCard({
           gap: cardLayout.detailsGap,
           color: primaryText,
           fontSize: fs.cardDetail,
-          fontWeight: 700,
+          fontWeight: 600,
           lineHeight: 1,
         }}
       >
@@ -590,7 +594,7 @@ function MembershipCard({
           textTransform: 'uppercase',
         }}
       >
-          Valid Until{' '}
+          UvA-IN Membership Valid Until{' '}
           {member?.membership_valid_until
             ? new Date(member.membership_valid_until).toLocaleDateString(
                 'en-CA',
