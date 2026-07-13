@@ -378,7 +378,8 @@ function MembershipCard({
   const avatarSize = `calc(${W} * 0.21)`
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
-  const BRACKET = 24
+  const BRACKET = 28
+  const BRACKET_STROKE = 3
   const cardBg = darkMode ? '#1C1C1E' : '#F6F4F1'
   const cardBorder = darkMode ? '#2C2C2E' : '#d6d3c0'
   const cardShadow = darkMode
@@ -537,8 +538,8 @@ function MembershipCard({
               left: 0,
               width: BRACKET,
               height: BRACKET,
-              borderTop: `2.5px solid ${scannerLine}`,
-              borderLeft: `2.5px solid ${scannerLine}`,
+              borderTop: `${BRACKET_STROKE}px solid ${scannerLine}`,
+              borderLeft: `${BRACKET_STROKE}px solid ${scannerLine}`,
               borderRadius: '4px 0 0 0',
             }}
           />
@@ -549,8 +550,8 @@ function MembershipCard({
               right: 0,
               width: BRACKET,
               height: BRACKET,
-              borderTop: `2.5px solid ${scannerLine}`,
-              borderRight: `2.5px solid ${scannerLine}`,
+              borderTop: `${BRACKET_STROKE}px solid ${scannerLine}`,
+              borderRight: `${BRACKET_STROKE}px solid ${scannerLine}`,
               borderRadius: '0 4px 0 0',
             }}
           />
@@ -561,8 +562,8 @@ function MembershipCard({
               left: 0,
               width: BRACKET,
               height: BRACKET,
-              borderBottom: `2.5px solid ${scannerLine}`,
-              borderLeft: `2.5px solid ${scannerLine}`,
+              borderBottom: `${BRACKET_STROKE}px solid ${scannerLine}`,
+              borderLeft: `${BRACKET_STROKE}px solid ${scannerLine}`,
               borderRadius: '0 0 0 4px',
             }}
           />
@@ -573,8 +574,8 @@ function MembershipCard({
               right: 0,
               width: BRACKET,
               height: BRACKET,
-              borderBottom: `2.5px solid ${scannerLine}`,
-              borderRight: `2.5px solid ${scannerLine}`,
+              borderBottom: `${BRACKET_STROKE}px solid ${scannerLine}`,
+              borderRight: `${BRACKET_STROKE}px solid ${scannerLine}`,
               borderRadius: '0 0 4px 0',
             }}
           />
