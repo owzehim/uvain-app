@@ -374,7 +374,7 @@ function MembershipCard({
     headerTop: `calc(${W} * 0.07)`,
     headerLeft: `calc(${W} * 0.07)`,
     qrTop: `calc(${W} * 0.39)`,
-    detailsBottom: `calc(${W} * 0.14)`,
+    detailsTop: `calc(${W} * 0.95)`,
     detailsGap: `calc(${W} * 0.026)`,
     validBottom: `calc(${W} * 0.07)`,
   }
@@ -560,7 +560,7 @@ function MembershipCard({
           position: 'absolute',
           left: `calc(${W} * 0.07)`,
           right: `calc(${W} * 0.07)`,
-          bottom: cardLayout.detailsBottom,
+          top: cardLayout.detailsTop,
           display: 'flex',
           flexDirection: 'column',
           gap: cardLayout.detailsGap,
@@ -570,22 +570,10 @@ function MembershipCard({
           lineHeight: 1,
         }}
       >
-        <div
-          style={{
-            borderBottom: `1px solid ${secondaryText}`,
-            paddingBottom: `calc(${W} * 0.012)`,
-          }}
-        >
+        <div>
           name: {member?.first_name} {member?.last_name}
         </div>
-        <div
-          style={{
-            borderBottom: `1px solid ${secondaryText}`,
-            paddingBottom: `calc(${W} * 0.012)`,
-          }}
-        >
-          signature:
-        </div>
+        <div>signature:</div>
       </div>
 
       <div
