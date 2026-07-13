@@ -373,8 +373,8 @@ function MembershipCard({
   const cardLayout = {
     headerTop: `calc(${W} * 0.07)`,
     headerLeft: `calc(${W} * 0.07)`,
-    qrTop: `calc(${W} * 0.39)`,
-    detailsTop: `calc(${W} * 0.95)`,
+    qrTop: `calc(${W} * 0.45)`,
+    detailsTop: `calc(${W} * 0.110)`,
     detailsGap: `calc(${W} * 0.026)`,
     validBottom: `calc(${W} * 0.07)`,
   }
