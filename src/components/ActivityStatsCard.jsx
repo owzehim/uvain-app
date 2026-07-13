@@ -79,7 +79,7 @@ export default function ActivityStatsCard({ userId }) {
 
           <h3
             style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontFamily: 'var(--font-app)',
               fontWeight: 700,
               fontSize: '15px',
               color: theme.titleText,
@@ -155,7 +155,7 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false, theme }) {
         <span
           style={{
             color: theme.subText,
-            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontFamily: 'var(--font-app)',
             letterSpacing: '0.03em',
           }}
         >
@@ -166,7 +166,7 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false, theme }) {
       <span
         style={{
           fontWeight: 700,
-          fontFamily: '"Handjet", system-ui, sans-serif',
+          fontFamily: 'var(--font-app)',
           letterSpacing: '0.04em',
           color: highlight ? theme.mainText : theme.mainText,
         }}
@@ -175,7 +175,7 @@ function StatRow({ icon: Icon, label, value, unit, highlight = false, theme }) {
         <span
           style={{
             fontWeight: 400,
-            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontFamily: 'var(--font-app)',
             color: theme.mutedText,
           }}
         >
@@ -215,7 +215,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
 
         <h3
           style={{
-            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontFamily: 'var(--font-app)',
             fontWeight: 700,
             fontSize: '15px',
             color: theme.titleText,
@@ -272,7 +272,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
               <span
                 style={{
                   color: v.isPlaceholder ? theme.mutedText : theme.mainText,
-                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontFamily: 'var(--font-app)',
                   letterSpacing: '0.03em',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -286,7 +286,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
               <span
                 style={{
                   color: theme.mutedText,
-                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontFamily: 'var(--font-app)',
                   letterSpacing: '0.03em',
                   flexShrink: 0,
                 }}
