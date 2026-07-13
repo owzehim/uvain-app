@@ -367,9 +367,16 @@ function MembershipCard({
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
   const fs = {
-    brand: `calc(${W} * 0.052)`,
-    valid: `calc(${W} * 0.032)`,
+    valid: `calc(${W} * 0.026)`,
     cardDetail: `calc(${W} * 0.034)`,
+  }
+  const cardLayout = {
+    headerTop: `calc(${W} * 0.07)`,
+    headerLeft: `calc(${W} * 0.07)`,
+    qrTop: `calc(${W} * 0.39)`,
+    detailsBottom: `calc(${W} * 0.14)`,
+    detailsGap: `calc(${W} * 0.026)`,
+    validBottom: `calc(${W} * 0.07)`,
   }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
@@ -378,7 +385,7 @@ function MembershipCard({
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
-  const cardBg = darkMode ? '#1C1C1E' : '#F5F7F6'
+  const cardBg = darkMode ? '#1C1C1E' : '#F6F4F1'
   const cardBorder = darkMode ? '#2C2C2E' : '#d6d3c0'
   const cardShadow = darkMode
     ? '0 18px 38px rgba(0,0,0,0.34)'
@@ -409,18 +416,18 @@ function MembershipCard({
         boxShadow: cardShadow,
         padding: `calc(${W} * 0.07)`,
         boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
+        position: 'relative',
       }}
     >
       {/* TOP */}
       <div
         style={{
+          position: 'absolute',
+          top: cardLayout.headerTop,
+          left: cardLayout.headerLeft,
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'flex-start',
-          gap: `calc(${W} * 0.055)`,
         }}
       >
         <div
@@ -456,186 +463,151 @@ function MembershipCard({
             />
           )}
         </div>
+      </div>
+
+      {/* QR SCAN AREA */}
+      <div
+        style={{
+          position: 'absolute',
+          top: cardLayout.qrTop,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: qrOutlineSize,
+          height: qrOutlineSize,
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: BRACKET,
+            height: BRACKET,
+            borderTop: `2.5px solid ${scannerLine}`,
+            borderLeft: `2.5px solid ${scannerLine}`,
+            borderRadius: '4px 0 0 0',
+          }}
+        />
+        <span
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: BRACKET,
+            height: BRACKET,
+            borderTop: `2.5px solid ${scannerLine}`,
+            borderRight: `2.5px solid ${scannerLine}`,
+            borderRadius: '0 4px 0 0',
+          }}
+        />
+        <span
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: BRACKET,
+            height: BRACKET,
+            borderBottom: `2.5px solid ${scannerLine}`,
+            borderLeft: `2.5px solid ${scannerLine}`,
+            borderRadius: '0 0 0 4px',
+          }}
+        />
+        <span
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            width: BRACKET,
+            height: BRACKET,
+            borderBottom: `2.5px solid ${scannerLine}`,
+            borderRight: `2.5px solid ${scannerLine}`,
+            borderRadius: '0 0 4px 0',
+          }}
+        />
 
         <div
           style={{
+            position: 'absolute',
+            inset: 0,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: `calc(${W} * 0.006)`,
-            textAlign: 'left',
-            paddingTop: `calc(${W} * 0.014)`,
-            minWidth: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: `calc(${W} * 0.02)`,
           }}
         >
+          <QrCode
+            size={`calc(${W} * 0.1)`}
+            weight="bold"
+            color={faintText}
+          />
           <span
             style={{
-              fontSize: fs.brand,
-              fontWeight: 800,
-              color: primaryText,
-              letterSpacing: 0,
-              lineHeight: 1.08,
+              fontSize: `calc(${W} * 0.034)`,
+              fontWeight: 600,
+              color: mutedText,
+              letterSpacing: '0.05em',
             }}
           >
-            UvA-IN
-            <br />
-            Membership
+            눌러서 Check-IN 하기
           </span>
         </div>
       </div>
 
-      {/* MIDDLE */}
+      {/* BOTTOM DETAILS */}
       <div
         style={{
-          flex: 1,
+          position: 'absolute',
+          left: `calc(${W} * 0.07)`,
+          right: `calc(${W} * 0.07)`,
+          bottom: cardLayout.detailsBottom,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingBottom: '52px',
+          flexDirection: 'column',
+          gap: cardLayout.detailsGap,
+          color: primaryText,
+          fontSize: fs.cardDetail,
+          fontWeight: 700,
+          lineHeight: 1,
         }}
       >
         <div
           style={{
-            position: 'relative',
-            width: qrOutlineSize,
-            height: qrOutlineSize,
-            flexShrink: 0,
+            borderBottom: `1px solid ${secondaryText}`,
+            paddingBottom: `calc(${W} * 0.012)`,
           }}
         >
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: `2.5px solid ${scannerLine}`,
-              borderLeft: `2.5px solid ${scannerLine}`,
-              borderRadius: '4px 0 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: `2.5px solid ${scannerLine}`,
-              borderRight: `2.5px solid ${scannerLine}`,
-              borderRadius: '0 4px 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: `2.5px solid ${scannerLine}`,
-              borderLeft: `2.5px solid ${scannerLine}`,
-              borderRadius: '0 0 0 4px',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: `2.5px solid ${scannerLine}`,
-              borderRight: `2.5px solid ${scannerLine}`,
-              borderRadius: '0 0 4px 0',
-            }}
-          />
-
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: `calc(${W} * 0.02)`,
-            }}
-          >
-            <QrCode
-              size={`calc(${W} * 0.1)`}
-              weight="bold"
-              color={faintText}
-            />
-            <span
-              style={{
-                fontSize: `calc(${W} * 0.034)`,
-                fontWeight: 600,
-                color: mutedText,
-                letterSpacing: '0.05em',
-              }}
-            >
-              눌러서 Check-IN 하기
-            </span>
-          </div>
+          name: {member?.first_name} {member?.last_name}
+        </div>
+        <div
+          style={{
+            borderBottom: `1px solid ${secondaryText}`,
+            paddingBottom: `calc(${W} * 0.012)`,
+          }}
+        >
+          signature:
         </div>
       </div>
 
-      {/* BOTTOM */}
       <div
         style={{
-          minHeight: `calc(${W} * 0.18)`,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          gap: `calc(${W} * 0.04)`,
+          position: 'absolute',
+          left: `calc(${W} * 0.07)`,
+          right: `calc(${W} * 0.07)`,
+          bottom: cardLayout.validBottom,
+          color: secondaryText,
+          fontSize: fs.valid,
+          fontWeight: 600,
+          textAlign: 'center',
+          lineHeight: 1,
+          textTransform: 'uppercase',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: `calc(${W} * 0.026)`,
-            color: primaryText,
-            fontSize: fs.cardDetail,
-            fontWeight: 700,
-            lineHeight: 1,
-          }}
-        >
-          <div
-            style={{
-              borderBottom: `1px solid ${secondaryText}`,
-              paddingBottom: `calc(${W} * 0.012)`,
-            }}
-          >
-            name: {member?.first_name} {member?.last_name}
-          </div>
-          <div
-            style={{
-              borderBottom: `1px solid ${secondaryText}`,
-              paddingBottom: `calc(${W} * 0.012)`,
-            }}
-          >
-            signature:
-          </div>
-        </div>
-        <div
-          style={{
-            color: secondaryText,
-            fontSize: fs.valid,
-            fontWeight: 600,
-            textAlign: 'center',
-            lineHeight: 1,
-            textTransform: 'uppercase',
-          }}
-        >
           Valid Until{' '}
           {member?.membership_valid_until
             ? new Date(member.membership_valid_until).toLocaleDateString(
                 'en-CA',
               )
             : 'N/A'}
-        </div>
       </div>
     </div>
   )
