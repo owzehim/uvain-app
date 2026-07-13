@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
@@ -362,14 +362,15 @@ function MembershipCard({
   scannerOpenSignal = 0,
 }) {
   const [flipped, setFlipped] = useState(false)
-  const [signatureDataUrl, setSignatureDataUrl] = useState('')
 
   const W = 'min(calc(100vw - 32px), 398px)'
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
   const fs = {
-    valid: `calc(${W} * 0.026)`,
-    cardDetail: `calc(${W} * 0.034)`,
+    brand: `calc(${W} * 0.038)`,
+    valid: `calc(${W} * 0.032)`,
+    name: `calc(${W} * 0.052)`,
+    wordmark: `calc(${W} * 0.18)`,
   }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
@@ -377,20 +378,7 @@ function MembershipCard({
   const avatarSize = `calc(${W} * 0.21)`
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
-  const qrTop = `calc(${W} * 0.415)`
-  const detailsGapAfterQr = `calc(${W} * 0.08)`
-  const cardLayout = {
-    headerTop: `calc(${W} * 0.07)`,
-    headerLeft: `calc(${W} * 0.07)`,
-    headerRight: `calc(${W} * 0.07)`,
-    qrTop,
-    detailsGapAfterQr,
-    detailsTop: `calc(${qrTop} + ${qrOutlineSize} + ${detailsGapAfterQr})`,
-    detailsGap: `calc(${W} * 0.026)`,
-    validBottom: `calc(${W} * 0.02)`,
-  }
-  const QR_BRACKET_SIZE = 28
-  const QR_BRACKET_STROKE = 3
+  const BRACKET = 24
   const cardBg = darkMode ? '#1C1C1E' : '#F6F4F1'
   const cardBorder = darkMode ? '#2C2C2E' : '#d6d3c0'
   const cardShadow = darkMode
@@ -411,26 +399,6 @@ function MembershipCard({
     if (scannerOpenSignal) setFlipped(true)
   }, [scannerOpenSignal])
 
-  useEffect(() => {
-    if (!member?.user_id) {
-      setSignatureDataUrl('')
-      return undefined
-    }
-
-    const storageKey = `uvain-signature-${member.user_id}`
-    setSignatureDataUrl(window.localStorage.getItem(storageKey) || '')
-
-    const handleSignatureUpdated = (event) => {
-      if (event.detail?.userId !== member.user_id) return
-      setSignatureDataUrl(event.detail?.signatureDataUrl || '')
-    }
-
-    window.addEventListener('uvain-signature-updated', handleSignatureUpdated)
-    return () => {
-      window.removeEventListener('uvain-signature-updated', handleSignatureUpdated)
-    }
-  }, [member?.user_id])
-
   const cardFront = (
     <div
       style={{
@@ -442,17 +410,16 @@ function MembershipCard({
         boxShadow: cardShadow,
         padding: `calc(${W} * 0.07)`,
         boxSizing: 'border-box',
-        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
       }}
     >
       {/* TOP */}
       <div
         style={{
-          position: 'absolute',
-          top: cardLayout.headerTop,
-          left: cardLayout.headerLeft,
           display: 'flex',
-          justifyContent: 'flex-start',
+          justifyContent: 'space-between',
           alignItems: 'flex-start',
         }}
       >
@@ -489,177 +456,175 @@ function MembershipCard({
             />
           )}
         </div>
-      </div>
-
-      <div
-        aria-label="UvA-IN"
-        role="img"
-        style={{
-          position: 'absolute',
-          top: cardLayout.headerTop,
-          right: cardLayout.headerRight,
-          width: avatarSize,
-          height: avatarSize,
-          backgroundColor: scannerLine,
-          WebkitMaskImage: `url("${darkMode ? '/uva-in%20outline%20bw%20thick.png' : '/uva-in%20logo%20outline%20thick.png'}")`,
-          maskImage: `url("${darkMode ? '/uva-in%20outline%20bw%20thick.png' : '/uva-in%20logo%20outline%20thick.png'}")`,
-          WebkitMaskRepeat: 'no-repeat',
-          maskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-          maskPosition: 'center',
-          WebkitMaskSize: 'contain',
-          maskSize: 'contain',
-          userSelect: 'none',
-        }}
-      >
-      </div>
-
-      {/* QR SCAN AREA */}
-      <div
-        style={{
-          position: 'absolute',
-          top: cardLayout.qrTop,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: qrOutlineSize,
-          height: qrOutlineSize,
-        }}
-      >
-        <span
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: QR_BRACKET_SIZE,
-            height: QR_BRACKET_SIZE,
-            borderTop: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderLeft: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderRadius: '4px 0 0 0',
-          }}
-        />
-        <span
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: QR_BRACKET_SIZE,
-            height: QR_BRACKET_SIZE,
-            borderTop: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderRight: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderRadius: '0 4px 0 0',
-          }}
-        />
-        <span
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            width: QR_BRACKET_SIZE,
-            height: QR_BRACKET_SIZE,
-            borderBottom: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderLeft: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderRadius: '0 0 0 4px',
-          }}
-        />
-        <span
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            width: QR_BRACKET_SIZE,
-            height: QR_BRACKET_SIZE,
-            borderBottom: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderRight: `${QR_BRACKET_STROKE}px solid ${scannerLine}`,
-            borderRadius: '0 0 4px 0',
-          }}
-        />
 
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: `calc(${W} * 0.02)`,
+            alignItems: 'flex-end',
+            gap: `calc(${W} * 0.01)`,
+            textAlign: 'right',
           }}
         >
-          <QrCode
-            size={`calc(${W} * 0.1)`}
-            weight="bold"
-            color={faintText}
-          />
           <span
             style={{
-              fontSize: `calc(${W} * 0.034)`,
-              fontWeight: 600,
-              color: mutedText,
-              letterSpacing: '0.05em',
+              fontFamily: 'var(--font-app)',
+              fontSize: fs.brand,
+              fontWeight: 700,
+              color: primaryText,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
             }}
           >
-            눌러서 Check-IN 하기
+            UvA-IN Membership
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-app)',
+              fontSize: fs.valid,
+              fontWeight: 500,
+              color: secondaryText,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              marginTop: `calc(${W} * 0.012)`,
+            }}
+          >
+            Valid Until{' '}
+            {member?.membership_valid_until
+              ? new Date(
+                  member.membership_valid_until,
+                ).toLocaleDateString('en-CA')
+              : 'N/A'}
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-app)',
+              fontSize: fs.name,
+              fontWeight: 800,
+              color: '#f97316',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              marginTop: `calc(${W} * 0.008)`,
+            }}
+          >
+            {member?.first_name} {member?.last_name}
           </span>
         </div>
       </div>
 
-      {/* BOTTOM DETAILS */}
+      {/* MIDDLE */}
       <div
         style={{
-          position: 'absolute',
-          left: `calc(${W} * 0.07)`,
-          right: `calc(${W} * 0.07)`,
-          top: cardLayout.detailsTop,
+          flex: 1,
           display: 'flex',
-          flexDirection: 'column',
-          gap: cardLayout.detailsGap,
-          color: scannerLine,
-          fontSize: fs.cardDetail,
-          fontWeight: 600,
-          lineHeight: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingBottom: '52px',
         }}
       >
-        <div>
-          name: {member?.first_name} {member?.last_name}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: `calc(${W} * 0.025)` }}>
-          <span>signature:</span>
-          {signatureDataUrl && (
-            <img
-              src={signatureDataUrl}
-              alt="Signature"
-              style={{
-                width: `calc(${W} * 0.28)`,
-                height: `calc(${W} * 0.07)`,
-                objectFit: 'contain',
-                objectPosition: 'left center',
-                display: 'block',
-              }}
+        <div
+          style={{
+            position: 'relative',
+            width: qrOutlineSize,
+            height: qrOutlineSize,
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderTop: `2.5px solid ${scannerLine}`,
+              borderLeft: `2.5px solid ${scannerLine}`,
+              borderRadius: '4px 0 0 0',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderTop: `2.5px solid ${scannerLine}`,
+              borderRight: `2.5px solid ${scannerLine}`,
+              borderRadius: '0 4px 0 0',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderBottom: `2.5px solid ${scannerLine}`,
+              borderLeft: `2.5px solid ${scannerLine}`,
+              borderRadius: '0 0 0 4px',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderBottom: `2.5px solid ${scannerLine}`,
+              borderRight: `2.5px solid ${scannerLine}`,
+              borderRadius: '0 0 4px 0',
+            }}
+          />
+
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: `calc(${W} * 0.02)`,
+            }}
+          >
+            <QrCode
+              size={`calc(${W} * 0.1)`}
+              weight="bold"
+              color={faintText}
             />
-          )}
+            <span
+              style={{
+                fontFamily: 'var(--font-app)',
+                fontSize: `calc(${W} * 0.034)`,
+                fontWeight: 600,
+                color: mutedText,
+                letterSpacing: '0.05em',
+              }}
+            >
+              눌러서 Check-IN 하기
+            </span>
+          </div>
         </div>
       </div>
 
-      <div
-        style={{
-          position: 'absolute',
-          left: `calc(${W} * 0.07)`,
-          right: `calc(${W} * 0.07)`,
-          bottom: cardLayout.validBottom,
-          color: secondaryText,
-          fontSize: fs.valid,
-          fontWeight: 600,
-          textAlign: 'center',
-          lineHeight: 1,
-          textTransform: 'uppercase',
-        }}
-      >
-          UvA-IN Membership Valid Until{' '}
-          {member?.membership_valid_until
-            ? new Date(member.membership_valid_until).toLocaleDateString(
-                'en-CA',
-              )
-            : 'N/A'}
+      {/* BOTTOM */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <span
+          style={{
+            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
+            fontSize: fs.wordmark,
+            fontWeight: 900,
+            color: darkMode ? '#A1A1AA' : '#2C2A27',
+            letterSpacing: '-0.01em',
+            lineHeight: 1,
+            textTransform: 'uppercase',
+          }}
+        >
+          UvA-IN
+        </span>
       </div>
     </div>
   )
@@ -683,6 +648,7 @@ function MembershipCard({
           color: darkMode ? '#F7F8F9' : '#4b5563',
           textAlign: 'center',
           padding: '16px',
+          fontFamily: 'var(--font-app)',
         }}
       >
         <span style={{ fontSize: fs.valid, fontWeight: 500 }}>
