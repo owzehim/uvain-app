@@ -362,6 +362,7 @@ function MembershipCard({
   scannerOpenSignal = 0,
 }) {
   const [flipped, setFlipped] = useState(false)
+  const [signatureDataUrl, setSignatureDataUrl] = useState('')
 
   const W = 'min(calc(100vw - 32px), 398px)'
   const cardW = W
@@ -409,6 +410,26 @@ function MembershipCard({
   useEffect(() => {
     if (scannerOpenSignal) setFlipped(true)
   }, [scannerOpenSignal])
+
+  useEffect(() => {
+    if (!member?.user_id) {
+      setSignatureDataUrl('')
+      return undefined
+    }
+
+    const storageKey = `uvain-signature-${member.user_id}`
+    setSignatureDataUrl(window.localStorage.getItem(storageKey) || '')
+
+    const handleSignatureUpdated = (event) => {
+      if (event.detail?.userId !== member.user_id) return
+      setSignatureDataUrl(event.detail?.signatureDataUrl || '')
+    }
+
+    window.addEventListener('uvain-signature-updated', handleSignatureUpdated)
+    return () => {
+      window.removeEventListener('uvain-signature-updated', handleSignatureUpdated)
+    }
+  }, [member?.user_id])
 
   const cardFront = (
     <div
@@ -601,7 +622,22 @@ function MembershipCard({
         <div>
           name: {member?.first_name} {member?.last_name}
         </div>
-        <div>signature:</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: `calc(${W} * 0.025)` }}>
+          <span>signature:</span>
+          {signatureDataUrl && (
+            <img
+              src={signatureDataUrl}
+              alt="Signature"
+              style={{
+                width: `calc(${W} * 0.28)`,
+                height: `calc(${W} * 0.07)`,
+                objectFit: 'contain',
+                objectPosition: 'left center',
+                display: 'block',
+              }}
+            />
+          )}
+        </div>
       </div>
 
       <div
