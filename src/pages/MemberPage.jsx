@@ -381,11 +381,12 @@ function MembershipCard({
   const cardLayout = {
     headerTop: `calc(${W} * 0.07)`,
     headerLeft: `calc(${W} * 0.07)`,
+    headerRight: `calc(${W} * 0.07)`,
     qrTop,
     detailsGapAfterQr,
     detailsTop: `calc(${qrTop} + ${qrOutlineSize} + ${detailsGapAfterQr})`,
     detailsGap: `calc(${W} * 0.026)`,
-    validBottom: `calc(${W} * 0.05)`,
+    validBottom: `calc(${W} * 0.02)`,
   }
   const QR_BRACKET_SIZE = 28
   const QR_BRACKET_STROKE = 3
@@ -467,6 +468,29 @@ function MembershipCard({
             />
           )}
         </div>
+      </div>
+
+      <div
+        aria-label="UvA-IN"
+        role="img"
+        style={{
+          position: 'absolute',
+          top: cardLayout.headerTop,
+          right: cardLayout.headerRight,
+          width: avatarSize,
+          height: avatarSize,
+          backgroundColor: scannerLine,
+          WebkitMaskImage: `url("${darkMode ? '/uva-in%20outline%20bw.png' : '/uva-in%20logo%20outline.png'}")`,
+          maskImage: `url("${darkMode ? '/uva-in%20outline%20bw.png' : '/uva-in%20logo%20outline.png'}")`,
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center',
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain',
+          userSelect: 'none',
+        }}
+      >
       </div>
 
       {/* QR SCAN AREA */}
@@ -568,7 +592,7 @@ function MembershipCard({
           display: 'flex',
           flexDirection: 'column',
           gap: cardLayout.detailsGap,
-          color: primaryText,
+          color: scannerLine,
           fontSize: fs.cardDetail,
           fontWeight: 600,
           lineHeight: 1,
