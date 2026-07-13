@@ -367,10 +367,9 @@ function MembershipCard({
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
   const fs = {
-    brand: `calc(${W} * 0.038)`,
+    brand: `calc(${W} * 0.052)`,
     valid: `calc(${W} * 0.032)`,
-    name: `calc(${W} * 0.052)`,
-    wordmark: `calc(${W} * 0.18)`,
+    cardDetail: `calc(${W} * 0.034)`,
   }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
@@ -379,7 +378,7 @@ function MembershipCard({
   const hasProfileImage = !!member?.profile_image_url
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
-  const cardBg = darkMode ? '#1C1C1E' : '#F6F4F1'
+  const cardBg = darkMode ? '#1C1C1E' : '#F5F7F6'
   const cardBorder = darkMode ? '#2C2C2E' : '#d6d3c0'
   const cardShadow = darkMode
     ? '0 18px 38px rgba(0,0,0,0.34)'
@@ -419,8 +418,9 @@ function MembershipCard({
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-start',
           alignItems: 'flex-start',
+          gap: `calc(${W} * 0.055)`,
         }}
       >
         <div
@@ -461,53 +461,25 @@ function MembershipCard({
           style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: `calc(${W} * 0.01)`,
-            textAlign: 'right',
+            alignItems: 'flex-start',
+            gap: `calc(${W} * 0.006)`,
+            textAlign: 'left',
+            paddingTop: `calc(${W} * 0.014)`,
+            minWidth: 0,
           }}
         >
           <span
             style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
               fontSize: fs.brand,
-              fontWeight: 700,
-              color: primaryText,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
-            UvA-IN Membership
-          </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.valid,
-              fontWeight: 500,
-              color: secondaryText,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.012)`,
-            }}
-          >
-            Valid Until{' '}
-            {member?.membership_valid_until
-              ? new Date(
-                  member.membership_valid_until,
-                ).toLocaleDateString('en-CA')
-              : 'N/A'}
-          </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.name,
               fontWeight: 800,
-              color: '#f97316',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.008)`,
+              color: primaryText,
+              letterSpacing: 0,
+              lineHeight: 1.08,
             }}
           >
-            {member?.first_name} {member?.last_name}
+            UvA-IN
+            <br />
+            Membership
           </span>
         </div>
       </div>
@@ -597,7 +569,6 @@ function MembershipCard({
             />
             <span
               style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
                 fontSize: `calc(${W} * 0.034)`,
                 fontWeight: 600,
                 color: mutedText,
@@ -611,20 +582,60 @@ function MembershipCard({
       </div>
 
       {/* BOTTOM */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span
+      <div
+        style={{
+          minHeight: `calc(${W} * 0.18)`,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: `calc(${W} * 0.04)`,
+        }}
+      >
+        <div
           style={{
-            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-            fontSize: fs.wordmark,
-            fontWeight: 900,
-            color: darkMode ? '#A1A1AA' : '#2C2A27',
-            letterSpacing: '-0.01em',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: `calc(${W} * 0.026)`,
+            color: primaryText,
+            fontSize: fs.cardDetail,
+            fontWeight: 700,
+            lineHeight: 1,
+          }}
+        >
+          <div
+            style={{
+              borderBottom: `1px solid ${secondaryText}`,
+              paddingBottom: `calc(${W} * 0.012)`,
+            }}
+          >
+            name: {member?.first_name} {member?.last_name}
+          </div>
+          <div
+            style={{
+              borderBottom: `1px solid ${secondaryText}`,
+              paddingBottom: `calc(${W} * 0.012)`,
+            }}
+          >
+            signature:
+          </div>
+        </div>
+        <div
+          style={{
+            color: secondaryText,
+            fontSize: fs.valid,
+            fontWeight: 600,
+            textAlign: 'center',
             lineHeight: 1,
             textTransform: 'uppercase',
           }}
         >
-          UvA-IN
-        </span>
+          Valid Until{' '}
+          {member?.membership_valid_until
+            ? new Date(member.membership_valid_until).toLocaleDateString(
+                'en-CA',
+              )
+            : 'N/A'}
+        </div>
       </div>
     </div>
   )
@@ -648,7 +659,6 @@ function MembershipCard({
           color: darkMode ? '#F7F8F9' : '#4b5563',
           textAlign: 'center',
           padding: '16px',
-          fontFamily: '"Handjet", system-ui, sans-serif',
         }}
       >
         <span style={{ fontSize: fs.valid, fontWeight: 500 }}>
