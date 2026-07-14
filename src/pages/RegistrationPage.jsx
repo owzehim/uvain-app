@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, CaretLeft, EnvelopeSimple, UserCircle } from '@phosphor-icons/react';
+import { Camera, CaretDown, CaretLeft, EnvelopeSimple, UserCircle } from '@phosphor-icons/react';
 import Cropper from 'react-easy-crop';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
@@ -304,11 +304,9 @@ function getRegistrationStepComplete(step, formData, yearOptions = []) {
   if (!isProductionEnv) return true;
 
   if (step === 'about') {
-    return filled(formData.firstName) && filled(formData.lastName);
-  }
-
-  if (step === 'personal') {
     return (
+      filled(formData.firstName) &&
+      filled(formData.lastName) &&
       filled(formData.yearOfBirth) &&
       filled(formData.gender) &&
       filled(formData.countryOfOrigin)
@@ -549,7 +547,9 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '', all
         style={{ ...s.input, ...s.typeaheadInputSpacer }}
         autoComplete="off"
       />
-      <span style={s.dropdownIcon}>⌄</span>
+      <span style={s.dropdownIcon}>
+        <CaretDown size={16} weight="bold" />
+      </span>
       {open && filtered.length > 0 && (
         <div style={s.typeaheadList}>
           {filtered.map((opt) => (
@@ -686,13 +686,12 @@ export default function RegistrationPage() {
     goBack();
   };
   const aboutComplete = getRegistrationStepComplete('about', formData, yearOptions);
-  const personalComplete = getRegistrationStepComplete('personal', formData, yearOptions);
   const academicComplete = getRegistrationStepComplete('academic', formData, yearOptions);
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
     return (
-      <div style={{ ...s.page, fontFamily: 'var(--font-app)' }}>
+      <div className="registration-page-enter" style={{ ...s.page, fontFamily: 'var(--font-app)' }}>
         <style>{registrationMotionCss}</style>
         <div style={s.topBar}>
           <button
@@ -732,7 +731,7 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div style={{ ...s.page, fontFamily: 'var(--font-app)' }}>
+    <div className="registration-page-enter" style={{ ...s.page, fontFamily: 'var(--font-app)' }}>
       <style>{registrationMotionCss}</style>
       {/* Top Bar with Back Button and Language Toggle */}
       <div style={s.topBar}>
@@ -770,24 +769,7 @@ export default function RegistrationPage() {
             goNext={goNext}
             language={language}
             t={t}
-            profileHeroProps={profileHeroProps}
             isComplete={aboutComplete}
-          />
-        </div>
-      )}
-
-      {step === 'personal' && (
-        <div key="personal" className="registration-step" style={s.stepShell}>
-          <PersonalStep
-            formData={formData}
-            handleChange={handleChange}
-            goNext={goNext}
-            language={language}
-            t={t}
-            displayName={displayName}
-            greetingName={greetingName}
-            profileHeroProps={profileHeroProps}
-            isComplete={personalComplete}
           />
         </div>
       )}
@@ -907,17 +889,17 @@ function ProfileHero({
   );
 }
 
-function NameStep({ formData, handleChange, goNext, language, t, profileHeroProps, isComplete }) {
+function NameStep({ formData, handleChange, goNext, language, t, isComplete }) {
   return (
     <div style={s.form}>
-      <div style={s.formContent}>
-        <ProfileHero
-          profileHeroProps={profileHeroProps}
-          firstLine={language === 'ko' ? '네덜란드 유학생을 위한' : 'For International Students,'}
-          secondLine="UvA-IN."
-        />
+      <div style={{ ...s.formContent, ...s.promptFormContent }}>
+        <h1 style={s.registrationPrompt}>
+          {language === 'ko'
+            ? '회원가입에 필요한 정보들을 입력해주세요'
+            : 'Please fill in your information to sign up'}
+        </h1>
 
-        <div style={s.nameGrid}>
+        <div style={{ ...s.nameGrid, ...s.stageOneFieldStart }}>
           <Field label={t.firstName}>
             <input
               name="firstName"
@@ -955,6 +937,41 @@ function NameStep({ formData, handleChange, goNext, language, t, profileHeroProp
               </Field>
             </>
           )}
+
+          <div style={s.nameGroupGap} />
+          <Row columns="1fr 1fr">
+            <Field label={t.yearOfBirth}>
+              <input
+                type="number"
+                name="yearOfBirth"
+                value={formData.yearOfBirth}
+                onChange={handleChange}
+                style={s.input}
+                placeholder=""
+                min="1950"
+                max="2015"
+              />
+            </Field>
+            <Field label={t.gender}>
+              <TypeaheadSelect
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
+                placeholder=""
+              />
+            </Field>
+          </Row>
+
+          <Field label={t.nationality}>
+            <TypeaheadSelect
+              name="countryOfOrigin"
+              value={formData.countryOfOrigin}
+              onChange={handleChange}
+              options={SORTED_COUNTRIES}
+              placeholder=""
+            />
+          </Field>
         </div>
       </div>
 
@@ -1081,45 +1098,30 @@ function AcademicStep({
   yearOptions,
   goNext,
   t,
-  greetingName,
   language,
-  profileHeroProps,
   isComplete,
 }) {
   const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
   return (
     <div style={s.form}>
-      <div style={{ ...s.formContent, ...s.academicContent }}>
-        <ProfileHero
-          profileHeroProps={profileHeroProps}
-          variant="academic"
-          firstLine={t.academicInfo}
-          allowUpload={false}
-        />
+      <div style={{ ...s.formContent, ...s.academicContent, ...s.promptFormContent }}>
+        <h1 style={s.registrationPrompt}>
+          {language === 'ko'
+            ? '대학 및 전공 정보를 입력해 주세요'
+            : 'Please enter your academic information'}
+        </h1>
 
-        <div style={s.fieldStack}>
-          <div style={s.academicGrid}>
-            <Field label={t.university}>
-              <TypeaheadSelect
-                name="university"
-                value={formData.university}
-                onChange={handleChange}
-                options={SORTED_UNIVERSITIES}
-                placeholder=""
-                allowCustom
-              />
-            </Field>
-            <Field label={t.major}>
-              <TypeaheadSelect
-                name="major"
-                value={formData.major}
-                onChange={handleChange}
-                options={SORTED_MAJORS}
-                placeholder=""
-                allowCustom
-              />
-            </Field>
-          </div>
+        <div style={{ ...s.fieldStack, ...s.stageTwoFieldStart }}>
+          <Field label={t.university}>
+            <TypeaheadSelect
+              name="university"
+              value={formData.university}
+              onChange={handleChange}
+              options={SORTED_UNIVERSITIES}
+              placeholder=""
+              allowCustom
+            />
+          </Field>
 
           <Field label={t.studentNumber}>
             <input
@@ -1127,6 +1129,18 @@ function AcademicStep({
               value={formData.studentNumber}
               onChange={handleChange}
               style={s.input}
+            />
+          </Field>
+
+          <div style={s.nameGroupGap} />
+          <Field label={t.major}>
+            <TypeaheadSelect
+              name="major"
+              value={formData.major}
+              onChange={handleChange}
+              options={SORTED_MAJORS}
+              placeholder=""
+              allowCustom
             />
           </Field>
 
@@ -1217,16 +1231,23 @@ function AccountStep({
 
   return (
     <form onSubmit={handleSubmit} style={s.form}>
-      <div style={s.formContent}>
-        <ProfileHero
-          profileHeroProps={profileHeroProps}
-          firstLine={language === 'ko' ? '이제' : 'And That'}
-          secondLine={language === 'ko' ? '마무리.' : 'Concludes It.'}
-          allowUpload={false}
-          equalIntroTextSize
-        />
+      <div style={{ ...s.formContent, ...s.promptFormContent }}>
+        <h1 style={s.registrationPrompt}>
+          {language === 'ko'
+            ? '이메일과 비밀번호를 입력해 주세요'
+            : 'Please enter your email and password'}
+        </h1>
 
-        <div style={s.fieldStack}>
+        <div style={s.accountProfileSlot}>
+          <ProfileHero
+            profileHeroProps={profileHeroProps}
+            firstLine=""
+            secondLine=""
+            allowUpload
+          />
+        </div>
+
+        <div style={{ ...s.fieldStack, ...s.accountFieldStart }}>
           <Field label={t.email}>
             <input
               type="email"
@@ -1260,6 +1281,7 @@ function AccountStep({
             </Field>
           </Row>
 
+          <div style={s.nameGroupGap} />
           <LegalAgreementList
             agreements={legalAgreements}
             onAgreementChange={onAgreementChange}
@@ -1372,8 +1394,8 @@ function LegalDocumentModal({ document, onClose }) {
 }
 
 // ?? Small layout helpers ???????????????????????????????????????????????????????
-function Row({ children }) {
-  return <div style={rowStyle}>{children}</div>;
+function Row({ children, columns }) {
+  return <div style={{ ...rowStyle, ...(columns ? { gridTemplateColumns: columns } : {}) }}>{children}</div>;
 }
 
 function Field({ label, children, variant = 'input', style }) {
@@ -1499,6 +1521,19 @@ html.dark select option {
   background: #1c1c1e;
 }
 
+.registration-page-enter {
+  animation: registrationPageFadeIn 260ms ease-out both;
+}
+
+@keyframes registrationPageFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .registration-step {
   opacity: 1;
 }
@@ -1614,6 +1649,10 @@ const s = {
     justifyContent: 'flex-start',
     paddingTop: '104px',
   },
+  promptFormContent: {
+    paddingTop: '72px',
+    position: 'relative',
+  },
   academicContent: {
     gap: '9px',
     paddingTop: '104px',
@@ -1628,6 +1667,41 @@ const s = {
     color: 'var(--reg-text)',
     margin: '0 0 4px',
     textAlign: 'left',
+  },
+  registrationPrompt: {
+    margin: '0 0 8px',
+    fontSize: '24px',
+    lineHeight: 1.28,
+    fontWeight: 700,
+    color: 'var(--reg-text)',
+    letterSpacing: 0,
+    textAlign: 'left',
+  },
+  stageOneFieldStart: {
+    position: 'absolute',
+    top: '160px',
+    left: 0,
+    right: 0,
+  },
+  stageTwoFieldStart: {
+    position: 'absolute',
+    top: '167px',
+    left: 0,
+    right: 0,
+  },
+  accountProfileSlot: {
+    position: 'absolute',
+    top: '120px',
+    left: 0,
+    right: 0,
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  accountFieldStart: {
+    position: 'absolute',
+    top: '230px',
+    left: 0,
+    right: 0,
   },
   aboutTopGrid: {
     display: 'grid',

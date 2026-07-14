@@ -119,8 +119,7 @@ export function useRegisterMember() {
   // ── Step navigation ─────────────────────────────────────────────────────
   const goNext = () => {
     setStep((prev) => {
-      if (prev === 'about') return 'personal';
-      if (prev === 'personal') return 'academic';
+      if (prev === 'about') return 'academic';
       if (prev === 'academic') return 'account';
       return prev;
     });
@@ -129,8 +128,7 @@ export function useRegisterMember() {
   const goBack = () => {
     setStep((prev) => {
       if (prev === 'account') return 'academic';
-      if (prev === 'academic') return 'personal';
-      if (prev === 'personal') return 'about';
+      if (prev === 'academic') return 'about';
       return prev;
     });
   };
