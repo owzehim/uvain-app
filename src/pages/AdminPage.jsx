@@ -1617,6 +1617,25 @@ function EventForm({
           {form.is_registration_closed ? '마감' : '접수중'}
         </button>
       </div>
+      <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+        <span className="text-sm text-gray-600">참여하기 버튼 표시</span>
+        <button
+          type="button"
+          onClick={() =>
+            setForm((f) => ({
+              ...f,
+              show_participation_button: !f.show_participation_button,
+            }))
+          }
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+            form.show_participation_button
+              ? 'bg-orange-500 text-white border-orange-500'
+              : 'bg-white text-gray-500 border-gray-200'
+          }`}
+        >
+          {form.show_participation_button ? '표시' : '숨김'}
+        </button>
+      </div>
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
         <ImageUploadPanel
@@ -1670,6 +1689,7 @@ function EventsTab() {
     instagram_url: '',
     participation_url: '',
     is_registration_closed: false,
+    show_participation_button: true,
   })
 
   const [imageFiles, setImageFiles] = useState([])
@@ -1757,6 +1777,7 @@ function EventsTab() {
       instagram_url: '',
       participation_url: '',
       is_registration_closed: false,
+      show_participation_button: true,
     })
     setImageFiles([])
     setImagePreviews([])
@@ -1833,6 +1854,7 @@ function EventsTab() {
       instagram_url: form.instagram_url,
       participation_url: form.participation_url,
       is_registration_closed: form.is_registration_closed,
+      show_participation_button: form.show_participation_button,
       image_urls,
     }
 
@@ -1893,6 +1915,7 @@ function EventsTab() {
       instagram_url: event.instagram_url || '',
       participation_url: event.participation_url || '',
       is_registration_closed: !!event.is_registration_closed,
+      show_participation_button: event.show_participation_button !== false,
     })
     setImageFiles([])
     setImagePreviews([])
@@ -1916,6 +1939,7 @@ function EventsTab() {
       instagram_url: '',
       participation_url: '',
       is_registration_closed: false,
+      show_participation_button: true,
     })
     setImageFiles([])
     setImagePreviews([])

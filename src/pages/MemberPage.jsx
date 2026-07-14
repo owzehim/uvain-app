@@ -372,6 +372,15 @@ function MembershipCard({
     name: `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.18)`,
   }
+  const cardLayout = {
+    membershipToValidGap: `calc(${W} * 0.022)`,
+    validToNameGap: `calc(${W} * 0.018)`,
+  }
+  const cardTextTop = {
+    membership: 0,
+    valid: `calc(${W} * 0.046 + ${cardLayout.membershipToValidGap})`,
+    name: `calc(${W} * 0.084 + ${cardLayout.membershipToValidGap} + ${cardLayout.validToNameGap})`,
+  }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
@@ -419,9 +428,11 @@ function MembershipCard({
       {/* TOP */}
       <div
         style={{
+          position: 'relative',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
+          height: avatarSize,
         }}
       >
         <div
@@ -460,15 +471,20 @@ function MembershipCard({
 
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: `calc(${W} * 0.01)`,
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: `calc(100% - ${avatarSize} - ${W} * 0.04)`,
+            height: avatarSize,
             textAlign: 'right',
+            pointerEvents: 'none',
           }}
         >
           <span
             style={{
+              position: 'absolute',
+              top: cardTextTop.membership,
+              right: 0,
               fontFamily: 'var(--font-app)',
               fontSize: fs.brand,
               fontWeight: 700,
@@ -481,13 +497,15 @@ function MembershipCard({
           </span>
           <span
             style={{
+              position: 'absolute',
+              top: cardTextTop.valid,
+              right: 0,
               fontFamily: 'var(--font-app)',
               fontSize: fs.valid,
               fontWeight: 500,
               color: secondaryText,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.012)`,
             }}
           >
             Valid Until{' '}
@@ -499,13 +517,15 @@ function MembershipCard({
           </span>
           <span
             style={{
+              position: 'absolute',
+              top: cardTextTop.name,
+              right: 0,
               fontFamily: 'var(--font-app)',
               fontSize: fs.name,
               fontWeight: 800,
               color: '#f97316',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.008)`,
             }}
           >
             {member?.first_name} {member?.last_name}
@@ -2127,6 +2147,7 @@ function EventsTab({ events }) {
 
   // First-panel image + color logic
   const displayImages = displayEvent?.image_urls || []
+  const showParticipationButton = displayEvent?.show_participation_button !== false
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
   const displayImageSlide = displayEvent ? slideIndexes[displayEvent.id] || 0 : 0
@@ -2440,12 +2461,44 @@ const effectiveDateColor = isDragging
                       <span>{plainText(displayEvent.location_description)}</span>
                     </div>
                   )}
+                  {showParticipationButton && (
+                    <button
+                      type="button"
+                      onClick={() => openParticipationForm(displayEvent)}
+                      disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
+                      className={
+                        'mt-5 hidden w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
+                        (displayEvent.participation_url && !displayEvent.is_registration_closed
+                          ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
+                          : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
+                      }
+                    >
+                      {displayEvent.participation_url
+                        ? displayEvent.is_registration_closed
+                          ? '신청 마감'
+                          : '참여하기'
+                        : '준비 중'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {showParticipationButton && (
+              <div
+                className="absolute left-0 right-0 px-6"
+                style={{
+                  bottom: `calc(${eventCollapsedCardHeight} + 2px)`,
+                  zIndex: 10,
+                }}
+              >
+                <div className="mx-auto max-w-md">
                   <button
                     type="button"
                     onClick={() => openParticipationForm(displayEvent)}
                     disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
                     className={
-                      'mt-5 hidden w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
+                      'flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
                       (displayEvent.participation_url && !displayEvent.is_registration_closed
                         ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
                         : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
@@ -2459,35 +2512,7 @@ const effectiveDateColor = isDragging
                   </button>
                 </div>
               </div>
-            </div>
-
-            <div
-              className="absolute left-0 right-0 px-6"
-              style={{
-                bottom: `calc(${eventCollapsedCardHeight} + 2px)`,
-                zIndex: 10,
-              }}
-            >
-              <div className="mx-auto max-w-md">
-                <button
-                  type="button"
-                  onClick={() => openParticipationForm(displayEvent)}
-                  disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
-                  className={
-                    'flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
-                    (displayEvent.participation_url && !displayEvent.is_registration_closed
-                      ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
-                      : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
-                  }
-                >
-                  {displayEvent.participation_url
-                    ? displayEvent.is_registration_closed
-                      ? '신청 마감'
-                      : '참여하기'
-                    : '준비 중'}
-                </button>
-              </div>
-            </div>
+            )}
 
             <div
               className="absolute left-0 right-0 bg-white dark:bg-[#121212]"
