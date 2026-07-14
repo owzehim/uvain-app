@@ -1650,7 +1650,7 @@ const s = {
     paddingTop: '104px',
   },
   promptFormContent: {
-    paddingTop: '10px',
+    paddingTop: '30px',
     position: 'relative',
   },
   academicContent: {
@@ -1691,7 +1691,7 @@ const s = {
   },
   accountProfileSlot: {
     position: 'absolute',
-    top: '70px',
+    top: '80px',
     left: 0,
     right: 0,
     display: 'flex',
