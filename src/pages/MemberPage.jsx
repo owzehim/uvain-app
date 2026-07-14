@@ -351,7 +351,7 @@ function WelcomeSlides({ member, onFinish }) {
   const [closing, setClosing] = useState(false)
   const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
   const tourLayout = {
-    contentTopOffset: '-56px',
+    contentTopOffset: '-25px',
     controlsBottomOffset: '90px',
   }
   const firstName = member?.first_name_ko || member?.first_name || ''
@@ -432,12 +432,14 @@ function WelcomeSlides({ member, onFinish }) {
 
       <div
         className="flex flex-1 flex-col justify-center px-8"
-        style={{ paddingTop: tourLayout.contentTopOffset }}
       >
         <div
           key={index}
           className="mx-auto flex w-full max-w-sm flex-col items-start"
-          style={{ animation: 'welcomeSlideIn 220ms ease-out' }}
+          style={{
+            animation: 'welcomeSlideIn 220ms ease-out',
+            transform: `translateY(${tourLayout.contentTopOffset})`,
+          }}
         >
           {slide.demo === 'membership-card' ? (
             <MembershipCardTourDemo />
