@@ -352,7 +352,7 @@ function WelcomeSlides({ member, onFinish }) {
   const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
   const tourLayout = {
     contentTopOffset: '-56px',
-    controlsBottomOffset: '130px',
+    controlsBottomOffset: '90px',
   }
   const firstName = member?.first_name_ko || member?.first_name || ''
   const slides = [
@@ -476,16 +476,16 @@ function WelcomeSlides({ member, onFinish }) {
             이해했습니다
           </label>
         )}
-        <div className="mx-auto flex max-w-sm flex-col gap-6">
-          <div className="flex items-center justify-center gap-2">
+        <div className="mx-auto flex max-w-sm flex-col gap-5">
+          <div className="flex items-center justify-center gap-1.5">
             {slides.map((_, dotIndex) => (
               <span
                 key={dotIndex}
                 className={
-                  'h-2.5 w-2.5 rounded-full transition-colors duration-200 ' +
+                  'rounded-full transition-all duration-200 ' +
                   (dotIndex === index
-                    ? 'bg-orange-500'
-                    : 'bg-gray-200 dark:bg-gray-700')
+                    ? 'h-2 w-2 bg-orange-500'
+                    : 'h-1.5 w-1.5 bg-gray-200 dark:bg-gray-700')
                 }
               />
             ))}
@@ -502,10 +502,10 @@ function WelcomeSlides({ member, onFinish }) {
               setIndex((value) => value + 1)
             }}
             className={
-              'flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-sm font-black text-white transition-colors ' +
+              'flex w-full items-center justify-center gap-2 rounded-full bg-orange-500 py-3 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50 ' +
               (isLast && !benefitsAcknowledged
-                ? 'cursor-not-allowed bg-orange-200'
-                : 'bg-orange-500 active:bg-orange-600')
+                ? 'cursor-not-allowed'
+                : 'active:bg-orange-600')
             }
           >
             {isLast ? '시작하기' : '다음'}
