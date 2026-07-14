@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+﻿import { useEffect, useState, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
-import { QrCode, Calendar, Clock, MapPin, NavigationArrow, Door, InstagramLogo, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
+import { QrCode, Calendar, Clock, MapPin, NavigationArrow, Door, InstagramLogo, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight, CaretLeft, ArrowRight, CheckCircle, HandPointing } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -39,6 +39,7 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const [qrCardLifted, setQrCardLifted] = useState(false)
+  const [welcomeSlidesOpen, setWelcomeSlidesOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const scannerOpenSignal = location.state?.reopenQrScanner || 0
@@ -114,6 +115,9 @@ export default function MemberPage() {
       setIsAdmin(isAdminUser)
       setEvents(eventData || [])
       setRestaurants(restaurantData || [])
+      setWelcomeSlidesOpen(
+        Boolean(memberData) && !memberData.tutorial_completed_at,
+      )
       setLoading(false)
     }
 
@@ -136,6 +140,26 @@ export default function MemberPage() {
     if (key !== 'qr') {
       setQrCardLifted(false)
     }
+  }
+
+  const handleWelcomeSlidesFinish = async () => {
+    const completedAt = new Date().toISOString()
+    setWelcomeSlidesOpen(false)
+    if (!member?.user_id) return
+
+    const { error } = await supabase
+      .from('members')
+      .update({ tutorial_completed_at: completedAt })
+      .eq('user_id', member.user_id)
+
+    if (error) {
+      console.warn('Failed to save tutorial completion:', error.message)
+      return
+    }
+
+    setMember((current) =>
+      current ? { ...current, tutorial_completed_at: completedAt } : current,
+    )
   }
 
   if (loading) {
@@ -173,6 +197,13 @@ export default function MemberPage() {
         onSkip={skipReview}
       />
 
+      {welcomeSlidesOpen && (
+        <WelcomeSlides
+          member={member}
+          onFinish={handleWelcomeSlidesFinish}
+        />
+      )}
+
       {/* Header: only on EVENTS tab */}
       {activeTab === 'events' && (
   <div
@@ -197,7 +228,7 @@ export default function MemberPage() {
             zIndex: 70,
           }}
         >
-          관리자
+          愿由ъ옄
         </button>
       )}
       <button
@@ -210,7 +241,7 @@ export default function MemberPage() {
           zIndex: 70,
         }}
       >
-        {/* CHANGED: size={20} → size={22} to match the MY tab gear icon */}
+        {/* CHANGED: size={20} ??size={22} to match the MY tab gear icon */}
         <Gear size={22} weight="bold" />
       </button>
     </div>
@@ -246,7 +277,7 @@ export default function MemberPage() {
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              관리자
+              愿由ъ옄
             </button>
           )}
           <button
@@ -332,6 +363,648 @@ export default function MemberPage() {
   )
 }
 
+function WelcomeSlides({ member, onFinish }) {
+  const [index, setIndex] = useState(0)
+  const [closing, setClosing] = useState(false)
+  const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
+  const tourLayout = {
+    contentTopOffset: '-30px',
+    animationTextGap: '20px',
+    controlsBottomOffset: '90px',
+  }
+  const firstName = member?.first_name_ko || member?.first_name || ''
+  const slides = [
+    {
+      eyebrow: '환영합니다',
+      title: firstName ? `${firstName}님, UvA-IN에 오신 것을 환영합니다!` : 'UvA-IN에 오신 것을 환영합니다',
+      body: 'UvA-IN 멤버 전용 혜택과 이벤트를 한곳에서 가장 빠르게 만나보세요.',
+      icon: UserCircle,
+    },
+    {
+      eyebrow: 'MY tab',
+      title: '우바인 멤버십 카드로 Check-IN 하세요',
+      body: 'MY 탭의 멤버십 카드를 눌러 QR 코드를 스캔 하면 Check-IN 할 수 있어요.',
+      icon: QrCode,
+      demo: 'membership-card',
+    },
+    {
+      eyebrow: 'EVENTS tab',
+      title: '다가오는 이벤트를 확인하세요',
+      body: '이벤트를 넘겨 보며 일정과 장소를 확인하고, 앱 안에서 바로 참여할 수 있어요.',
+      icon: Calendar,
+      demo: 'events',
+    },
+    {
+      eyebrow: 'SPOT tab',
+      title: 'UvA-IN 제휴 매장을 둘러보세요',
+      body: '지도에서 제휴 매장을 찾고, 우바인 임원들이 남긴 평가를 읽어보세요.',
+      icon: MapPin,
+      demo: 'spot',
+    },
+    {
+      eyebrow: 'UvA-IN Benefits',
+      title: 'UvA-IN 혜택 유의사항',
+      bodyNode: (
+        <>
+          제휴 매장에서 QR을 스캔한뒤, 반드시{' '}
+          <strong className="font-black text-gray-950 dark:text-white">Check-IN 완료 화면과 학생증</strong>
+          을 직원에게 보여주세요.
+        </>
+      ),
+      icon: CheckCircle,
+      demo: 'benefits',
+    },
+  ]
+  const slide = slides[index]
+  const Icon = slide.icon
+  const isLast = index === slides.length - 1
+  const finishTour = () => {
+    setClosing(true)
+    window.setTimeout(onFinish, 260)
+  }
+
+  return (
+    <div
+      className={
+        'fixed inset-0 z-[120] flex flex-col bg-white text-gray-950 transition-opacity duration-300 dark:bg-[#121212] dark:text-white ' +
+        (closing ? 'opacity-0' : 'opacity-100')
+      }
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top) + 18px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)',
+      }}
+    >
+      <div className="h-10 px-6">
+        {index > 0 && (
+          <button
+            type="button"
+            onClick={() => setIndex((value) => Math.max(0, value - 1))}
+            className="absolute left-[14px] z-10 flex h-11 w-11 items-center justify-center text-[#374151] dark:text-[#c7c7cc]"
+            style={{ top: 'max(18px, calc(env(safe-area-inset-top) + 6px))' }}
+            aria-label="Previous slide"
+          >
+            <CaretLeft size={24} weight="bold" />
+          </button>
+        )}
+      </div>
+
+      <div
+        className="flex flex-1 flex-col justify-center px-8"
+      >
+        <div
+          key={index}
+          className="mx-auto flex w-full max-w-sm flex-col items-start"
+          style={{
+            animation: 'welcomeSlideIn 220ms ease-out',
+            transform: `translateY(${tourLayout.contentTopOffset})`,
+          }}
+        >
+          {slide.demo === 'membership-card' ? (
+            <MembershipCardTourDemo bottomGap={tourLayout.animationTextGap} />
+          ) : slide.demo === 'events' ? (
+            <EventsTourDemo bottomGap={tourLayout.animationTextGap} />
+          ) : slide.demo === 'spot' ? (
+            <SpotTourDemo bottomGap={tourLayout.animationTextGap} />
+          ) : slide.demo === 'benefits' ? (
+            <BenefitsTourDemo bottomGap={tourLayout.animationTextGap} />
+          ) : (
+            <div
+              className="flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-orange-500 dark:bg-orange-500/10"
+              style={{ marginBottom: tourLayout.animationTextGap }}
+            >
+              <Icon size={48} weight="fill" />
+            </div>
+          )}
+          <p className="mb-3 text-xs font-black tracking-[0.22em] text-orange-500">
+            {slide.eyebrow}
+          </p>
+          <h1 className="text-[34px] font-black leading-tight tracking-normal">
+            {slide.title}
+          </h1>
+          <p className="mt-5 text-base font-medium leading-7 text-gray-500 dark:text-gray-300">
+            {slide.bodyNode || slide.body}
+          </p>
+        </div>
+      </div>
+
+      <div className="px-8" style={{ paddingBottom: tourLayout.controlsBottomOffset }}>
+        {isLast && (
+          <label className="mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={benefitsAcknowledged}
+              onChange={(event) => setBenefitsAcknowledged(event.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 accent-orange-500"
+            />
+            이해했습니다
+          </label>
+        )}
+        <div className="mx-auto flex max-w-sm flex-col gap-5">
+          <div className="flex items-center justify-center gap-1.5">
+            {slides.map((_, dotIndex) => (
+              <span
+                key={dotIndex}
+                className={
+                  'rounded-full transition-all duration-200 ' +
+                  (dotIndex === index
+                    ? 'h-2 w-2 bg-orange-500'
+                    : 'h-1.5 w-1.5 bg-gray-200 dark:bg-gray-700')
+                }
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            disabled={isLast && !benefitsAcknowledged}
+            onClick={() => {
+              if (isLast) {
+                if (!benefitsAcknowledged) return
+                finishTour()
+                return
+              }
+              setIndex((value) => value + 1)
+            }}
+            className={
+              'flex w-full items-center justify-center gap-2 rounded-full bg-orange-500 py-3 font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50 ' +
+              (isLast && !benefitsAcknowledged
+                ? 'cursor-not-allowed'
+                : 'active:bg-orange-600')
+            }
+          >
+            {isLast ? '시작하기' : '다음'}
+            {isLast ? <CheckCircle size={19} weight="bold" /> : <ArrowRight size={19} weight="bold" />}
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes welcomeSlideIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes tourCardFlip {
+          0%, 30% { transform: rotateY(0deg); }
+          42%, 84% { transform: rotateY(180deg); }
+          100% { transform: rotateY(0deg); }
+        }
+        @keyframes tourHandTap {
+          0%, 10% { opacity: 0; transform: translate(110px, 8px) rotate(-18deg) scale(1); }
+          18%, 25% { opacity: 1; transform: translate(72px, 42px) rotate(-18deg) scale(1); }
+          30%, 34% { opacity: 1; transform: translate(58px, 52px) rotate(-18deg) scale(0.9); }
+          40%, 78% { opacity: 0; transform: translate(88px, 68px) rotate(-12deg) scale(0.9); }
+          88%, 100% { opacity: 0; transform: translate(132px, 92px) rotate(-10deg) scale(0.9); }
+        }
+        @keyframes tourScanLine {
+          0%, 42% { opacity: 0; transform: translateY(-58px); }
+          48% { opacity: 1; transform: translateY(-58px); }
+          82% { opacity: 1; transform: translateY(58px); }
+          88%, 100% { opacity: 0; transform: translateY(58px); }
+        }
+        @keyframes tourTapPulse {
+          0%, 27% { opacity: 0; transform: scale(0.3); }
+          32% { opacity: 0.45; transform: scale(1); }
+          43%, 100% { opacity: 0; transform: scale(1.8); }
+        }
+        @keyframes eventSheetReveal {
+          0%, 62% { transform: translateY(180px); }
+          78%, 94% { transform: translateY(0); }
+          100% { transform: translateY(180px); }
+        }
+        @keyframes eventHandGesture {
+          0%, 10% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
+          16% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
+          34% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
+          42%, 54% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          62% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          78% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          90%, 100% { opacity: 0; transform: translate(92px, 104px) rotate(-10deg) scale(0.9); }
+        }
+        @keyframes eventInfoA {
+          0%, 24% { opacity: 1; transform: translateX(0); }
+          34%, 100% { opacity: 0; transform: translateX(-14px); }
+        }
+        @keyframes eventInfoB {
+          0%, 24% { opacity: 0; transform: translateX(14px); }
+          36%, 100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes spotMarkerPulse {
+          0%, 18% { opacity: 0; transform: scale(0.35); }
+          24% { opacity: 0.45; transform: scale(1); }
+          34%, 100% { opacity: 0; transform: scale(1.85); }
+        }
+        @keyframes spotCardReveal {
+          0%, 26% { opacity: 0; transform: translateY(290px); }
+          38%, 62% { opacity: 1; transform: translateY(180px); }
+          78%, 94% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(290px); }
+        }
+        @keyframes spotHandGesture {
+          0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
+          18% { opacity: 1; transform: translate(-10px, 130px) rotate(-14deg) scale(1); }
+          25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
+          38%, 52% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
+          62% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          78% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          90%, 100% { opacity: 0; transform: translate(82px, 120px) rotate(-10deg) scale(0.9); }
+        }
+        @keyframes benefitScannerFade {
+          0%, 42% { opacity: 1; transform: scale(1); }
+          54%, 100% { opacity: 0; transform: scale(0.98); }
+        }
+        @keyframes benefitScanLine {
+          0%, 14% { opacity: 0; transform: translateY(-45px); }
+          20% { opacity: 1; transform: translateY(-45px); }
+          34% { opacity: 1; transform: translateY(45px); }
+          42%, 100% { opacity: 0; transform: translateY(45px); }
+        }
+        @keyframes benefitSuccessPop {
+          0%, 48% { opacity: 0; transform: translateY(10px) scale(0.96); }
+          62%, 100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes benefitStudentId {
+          0%, 62% { opacity: 0; transform: translate(20px, 14px) rotate(4deg) scale(0.92); }
+          74%, 100% { opacity: 1; transform: translate(0, 0) rotate(-2deg) scale(1); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function MembershipCardTourDemo({ bottomGap = '32px' }) {
+  const miniCardTop = '58px'
+  const scannerFrameTop = '88px'
+  const scannerFrameSize = '116px'
+  const scannerCornerSize = '38px'
+  const animationDuration = '4.2s'
+
+  return (
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
+      <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
+        <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
+        <div
+          className="absolute left-1/2 h-[300px] w-[190px]"
+          style={{
+            top: miniCardTop,
+            transform: 'translateX(-50%) scale(0.78)',
+            transformOrigin: 'top center',
+            perspective: '700px',
+          }}
+        >
+        <div
+          className="relative h-full w-full"
+          style={{
+            animation: `tourCardFlip ${animationDuration} ease-in-out infinite`,
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <div
+            className="absolute inset-0 rounded-[12px] border border-[#d6d3c0] bg-[#F6F4F1] p-2.5 dark:border-[#2c2c2e] dark:bg-[#1c1c1e]"
+            style={{ backfaceVisibility: 'hidden' }}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#fff3a0] dark:bg-orange-500/20">
+                <UserCircle size={38} weight="fill" className="text-[#8a8461] dark:text-gray-400" />
+              </div>
+              <div className="mt-2.5 flex flex-col items-end gap-1.5">
+                <span className="h-1 w-24 rounded-full bg-[#2c2a27] dark:bg-white" />
+                <span className="h-1 w-20 rounded-full bg-[#9a9992] dark:bg-gray-500" />
+                <span className="h-1 w-14 rounded-full bg-orange-500" />
+              </div>
+            </div>
+
+            <div
+              className="absolute left-1/2 -translate-x-1/2"
+              style={{
+                top: scannerFrameTop,
+                width: scannerFrameSize,
+                height: scannerFrameSize,
+              }}
+            >
+              {[
+                'left-0 top-0 border-l-2 border-t-2 rounded-tl',
+                'right-0 top-0 border-r-2 border-t-2 rounded-tr',
+                'bottom-0 left-0 border-b-2 border-l-2 rounded-bl',
+                'bottom-0 right-0 border-b-2 border-r-2 rounded-br',
+              ].map((classes) => (
+                <span
+                  key={classes}
+                  className={`absolute border-[#b9b8b3] dark:border-gray-600 ${classes}`}
+                  style={{
+                    width: scannerCornerSize,
+                    height: scannerCornerSize,
+                  }}
+                />
+              ))}
+              <QrCode
+                size={40}
+                weight="bold"
+                className="absolute left-1/2 top-1/2 text-[#c9c8c3] dark:text-gray-600"
+                style={{ transform: 'translate(-50%, -50%)' }}
+              />
+            </div>
+
+            <div
+              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-white"
+              style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif' }}
+            >
+              UvA-IN
+            </div>
+          </div>
+
+          <div
+            className="absolute inset-0 rounded-[12px] border border-[#d6d3c0] bg-[#F6F4F1] dark:border-[#2c2c2e] dark:bg-[#1c1c1e]"
+            style={{
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}
+          >
+            <div
+              className="absolute left-1/2 -translate-x-1/2"
+              style={{
+                top: scannerFrameTop,
+                width: scannerFrameSize,
+                height: scannerFrameSize,
+              }}
+            >
+              {[
+                'left-0 top-0 border-l-2 border-t-2 rounded-tl',
+                'right-0 top-0 border-r-2 border-t-2 rounded-tr',
+                'bottom-0 left-0 border-b-2 border-l-2 rounded-bl',
+                'bottom-0 right-0 border-b-2 border-r-2 rounded-br',
+              ].map((classes) => (
+                <span
+                  key={classes}
+                  className={`absolute border-[#b9b8b3] dark:border-gray-600 ${classes}`}
+                  style={{
+                    width: scannerCornerSize,
+                    height: scannerCornerSize,
+                  }}
+                />
+              ))}
+              <span
+                className="absolute left-0 right-0 top-1/2 h-0.5 rounded-full bg-orange-500"
+                style={{ animation: `tourScanLine ${animationDuration} ease-in-out infinite` }}
+              />
+              <QrCode
+                size={40}
+                weight="bold"
+                className="absolute left-1/2 top-1/2 text-[#c9c8c3] dark:text-gray-600"
+                style={{ transform: 'translate(-50%, -50%)' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <span
+        className="absolute left-1/2 top-[124px] h-16 w-16 rounded-full bg-orange-500/20"
+        style={{ animation: `tourTapPulse ${animationDuration} ease-in-out infinite` }}
+      />
+      <HandPointing
+        size={64}
+        weight="fill"
+        className="absolute left-1/2 top-[140px] text-orange-500 drop-shadow-sm"
+        style={{ animation: `tourHandTap ${animationDuration} ease-in-out infinite` }}
+      />
+    </div>
+  )
+}
+
+function EventsTourDemo({ bottomGap = '32px' }) {
+  const animationDuration = '5.2s'
+
+  return (
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
+      <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
+        <List size={22} weight="bold" className="absolute left-5 top-6 text-gray-500 dark:text-gray-400" />
+        <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
+
+        <div
+          className="absolute left-5 right-5 top-16"
+          style={{ animation: `eventInfoA ${animationDuration} ease-in-out infinite` }}
+        >
+          <div className="flex h-[44px] items-end">
+            <div className="text-[44px] font-black leading-none text-gray-950 dark:text-white">31</div>
+          </div>
+          <div className="mt-2 flex items-end justify-between">
+            <div className="text-[18px] font-black leading-none text-gray-950 dark:text-white">AUGUST</div>
+            <div className="text-[18px] font-black leading-none text-orange-500">D-7</div>
+          </div>
+          <div className="mt-2 h-3 w-28 rounded-full bg-gray-400 dark:bg-gray-500" />
+          <div className="mt-3 flex items-center gap-2">
+            <Clock size={17} weight="fill" className="text-orange-500" />
+            <div className="h-2.5 w-20 rounded-full bg-gray-400 dark:bg-gray-500" />
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <NavigationArrow size={17} weight="fill" className="text-orange-500" />
+            <div className="h-2.5 w-16 rounded-full bg-gray-400 dark:bg-gray-500" />
+          </div>
+        </div>
+
+        <div
+          className="absolute left-5 right-5 top-16"
+          style={{ animation: `eventInfoB ${animationDuration} ease-in-out infinite` }}
+        >
+          <div className="flex h-[44px] items-end">
+            <div className="text-[44px] font-black leading-none text-gray-950 dark:text-white">14</div>
+          </div>
+          <div className="mt-2 flex items-end justify-between">
+            <div className="text-[18px] font-black leading-none text-gray-950 dark:text-white">SEPTEMBER</div>
+            <div className="text-[18px] font-black leading-none text-gray-400 dark:text-gray-500">Past</div>
+          </div>
+          <div className="mt-2 h-3 w-24 rounded-full bg-gray-400 dark:bg-gray-500" />
+          <div className="mt-3 flex items-center gap-2">
+            <Clock size={17} weight="fill" className="text-orange-500" />
+            <div className="h-2.5 w-16 rounded-full bg-gray-400 dark:bg-gray-500" />
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <NavigationArrow size={17} weight="fill" className="text-orange-500" />
+            <div className="h-2.5 w-20 rounded-full bg-gray-400 dark:bg-gray-500" />
+          </div>
+        </div>
+
+        <div
+          className="absolute bottom-0 left-0 right-0 h-[290px] rounded-t-[20px] bg-white px-5 pt-4 dark:bg-[#1c1c1e]"
+          style={{ animation: `eventSheetReveal ${animationDuration} ease-in-out infinite` }}
+        >
+          <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <div className="relative aspect-square w-full overflow-hidden rounded-[12px] border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#1c1c1e]">
+            <div className="absolute left-5 top-5 h-14 w-14 rounded-full bg-orange-500/80" />
+            <div className="absolute right-4 top-8 h-20 w-10 rounded-full bg-[#c5b3ff]/80" />
+            <div className="absolute bottom-5 left-4 h-12 w-24 rounded-[18px] bg-gray-200 dark:bg-gray-700" />
+            <div className="absolute bottom-8 right-5 h-9 w-9 rotate-45 rounded-[8px] bg-[#8fd3ff]/80" />
+          </div>
+          <div className="mt-4 h-3 w-28 rounded-full bg-gray-900 dark:bg-white" />
+          <div className="mt-3 h-2 w-full rounded-full bg-gray-300 dark:bg-gray-600" />
+          <div className="mt-2 h-2 w-32 rounded-full bg-gray-300 dark:bg-gray-600" />
+          <div className="mt-2 h-2 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
+          <div className="mt-5 h-9 w-28 rounded-full bg-gray-950 dark:bg-white" />
+        </div>
+      </div>
+      <HandPointing
+        size={64}
+        weight="fill"
+        className="absolute left-1/2 top-0 text-orange-500 drop-shadow-sm"
+        style={{ animation: `eventHandGesture ${animationDuration} ease-in-out infinite` }}
+      />
+    </div>
+  )
+}
+
+function SpotTourDemo({ bottomGap = '32px' }) {
+  const animationDuration = '5.2s'
+
+  return (
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
+      <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-[#eef2ef] dark:border-[#2c2c2e] dark:bg-[#121212]">
+        <div className="absolute left-0 right-0 top-0 z-[5] h-[58px] bg-white dark:bg-[#121212]" />
+        <List size={22} weight="bold" className="absolute left-5 top-6 z-10 text-gray-500 dark:text-gray-400" />
+        <Gear size={24} weight="bold" className="absolute right-5 top-6 z-10 text-gray-500 dark:text-gray-400" />
+
+        <div className="absolute inset-0 opacity-80 dark:opacity-50">
+          <div className="absolute left-[-24px] top-[82px] h-16 w-[250px] rotate-[-18deg] bg-white/70 dark:bg-white/5" />
+          <div className="absolute left-[-38px] top-[198px] h-14 w-[260px] rotate-[24deg] bg-white/80 dark:bg-white/5" />
+          <div className="absolute left-[82px] top-[-18px] h-[390px] w-12 rotate-[8deg] bg-white/65 dark:bg-white/5" />
+          <div className="absolute left-8 top-20 h-24 w-24 rounded-full border border-white/70 dark:border-white/10" />
+          <div className="absolute right-6 top-36 h-20 w-20 rounded-full border border-white/70 dark:border-white/10" />
+        </div>
+
+        <div className="absolute left-[72px] top-[126px]">
+          <span
+            className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500/20"
+            style={{ animation: `spotMarkerPulse ${animationDuration} ease-in-out infinite` }}
+          />
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm">
+            <MapPin size={28} weight="fill" />
+          </div>
+        </div>
+
+        <div
+          className="absolute bottom-0 left-0 right-0 h-[290px] rounded-t-[20px] bg-white px-5 pt-4 dark:bg-[#1c1c1e]"
+          style={{ animation: `spotCardReveal ${animationDuration} ease-in-out infinite` }}
+        >
+          <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <div className="h-4 w-36 rounded-full bg-gray-950 dark:bg-white" />
+          <div className="mt-3 flex items-center gap-1">
+            {[0, 1, 2, 3, 4].map((ratingDot) => (
+              <span key={ratingDot} className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+            ))}
+            <span className="ml-1 text-[12px] font-black leading-none text-orange-500">5.0</span>
+            <span className="text-[12px] font-black leading-none text-gray-400">(1)</span>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="aspect-square rounded-[10px] border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#1c1c1e]">
+              <div className="m-3 h-10 rounded-full bg-[#835c3f]/50" />
+              <div className="mx-5 h-8 rounded-full bg-[#f97316]/60" />
+            </div>
+            <div className="aspect-square rounded-[10px] border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#1c1c1e]">
+              <div className="m-4 h-12 rounded-full bg-[#f97316]/70" />
+              <div className="mx-7 h-5 rounded-full bg-[#3d2a1d]/50" />
+            </div>
+          </div>
+          <div className="mt-5 h-12 rounded-[18px] rounded-bl-sm bg-orange-500 px-5 py-5">
+            <div className="mx-auto h-2.5 w-20 rounded-full bg-white" />
+          </div>
+        </div>
+      </div>
+      <HandPointing
+        size={64}
+        weight="fill"
+        className="absolute left-1/2 top-0 text-orange-500 drop-shadow-sm"
+        style={{ animation: `spotHandGesture ${animationDuration} ease-in-out infinite` }}
+      />
+    </div>
+  )
+}
+
+function BenefitsTourDemo({ bottomGap = '32px' }) {
+  const animationDuration = '5.4s'
+  const scannerFrameTop = '60px'
+  const scannerFrameSize = '90px'
+  const scannerCornerSize = '30px'
+
+  return (
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
+      <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
+        <div
+          className="absolute inset-0 bg-white px-5 py-8 dark:bg-[#121212]"
+          style={{ animation: `benefitScannerFade ${animationDuration} ease-in-out forwards` }}
+        >
+          <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
+          <div className="absolute left-1/2 top-[58px] h-[232px] w-[148px] -translate-x-1/2 rounded-[10px] border border-[#d6d3c0] bg-[#F6F4F1] dark:border-[#2c2c2e] dark:bg-[#1c1c1e]">
+            <div
+              className="absolute left-1/2 -translate-x-1/2"
+              style={{ top: scannerFrameTop, width: scannerFrameSize, height: scannerFrameSize }}
+            >
+              {[
+                'left-0 top-0 border-l-2 border-t-2 rounded-tl',
+                'right-0 top-0 border-r-2 border-t-2 rounded-tr',
+                'bottom-0 left-0 border-b-2 border-l-2 rounded-bl',
+                'bottom-0 right-0 border-b-2 border-r-2 rounded-br',
+              ].map((classes) => (
+                <span
+                  key={classes}
+                  className={`absolute border-gray-400 dark:border-gray-500 ${classes}`}
+                  style={{ width: scannerCornerSize, height: scannerCornerSize }}
+                />
+              ))}
+              <QrCode
+                size={40}
+                weight="bold"
+                className="absolute left-1/2 top-1/2 text-gray-300 dark:text-gray-600"
+                style={{ transform: 'translate(-50%, -50%)' }}
+              />
+              <span
+                className="absolute left-0 right-0 top-1/2 h-0.5 rounded-full bg-orange-500"
+                style={{ animation: `benefitScanLine ${animationDuration} ease-in-out forwards` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="absolute inset-0 bg-white px-5 pt-9 dark:bg-[#121212]"
+          style={{ animation: `benefitSuccessPop ${animationDuration} ease-in-out forwards` }}
+        >
+          <div className="text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+                <CheckCircle size={30} weight="bold" />
+              </div>
+              <div className="mx-auto mt-4 h-3.5 w-28 rounded-full bg-gray-950 dark:bg-white" />
+              <div className="mx-auto mt-3 h-2 w-24 rounded-full bg-gray-400 dark:bg-gray-600" />
+              <div className="mx-auto mt-5 h-2.5 w-32 rounded-full bg-orange-500" />
+              <div className="mt-5 rounded-[12px] border-2 border-orange-500 px-3 py-3">
+                {[70, 62, 82, 58].map((width, index) => (
+                  <div
+                    key={index}
+                    className={'flex items-center justify-between ' + (index > 0 ? 'mt-2.5 border-t border-gray-100 pt-2.5 dark:border-gray-800' : '')}
+                  >
+                    <div className="h-2 w-14 rounded-full bg-gray-300 dark:bg-gray-700" />
+                    <div className="h-2 rounded-full bg-gray-950 dark:bg-white" style={{ width }} />
+                  </div>
+                ))}
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="absolute bottom-[28px] right-[62px] h-[61px] w-[96px] rounded-[9px] border border-gray-200 bg-white p-2.5 shadow-sm dark:border-gray-700 dark:bg-[#1c1c1e]"
+        style={{ animation: `benefitStudentId ${animationDuration} ease-in-out forwards` }}
+      >
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <div className="flex-1">
+            <div className="h-1.5 w-10 rounded-full bg-gray-950 dark:bg-white" />
+            <div className="mt-1.5 h-1.5 w-7 rounded-full bg-gray-300 dark:bg-gray-600" />
+          </div>
+        </div>
+        <div className="mt-1.5 h-1.5 w-full rounded-full bg-orange-500" />
+      </div>
+    </div>
+  )
+}
 // Pastel avatar colors
 const PASTEL_COLORS = [
   '#FFB3B3',
@@ -986,8 +1659,8 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
                 }}
               >
                 {lifted
-                  ? '내려서 Check-IN 하기'
-                  : '위로 올려서 최근 활동 보기'}
+                   ? '내려서 Check-IN 하기'
+                   : '위로 올려서 최근 활동 보기'}
               </span>
             )}
             {cardFlipped && (
@@ -999,7 +1672,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
                   fontWeight: 500,
                 }}
               >
-                눌러서 돌아가기
+                 눌러서 돌아가기
               </span>
             )}
           </div>
@@ -1231,7 +1904,7 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
                     decoding="async"
                     fetchPriority={imgIndex === index ? 'high' : 'auto'}
                     loading={Math.abs(imgIndex - index) <= 1 ? 'eager' : 'lazy'}
-                    alt={`사진 ${imgIndex + 1}`}
+                    alt={`?ъ쭊 ${imgIndex + 1}`}
                     style={{
                       maxWidth: '90vw',
                       maxHeight: '90vh',
@@ -2116,7 +2789,7 @@ function EventsTab({ events }) {
                     className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 dark:bg-gray-800 dark:text-gray-200"
                   >
                     <Calendar size={14} weight="fill" />
-                    캘린더에 추가
+                    罹섎┛?붿뿉 異붽?
                   </button>
                 )}
                 {instaUrl && (
@@ -2134,7 +2807,7 @@ function EventsTab({ events }) {
                     >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
-                    Instagram에서 열기
+                    Instagram?먯꽌 ?닿린
                   </a>
                 )}
               </div>
@@ -2395,13 +3068,13 @@ const effectiveDateColor = isDragging
                         {eventDateParts.dayName}
                       </p>
                       <span className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
-                        •
+                        ??
                       </span>
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.year}
                       </p>
                       <span className="hidden text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
-                        •
+                        ??
                       </span>
                       <p
                         className={
@@ -2677,7 +3350,7 @@ const effectiveDateColor = isDragging
                       rel="noopener noreferrer"
                       className="hidden"
                     >
-                      Instagram 에서 열기
+                      Instagram ?먯꽌 ?닿린
                     </a>
                   )}
                   {displayEvent.description && (
@@ -2700,7 +3373,7 @@ const effectiveDateColor = isDragging
         ) : (
           <div className="flex h-full items-center justify-center px-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              예정된 이벤트가 없어요.
+              예정된 이벤트가 없어요
             </p>
           </div>
         )}
