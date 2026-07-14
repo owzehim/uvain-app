@@ -17,6 +17,7 @@ const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
 const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
 const MEMBER_BOTTOM_TAB_PADDING = 42
+const ALWAYS_SHOW_WELCOME_SLIDES_EMAILS = ['test@uvain.nl']
 
 function getStoredMemberTab() {
   if (typeof window === 'undefined') return 'qr'
@@ -115,8 +116,12 @@ export default function MemberPage() {
       setIsAdmin(isAdminUser)
       setEvents(eventData || [])
       setRestaurants(restaurantData || [])
+      const shouldAlwaysShowWelcomeSlides = ALWAYS_SHOW_WELCOME_SLIDES_EMAILS.includes(
+        String(user.email || '').toLowerCase(),
+      )
       setWelcomeSlidesOpen(
-        Boolean(memberData) && !memberData.tutorial_completed_at,
+        Boolean(memberData) &&
+          (shouldAlwaysShowWelcomeSlides || !memberData.tutorial_completed_at),
       )
       setLoading(false)
     }
