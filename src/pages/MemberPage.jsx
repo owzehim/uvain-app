@@ -372,6 +372,15 @@ function MembershipCard({
     name: `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.18)`,
   }
+  const cardLayout = {
+    membershipToValidGap: `calc(${W} * 0.03)`,
+    validToNameGap: `calc(${W} * 0.03)`,
+  }
+  const cardTextTop = {
+    membership: 0,
+    valid: `calc(${W} * 0.046 + ${cardLayout.membershipToValidGap})`,
+    name: `calc(${W} * 0.084 + ${cardLayout.membershipToValidGap} + ${cardLayout.validToNameGap})`,
+  }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
@@ -419,9 +428,11 @@ function MembershipCard({
       {/* TOP */}
       <div
         style={{
+          position: 'relative',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
+          height: avatarSize,
         }}
       >
         <div
@@ -460,15 +471,20 @@ function MembershipCard({
 
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: `calc(${W} * 0.01)`,
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: `calc(100% - ${avatarSize} - ${W} * 0.04)`,
+            height: avatarSize,
             textAlign: 'right',
+            pointerEvents: 'none',
           }}
         >
           <span
             style={{
+              position: 'absolute',
+              top: cardTextTop.membership,
+              right: 0,
               fontFamily: 'var(--font-app)',
               fontSize: fs.brand,
               fontWeight: 700,
@@ -481,13 +497,15 @@ function MembershipCard({
           </span>
           <span
             style={{
+              position: 'absolute',
+              top: cardTextTop.valid,
+              right: 0,
               fontFamily: 'var(--font-app)',
               fontSize: fs.valid,
               fontWeight: 500,
               color: secondaryText,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.012)`,
             }}
           >
             Valid Until{' '}
@@ -499,13 +517,15 @@ function MembershipCard({
           </span>
           <span
             style={{
+              position: 'absolute',
+              top: cardTextTop.name,
+              right: 0,
               fontFamily: 'var(--font-app)',
               fontSize: fs.name,
               fontWeight: 800,
               color: '#f97316',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.008)`,
             }}
           >
             {member?.first_name} {member?.last_name}
