@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, Ticket, Star, ChefHat, Notepad, UserCheck } from '@phosphor-icons/react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { MapPin, Ticket, Star } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
 import { BowlSteam, HandHeart, Wine, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
@@ -24,7 +24,7 @@ function isDarkMode() {
   )
 }
 
-// ── Read-only star row ──────────────────────────────────────────
+// ?? Read-only star row ??????????????????????????????????????????
 
 function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) {
   if (averageRating == null || Number.isNaN(averageRating)) return null
@@ -72,7 +72,7 @@ function StarDisplay({ averageRating, showWhenZero = false, darkMode = false }) 
   )
 }
 
-// ── Tag bar chart ───────────────────────────────────────────────
+// ?? Tag bar chart ???????????????????????????????????????????????
 
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
@@ -84,8 +84,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
     <div className="pb-4">
       <div className="pt-3">
         <div className="mb-3">
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-            <UserCheck size={14} weight="regular" />
+          <p className="text-xs font-semibold text-gray-500">
             멤버 평가
           </p>
         </div>
@@ -104,7 +103,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
                   )}
                   {!IconComponent && (
                     <span className="text-xs text-red-500">
-                      ❌ No icon for: {tag.icon}
+                      ??No icon for: {tag.icon}
                     </span>
                   )}
                   <span className="text-xs text-gray-600 truncate">
@@ -131,7 +130,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
   )
 }
 
-// ── Lightbox ────────────────────────────────────────────────────
+// ?? Lightbox ????????????????????????????????????????????????????
 
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
@@ -192,17 +191,17 @@ function Lightbox({ imgs, startIndex, onClose }) {
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
-    // Vertical swipe (up or down) → close
+    // Vertical swipe (up or down) ??close
     if (absDy > absDx && absDy > 60) {
       handleClose()
     }
-    // Horizontal swipe → next / prev
+    // Horizontal swipe ??next / prev
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
-        // swipe left → next
+        // swipe left ??next
         goToIndex(index + 1)
       } else {
-        // swipe right → prev
+        // swipe right ??prev
         if (index === 0) handleClose()
         else goToIndex(index - 1)
       }
@@ -333,7 +332,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
   )
 }
 
-// ── Thumbnail grid (same on mobile + desktop) ───────────────────
+// ?? Thumbnail grid (same on mobile + desktop) ???????????????????
 
 function ImageThumbnails({ imgs, onTap }) {
   return (
@@ -354,7 +353,7 @@ function ImageThumbnails({ imgs, onTap }) {
         >
           <img
             src={url}
-            alt={'사진 ' + (i + 1)}
+            alt={'?ъ쭊 ' + (i + 1)}
             loading="eager"
             decoding="async"
             fetchPriority={i === 0 ? 'high' : 'low'}
@@ -570,7 +569,7 @@ export function SpotCard({
 
   const hasReviews = summary && summary.review_count > 0
 
-  // treat empty / whitespace / HTML-only as empty (no ※)
+  // treat empty / whitespace / HTML-only as empty (no ??
   const rawTerms = selected.discount_terms ?? ''
   const cleanedTerms = rawTerms
     .replace(/<[^>]*>/g, '')
@@ -637,7 +636,7 @@ export function SpotCard({
         </div>
 
         <div className="flex-1 px-5" style={{ overflowY: 'hidden' }}>
-          {/* ── Place info ── */}
+          {/* ?? Place info ?? */}
           <div className="pt-1 pb-3">
             {/* Category / price / sponsored (currently hidden with false) */}
             {false && (
@@ -660,7 +659,7 @@ export function SpotCard({
                       }}
                     />
                   )}
-                  {selected.category || '기타'}
+                  {selected.category || '湲고?'}
                 </span>
 
                 {selected.price_range && (
@@ -671,7 +670,7 @@ export function SpotCard({
 
                 {selected.is_sponsored && (
                   <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
-                    제휴
+                    ?쒗쑕
                   </span>
                 )}
               </div>
@@ -697,7 +696,7 @@ export function SpotCard({
             )}
 
             {showRating && summaryLoading && (
-              <span className="text-xs text-gray-300 mt-1 block">로딩 중...</span>
+              <span className="text-xs text-gray-300 mt-1 block">濡쒕뵫 以?..</span>
             )}
 
             {/* Description, discount, address */}
@@ -717,7 +716,7 @@ export function SpotCard({
 
             {discountTerms && (
               <p className="text-xs text-gray-800 mt-0.5">
-                ※ <RichText text={discountTerms} />
+                ??<RichText text={discountTerms} />
               </p>
             )}
 
@@ -739,11 +738,10 @@ export function SpotCard({
             </div>
           )}
 
-          {/* 한 줄 평가 */}
+          {/* ??以??됯? */}
           {selected.one_line_review && (!isTallCollapsed || !hasImages) && (
             <div className="mb-3" style={{ marginTop: speechBubbleGapPx }}>
-              <p className="mb-2 flex items-center gap-1.5 text-left text-xs font-semibold text-gray-500">
-                <ChefHat size={14} weight="regular" />
+              <p className="mb-2 text-left text-xs font-semibold text-gray-500">
                 우슐랭 평가
               </p>
               <div className="relative w-full">
@@ -781,12 +779,11 @@ export function SpotCard({
             />
           )}
 
-          {/* 임원 리뷰 */}
+          {/* ?꾩썝 由щ럭 */}
           {!isTallCollapsed && (selected.review || selected.reviewer_name) && (
             <div className="pb-4">
               <div className="pt-3">
-                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-                  <Notepad size={14} weight="regular" />
+                <p className="mb-1.5 text-xs font-semibold text-gray-500">
                   임원 추천 메뉴
                 </p>
                 {selected.review && (
@@ -797,7 +794,7 @@ export function SpotCard({
                 )}
                 {selected.reviewer_name && (
                   <p className="mt-0.5 pl-4 text-xs text-gray-400">
-                    {'— ' + selected.reviewer_name}
+                    {'??' + selected.reviewer_name}
                   </p>
                 )}
               </div>
@@ -834,7 +831,7 @@ export function SpotCard({
               onTouchStart={(e) => e.stopPropagation()}
             >
               <MapPin size={14} weight="fill" />
-              Google Maps에서 열기
+              Google Maps?먯꽌 ?닿린
             </a>
           </div>
         </div>
@@ -842,3 +839,4 @@ export function SpotCard({
     </>
   )
 }
+

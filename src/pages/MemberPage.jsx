@@ -350,6 +350,10 @@ function WelcomeSlides({ member, onFinish }) {
   const [index, setIndex] = useState(0)
   const [closing, setClosing] = useState(false)
   const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
+  const tourLayout = {
+    contentTopOffset: '-56px',
+    controlsBottomOffset: '130px',
+  }
   const firstName = member?.first_name_ko || member?.first_name || ''
   const slides = [
     {
@@ -426,14 +430,14 @@ function WelcomeSlides({ member, onFinish }) {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col justify-center px-8">
+      <div
+        className="flex flex-1 flex-col justify-center px-8"
+        style={{ paddingTop: tourLayout.contentTopOffset }}
+      >
         <div
           key={index}
           className="mx-auto flex w-full max-w-sm flex-col items-start"
-          style={{
-            animation: 'welcomeSlideIn 260ms cubic-bezier(0.22,1,0.36,1)',
-            transform: 'translateY(-28px)',
-          }}
+          style={{ animation: 'welcomeSlideIn 220ms ease-out' }}
         >
           {slide.demo === 'membership-card' ? (
             <MembershipCardTourDemo />
@@ -460,7 +464,7 @@ function WelcomeSlides({ member, onFinish }) {
         </div>
       </div>
 
-      <div className="px-8">
+      <div className="px-8" style={{ paddingBottom: tourLayout.controlsBottomOffset }}>
         {isLast && (
           <label className="mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300">
             <input
@@ -472,46 +476,48 @@ function WelcomeSlides({ member, onFinish }) {
             이해했습니다
           </label>
         )}
-        <div className="mx-auto mb-6 flex max-w-sm items-center justify-center gap-2">
-          {slides.map((_, dotIndex) => (
-            <span
-              key={dotIndex}
-              className={
-                'h-2.5 w-2.5 rounded-full transition-colors duration-200 ' +
-                (dotIndex === index
-                  ? 'bg-orange-500'
-                  : 'bg-gray-200 dark:bg-gray-700')
+        <div className="mx-auto flex max-w-sm flex-col gap-6">
+          <div className="flex items-center justify-center gap-2">
+            {slides.map((_, dotIndex) => (
+              <span
+                key={dotIndex}
+                className={
+                  'h-2.5 w-2.5 rounded-full transition-colors duration-200 ' +
+                  (dotIndex === index
+                    ? 'bg-orange-500'
+                    : 'bg-gray-200 dark:bg-gray-700')
+                }
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            disabled={isLast && !benefitsAcknowledged}
+            onClick={() => {
+              if (isLast) {
+                if (!benefitsAcknowledged) return
+                finishTour()
+                return
               }
-            />
-          ))}
-        </div>
-        <button
-          type="button"
-          disabled={isLast && !benefitsAcknowledged}
-          onClick={() => {
-            if (isLast) {
-              if (!benefitsAcknowledged) return
-              finishTour()
-              return
+              setIndex((value) => value + 1)
+            }}
+            className={
+              'flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-sm font-black text-white transition-colors ' +
+              (isLast && !benefitsAcknowledged
+                ? 'cursor-not-allowed bg-orange-200'
+                : 'bg-orange-500 active:bg-orange-600')
             }
-            setIndex((value) => value + 1)
-          }}
-          className={
-            'mx-auto flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl text-sm font-black text-white transition-colors ' +
-            (isLast && !benefitsAcknowledged
-              ? 'cursor-not-allowed bg-orange-200'
-              : 'bg-orange-500 active:bg-orange-600')
-          }
-        >
-          {isLast ? '시작하기' : '다음'}
-          {isLast ? <CheckCircle size={19} weight="bold" /> : <ArrowRight size={19} weight="bold" />}
-        </button>
+          >
+            {isLast ? '시작하기' : '다음'}
+            {isLast ? <CheckCircle size={19} weight="bold" /> : <ArrowRight size={19} weight="bold" />}
+          </button>
+        </div>
       </div>
 
       <style>{`
         @keyframes welcomeSlideIn {
-          from { opacity: 0; transform: translateY(14px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         @keyframes tourCardFlip {
           0%, 30% { transform: rotateY(0deg); }
@@ -967,7 +973,7 @@ function BenefitsTourDemo() {
             <div className="mt-1.5 h-1.5 w-7 rounded-full bg-gray-300 dark:bg-gray-600" />
           </div>
         </div>
-        <div className="mt-2.5 h-1.5 w-full rounded-full bg-orange-500" />
+        <div className="mt-1.5 h-1.5 w-full rounded-full bg-orange-500" />
       </div>
     </div>
   )
