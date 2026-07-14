@@ -17,7 +17,6 @@ const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
 const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
 const MEMBER_BOTTOM_TAB_PADDING = 42
-const ALWAYS_SHOW_WELCOME_SLIDES_FOR_TESTING = true
 
 function getStoredMemberTab() {
   if (typeof window === 'undefined') return 'qr'
@@ -117,9 +116,7 @@ export default function MemberPage() {
       setEvents(eventData || [])
       setRestaurants(restaurantData || [])
       setWelcomeSlidesOpen(
-        Boolean(memberData) &&
-          (ALWAYS_SHOW_WELCOME_SLIDES_FOR_TESTING ||
-            !memberData.tutorial_completed_at),
+        Boolean(memberData) && !memberData.tutorial_completed_at,
       )
       setLoading(false)
     }
@@ -143,6 +140,26 @@ export default function MemberPage() {
     if (key !== 'qr') {
       setQrCardLifted(false)
     }
+  }
+
+  const handleWelcomeSlidesFinish = async () => {
+    const completedAt = new Date().toISOString()
+    setWelcomeSlidesOpen(false)
+    if (!member?.user_id) return
+
+    const { error } = await supabase
+      .from('members')
+      .update({ tutorial_completed_at: completedAt })
+      .eq('user_id', member.user_id)
+
+    if (error) {
+      console.warn('Failed to save tutorial completion:', error.message)
+      return
+    }
+
+    setMember((current) =>
+      current ? { ...current, tutorial_completed_at: completedAt } : current,
+    )
   }
 
   if (loading) {
@@ -183,7 +200,7 @@ export default function MemberPage() {
       {welcomeSlidesOpen && (
         <WelcomeSlides
           member={member}
-          onFinish={() => setWelcomeSlidesOpen(false)}
+          onFinish={handleWelcomeSlidesFinish}
         />
       )}
 
@@ -351,8 +368,8 @@ function WelcomeSlides({ member, onFinish }) {
   const [closing, setClosing] = useState(false)
   const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
   const tourLayout = {
-    contentTopOffset: '-35px',
-    animationTextGap: '10px',
+    contentTopOffset: '-30px',
+    animationTextGap: '20px',
     controlsBottomOffset: '90px',
   }
   const firstName = member?.first_name_ko || member?.first_name || ''
