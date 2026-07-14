@@ -430,7 +430,10 @@ function WelcomeSlides({ member, onFinish }) {
         <div
           key={index}
           className="mx-auto flex w-full max-w-sm flex-col items-start"
-          style={{ animation: 'welcomeSlideIn 260ms cubic-bezier(0.22,1,0.36,1)' }}
+          style={{
+            animation: 'welcomeSlideIn 260ms cubic-bezier(0.22,1,0.36,1)',
+            transform: 'translateY(-28px)',
+          }}
         >
           {slide.demo === 'membership-card' ? (
             <MembershipCardTourDemo />
@@ -580,10 +583,10 @@ function WelcomeSlides({ member, onFinish }) {
           54%, 100% { opacity: 0; transform: scale(0.98); }
         }
         @keyframes benefitScanLine {
-          0%, 14% { opacity: 0; transform: translateY(-58px); }
-          20% { opacity: 1; transform: translateY(-58px); }
-          34% { opacity: 1; transform: translateY(58px); }
-          42%, 100% { opacity: 0; transform: translateY(58px); }
+          0%, 14% { opacity: 0; transform: translateY(-45px); }
+          20% { opacity: 1; transform: translateY(-45px); }
+          34% { opacity: 1; transform: translateY(45px); }
+          42%, 100% { opacity: 0; transform: translateY(45px); }
         }
         @keyframes benefitSuccessPop {
           0%, 48% { opacity: 0; transform: translateY(10px) scale(0.96); }
