@@ -1650,7 +1650,7 @@ const s = {
     paddingTop: '104px',
   },
   promptFormContent: {
-    paddingTop: '72px',
+    paddingTop: '10px',
     position: 'relative',
   },
   academicContent: {
@@ -1679,19 +1679,19 @@ const s = {
   },
   stageOneFieldStart: {
     position: 'absolute',
-    top: '160px',
+    top: '134px',
     left: 0,
     right: 0,
   },
   stageTwoFieldStart: {
     position: 'absolute',
-    top: '167px',
+    top: '141px',
     left: 0,
     right: 0,
   },
   accountProfileSlot: {
     position: 'absolute',
-    top: '120px',
+    top: '70px',
     left: 0,
     right: 0,
     display: 'flex',
@@ -1699,7 +1699,7 @@ const s = {
   },
   accountFieldStart: {
     position: 'absolute',
-    top: '230px',
+    top: '204px',
     left: 0,
     right: 0,
   },
