@@ -351,7 +351,8 @@ function WelcomeSlides({ member, onFinish }) {
   const [closing, setClosing] = useState(false)
   const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
   const tourLayout = {
-    contentTopOffset: '-25px',
+    contentTopOffset: '-35px',
+    animationTextGap: '10px',
     controlsBottomOffset: '90px',
   }
   const firstName = member?.first_name_ko || member?.first_name || ''
@@ -442,15 +443,18 @@ function WelcomeSlides({ member, onFinish }) {
           }}
         >
           {slide.demo === 'membership-card' ? (
-            <MembershipCardTourDemo />
+            <MembershipCardTourDemo bottomGap={tourLayout.animationTextGap} />
           ) : slide.demo === 'events' ? (
-            <EventsTourDemo />
+            <EventsTourDemo bottomGap={tourLayout.animationTextGap} />
           ) : slide.demo === 'spot' ? (
-            <SpotTourDemo />
+            <SpotTourDemo bottomGap={tourLayout.animationTextGap} />
           ) : slide.demo === 'benefits' ? (
-            <BenefitsTourDemo />
+            <BenefitsTourDemo bottomGap={tourLayout.animationTextGap} />
           ) : (
-            <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-orange-500 dark:bg-orange-500/10">
+            <div
+              className="flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-orange-500 dark:bg-orange-500/10"
+              style={{ marginBottom: tourLayout.animationTextGap }}
+            >
               <Icon size={48} weight="fill" />
             </div>
           )}
@@ -609,7 +613,7 @@ function WelcomeSlides({ member, onFinish }) {
   )
 }
 
-function MembershipCardTourDemo() {
+function MembershipCardTourDemo({ bottomGap = '32px' }) {
   const miniCardTop = '58px'
   const scannerFrameTop = '88px'
   const scannerFrameSize = '116px'
@@ -617,7 +621,7 @@ function MembershipCardTourDemo() {
   const animationDuration = '4.2s'
 
   return (
-    <div className="relative mb-8 h-[360px] w-full max-w-sm">
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
       <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
         <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
         <div
@@ -750,11 +754,11 @@ function MembershipCardTourDemo() {
   )
 }
 
-function EventsTourDemo() {
+function EventsTourDemo({ bottomGap = '32px' }) {
   const animationDuration = '5.2s'
 
   return (
-    <div className="relative mb-8 h-[360px] w-full max-w-sm">
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
       <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
         <List size={22} weight="bold" className="absolute left-5 top-6 text-gray-500 dark:text-gray-400" />
         <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
@@ -763,10 +767,12 @@ function EventsTourDemo() {
           className="absolute left-5 right-5 top-16"
           style={{ animation: `eventInfoA ${animationDuration} ease-in-out infinite` }}
         >
-          <div className="text-[44px] font-black leading-none text-gray-950 dark:text-white">31</div>
+          <div className="flex h-[44px] items-end">
+            <div className="text-[44px] font-black leading-none text-gray-950 dark:text-white">31</div>
+          </div>
           <div className="mt-2 flex items-end justify-between">
             <div className="text-[18px] font-black leading-none text-gray-950 dark:text-white">AUGUST</div>
-            <div className="text-[24px] font-black leading-none text-orange-500">D-07</div>
+            <div className="text-[18px] font-black leading-none text-orange-500">D-7</div>
           </div>
           <div className="mt-2 h-3 w-28 rounded-full bg-gray-400 dark:bg-gray-500" />
           <div className="mt-3 flex items-center gap-2">
@@ -783,7 +789,9 @@ function EventsTourDemo() {
           className="absolute left-5 right-5 top-16"
           style={{ animation: `eventInfoB ${animationDuration} ease-in-out infinite` }}
         >
-          <div className="text-[44px] font-black leading-none text-gray-950 dark:text-white">14</div>
+          <div className="flex h-[44px] items-end">
+            <div className="text-[44px] font-black leading-none text-gray-950 dark:text-white">14</div>
+          </div>
           <div className="mt-2 flex items-end justify-between">
             <div className="text-[18px] font-black leading-none text-gray-950 dark:text-white">SEPTEMBER</div>
             <div className="text-[18px] font-black leading-none text-gray-400 dark:text-gray-500">Past</div>
@@ -827,11 +835,11 @@ function EventsTourDemo() {
   )
 }
 
-function SpotTourDemo() {
+function SpotTourDemo({ bottomGap = '32px' }) {
   const animationDuration = '5.2s'
 
   return (
-    <div className="relative mb-8 h-[360px] w-full max-w-sm">
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
       <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-[#eef2ef] dark:border-[#2c2c2e] dark:bg-[#121212]">
         <div className="absolute left-0 right-0 top-0 z-[5] h-[58px] bg-white dark:bg-[#121212]" />
         <List size={22} weight="bold" className="absolute left-5 top-6 z-10 text-gray-500 dark:text-gray-400" />
@@ -893,14 +901,14 @@ function SpotTourDemo() {
   )
 }
 
-function BenefitsTourDemo() {
+function BenefitsTourDemo({ bottomGap = '32px' }) {
   const animationDuration = '5.4s'
   const scannerFrameTop = '60px'
   const scannerFrameSize = '90px'
   const scannerCornerSize = '30px'
 
   return (
-    <div className="relative mb-8 h-[360px] w-full max-w-sm">
+    <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
       <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
         <div
           className="absolute inset-0 bg-white px-5 py-8 dark:bg-[#121212]"
