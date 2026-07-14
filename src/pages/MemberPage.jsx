@@ -5,7 +5,7 @@ import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
-import { QrCode, Calendar, Clock, MapPin, NavigationArrow, Door, InstagramLogo, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight } from '@phosphor-icons/react'
+import { QrCode, Calendar, Clock, MapPin, NavigationArrow, Door, InstagramLogo, Gear, UserCircle, List, ArrowsVertical, SortAscending, SortDescending, CaretRight, CaretDoubleRight, ArrowRight, CheckCircle } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
@@ -17,6 +17,7 @@ const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
 const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
 const MEMBER_BOTTOM_TAB_PADDING = 42
+const ALWAYS_SHOW_WELCOME_SLIDES_FOR_TESTING = true
 
 function getStoredMemberTab() {
   if (typeof window === 'undefined') return 'qr'
@@ -39,6 +40,7 @@ export default function MemberPage() {
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
   const [qrCardLifted, setQrCardLifted] = useState(false)
+  const [welcomeSlidesOpen, setWelcomeSlidesOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const scannerOpenSignal = location.state?.reopenQrScanner || 0
@@ -114,6 +116,11 @@ export default function MemberPage() {
       setIsAdmin(isAdminUser)
       setEvents(eventData || [])
       setRestaurants(restaurantData || [])
+      setWelcomeSlidesOpen(
+        Boolean(memberData) &&
+          (ALWAYS_SHOW_WELCOME_SLIDES_FOR_TESTING ||
+            !memberData.tutorial_completed_at),
+      )
       setLoading(false)
     }
 
@@ -172,6 +179,13 @@ export default function MemberPage() {
         onSubmit={submitReview}
         onSkip={skipReview}
       />
+
+      {welcomeSlidesOpen && (
+        <WelcomeSlides
+          member={member}
+          onFinish={() => setWelcomeSlidesOpen(false)}
+        />
+      )}
 
       {/* Header: only on EVENTS tab */}
       {activeTab === 'events' && (
@@ -328,6 +342,118 @@ export default function MemberPage() {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+function WelcomeSlides({ member, onFinish }) {
+  const [index, setIndex] = useState(0)
+  const firstName = member?.first_name || member?.first_name_ko || ''
+  const slides = [
+    {
+      eyebrow: 'WELCOME',
+      title: firstName ? `${firstName}, welcome to UvA-IN` : 'Welcome to UvA-IN',
+      body: 'Your membership card, events, and local student spots now live in one place.',
+      icon: UserCircle,
+    },
+    {
+      eyebrow: 'MY',
+      title: 'Use your membership card',
+      body: 'Open MY to show your card and tap the QR area when you need Check-IN.',
+      icon: QrCode,
+    },
+    {
+      eyebrow: 'EVENTS',
+      title: 'Find what is happening next',
+      body: 'Swipe through events, save dates, and join when registration is available.',
+      icon: Calendar,
+    },
+    {
+      eyebrow: 'SPOT',
+      title: 'Explore student places',
+      body: 'Discover partner spots around you and collect rewards when they are available.',
+      icon: MapPin,
+    },
+  ]
+  const slide = slides[index]
+  const Icon = slide.icon
+  const isLast = index === slides.length - 1
+
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex flex-col bg-white text-gray-950 dark:bg-[#121212] dark:text-white"
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top) + 18px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)',
+      }}
+    >
+      <div className="flex items-center justify-end px-6">
+        <button
+          type="button"
+          onClick={onFinish}
+          className="rounded-full px-4 py-2 text-sm font-semibold text-gray-400 active:text-gray-700 dark:text-gray-500 dark:active:text-gray-200"
+        >
+          Skip
+        </button>
+      </div>
+
+      <div className="flex flex-1 flex-col justify-center px-8">
+        <div
+          key={index}
+          className="mx-auto flex w-full max-w-sm flex-col items-start"
+          style={{ animation: 'welcomeSlideIn 260ms cubic-bezier(0.22,1,0.36,1)' }}
+        >
+          <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-orange-500 dark:bg-orange-500/10">
+            <Icon size={48} weight="fill" />
+          </div>
+          <p className="mb-3 text-xs font-black tracking-[0.22em] text-orange-500">
+            {slide.eyebrow}
+          </p>
+          <h1 className="text-[34px] font-black leading-tight tracking-normal">
+            {slide.title}
+          </h1>
+          <p className="mt-5 text-base font-medium leading-7 text-gray-500 dark:text-gray-300">
+            {slide.body}
+          </p>
+        </div>
+      </div>
+
+      <div className="px-8">
+        <div className="mx-auto mb-6 flex max-w-sm items-center justify-center gap-2">
+          {slides.map((_, dotIndex) => (
+            <span
+              key={dotIndex}
+              className={
+                'h-2 rounded-full transition-all duration-200 ' +
+                (dotIndex === index
+                  ? 'w-7 bg-orange-500'
+                  : 'w-2 bg-gray-200 dark:bg-gray-700')
+              }
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (isLast) {
+              onFinish()
+              return
+            }
+            setIndex((value) => value + 1)
+          }}
+          className="mx-auto flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-orange-500 text-sm font-black text-white active:bg-orange-600"
+        >
+          {isLast ? 'Get started' : 'Next'}
+          {isLast ? <CheckCircle size={19} weight="bold" /> : <ArrowRight size={19} weight="bold" />}
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes welcomeSlideIn {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   )
 }
