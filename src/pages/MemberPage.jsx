@@ -373,8 +373,8 @@ function MembershipCard({
     wordmark: `calc(${W} * 0.18)`,
   }
   const cardLayout = {
-    membershipToValidGap: `calc(${W} * 0.03)`,
-    validToNameGap: `calc(${W} * 0.03)`,
+    membershipToValidGap: `calc(${W} * 0.022)`,
+    validToNameGap: `calc(${W} * 0.018)`,
   }
   const cardTextTop = {
     membership: 0,
@@ -2147,6 +2147,7 @@ function EventsTab({ events }) {
 
   // First-panel image + color logic
   const displayImages = displayEvent?.image_urls || []
+  const showParticipationButton = displayEvent?.show_participation_button !== false
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
   const displayImageSlide = displayEvent ? slideIndexes[displayEvent.id] || 0 : 0
@@ -2460,12 +2461,44 @@ const effectiveDateColor = isDragging
                       <span>{plainText(displayEvent.location_description)}</span>
                     </div>
                   )}
+                  {showParticipationButton && (
+                    <button
+                      type="button"
+                      onClick={() => openParticipationForm(displayEvent)}
+                      disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
+                      className={
+                        'mt-5 hidden w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
+                        (displayEvent.participation_url && !displayEvent.is_registration_closed
+                          ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
+                          : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
+                      }
+                    >
+                      {displayEvent.participation_url
+                        ? displayEvent.is_registration_closed
+                          ? '신청 마감'
+                          : '참여하기'
+                        : '준비 중'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {showParticipationButton && (
+              <div
+                className="absolute left-0 right-0 px-6"
+                style={{
+                  bottom: `calc(${eventCollapsedCardHeight} + 2px)`,
+                  zIndex: 10,
+                }}
+              >
+                <div className="mx-auto max-w-md">
                   <button
                     type="button"
                     onClick={() => openParticipationForm(displayEvent)}
                     disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
                     className={
-                      'mt-5 hidden w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
+                      'flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
                       (displayEvent.participation_url && !displayEvent.is_registration_closed
                         ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
                         : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
@@ -2479,35 +2512,7 @@ const effectiveDateColor = isDragging
                   </button>
                 </div>
               </div>
-            </div>
-
-            <div
-              className="absolute left-0 right-0 px-6"
-              style={{
-                bottom: `calc(${eventCollapsedCardHeight} + 2px)`,
-                zIndex: 10,
-              }}
-            >
-              <div className="mx-auto max-w-md">
-                <button
-                  type="button"
-                  onClick={() => openParticipationForm(displayEvent)}
-                  disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
-                  className={
-                    'flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
-                    (displayEvent.participation_url && !displayEvent.is_registration_closed
-                      ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
-                      : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
-                  }
-                >
-                  {displayEvent.participation_url
-                    ? displayEvent.is_registration_closed
-                      ? '신청 마감'
-                      : '참여하기'
-                    : '준비 중'}
-                </button>
-              </div>
-            </div>
+            )}
 
             <div
               className="absolute left-0 right-0 bg-white dark:bg-[#121212]"
