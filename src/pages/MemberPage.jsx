@@ -585,19 +585,21 @@ function WelcomeSlides({ member, onFinish }) {
 
   48%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
   60%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-  66%, 83% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+  66%, 81% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
 
   84%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
   96%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
-  97%, 100%{ opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+  98%, 100%{ opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
           0%, 19%  { opacity: 1; transform: translateX(0); }
-  26%, 100%{ opacity: 0; transform: translateX(-14px); }
+  26%, 93% { opacity: 0; transform: translateX(-14px); }
+  99%, 100%{ opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
           0%, 19%  { opacity: 0; transform: translateX(14px); }
-  28%, 100%{ opacity: 1; transform: translateX(0); }
+  28%, 93% { opacity: 1; transform: translateX(0); }
+  99%, 100%{ opacity: 0; transform: translateX(14px); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
