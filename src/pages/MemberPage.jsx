@@ -709,7 +709,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
             </div>
 
             <div
-              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-white"
+              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-[#A1A1AA]"
               style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif' }}
             >
               UvA-IN
