@@ -573,7 +573,8 @@ function WelcomeSlides({ member, onFinish }) {
         @keyframes eventSheetReveal {
           0%, 48%  { transform: translateY(180px); }
   61%, 73% { transform: translateY(0); }
-  84%, 100%{ transform: translateY(180px); }
+  84%, 96% { transform: translateY(180px); }
+  100%     { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
          
@@ -586,8 +587,7 @@ function WelcomeSlides({ member, onFinish }) {
   60%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
   66%, 72% { opacity: 0; transform: translate(92px, 104px) rotate(-10deg) scale(0.9); }
 
-  80%, 83% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
-  84%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
+  82%, 84% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
   96%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
   100%     { opacity: 0; transform: translate(92px, 280px) rotate(-10deg) scale(0.9); }
         }
