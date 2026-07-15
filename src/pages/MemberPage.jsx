@@ -571,26 +571,32 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 62% { transform: translateY(180px); }
-          78%, 94% { transform: translateY(0); }
-          100% { transform: translateY(180px); }
+          0%, 48%  { transform: translateY(180px); }
+  61%, 73% { transform: translateY(0); }
+  84%, 100%{ transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
-          0%, 10% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
-          16% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
-          34% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
-          42%, 54% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
-          62% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          78% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          90%, 100% { opacity: 0; transform: translate(92px, 104px) rotate(-10deg) scale(0.9); }
+         
+  0%, 8%   { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
+  12%      { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
+  26%      { opacity: 1; transform: translate(36px,  132px) rotate(-16deg) scale(0.9); }
+  33%, 42% { opacity: 0; transform: translate(28px,  132px) rotate(-16deg) scale(0.9); }
+
+  48%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+  60%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+  66%, 72% { opacity: 0; transform: translate(92px, 104px) rotate(-10deg) scale(0.9); }
+
+  76%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
+  88%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+  94%, 100%{ opacity: 0; transform: translate(92px, 280px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
-          0%, 24% { opacity: 1; transform: translateX(0); }
-          34%, 100% { opacity: 0; transform: translateX(-14px); }
+          0%, 19%  { opacity: 1; transform: translateX(0); }
+  26%, 100%{ opacity: 0; transform: translateX(-14px); }
         }
         @keyframes eventInfoB {
-          0%, 24% { opacity: 0; transform: translateX(14px); }
-          36%, 100% { opacity: 1; transform: translateX(0); }
+          0%, 19%  { opacity: 0; transform: translateX(14px); }
+  28%, 100%{ opacity: 1; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
