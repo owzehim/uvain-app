@@ -594,10 +594,10 @@ function WelcomeSlides({ member, onFinish }) {
         @keyframes eventInfoA {
           0%, 19%  { opacity: 1; transform: translateX(0); }
   26%, 93% { opacity: 0; transform: translateX(-14px); }
-  100%     { opacity: 0; transform: translateX(-14px); }
+  100%     { opacity: 1; transform: translateX(-14px); }
         }
         @keyframes eventInfoB {
-          0%, 19%  { opacity: 0; transform: translateX(0); }
+          0%, 19%  { opacity: 0; transform: translateX(14px); }
   28%, 93% { opacity: 1; transform: translateX(0); }
   100%     { opacity: 0; transform: translateX(0); }
         }
