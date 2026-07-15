@@ -589,17 +589,19 @@ function WelcomeSlides({ member, onFinish }) {
 
   84%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
   96%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
-  98%, 100%{ opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+  100%     { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
           0%, 19%  { opacity: 1; transform: translateX(0); }
-  26%, 93% { opacity: 0; transform: translateX(-14px); }
-  99%, 100%{ opacity: 1; transform: translateX(0); }
+  26%      { opacity: 0; transform: translateX(-14px); }
+  27%, 93% { opacity: 0; transform: translateX(-14px); }
+  100%     { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
           0%, 19%  { opacity: 0; transform: translateX(14px); }
-  28%, 93% { opacity: 1; transform: translateX(0); }
-  99%, 100%{ opacity: 0; transform: translateX(14px); }
+  28%      { opacity: 1; transform: translateX(0); }
+  29%, 93% { opacity: 1; transform: translateX(0); }
+  100%     { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
