@@ -594,7 +594,7 @@ function WelcomeSlides({ member, onFinish }) {
         @keyframes eventInfoA {
           0%, 19%  { opacity: 1; transform: translateX(0); }
   26%, 93% { opacity: 0; transform: translateX(-14px); }
-  100%     { opacity: 1; transform: translateX(-14px); }
+  100%     { opacity: 0; transform: translateX(-14px); }
         }
         @keyframes eventInfoB {
           0%, 19%  { opacity: 0; transform: translateX(0); }
@@ -602,9 +602,9 @@ function WelcomeSlides({ member, onFinish }) {
   100%     { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
-          0%, 18% { opacity: 0; transform: scale(0.35); }
-          24% { opacity: 0.45; transform: scale(1); }
-          34%, 100% { opacity: 0; transform: scale(1.85); }
+          0%, 19%  { opacity: 0; transform: translateX(14px); }
+  28%, 93% { opacity: 1; transform: translateX(0); }
+  100%     { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotCardReveal {
           0%, 26% { opacity: 0; transform: translateY(290px); }
