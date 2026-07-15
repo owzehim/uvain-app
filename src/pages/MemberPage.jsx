@@ -783,7 +783,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 }
 
 function EventsTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '5.2s'
+  const animationDuration = '6.7s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
