@@ -1,5 +1,6 @@
 // src/components/InstallBanner.jsx
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { X, DeviceMobile, Export, PlusSquare } from '@phosphor-icons/react'
 
 const STORAGE_KEY = "uvain_install_banner_dismissed";
@@ -28,10 +29,16 @@ function wasDismissedRecently() {
 }
 
 export default function InstallBanner() {
+  const location = useLocation();
   const [show, setShow] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const ios = isIOS();
   const iosChrome = isIOSChrome();
+
+  const isEmailConfirmation =
+    location.pathname === "/email-confirmed" ||
+    new URLSearchParams(location.search).has("code") ||
+    location.hash.includes("access_token");
 
   useEffect(() => {
     if (isInStandaloneMode() || wasDismissedRecently()) return;
@@ -62,7 +69,7 @@ export default function InstallBanner() {
     setShow(false);
   };
 
-  if (!show) return null;
+  if (!show || isEmailConfirmation) return null;
 
   return (
     <div style={styles.overlay}>

@@ -609,6 +609,7 @@ export default function RegistrationPage() {
     handleSubmit,
     goNext,
     goBack,
+    editEmail,
     setProfileFile,
   } = useRegisterMember();
 
@@ -724,6 +725,13 @@ export default function RegistrationPage() {
           </div>
           <button type="button" onClick={() => navigate('/login')} style={s.submitBtn}>
             {t.goToLogin}
+          </button>
+          <button
+            type="button"
+            onClick={editEmail}
+            style={{ ...s.ghostBtn, width: '100%', marginTop: '10px' }}
+          >
+            {language === 'ko' ? '\uC774\uBA54\uC77C \uC8FC\uC18C \uBCC0\uACBD' : 'Change email address'}
           </button>
         </div>
       </div>

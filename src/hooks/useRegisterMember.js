@@ -133,6 +133,10 @@ export function useRegisterMember() {
     });
   };
 
+  const editEmail = () => {
+    setStep('account');
+  };
+
   // ── Final submit (after step 3) ─────────────────────────────────────────
   const handleSubmit = async (e, options = {}) => {
     e.preventDefault();
@@ -254,6 +258,7 @@ export function useRegisterMember() {
     handleSubmit,
     goNext,
     goBack,
+    editEmail,
     setProfileFile,
   };
 }
