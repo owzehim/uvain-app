@@ -1,14 +1,6 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "Futura Extra Bold";
-  src: url("./assets/fonts/FuturaCyrillicExtraBold.ttf") format("truetype");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: "Uvain Helvetica";
   src: url("./assets/fonts/Helvetica-Regular.ttf") format("truetype");
   font-weight: 400;

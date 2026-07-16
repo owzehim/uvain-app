@@ -716,10 +716,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 
             <div
               className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-white"
-              style={{
-                fontFamily: '"Futura Extra Bold", "Arial Black", sans-serif',
-                fontWeight: 800,
-              }}
+              style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif' }}
             >
               UvA-IN
             </div>
@@ -1322,9 +1319,9 @@ function MembershipCard({
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <span
           style={{
-            fontFamily: '"Futura Extra Bold", "Arial Black", sans-serif',
+            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
             fontSize: fs.wordmark,
-            fontWeight: 800,
+            fontWeight: 900,
             color: darkMode ? '#A1A1AA' : '#2C2A27',
             letterSpacing: '-0.01em',
             lineHeight: 1,
