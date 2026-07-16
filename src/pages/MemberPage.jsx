@@ -608,13 +608,13 @@ function WelcomeSlides({ member, onFinish }) {
         }
         @keyframes eventInfoA {
           0%, 15% { opacity: 1; transform: translateX(0); }
-          21.5%, 95.71% { opacity: 0; transform: translateX(-14px); }
-          95.72% { opacity: 0; transform: translateX(0); }
+          21.5%, 93.33% { opacity: 0; transform: translateX(-14px); }
+          93.34% { opacity: 0; transform: translateX(0); }
           100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
           0%, 15% { opacity: 0; transform: translateX(14px); }
-          22.8%, 95.71% { opacity: 1; transform: translateX(0); }
+          22.8%, 93.33% { opacity: 1; transform: translateX(0); }
           100% { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
@@ -815,7 +815,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 function EventsTourDemo({ bottomGap = '32px' }) {
   // This longer loop leaves a 1.5s pause after the sheet closes before the
   // info resets. Individual transition percentages preserve their prior speeds.
-  const animationDuration = '4.2s'
+  const animationDuration = '4.5s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
