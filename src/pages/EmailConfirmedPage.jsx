@@ -73,7 +73,7 @@ export default function EmailConfirmedPage() {
       <div style={styles.page}>
         <div style={styles.panel}>
           <CheckCircle size={64} weight="fill" color="#f97316" />
-          <h1 style={styles.title}>이메일 인증이 완료되었어요</h1>
+          <h1 style={styles.title}>이메일 인증이 완료되었습니다</h1>
           <p style={styles.message}>
             이제 UvA-IN 앱으로 돌아가 로그인해 주세요.
           </p>
@@ -110,7 +110,7 @@ export default function EmailConfirmedPage() {
         {status === 'error' && (
           <>
             <XCircle size={64} weight="fill" color="#ef4444" />
-            <h1 style={styles.title}>이메일 확인 실패</h1>
+            <h1 style={styles.title}>이메일 인증이 실패하였습니다</h1>
             <p style={styles.message}>
               {errorMsg || '확인 링크를 처리할 수 없습니다.'}
             </p>

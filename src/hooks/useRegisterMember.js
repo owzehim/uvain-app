@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { validateRegistrationForm } from '../domain/member/memberRegistration';
-import { registerMember } from '../api/memberRepository';
+import { changeUnconfirmedRegistrationEmail, registerMember } from '../api/memberRepository';
 
 const INITIAL_FORM = {
   firstName: '',
@@ -96,6 +96,7 @@ export function useRegisterMember() {
   const [step, setStep] = useState('about');
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [profileFile, setProfileFile] = useState(null);
+  const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -177,6 +178,19 @@ export function useRegisterMember() {
 
     setLoading(true);
     try {
+      const normalizedEmail = formData.email.trim().toLowerCase();
+
+      if (pendingConfirmationEmail && normalizedEmail !== pendingConfirmationEmail) {
+        await changeUnconfirmedRegistrationEmail({
+          currentEmail: pendingConfirmationEmail,
+          newEmail: normalizedEmail,
+          password: formData.password,
+        });
+        setPendingConfirmationEmail(normalizedEmail);
+        setStep('email');
+        return;
+      }
+
       // 1) Upload profile image if present
       let profileImageUrl = null;
 
@@ -238,6 +252,7 @@ export function useRegisterMember() {
       });
 
       // Account created — now tell user to check their email.
+      setPendingConfirmationEmail(normalizedEmail);
       setStep('email');
     } catch (err) {
       setError(

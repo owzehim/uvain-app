@@ -11,6 +11,15 @@ import { supabase } from '../lib/supabase';
 export const ALREADY_REGISTERED_MESSAGE =
   '\uC774\uBBF8 \uAC00\uC785\uB41C \uD68C\uC6D0\uC785\uB2C8\uB2E4. \uB85C\uADF8\uC778\uD558\uAC70\uB098 \uC774\uBA54\uC77C \uC778\uC99D\uC744 \uD655\uC778\uD574\uC8FC\uC138\uC694.';
 
+export async function changeUnconfirmedRegistrationEmail({ currentEmail, newEmail, password }) {
+  const { data, error } = await supabase.functions.invoke('change-pending-email', {
+    body: { currentEmail, newEmail, password },
+  });
+
+  if (error) throw new Error(error.message || 'Unable to change the email address.');
+  if (!data?.success) throw new Error(data?.message || 'Unable to change the email address.');
+}
+
 function isAlreadyRegisteredError(error) {
   const message = String(error?.message || '').toLowerCase();
   const code = String(error?.code || '').toLowerCase();
