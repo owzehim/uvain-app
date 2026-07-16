@@ -624,20 +624,21 @@ function WelcomeSlides({ member, onFinish }) {
         }
         @keyframes spotCardReveal {
           0%, 20% { opacity: 0; transform: translateY(290px); }
-          30%, 38.33% { opacity: 1; transform: translateY(180px); }
-          52.33%, 60.66% { opacity: 1; transform: translateY(0); }
-          74.66%, 77.67% { opacity: 1; transform: translateY(180px); }
+          30%, 46.67% { opacity: 1; transform: translateY(180px); }
+          60.67%, 69% { opacity: 1; transform: translateY(0); }
+          83% { opacity: 1; transform: translateY(180px); }
           100% { opacity: 0; transform: translateY(180px); }
         }
         @keyframes spotHandGesture {
           0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
           18% { opacity: 1; transform: translate(-10px, 130px) rotate(-14deg) scale(1); }
           25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          30.1%, 38.2% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          38.33% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          52.33%, 60.66% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          74.66% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
-          76.66%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          32% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
+          46.6% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          46.67% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          60.67%, 69% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          83% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          85%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
         @keyframes benefitScannerFade {
           0%, 42% { opacity: 1; transform: scale(1); }
