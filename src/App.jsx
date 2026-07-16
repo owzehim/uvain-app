@@ -15,6 +15,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
 import { useTheme } from './hooks/useTheme'
 import { WifiX } from '@phosphor-icons/react'
+import LoadingIndicator from './components/LoadingIndicator'
 
 const OTP_PENDING_KEY = 'uvain_otp_pending_email'
 const OTP_PENDING_EVENT = 'uvain-otp-pending-change'
@@ -132,7 +133,7 @@ function App() {
   if (session === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#121212]">
-        <p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
+        <LoadingIndicator />
       </div>
     )
   }

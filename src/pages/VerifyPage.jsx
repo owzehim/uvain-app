@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { verifyTOTP } from '../lib/totp'
+import LoadingIndicator from '../components/LoadingIndicator'
 
 export default function VerifyPage() {
   const { token } = useParams()
@@ -122,7 +123,7 @@ export default function VerifyPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Verifying...</p>
+        <LoadingIndicator label="Verifying..." />
       </div>
     )
   }

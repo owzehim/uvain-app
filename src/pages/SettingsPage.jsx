@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import LoadingIndicator from '../components/LoadingIndicator'
 import { updatePassword } from '../api/authRepository'
 import { UserCircle, CaretLeft, Camera } from '@phosphor-icons/react'
 import Cropper from 'react-easy-crop'
@@ -216,7 +217,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#121212]">
-        <p className="text-gray-500 text-sm dark:text-gray-400">로딩 중...</p>
+        <LoadingIndicator />
       </div>
     )
   }

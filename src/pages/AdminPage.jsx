@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import LoadingIndicator from '../components/LoadingIndicator'
 import { useNavigate } from 'react-router-dom'
 import { ImageCropper } from '../components/ImageCropper'
 import { Plus, Eye, EyeSlash, MapPin, Ticket } from '@phosphor-icons/react'
@@ -204,7 +205,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
+        <LoadingIndicator />
       </div>
     )
   }
@@ -1146,7 +1147,7 @@ function MembersTab() {
       )}
 
       {loading ? (
-        <p className="text-gray-500 text-sm">로딩 중...</p>
+        <LoadingIndicator />
       ) : members.length === 0 ? (
         <p className="text-gray-500 text-sm">멤버가 없어요.</p>
       ) : (
@@ -1638,6 +1639,25 @@ function EventForm({
       </div>
       <div>
         <label className="text-sm text-gray-500 block mb-1">사진</label>
+        <div className="mb-3 flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+          <span className="text-sm text-gray-600">신청 없이 참여</span>
+          <button
+            type="button"
+            onClick={() =>
+              setForm((f) => ({
+                ...f,
+                participation_without_signup: !f.participation_without_signup,
+              }))
+            }
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+              form.participation_without_signup
+                ? 'bg-orange-500 text-white border-orange-500'
+                : 'bg-white text-gray-500 border-gray-200'
+            }`}
+          >
+            {form.participation_without_signup ? '표시' : '해제'}
+          </button>
+        </div>
         <ImageUploadPanel
           imagePreviews={imagePreviews}
           existingUrls={editTarget?.image_urls || []}
@@ -1689,6 +1709,7 @@ function EventsTab() {
     instagram_url: '',
     participation_url: '',
     is_registration_closed: false,
+    participation_without_signup: false,
     show_participation_button: true,
   })
 
@@ -1854,6 +1875,7 @@ function EventsTab() {
       instagram_url: form.instagram_url,
       participation_url: form.participation_url,
       is_registration_closed: form.is_registration_closed,
+      participation_without_signup: form.participation_without_signup,
       show_participation_button: form.show_participation_button,
       image_urls,
     }
@@ -1915,6 +1937,7 @@ function EventsTab() {
       instagram_url: event.instagram_url || '',
       participation_url: event.participation_url || '',
       is_registration_closed: !!event.is_registration_closed,
+      participation_without_signup: !!event.participation_without_signup,
       show_participation_button: event.show_participation_button !== false,
     })
     setImageFiles([])
@@ -1939,6 +1962,7 @@ function EventsTab() {
       instagram_url: '',
       participation_url: '',
       is_registration_closed: false,
+      participation_without_signup: false,
       show_participation_button: true,
     })
     setImageFiles([])

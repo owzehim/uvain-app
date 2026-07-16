@@ -13,6 +13,7 @@ import QRScanner from '../components/QRScanner'
 import StampCardMini from '../features/stampCard/components/StampCardMini'
 import StampCardModal from '../features/stampCard/components/StampCardModal'
 import { primeStoreReviewSummaries } from '../hooks/useStoreReviewSummary'
+import LoadingIndicator from '../components/LoadingIndicator'
 
 const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
@@ -172,7 +173,7 @@ export default function MemberPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#121212]">
-        <p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
+        <LoadingIndicator />
       </div>
     )
   }
@@ -442,12 +443,15 @@ function WelcomeSlides({ member, onFinish }) {
   return (
     <div
       className={
-        'fixed inset-0 z-[120] flex flex-col bg-white text-gray-950 transition-opacity duration-300 dark:bg-[#121212] dark:text-white ' +
+        'fixed inset-0 z-[120] flex select-none flex-col bg-white text-gray-950 transition-opacity duration-300 dark:bg-[#121212] dark:text-white ' +
         (closing ? 'opacity-0' : 'opacity-100')
       }
       style={{
         paddingTop: 'calc(env(safe-area-inset-top) + 18px)',
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
       }}
     >
       <div className="h-10 px-6">
@@ -588,8 +592,8 @@ function WelcomeSlides({ member, onFinish }) {
         }
         @keyframes eventSheetReveal {
           0%, 39.5% { transform: translateY(180px); }
-          53.5%, 55.5% { transform: translateY(0); }
-          69.5%, 100% { transform: translateY(180px); }
+          53.5%, 70.17% { transform: translateY(0); }
+          84.17%, 100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
           0%, 6% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
@@ -598,9 +602,9 @@ function WelcomeSlides({ member, onFinish }) {
           26.9%, 35% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
           35.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
           37%, 39.5% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          53.5%, 55.5% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          69.5% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
-          71.5%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          53.5%, 70.17% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          84.17% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          86.17%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
           0%, 15% { opacity: 1; transform: translateX(0); }
@@ -620,21 +624,20 @@ function WelcomeSlides({ member, onFinish }) {
         }
         @keyframes spotCardReveal {
           0%, 20% { opacity: 0; transform: translateY(290px); }
-          30%, 50% { opacity: 1; transform: translateY(180px); }
-          64% { opacity: 1; transform: translateY(0); }
-          78% { opacity: 1; transform: translateY(180px); }
+          30%, 33% { opacity: 1; transform: translateY(180px); }
+          47%, 63.67% { opacity: 1; transform: translateY(0); }
+          77.67% { opacity: 1; transform: translateY(180px); }
           100% { opacity: 0; transform: translateY(180px); }
         }
         @keyframes spotHandGesture {
           0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
           18% { opacity: 1; transform: translate(-10px, 130px) rotate(-14deg) scale(1); }
           25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          38%, 46% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          46.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          48%, 50% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          64% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          78% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
-          80%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          30.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          31%, 33% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          47%, 63.67% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          77.67% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          79.67%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
         @keyframes benefitScannerFade {
           0%, 42% { opacity: 1; transform: scale(1); }
@@ -2872,6 +2875,18 @@ function EventsTab({ events }) {
   // First-panel image + color logic
   const displayImages = displayEvent?.image_urls || []
   const showParticipationButton = displayEvent?.show_participation_button !== false
+  const participationWithoutSignup = !!displayEvent?.participation_without_signup
+  const canOpenParticipationForm =
+    !participationWithoutSignup &&
+    !!displayEvent?.participation_url &&
+    !displayEvent?.is_registration_closed
+  const participationButtonLabel = participationWithoutSignup
+    ? '신청 없이 참여'
+    : displayEvent?.participation_url
+      ? displayEvent.is_registration_closed
+        ? '신청 마감'
+        : '참여하기'
+      : '준비 중'
   const hasImages = displayImages.length > 0
   const displayImageRatios = imageAspectRatios[displayEvent?.id] || []
   const displayImageSlide = displayEvent ? slideIndexes[displayEvent.id] || 0 : 0
@@ -3189,19 +3204,15 @@ const effectiveDateColor = isDragging
                     <button
                       type="button"
                       onClick={() => openParticipationForm(displayEvent)}
-                      disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
+                      disabled={!canOpenParticipationForm}
                       className={
                         'mt-5 hidden w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
-                        (displayEvent.participation_url && !displayEvent.is_registration_closed
+                        (canOpenParticipationForm
                           ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
                           : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
                       }
                     >
-                      {displayEvent.participation_url
-                        ? displayEvent.is_registration_closed
-                          ? '신청 마감'
-                          : '참여하기'
-                        : '준비 중'}
+                      {participationButtonLabel}
                     </button>
                   )}
                 </div>
@@ -3220,19 +3231,15 @@ const effectiveDateColor = isDragging
                   <button
                     type="button"
                     onClick={() => openParticipationForm(displayEvent)}
-                    disabled={!displayEvent.participation_url || displayEvent.is_registration_closed}
+                    disabled={!canOpenParticipationForm}
                     className={
                       'flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ' +
-                      (displayEvent.participation_url && !displayEvent.is_registration_closed
+                      (canOpenParticipationForm
                         ? 'bg-gray-950 text-white active:bg-gray-800 dark:bg-white dark:text-gray-950 dark:active:bg-gray-200'
                         : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500')
                     }
                   >
-                    {displayEvent.participation_url
-                      ? displayEvent.is_registration_closed
-                        ? '신청 마감'
-                        : '참여하기'
-                      : '준비 중'}
+                    {participationButtonLabel}
                   </button>
                 </div>
               </div>
