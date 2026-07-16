@@ -12,6 +12,7 @@ import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import StampCardMini from '../features/stampCard/components/StampCardMini'
 import StampCardModal from '../features/stampCard/components/StampCardModal'
+import { primeStoreReviewSummaries } from '../hooks/useStoreReviewSummary'
 
 const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
@@ -112,10 +113,15 @@ export default function MemberPage() {
         console.error('restaurants error:', restaurantError.message)
       }
 
+      const loadedRestaurants = restaurantData || []
+      await primeStoreReviewSummaries(
+        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
+      )
+
       setMember(memberData || null)
       setIsAdmin(isAdminUser)
       setEvents(eventData || [])
-      setRestaurants(restaurantData || [])
+      setRestaurants(loadedRestaurants)
       const shouldAlwaysShowWelcomeSlides = ALWAYS_SHOW_WELCOME_SLIDES_EMAILS.includes(
         String(user.email || '').toLowerCase(),
       )
@@ -233,7 +239,7 @@ export default function MemberPage() {
             zIndex: 70,
           }}
         >
-          愿由ъ옄
+          관리자
         </button>
       )}
       <button
@@ -246,7 +252,7 @@ export default function MemberPage() {
           zIndex: 70,
         }}
       >
-        {/* CHANGED: size={20} ??size={22} to match the MY tab gear icon */}
+        {/* CHANGED: size={20} → size={22} to match the MY tab gear icon */}
         <Gear size={22} weight="bold" />
       </button>
     </div>
@@ -282,7 +288,7 @@ export default function MemberPage() {
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              愿由ъ옄
+              관리자
             </button>
           )}
           <button
@@ -571,41 +577,31 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 48%  { transform: translateY(180px); }
-  61%, 73% { transform: translateY(0); }
-  84%      { transform: translateY(0); }
-  96%      { transform: translateY(180px); }
-  100%     { transform: translateY(180px); }
+          0%, 62% { transform: translateY(180px); }
+          78%, 94% { transform: translateY(0); }
+          100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
-  0%, 8%   { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
-  12%      { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
-  26%      { opacity: 1; transform: translate(36px,  132px) rotate(-16deg) scale(0.9); }
-  33%, 42% { opacity: 0; transform: translate(28px,  132px) rotate(-16deg) scale(0.9); }
-
-  48%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-  60%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-  66%, 81% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-
-  84%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
-  96%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
-  100%     { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          0%, 10% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
+          16% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
+          34% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
+          42%, 54% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          62% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          78% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          90%, 100% { opacity: 0; transform: translate(92px, 104px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
-          0%, 19%  { opacity: 1; transform: translateX(0); }
-  26%, 93% { opacity: 0; transform: translateX(-14px); }
-  99%      { opacity: 0; transform: translateX(0); }
-  100%     { opacity: 1; transform: translateX(0); }
+          0%, 24% { opacity: 1; transform: translateX(0); }
+          34%, 100% { opacity: 0; transform: translateX(-14px); }
         }
         @keyframes eventInfoB {
-          0%, 19%  { opacity: 0; transform: translateX(14px); }
-  28%, 93% { opacity: 1; transform: translateX(0); }
-  100%     { opacity: 0; transform: translateX(0); }
+          0%, 24% { opacity: 0; transform: translateX(14px); }
+          36%, 100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
-          0%, 19%  { opacity: 0; transform: translateX(14px); }
-  28%, 93% { opacity: 1; transform: translateX(0); }
-  100%     { opacity: 0; transform: translateX(0); }
+          0%, 18% { opacity: 0; transform: scale(0.35); }
+          24% { opacity: 0.45; transform: scale(1); }
+          34%, 100% { opacity: 0; transform: scale(1.85); }
         }
         @keyframes spotCardReveal {
           0%, 26% { opacity: 0; transform: translateY(290px); }
@@ -719,7 +715,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
             </div>
 
             <div
-              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-[#A1A1AA]"
+              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-white"
               style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif' }}
             >
               UvA-IN
@@ -787,7 +783,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 }
 
 function EventsTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '6.7s'
+  const animationDuration = '5.2s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
@@ -1694,7 +1690,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
         </div>
       </div>
 
-      {/* Top fade ??soften the safe-area/card line when lifted */}
+      {/* Top fade → soften the safe-area/card line when lifted */}
       {lifted && (
         <div
           className="pointer-events-none"
@@ -1815,17 +1811,17 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
-    // Vertical swipe (up or down) ??close
+    // Vertical swipe (up or down) → close
     if (absDy > absDx && absDy > 60) {
       handleClose()
     }
-    // Horizontal swipe ??next / prev
+    // Horizontal swipe → next / prev
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
-        // swipe left ??next
+        // swipe left → next
         goToIndex(index + 1)
       } else {
-        // swipe right ??prev
+        // swipe right → prev
         if (index === 0) handleClose()
         else goToIndex(index - 1)
       }
@@ -1919,7 +1915,7 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
                     decoding="async"
                     fetchPriority={imgIndex === index ? 'high' : 'auto'}
                     loading={Math.abs(imgIndex - index) <= 1 ? 'eager' : 'lazy'}
-                    alt={`?ъ쭊 ${imgIndex + 1}`}
+                    alt={`사진 ${imgIndex + 1}`}
                     style={{
                       maxWidth: '90vw',
                       maxHeight: '90vh',
@@ -2804,7 +2800,7 @@ function EventsTab({ events }) {
                     className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 dark:bg-gray-800 dark:text-gray-200"
                   >
                     <Calendar size={14} weight="fill" />
-                    罹섎┛?붿뿉 異붽?
+                    캘린더에 추가
                   </button>
                 )}
                 {instaUrl && (
@@ -2822,7 +2818,7 @@ function EventsTab({ events }) {
                     >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
-                    Instagram?먯꽌 ?닿린
+                    Instagram에서 열기
                   </a>
                 )}
               </div>
@@ -3083,13 +3079,13 @@ const effectiveDateColor = isDragging
                         {eventDateParts.dayName}
                       </p>
                       <span className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
-                        ??
+                        •
                       </span>
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.year}
                       </p>
                       <span className="hidden text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
-                        ??
+                        •
                       </span>
                       <p
                         className={
@@ -3365,7 +3361,7 @@ const effectiveDateColor = isDragging
                       rel="noopener noreferrer"
                       className="hidden"
                     >
-                      Instagram ?먯꽌 ?닿린
+                      Instagram에서 열기
                     </a>
                   )}
                   {displayEvent.description && (
@@ -3742,7 +3738,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
           />
         )}
 
-        {/* Stamp card mini widget ??fixed top-right, only for valid members */}
+        {/* Stamp card mini widget → fixed top-right, only for valid members */}
         {stampCardSpot && stampCardUserId && (
           <StampCardMini
             restaurantId={stampCardSpot.id}
