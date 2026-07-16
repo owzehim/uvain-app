@@ -582,8 +582,8 @@ function WelcomeSlides({ member, onFinish }) {
         @keyframes tourScanLine {
           0%, 42% { opacity: 0; transform: translateY(-58px); }
           48% { opacity: 1; transform: translateY(-58px); }
-          82% { opacity: 1; transform: translateY(58px); }
-          88%, 100% { opacity: 0; transform: translateY(58px); }
+          62% { opacity: 1; transform: translateY(58px); }
+          68%, 100% { opacity: 0; transform: translateY(58px); }
         }
         @keyframes tourTapPulse {
           0%, 27% { opacity: 0; transform: scale(0.3); }
@@ -635,7 +635,8 @@ function WelcomeSlides({ member, onFinish }) {
           25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
           32% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
           46.6% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          46.67% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          46.67% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          48.67% { opacity: 1; transform: translate(82px, 253px) rotate(-10deg) scale(0.98); }
           60.67%, 69% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
           83% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
           85%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
