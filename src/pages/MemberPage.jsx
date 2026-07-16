@@ -434,7 +434,7 @@ function WelcomeSlides({ member, onFinish }) {
     setBenefitsAcknowledgementVisible(false)
     if (!isLast) return undefined
 
-    const timer = window.setTimeout(() => setBenefitsAcknowledgementVisible(true), 3000)
+    const timer = window.setTimeout(() => setBenefitsAcknowledgementVisible(true), 5000)
     return () => window.clearTimeout(timer)
   }, [isLast])
 
@@ -511,7 +511,7 @@ function WelcomeSlides({ member, onFinish }) {
         {isLast && (
           <label
             className={
-              'mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 transition-opacity duration-200 dark:text-gray-300 ' +
+              'mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 transition-opacity duration-500 dark:text-gray-300 ' +
               (benefitsAcknowledgementVisible ? 'opacity-100' : 'pointer-events-none opacity-0')
             }
           >
@@ -591,41 +591,41 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 31% { transform: translateY(180px); }
-          41%, 44% { transform: translateY(0); }
-          54%, 100% { transform: translateY(180px); }
+          0%, 30% { transform: translateY(180px); }
+          44%, 46% { transform: translateY(0); }
+          60%, 100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
           0%, 6% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
           10% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
           21.7% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
-          26.9%, 28% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
-          28.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          29%, 31% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          41%, 44% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          54% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
-          56%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          26.9%, 27% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          27.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          28%, 30% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          44%, 46% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          60% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          62%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
           0%, 15% { opacity: 1; transform: translateX(0); }
-          21.5%, 89.71% { opacity: 0; transform: translateX(-14px); }
-          89.72% { opacity: 0; transform: translateX(0); }
+          21.5%, 95.71% { opacity: 0; transform: translateX(-14px); }
+          95.72% { opacity: 0; transform: translateX(0); }
           100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
           0%, 15% { opacity: 0; transform: translateX(14px); }
-          22.8%, 89.71% { opacity: 1; transform: translateX(0); }
+          22.8%, 95.71% { opacity: 1; transform: translateX(0); }
           100% { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
-          24% { opacity: 0.45; transform: scale(1); }
-          34%, 100% { opacity: 0; transform: scale(1.85); }
+          24% { opacity: 0.55; transform: scale(1); }
+          34%, 100% { opacity: 0; transform: scale(2.1); }
         }
         @keyframes spotCardReveal {
           0%, 20% { opacity: 0; transform: translateY(290px); }
-          30%, 55% { opacity: 1; transform: translateY(180px); }
-          68%, 73% { opacity: 1; transform: translateY(0); }
+          30%, 52% { opacity: 1; transform: translateY(180px); }
+          68%, 70% { opacity: 1; transform: translateY(0); }
           86% { opacity: 1; transform: translateY(180px); }
           100% { opacity: 0; transform: translateY(180px); }
         }
@@ -633,10 +633,10 @@ function WelcomeSlides({ member, onFinish }) {
           0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
           18% { opacity: 1; transform: translate(-10px, 130px) rotate(-14deg) scale(1); }
           25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          38%, 49% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          49.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          52%, 55% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          68%, 73% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          38%, 46% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
+          46.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          48%, 52% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          68%, 70% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
           86% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
           88%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
