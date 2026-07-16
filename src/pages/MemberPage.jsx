@@ -378,6 +378,7 @@ function WelcomeSlides({ member, onFinish }) {
   const [index, setIndex] = useState(0)
   const [closing, setClosing] = useState(false)
   const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
+  const [benefitsAcknowledgementVisible, setBenefitsAcknowledgementVisible] = useState(false)
   const tourLayout = {
     contentTopOffset: '-30px',
     animationTextGap: '20px',
@@ -429,6 +430,14 @@ function WelcomeSlides({ member, onFinish }) {
   const slide = slides[index]
   const Icon = slide.icon
   const isLast = index === slides.length - 1
+  useEffect(() => {
+    setBenefitsAcknowledgementVisible(false)
+    if (!isLast) return undefined
+
+    const timer = window.setTimeout(() => setBenefitsAcknowledgementVisible(true), 3000)
+    return () => window.clearTimeout(timer)
+  }, [isLast])
+
   const finishTour = () => {
     setClosing(true)
     window.setTimeout(onFinish, 260)
@@ -499,7 +508,7 @@ function WelcomeSlides({ member, onFinish }) {
       </div>
 
       <div className="px-8" style={{ paddingBottom: tourLayout.controlsBottomOffset }}>
-        {isLast && (
+        {isLast && benefitsAcknowledgementVisible && (
           <label className="mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300">
             <input
               type="checkbox"
@@ -588,9 +597,7 @@ function WelcomeSlides({ member, onFinish }) {
           26.9%, 34% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
           34.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
           37%, 40% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          53% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          55% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          56%, 58% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
+          53%, 58% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
           71% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
           73%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
@@ -624,9 +631,7 @@ function WelcomeSlides({ member, onFinish }) {
           38%, 49% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
           49.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
           52%, 55% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          68% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          70%, 71% { opacity: 0; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          72%, 73% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(1); }
+          68%, 73% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
           86% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
           88%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
