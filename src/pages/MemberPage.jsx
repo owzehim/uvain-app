@@ -2490,7 +2490,7 @@ function EventsTab({ events }) {
       `DTEND:${fmt(end)}\n` +
       `SUMMARY:${ev.title}\n` +
       `LOCATION:${plainText(ev.location)}\n` +
-      `DESCRIPTION:${ev.description || ''}\n` +
+      `DESCRIPTION:\n` +
       `END:VEVENT\nEND:VCALENDAR`
 
     const url = URL.createObjectURL(
