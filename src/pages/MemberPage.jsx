@@ -233,7 +233,7 @@ export default function MemberPage() {
             zIndex: 70,
           }}
         >
-          愿由ъ옄
+          관리자
         </button>
       )}
       <button
@@ -246,7 +246,7 @@ export default function MemberPage() {
           zIndex: 70,
         }}
       >
-        {/* CHANGED: size={20} ??size={22} to match the MY tab gear icon */}
+        {/* CHANGED: size={20} → size={22} to match the MY tab gear icon */}
         <Gear size={22} weight="bold" />
       </button>
     </div>
@@ -282,7 +282,7 @@ export default function MemberPage() {
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              愿由ъ옄
+              관리자
             </button>
           )}
           <button
@@ -1684,7 +1684,7 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
         </div>
       </div>
 
-      {/* Top fade ??soften the safe-area/card line when lifted */}
+      {/* Top fade → soften the safe-area/card line when lifted */}
       {lifted && (
         <div
           className="pointer-events-none"
@@ -1805,17 +1805,17 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
-    // Vertical swipe (up or down) ??close
+    // Vertical swipe (up or down) → close
     if (absDy > absDx && absDy > 60) {
       handleClose()
     }
-    // Horizontal swipe ??next / prev
+    // Horizontal swipe → next / prev
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
-        // swipe left ??next
+        // swipe left → next
         goToIndex(index + 1)
       } else {
-        // swipe right ??prev
+        // swipe right → prev
         if (index === 0) handleClose()
         else goToIndex(index - 1)
       }
@@ -1909,7 +1909,7 @@ function EventLightbox({ imgs, startIndex = 0, onClose, onIndexChange }) {
                     decoding="async"
                     fetchPriority={imgIndex === index ? 'high' : 'auto'}
                     loading={Math.abs(imgIndex - index) <= 1 ? 'eager' : 'lazy'}
-                    alt={`?ъ쭊 ${imgIndex + 1}`}
+                    alt={`사진 ${imgIndex + 1}`}
                     style={{
                       maxWidth: '90vw',
                       maxHeight: '90vh',
@@ -2794,7 +2794,7 @@ function EventsTab({ events }) {
                     className="flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 dark:bg-gray-800 dark:text-gray-200"
                   >
                     <Calendar size={14} weight="fill" />
-                    罹섎┛?붿뿉 異붽?
+                    캘린더에 추가
                   </button>
                 )}
                 {instaUrl && (
@@ -2812,7 +2812,7 @@ function EventsTab({ events }) {
                     >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                     </svg>
-                    Instagram?먯꽌 ?닿린
+                    Instagram에서 열기
                   </a>
                 )}
               </div>
@@ -3073,13 +3073,13 @@ const effectiveDateColor = isDragging
                         {eventDateParts.dayName}
                       </p>
                       <span className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
-                        ??
+                        •
                       </span>
                       <p className="text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
                         {eventDateParts.year}
                       </p>
                       <span className="hidden text-[34px] font-medium leading-none text-gray-700 dark:text-gray-200">
-                        ??
+                        •
                       </span>
                       <p
                         className={
@@ -3355,7 +3355,7 @@ const effectiveDateColor = isDragging
                       rel="noopener noreferrer"
                       className="hidden"
                     >
-                      Instagram ?먯꽌 ?닿린
+                      Instagram에서 열기
                     </a>
                   )}
                   {displayEvent.description && (
@@ -3732,7 +3732,7 @@ function MapTab({ restaurants, member, isValid, isAdmin, authUserId }) {
           />
         )}
 
-        {/* Stamp card mini widget ??fixed top-right, only for valid members */}
+        {/* Stamp card mini widget → fixed top-right, only for valid members */}
         {stampCardSpot && stampCardUserId && (
           <StampCardMini
             restaurantId={stampCardSpot.id}
