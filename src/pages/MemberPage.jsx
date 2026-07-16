@@ -585,12 +585,13 @@ function WelcomeSlides({ member, onFinish }) {
           0%, 6% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
           10% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
           21.7% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
-          26.9%, 58% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
-  60%      { opacity: 1; transform: translate(92px,  260px) rotate(-10deg) scale(1); }
-  78%      { opacity: 1; transform: translate(92px,  124px) rotate(-10deg) scale(0.9); }
-  84%, 88% { opacity: 0; transform: translate(92px,  124px) rotate(-10deg) scale(0.9); }
-  90%      { opacity: 1; transform: translate(92px,  124px) rotate(-10deg) scale(0.9); }
-  100%     { opacity: 0; transform: translate(92px,  260px) rotate(-10deg) scale(1); }
+          26.9%, 34% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          37%, 40% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          53% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          55%, 58% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          61%, 63% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
+          71% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          73%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
           0%, 15% { opacity: 1; transform: translateX(0); }
