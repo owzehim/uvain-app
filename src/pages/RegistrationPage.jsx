@@ -1550,6 +1550,7 @@ html.dark select option {
 const s = {
   page: {
     height: '100dvh',
+    position: 'relative',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -2115,13 +2116,16 @@ const s = {
     color: 'var(--reg-subtext)',
   },
   emailCard: {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
     backgroundColor: 'var(--reg-page-bg)',
     borderRadius: '0',
     boxShadow: 'none',
     padding: '0 0 14px',
     maxWidth: AUTH_BOX_WIDTH,
     width: 'calc(100% - 32px)',
-    margin: '122px auto 0',
+    margin: 0,
   },
   emailIcon: {
     width: '64px',
