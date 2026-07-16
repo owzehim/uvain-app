@@ -577,15 +577,15 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 58%  { transform: translateY(180px); }
-  78%, 88% { transform: translateY(0); }
-  100%     { transform: translateY(180px); }
+          0%, 40% { transform: translateY(180px); }
+          53%, 58% { transform: translateY(0); }
+          71%, 100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
-          0%, 10%  { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
-  16%      { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
-  34%      { opacity: 1; transform: translate(36px,  132px) rotate(-16deg) scale(0.9); }
-  42%, 58% { opacity: 0; transform: translate(28px,  132px) rotate(-16deg) scale(0.9); }
+          0%, 6% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
+          10% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
+          21.7% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
+          26.9%, 58% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
   60%      { opacity: 1; transform: translate(92px,  260px) rotate(-10deg) scale(1); }
   78%      { opacity: 1; transform: translate(92px,  124px) rotate(-10deg) scale(0.9); }
   84%, 88% { opacity: 0; transform: translate(92px,  124px) rotate(-10deg) scale(0.9); }
@@ -593,15 +593,15 @@ function WelcomeSlides({ member, onFinish }) {
   100%     { opacity: 0; transform: translate(92px,  260px) rotate(-10deg) scale(1); }
         }
         @keyframes eventInfoA {
-          0%, 20%    { opacity: 1; transform: translateX(0); }
-  42%, 93.9% { opacity: 0; transform: translateX(-14px); }
-  94%        { opacity: 0; transform: translateX(0); }
-  100%       { opacity: 1; transform: translateX(0); }
+          0%, 15% { opacity: 1; transform: translateX(0); }
+          21.5%, 89.75% { opacity: 0; transform: translateX(-14px); }
+          89.76% { opacity: 0; transform: translateX(0); }
+          96.25%, 100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
-          0%, 20%  { opacity: 0; transform: translateX(14px); }
-  44%, 94% { opacity: 1; transform: translateX(0); }
-  100%     { opacity: 0; transform: translateX(0); }
+          0%, 15% { opacity: 0; transform: translateX(14px); }
+          22.8%, 89.75% { opacity: 1; transform: translateX(0); }
+          96.25%, 100% { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
@@ -800,7 +800,9 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 }
 
 function EventsTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '5.2s'
+  // This longer loop leaves a 1.5s pause after the sheet closes before the
+  // info resets. Individual transition percentages preserve their prior speeds.
+  const animationDuration = '8s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
