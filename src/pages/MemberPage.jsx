@@ -611,23 +611,24 @@ function WelcomeSlides({ member, onFinish }) {
           34%, 100% { opacity: 0; transform: scale(1.85); }
         }
         @keyframes spotCardReveal {
-          0%, 26% { opacity: 0; transform: translateY(290px); }
-          38%, 62% { opacity: 1; transform: translateY(180px); }
-          78%, 86% { opacity: 1; transform: translateY(0); }
-          96% { opacity: 1; transform: translateY(180px); }
+          0%, 20% { opacity: 0; transform: translateY(290px); }
+          30%, 55% { opacity: 1; transform: translateY(180px); }
+          68%, 73% { opacity: 1; transform: translateY(0); }
+          86% { opacity: 1; transform: translateY(180px); }
           100% { opacity: 0; transform: translateY(180px); }
         }
         @keyframes spotHandGesture {
           0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
           18% { opacity: 1; transform: translate(-10px, 130px) rotate(-14deg) scale(1); }
           25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          38%, 52% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          62% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          78% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          82%, 86% { opacity: 0; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          88% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          96% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          38%, 49% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
+          49.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          52%, 55% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          68% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          70%, 71% { opacity: 0; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          72%, 73% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(1); }
+          86% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          88%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
         @keyframes benefitScannerFade {
           0%, 42% { opacity: 1; transform: scale(1); }
@@ -885,7 +886,7 @@ function EventsTourDemo({ bottomGap = '32px' }) {
 }
 
 function SpotTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '5.2s'
+  const animationDuration = '8s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
