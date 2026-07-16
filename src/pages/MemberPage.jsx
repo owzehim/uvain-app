@@ -577,9 +577,9 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 62% { transform: translateY(180px); }
-          78%, 94% { transform: translateY(0); }
-          100% { transform: translateY(180px); }
+          0%, 58% { transform: translateY(180px); }
+          72%, 84% { transform: translateY(0); }
+          94%, 100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
           0%, 10% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
@@ -592,11 +592,13 @@ function WelcomeSlides({ member, onFinish }) {
         }
         @keyframes eventInfoA {
           0%, 24% { opacity: 1; transform: translateX(0); }
-          34%, 100% { opacity: 0; transform: translateX(-14px); }
+          34%, 94% { opacity: 0; transform: translateX(-14px); }
+          100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
           0%, 24% { opacity: 0; transform: translateX(14px); }
-          36%, 100% { opacity: 1; transform: translateX(0); }
+          36%, 94% { opacity: 1; transform: translateX(0); }
+          100% { opacity: 0; transform: translateX(14px); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
@@ -606,8 +608,9 @@ function WelcomeSlides({ member, onFinish }) {
         @keyframes spotCardReveal {
           0%, 26% { opacity: 0; transform: translateY(290px); }
           38%, 62% { opacity: 1; transform: translateY(180px); }
-          78%, 94% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(290px); }
+          78%, 86% { opacity: 1; transform: translateY(0); }
+          96% { opacity: 1; transform: translateY(180px); }
+          100% { opacity: 0; transform: translateY(180px); }
         }
         @keyframes spotHandGesture {
           0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
@@ -633,8 +636,16 @@ function WelcomeSlides({ member, onFinish }) {
           62%, 100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes benefitStudentId {
-          0%, 62% { opacity: 0; transform: translate(20px, 14px) rotate(4deg) scale(0.92); }
-          74%, 100% { opacity: 1; transform: translate(0, 0) rotate(-2deg) scale(1); }
+          0%, 72% { opacity: 0; transform: translate(20px, 14px) rotate(4deg) scale(0.92); }
+          82%, 100% { opacity: 1; transform: translate(0, 0) rotate(-2deg) scale(1); }
+        }
+        @keyframes benefitStepOne {
+          0%, 62% { opacity: 0; transform: scale(0.6); }
+          70%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes benefitStepTwo {
+          0%, 84% { opacity: 0; transform: scale(0.6); }
+          92%, 100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>
@@ -715,7 +726,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
             </div>
 
             <div
-              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-white"
+              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-[#A1A1AA]"
               style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif' }}
             >
               UvA-IN
@@ -978,6 +989,12 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
           className="absolute inset-0 bg-white px-5 pt-9 dark:bg-[#121212]"
           style={{ animation: `benefitSuccessPop ${animationDuration} ease-in-out forwards` }}
         >
+          <div
+            className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-black text-white shadow-sm"
+            style={{ animation: `benefitStepOne ${animationDuration} ease-out forwards` }}
+          >
+            1
+          </div>
           <div className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
                 <CheckCircle size={30} weight="bold" />
@@ -1012,6 +1029,12 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
           </div>
         </div>
         <div className="mt-1.5 h-1.5 w-full rounded-full bg-orange-500" />
+      </div>
+      <div
+        className="absolute bottom-[66px] right-[48px] flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-black text-white shadow-sm"
+        style={{ animation: `benefitStepTwo ${animationDuration} ease-out forwards` }}
+      >
+        2
       </div>
     </div>
   )
