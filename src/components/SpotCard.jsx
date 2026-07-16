@@ -391,7 +391,7 @@ export function SpotCard({
   const imagesKey = imgs.join('|')
   const hasImages = imgs.length > 0
 
-  const { summary, loading: summaryLoading } = useStoreReviewSummary(
+  const { summary } = useStoreReviewSummary(
     selected?.partnership_id,
   )
 
@@ -566,8 +566,11 @@ export function SpotCard({
 
   // default: show stars unless admin explicitly turned them off
   const showRating = selected.show_rating !== false
+  const ratingSummary = summary?.store_id === selected?.partnership_id
+    ? summary
+    : null
 
-  const hasReviews = summary && summary.review_count > 0
+  const hasReviews = ratingSummary && ratingSummary.review_count > 0
 
   // treat empty / whitespace / HTML-only as empty (no ※)
   const rawTerms = selected.discount_terms ?? ''
@@ -681,22 +684,22 @@ export function SpotCard({
               {selected.name}
             </p>
 
-            {/* Star review - always visible, even when there are 0 reviews */}
+            {/* Reserve the rating row while loading instead of flashing a false 0.0 state. */}
             {showRating && (
-              <div className="flex items-center gap-1 mt-1">
-                <StarDisplay
-                  averageRating={summary?.average_rating ?? 0} // 0 when no reviews
-                  showWhenZero
-                  darkMode={darkMode}
-                />
-                <span className="text-xs text-gray-400">
-                  ({summary?.review_count ?? 0})
-                </span>
-              </div>
-            )}
-
-            {showRating && summaryLoading && (
-              <span className="text-xs text-gray-300 mt-1 block">로딩 중...</span>
+              ratingSummary ? (
+                <div className="flex items-center gap-1 mt-1">
+                  <StarDisplay
+                    averageRating={ratingSummary.average_rating}
+                    showWhenZero
+                    darkMode={darkMode}
+                  />
+                  <span className="text-xs text-gray-400">
+                    ({ratingSummary.review_count})
+                  </span>
+                </div>
+              ) : (
+                <div className="mt-1 h-[18px]" aria-hidden="true" />
+              )
             )}
 
             {/* Description, discount, address */}
@@ -774,8 +777,8 @@ export function SpotCard({
           {/* Member review bar chart */}
           {hasReviews && !isTallCollapsed && (
             <TagBarChart
-              tagCounts={summary.tag_counts}
-              reviewCount={summary.review_count}
+              tagCounts={ratingSummary.tag_counts}
+              reviewCount={ratingSummary.review_count}
             />
           )}
 

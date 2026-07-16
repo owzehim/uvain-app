@@ -12,22 +12,34 @@
 import { useState, useEffect } from 'react'
 import { getStoreReviewSummary } from '../api/reviewApi'
 
+const summaryCache = new Map()
+
 export function useStoreReviewSummary(storeId) {
-  const [summary, setSummary]   = useState(null)
-  const [loading, setLoading]   = useState(false)
+  const cachedSummary = storeId ? summaryCache.get(storeId) ?? null : null
+  const [summary, setSummary]   = useState(cachedSummary)
+  const [loading, setLoading]   = useState(Boolean(storeId && !cachedSummary))
   const [error, setError]       = useState(null)
 
   useEffect(() => {
     // Don't fetch if no store is selected
     if (!storeId) {
       setSummary(null)
+      setLoading(false)
       return
     }
 
     let cancelled = false
+    const cached = summaryCache.get(storeId)
+
+    if (cached) {
+      setSummary(cached)
+      setLoading(false)
+    } else {
+      setSummary(null)
+      setLoading(true)
+    }
 
     async function fetchSummary() {
-      setLoading(true)
       setError(null)
 
       const { data, error: fetchError } = await getStoreReviewSummary(storeId)
@@ -36,8 +48,9 @@ export function useStoreReviewSummary(storeId) {
 
       if (fetchError) {
         setError(fetchError.message ?? '리뷰를 불러오지 못했습니다.')
-        setSummary(null)
+        if (!cached) setSummary(null)
       } else {
+        summaryCache.set(storeId, data)
         setSummary(data)
       }
 
