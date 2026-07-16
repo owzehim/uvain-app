@@ -95,41 +95,37 @@ export default function MemberPage() {
         )
       }
 
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .order('event_date', { ascending: true })
-
-      if (eventError) {
-        console.error('events error:', eventError.message)
-      }
-
-      const { data: restaurantData, error: restaurantError } = await supabase
-        .from('restaurants')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (restaurantError) {
-        console.error('restaurants error:', restaurantError.message)
-      }
-
-      const loadedRestaurants = restaurantData || []
-      await primeStoreReviewSummaries(
-        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
-      )
-
       setMember(memberData || null)
       setIsAdmin(isAdminUser)
-      setEvents(eventData || [])
-      setRestaurants(loadedRestaurants)
       const shouldAlwaysShowWelcomeSlides = ALWAYS_SHOW_WELCOME_SLIDES_EMAILS.includes(
         String(user.email || '').toLowerCase(),
       )
-      setWelcomeSlidesOpen(
+      const shouldShowWelcomeSlides =
         Boolean(memberData) &&
-          (shouldAlwaysShowWelcomeSlides || !memberData.tutorial_completed_at),
+        (shouldAlwaysShowWelcomeSlides || !memberData.tutorial_completed_at)
+
+      setWelcomeSlidesOpen(shouldShowWelcomeSlides)
+      if (shouldShowWelcomeSlides) setLoading(false)
+
+      const [eventResult, restaurantResult] = await Promise.all([
+        supabase.from('events').select('*').order('event_date', { ascending: true }),
+        supabase.from('restaurants').select('*').order('created_at', { ascending: false }),
+      ])
+
+      if (eventResult.error) {
+        console.error('events error:', eventResult.error.message)
+      }
+      if (restaurantResult.error) {
+        console.error('restaurants error:', restaurantResult.error.message)
+      }
+
+      const loadedRestaurants = restaurantResult.data || []
+      await primeStoreReviewSummaries(
+        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
       )
-      setLoading(false)
+      setEvents(eventResult.data || [])
+      setRestaurants(loadedRestaurants)
+      if (!shouldShowWelcomeSlides) setLoading(false)
     }
 
     fetchData()
@@ -624,9 +620,9 @@ function WelcomeSlides({ member, onFinish }) {
         }
         @keyframes spotCardReveal {
           0%, 20% { opacity: 0; transform: translateY(290px); }
-          30%, 52% { opacity: 1; transform: translateY(180px); }
-          72%, 74% { opacity: 1; transform: translateY(0); }
-          94% { opacity: 1; transform: translateY(180px); }
+          30%, 50% { opacity: 1; transform: translateY(180px); }
+          64% { opacity: 1; transform: translateY(0); }
+          78% { opacity: 1; transform: translateY(180px); }
           100% { opacity: 0; transform: translateY(180px); }
         }
         @keyframes spotHandGesture {
@@ -635,10 +631,10 @@ function WelcomeSlides({ member, onFinish }) {
           25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
           38%, 46% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
           46.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          48%, 52% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          72%, 74% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          94% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
-          96%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          48%, 50% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          64% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          78% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          80%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
         @keyframes benefitScannerFade {
           0%, 42% { opacity: 1; transform: scale(1); }
@@ -896,7 +892,7 @@ function EventsTourDemo({ bottomGap = '32px' }) {
 }
 
 function SpotTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '4.2s'
+  const animationDuration = '6s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
