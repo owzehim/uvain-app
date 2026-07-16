@@ -508,8 +508,13 @@ function WelcomeSlides({ member, onFinish }) {
       </div>
 
       <div className="px-8" style={{ paddingBottom: tourLayout.controlsBottomOffset }}>
-        {isLast && benefitsAcknowledgementVisible && (
-          <label className="mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+        {isLast && (
+          <label
+            className={
+              'mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 transition-opacity duration-200 dark:text-gray-300 ' +
+              (benefitsAcknowledgementVisible ? 'opacity-100' : 'pointer-events-none opacity-0')
+            }
+          >
             <input
               type="checkbox"
               checked={benefitsAcknowledged}
@@ -586,31 +591,31 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 40% { transform: translateY(180px); }
-          53%, 58% { transform: translateY(0); }
-          71%, 100% { transform: translateY(180px); }
+          0%, 31% { transform: translateY(180px); }
+          41%, 44% { transform: translateY(0); }
+          54%, 100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
           0%, 6% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
           10% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
           21.7% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
-          26.9%, 34% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
-          34.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          37%, 40% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          53%, 58% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          71% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
-          73%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          26.9%, 28% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          28.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          29%, 31% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          41%, 44% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          54% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          56%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
           0%, 15% { opacity: 1; transform: translateX(0); }
-          21.5%, 91.83% { opacity: 0; transform: translateX(-14px); }
-          91.84% { opacity: 0; transform: translateX(0); }
-          99.06%, 100% { opacity: 1; transform: translateX(0); }
+          21.5%, 89.71% { opacity: 0; transform: translateX(-14px); }
+          89.72% { opacity: 0; transform: translateX(0); }
+          100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
           0%, 15% { opacity: 0; transform: translateX(14px); }
-          22.8%, 91.83% { opacity: 1; transform: translateX(0); }
-          99.06%, 100% { opacity: 0; transform: translateX(0); }
+          22.8%, 89.71% { opacity: 1; transform: translateX(0); }
+          100% { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
@@ -810,7 +815,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 function EventsTourDemo({ bottomGap = '32px' }) {
   // This longer loop leaves a 1.5s pause after the sheet closes before the
   // info resets. Individual transition percentages preserve their prior speeds.
-  const animationDuration = '7.2s'
+  const animationDuration = '4.2s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
@@ -891,7 +896,7 @@ function EventsTourDemo({ bottomGap = '32px' }) {
 }
 
 function SpotTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '7.2s'
+  const animationDuration = '4.2s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
@@ -957,7 +962,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
 }
 
 function BenefitsTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '5.4s'
+  const animationDuration = '4.2s'
   const scannerFrameTop = '60px'
   const scannerFrameSize = '90px'
   const scannerCornerSize = '30px'
