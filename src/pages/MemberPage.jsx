@@ -95,41 +95,37 @@ export default function MemberPage() {
         )
       }
 
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .order('event_date', { ascending: true })
-
-      if (eventError) {
-        console.error('events error:', eventError.message)
-      }
-
-      const { data: restaurantData, error: restaurantError } = await supabase
-        .from('restaurants')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (restaurantError) {
-        console.error('restaurants error:', restaurantError.message)
-      }
-
-      const loadedRestaurants = restaurantData || []
-      await primeStoreReviewSummaries(
-        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
-      )
-
       setMember(memberData || null)
       setIsAdmin(isAdminUser)
-      setEvents(eventData || [])
-      setRestaurants(loadedRestaurants)
       const shouldAlwaysShowWelcomeSlides = ALWAYS_SHOW_WELCOME_SLIDES_EMAILS.includes(
         String(user.email || '').toLowerCase(),
       )
-      setWelcomeSlidesOpen(
+      const shouldShowWelcomeSlides =
         Boolean(memberData) &&
-          (shouldAlwaysShowWelcomeSlides || !memberData.tutorial_completed_at),
+        (shouldAlwaysShowWelcomeSlides || !memberData.tutorial_completed_at)
+
+      setWelcomeSlidesOpen(shouldShowWelcomeSlides)
+      if (shouldShowWelcomeSlides) setLoading(false)
+
+      const [eventResult, restaurantResult] = await Promise.all([
+        supabase.from('events').select('*').order('event_date', { ascending: true }),
+        supabase.from('restaurants').select('*').order('created_at', { ascending: false }),
+      ])
+
+      if (eventResult.error) {
+        console.error('events error:', eventResult.error.message)
+      }
+      if (restaurantResult.error) {
+        console.error('restaurants error:', restaurantResult.error.message)
+      }
+
+      const loadedRestaurants = restaurantResult.data || []
+      await primeStoreReviewSummaries(
+        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
       )
-      setLoading(false)
+      setEvents(eventResult.data || [])
+      setRestaurants(loadedRestaurants)
+      if (!shouldShowWelcomeSlides) setLoading(false)
     }
 
     fetchData()
@@ -378,6 +374,7 @@ function WelcomeSlides({ member, onFinish }) {
   const [index, setIndex] = useState(0)
   const [closing, setClosing] = useState(false)
   const [benefitsAcknowledged, setBenefitsAcknowledged] = useState(false)
+  const [benefitsAcknowledgementVisible, setBenefitsAcknowledgementVisible] = useState(false)
   const tourLayout = {
     contentTopOffset: '-30px',
     animationTextGap: '20px',
@@ -429,6 +426,14 @@ function WelcomeSlides({ member, onFinish }) {
   const slide = slides[index]
   const Icon = slide.icon
   const isLast = index === slides.length - 1
+  useEffect(() => {
+    setBenefitsAcknowledgementVisible(false)
+    if (!isLast) return undefined
+
+    const timer = window.setTimeout(() => setBenefitsAcknowledgementVisible(true), 5000)
+    return () => window.clearTimeout(timer)
+  }, [isLast])
+
   const finishTour = () => {
     setClosing(true)
     window.setTimeout(onFinish, 260)
@@ -500,7 +505,12 @@ function WelcomeSlides({ member, onFinish }) {
 
       <div className="px-8" style={{ paddingBottom: tourLayout.controlsBottomOffset }}>
         {isLast && (
-          <label className="mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+          <label
+            className={
+              'mx-auto mb-4 flex max-w-sm items-center justify-center gap-2 text-sm font-bold text-gray-600 transition-opacity duration-500 dark:text-gray-300 ' +
+              (benefitsAcknowledgementVisible ? 'opacity-100' : 'pointer-events-none opacity-0')
+            }
+          >
             <input
               type="checkbox"
               checked={benefitsAcknowledged}
@@ -577,46 +587,54 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 62% { transform: translateY(180px); }
-          78%, 94% { transform: translateY(0); }
-          100% { transform: translateY(180px); }
+          0%, 39.5% { transform: translateY(180px); }
+          53.5%, 55.5% { transform: translateY(0); }
+          69.5%, 100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
-          0%, 10% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
-          16% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
-          34% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
-          42%, 54% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
-          62% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-          78% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          90%, 100% { opacity: 0; transform: translate(92px, 104px) rotate(-10deg) scale(0.9); }
+          0%, 6% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
+          10% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
+          21.7% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
+          26.9%, 35% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          35.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          37%, 39.5% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          53.5%, 55.5% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          69.5% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          71.5%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
-          0%, 24% { opacity: 1; transform: translateX(0); }
-          34%, 100% { opacity: 0; transform: translateX(-14px); }
+          0%, 15% { opacity: 1; transform: translateX(0); }
+          21.5%, 77.83% { opacity: 0; transform: translateX(-14px); }
+          77.84% { opacity: 0; transform: translateX(0); }
+          100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes eventInfoB {
-          0%, 24% { opacity: 0; transform: translateX(14px); }
-          36%, 100% { opacity: 1; transform: translateX(0); }
+          0%, 15% { opacity: 0; transform: translateX(14px); }
+          22.8%, 77.83% { opacity: 1; transform: translateX(0); }
+          100% { opacity: 0; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
           0%, 18% { opacity: 0; transform: scale(0.35); }
-          24% { opacity: 0.45; transform: scale(1); }
-          34%, 100% { opacity: 0; transform: scale(1.85); }
+          24% { opacity: 0.55; transform: scale(1); }
+          34%, 100% { opacity: 0; transform: scale(2.1); }
         }
         @keyframes spotCardReveal {
-          0%, 26% { opacity: 0; transform: translateY(290px); }
-          38%, 62% { opacity: 1; transform: translateY(180px); }
-          78%, 94% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(290px); }
+          0%, 20% { opacity: 0; transform: translateY(290px); }
+          30%, 50% { opacity: 1; transform: translateY(180px); }
+          64% { opacity: 1; transform: translateY(0); }
+          78% { opacity: 1; transform: translateY(180px); }
+          100% { opacity: 0; transform: translateY(180px); }
         }
         @keyframes spotHandGesture {
           0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
           18% { opacity: 1; transform: translate(-10px, 130px) rotate(-14deg) scale(1); }
           25%, 30% { opacity: 1; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          38%, 52% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
-          62% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          78% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          90%, 100% { opacity: 0; transform: translate(82px, 120px) rotate(-10deg) scale(0.9); }
+          38%, 46% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
+          46.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          48%, 50% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
+          64% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          78% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          80%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
         @keyframes benefitScannerFade {
           0%, 42% { opacity: 1; transform: scale(1); }
@@ -633,8 +651,16 @@ function WelcomeSlides({ member, onFinish }) {
           62%, 100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes benefitStudentId {
-          0%, 62% { opacity: 0; transform: translate(20px, 14px) rotate(4deg) scale(0.92); }
-          74%, 100% { opacity: 1; transform: translate(0, 0) rotate(-2deg) scale(1); }
+          0%, 72% { opacity: 0; transform: translate(20px, 14px) rotate(4deg) scale(0.92); }
+          82%, 100% { opacity: 1; transform: translate(0, 0) rotate(-2deg) scale(1); }
+        }
+        @keyframes benefitStepOne {
+          0%, 62% { opacity: 0; transform: scale(0.6); }
+          70%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes benefitStepTwo {
+          0%, 84% { opacity: 0; transform: scale(0.6); }
+          92%, 100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>
@@ -715,7 +741,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
             </div>
 
             <div
-              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-white"
+              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-[#A1A1AA]"
               style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif' }}
             >
               UvA-IN
@@ -783,7 +809,9 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 }
 
 function EventsTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '5.2s'
+  // This longer loop leaves a 1.5s pause after the sheet closes before the
+  // info resets. Individual transition percentages preserve their prior speeds.
+  const animationDuration = '6s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
@@ -864,7 +892,7 @@ function EventsTourDemo({ bottomGap = '32px' }) {
 }
 
 function SpotTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '5.2s'
+  const animationDuration = '6s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
@@ -930,7 +958,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
 }
 
 function BenefitsTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '5.4s'
+  const animationDuration = '4.2s'
   const scannerFrameTop = '60px'
   const scannerFrameSize = '90px'
   const scannerCornerSize = '30px'
@@ -978,6 +1006,12 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
           className="absolute inset-0 bg-white px-5 pt-9 dark:bg-[#121212]"
           style={{ animation: `benefitSuccessPop ${animationDuration} ease-in-out forwards` }}
         >
+          <div
+            className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-black text-white shadow-sm"
+            style={{ animation: `benefitStepOne ${animationDuration} ease-out forwards` }}
+          >
+            1
+          </div>
           <div className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
                 <CheckCircle size={30} weight="bold" />
@@ -1012,6 +1046,12 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
           </div>
         </div>
         <div className="mt-1.5 h-1.5 w-full rounded-full bg-orange-500" />
+      </div>
+      <div
+        className="absolute bottom-[66px] right-[48px] flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-black text-white shadow-sm"
+        style={{ animation: `benefitStepTwo ${animationDuration} ease-out forwards` }}
+      >
+        2
       </div>
     </div>
   )

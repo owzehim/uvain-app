@@ -14,6 +14,7 @@ import SettingsPage from './pages/SettingsPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
 import { useTheme } from './hooks/useTheme'
+import { WifiX } from '@phosphor-icons/react'
 
 const OTP_PENDING_KEY = 'uvain_otp_pending_email'
 const OTP_PENDING_EVENT = 'uvain-otp-pending-change'
@@ -29,21 +30,41 @@ function isStandaloneApp() {
 function App() {
   useTheme()
   const [session, setSession] = useState(undefined)
+  const [isOffline, setIsOffline] = useState(() =>
+    typeof navigator !== 'undefined' && !navigator.onLine,
+  )
   const [isOtpPending, setIsOtpPending] = useState(() =>
     typeof window !== 'undefined' &&
     Boolean(window.sessionStorage.getItem(OTP_PENDING_KEY))
   )
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
+    const loadSession = () => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session)
+      })
+    }
+
+    const handleOnline = () => {
+      setIsOffline(false)
+      loadSession()
+    }
+    const handleOffline = () => setIsOffline(true)
+
+    loadSession()
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
     })
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
   }, [])
 
   useEffect(() => {
@@ -88,6 +109,25 @@ function App() {
       document.removeEventListener('gesturechange', preventGesture)
     }
   }, [])
+
+  if (isOffline) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-8 text-center dark:bg-[#121212]">
+        <WifiX size={64} weight="duotone" className="mb-5 text-gray-400 dark:text-gray-500" />
+        <h1 className="text-xl font-black text-gray-950 dark:text-white">인터넷 연결이 필요해요</h1>
+        <p className="mt-2 text-sm font-medium leading-6 text-gray-500 dark:text-gray-400">
+          Wi-Fi 또는 모바일 데이터를 확인한 뒤 다시 시도해주세요.
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-7 rounded-full bg-orange-500 px-6 py-3 text-sm font-bold text-white active:bg-orange-600"
+        >
+          다시 시도
+        </button>
+      </div>
+    )
+  }
 
   if (session === undefined) {
     return (
