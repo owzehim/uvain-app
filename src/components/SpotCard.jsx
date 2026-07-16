@@ -103,7 +103,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
                   )}
                   {!IconComponent && (
                     <span className="text-xs text-red-500">
-                      ??No icon for: {tag.icon}
+                      ❌ No icon for: {tag.icon}
                     </span>
                   )}
                   <span className="text-xs text-gray-600 truncate">
@@ -191,17 +191,17 @@ function Lightbox({ imgs, startIndex, onClose }) {
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
-    // Vertical swipe (up or down) ??close
+    // Vertical swipe (up or down) → close
     if (absDy > absDx && absDy > 60) {
       handleClose()
     }
-    // Horizontal swipe ??next / prev
+    // Horizontal swipe → next / prev
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
-        // swipe left ??next
+        // swipe left → next
         goToIndex(index + 1)
       } else {
-        // swipe right ??prev
+        // swipe right → prev
         if (index === 0) handleClose()
         else goToIndex(index - 1)
       }
@@ -353,7 +353,7 @@ function ImageThumbnails({ imgs, onTap }) {
         >
           <img
             src={url}
-            alt={'?ъ쭊 ' + (i + 1)}
+            alt={'사진 ' + (i + 1)}
             loading="eager"
             decoding="async"
             fetchPriority={i === 0 ? 'high' : 'low'}
@@ -391,7 +391,7 @@ export function SpotCard({
   const imagesKey = imgs.join('|')
   const hasImages = imgs.length > 0
 
-  const { summary, loading: summaryLoading } = useStoreReviewSummary(
+  const { summary } = useStoreReviewSummary(
     selected?.partnership_id,
   )
 
@@ -566,10 +566,13 @@ export function SpotCard({
 
   // default: show stars unless admin explicitly turned them off
   const showRating = selected.show_rating !== false
+  const ratingSummary = summary?.store_id === selected?.partnership_id
+    ? summary
+    : null
 
-  const hasReviews = summary && summary.review_count > 0
+  const hasReviews = ratingSummary && ratingSummary.review_count > 0
 
-  // treat empty / whitespace / HTML-only as empty (no ??
+  // treat empty / whitespace / HTML-only as empty (no ※)
   const rawTerms = selected.discount_terms ?? ''
   const cleanedTerms = rawTerms
     .replace(/<[^>]*>/g, '')
@@ -659,7 +662,7 @@ export function SpotCard({
                       }}
                     />
                   )}
-                  {selected.category || '湲고?'}
+                  {selected.category || '기타'}
                 </span>
 
                 {selected.price_range && (
@@ -670,7 +673,7 @@ export function SpotCard({
 
                 {selected.is_sponsored && (
                   <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
-                    ?쒗쑕
+                    제휴
                   </span>
                 )}
               </div>
@@ -681,22 +684,22 @@ export function SpotCard({
               {selected.name}
             </p>
 
-            {/* Star review - always visible, even when there are 0 reviews */}
+            {/* Reserve the rating row while loading instead of flashing a false 0.0 state. */}
             {showRating && (
-              <div className="flex items-center gap-1 mt-1">
-                <StarDisplay
-                  averageRating={summary?.average_rating ?? 0} // 0 when no reviews
-                  showWhenZero
-                  darkMode={darkMode}
-                />
-                <span className="text-xs text-gray-400">
-                  ({summary?.review_count ?? 0})
-                </span>
-              </div>
-            )}
-
-            {showRating && summaryLoading && (
-              <span className="text-xs text-gray-300 mt-1 block">濡쒕뵫 以?..</span>
+              ratingSummary ? (
+                <div className="flex items-center gap-1 mt-1">
+                  <StarDisplay
+                    averageRating={ratingSummary.average_rating}
+                    showWhenZero
+                    darkMode={darkMode}
+                  />
+                  <span className="text-xs text-gray-400">
+                    ({ratingSummary.review_count})
+                  </span>
+                </div>
+              ) : (
+                <div className="mt-1 h-[18px]" aria-hidden="true" />
+              )
             )}
 
             {/* Description, discount, address */}
@@ -716,7 +719,7 @@ export function SpotCard({
 
             {discountTerms && (
               <p className="text-xs text-gray-800 mt-0.5">
-                ??<RichText text={discountTerms} />
+                ※ <RichText text={discountTerms} />
               </p>
             )}
 
@@ -738,7 +741,7 @@ export function SpotCard({
             </div>
           )}
 
-          {/* ??以??됯? */}
+          {/* 한 줄 평가 */}
           {selected.one_line_review && (!isTallCollapsed || !hasImages) && (
             <div className="mb-3" style={{ marginTop: speechBubbleGapPx }}>
               <p className="mb-2 text-left text-xs font-semibold text-gray-500">
@@ -774,12 +777,12 @@ export function SpotCard({
           {/* Member review bar chart */}
           {hasReviews && !isTallCollapsed && (
             <TagBarChart
-              tagCounts={summary.tag_counts}
-              reviewCount={summary.review_count}
+              tagCounts={ratingSummary.tag_counts}
+              reviewCount={ratingSummary.review_count}
             />
           )}
 
-          {/* ?꾩썝 由щ럭 */}
+          {/* 임원 리뷰 */}
           {!isTallCollapsed && (selected.review || selected.reviewer_name) && (
             <div className="pb-4">
               <div className="pt-3">
@@ -794,7 +797,7 @@ export function SpotCard({
                 )}
                 {selected.reviewer_name && (
                   <p className="mt-0.5 pl-4 text-xs text-gray-400">
-                    {'??' + selected.reviewer_name}
+                    {'— ' + selected.reviewer_name}
                   </p>
                 )}
               </div>
@@ -831,7 +834,7 @@ export function SpotCard({
               onTouchStart={(e) => e.stopPropagation()}
             >
               <MapPin size={14} weight="fill" />
-              Google Maps?먯꽌 ?닿린
+              Google Maps에서 열기
             </a>
           </div>
         </div>
