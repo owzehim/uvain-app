@@ -625,8 +625,8 @@ function WelcomeSlides({ member, onFinish }) {
         @keyframes spotCardReveal {
           0%, 20% { opacity: 0; transform: translateY(290px); }
           30%, 52% { opacity: 1; transform: translateY(180px); }
-          68%, 70% { opacity: 1; transform: translateY(0); }
-          86% { opacity: 1; transform: translateY(180px); }
+          72%, 74% { opacity: 1; transform: translateY(0); }
+          94% { opacity: 1; transform: translateY(180px); }
           100% { opacity: 0; transform: translateY(180px); }
         }
         @keyframes spotHandGesture {
@@ -636,9 +636,9 @@ function WelcomeSlides({ member, onFinish }) {
           38%, 46% { opacity: 0; transform: translate(-24px, 142px) rotate(-14deg) scale(0.9); }
           46.1% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
           48%, 52% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(1); }
-          68%, 70% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
-          86% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
-          88%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          72%, 74% { opacity: 1; transform: translate(82px, 142px) rotate(-10deg) scale(0.9); }
+          94% { opacity: 1; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
+          96%, 100% { opacity: 0; transform: translate(82px, 272px) rotate(-10deg) scale(0.9); }
         }
         @keyframes benefitScannerFade {
           0%, 42% { opacity: 1; transform: scale(1); }
