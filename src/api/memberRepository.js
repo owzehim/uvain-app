@@ -100,9 +100,7 @@ export async function registerMember(payload) {
     password,
     options: {
       emailRedirectTo:
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/email-confirmed`
-          : undefined,
+        'https://app.uva-in.nl/email-confirmed',
       // You can pass extra metadata here if needed
       data: {
         first_name: firstName,

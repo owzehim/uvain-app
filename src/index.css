@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 @font-face {
+  font-family: "Alien Block";
+  src: url("/fonts/AlienBlock-Regular.ttf") format("truetype");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Uvain Helvetica";
   src: url("./assets/fonts/Helvetica-Regular.ttf") format("truetype");
   font-weight: 400;

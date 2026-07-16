@@ -68,6 +68,20 @@ export default function EmailConfirmedPage() {
     }
   }, [])
 
+  if (status === 'success') {
+    return (
+      <div style={styles.page}>
+        <div style={styles.panel}>
+          <CheckCircle size={64} weight="fill" color="#f97316" />
+          <h1 style={styles.title}>이메일 인증이 완료되었어요</h1>
+          <p style={styles.message}>
+            이제 UvA-IN 앱으로 돌아가 로그인해 주세요.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.panel}>
@@ -117,11 +131,11 @@ const styles = {
   page: {
     minHeight: '100dvh',
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
     fontFamily: 'var(--font-app)',
-    padding: 'calc(env(safe-area-inset-top) + 120px) 16px 24px',
+    padding: '24px 16px',
     boxSizing: 'border-box',
   },
   panel: {
