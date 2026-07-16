@@ -586,10 +586,11 @@ function WelcomeSlides({ member, onFinish }) {
           10% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
           21.7% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
           26.9%, 34% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          34.1% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
           37%, 40% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
           53% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          55%, 58% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-          61%, 63% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
+          55% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          56%, 58% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
           71% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
           73%, 100% { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
         }
