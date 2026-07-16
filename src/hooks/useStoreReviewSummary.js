@@ -10,9 +10,21 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useState, useEffect } from 'react'
-import { getStoreReviewSummary } from '../api/reviewApi'
+import { getStoreReviewSummaries, getStoreReviewSummary } from '../api/reviewApi'
 
 const summaryCache = new Map()
+
+export async function primeStoreReviewSummaries(storeIds) {
+  const missingStoreIds = Array.from(
+    new Set((storeIds || []).filter((storeId) => storeId && !summaryCache.has(storeId))),
+  )
+  if (missingStoreIds.length === 0) return
+
+  const { data } = await getStoreReviewSummaries(missingStoreIds)
+  for (const summary of data || []) {
+    summaryCache.set(summary.store_id, summary)
+  }
+}
 
 export function useStoreReviewSummary(storeId) {
   const cachedSummary = storeId ? summaryCache.get(storeId) ?? null : null

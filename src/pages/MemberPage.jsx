@@ -12,6 +12,7 @@ import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import StampCardMini from '../features/stampCard/components/StampCardMini'
 import StampCardModal from '../features/stampCard/components/StampCardModal'
+import { primeStoreReviewSummaries } from '../hooks/useStoreReviewSummary'
 
 const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
@@ -112,10 +113,15 @@ export default function MemberPage() {
         console.error('restaurants error:', restaurantError.message)
       }
 
+      const loadedRestaurants = restaurantData || []
+      await primeStoreReviewSummaries(
+        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
+      )
+
       setMember(memberData || null)
       setIsAdmin(isAdminUser)
       setEvents(eventData || [])
-      setRestaurants(restaurantData || [])
+      setRestaurants(loadedRestaurants)
       const shouldAlwaysShowWelcomeSlides = ALWAYS_SHOW_WELCOME_SLIDES_EMAILS.includes(
         String(user.email || '').toLowerCase(),
       )
@@ -571,41 +577,31 @@ function WelcomeSlides({ member, onFinish }) {
           43%, 100% { opacity: 0; transform: scale(1.8); }
         }
         @keyframes eventSheetReveal {
-          0%, 48%  { transform: translateY(180px); }
-  61%, 73% { transform: translateY(0); }
-  84%      { transform: translateY(0); }
-  96%      { transform: translateY(180px); }
-  100%     { transform: translateY(180px); }
+          0%, 62% { transform: translateY(180px); }
+          78%, 94% { transform: translateY(0); }
+          100% { transform: translateY(180px); }
         }
         @keyframes eventHandGesture {
-  0%, 8%   { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
-  12%      { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
-  26%      { opacity: 1; transform: translate(36px,  132px) rotate(-16deg) scale(0.9); }
-  33%, 42% { opacity: 0; transform: translate(28px,  132px) rotate(-16deg) scale(0.9); }
-
-  48%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
-  60%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-  66%, 81% { opacity: 0; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
-
-  84%      { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(1); }
-  96%      { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
-  100%     { opacity: 0; transform: translate(92px, 260px) rotate(-10deg) scale(0.9); }
+          0%, 10% { opacity: 0; transform: translate(128px, 132px) rotate(-16deg) scale(1); }
+          16% { opacity: 1; transform: translate(104px, 132px) rotate(-16deg) scale(1); }
+          34% { opacity: 1; transform: translate(36px, 132px) rotate(-16deg) scale(0.9); }
+          42%, 54% { opacity: 0; transform: translate(28px, 132px) rotate(-16deg) scale(0.9); }
+          62% { opacity: 1; transform: translate(92px, 260px) rotate(-10deg) scale(1); }
+          78% { opacity: 1; transform: translate(92px, 124px) rotate(-10deg) scale(0.9); }
+          90%, 100% { opacity: 0; transform: translate(92px, 104px) rotate(-10deg) scale(0.9); }
         }
         @keyframes eventInfoA {
-          0%, 19%  { opacity: 1; transform: translateX(0); }
-  26%, 93% { opacity: 0; transform: translateX(-14px); }
-  99%      { opacity: 0; transform: translateX(0); }
-  100%     { opacity: 1; transform: translateX(0); }
+          0%, 24% { opacity: 1; transform: translateX(0); }
+          34%, 100% { opacity: 0; transform: translateX(-14px); }
         }
         @keyframes eventInfoB {
-          0%, 19%  { opacity: 0; transform: translateX(14px); }
-  28%, 93% { opacity: 1; transform: translateX(0); }
-  100%     { opacity: 0; transform: translateX(0); }
+          0%, 24% { opacity: 0; transform: translateX(14px); }
+          36%, 100% { opacity: 1; transform: translateX(0); }
         }
         @keyframes spotMarkerPulse {
-          0%, 19%  { opacity: 0; transform: translateX(14px); }
-  28%, 93% { opacity: 1; transform: translateX(0); }
-  100%     { opacity: 0; transform: translateX(0); }
+          0%, 18% { opacity: 0; transform: scale(0.35); }
+          24% { opacity: 0.45; transform: scale(1); }
+          34%, 100% { opacity: 0; transform: scale(1.85); }
         }
         @keyframes spotCardReveal {
           0%, 26% { opacity: 0; transform: translateY(290px); }
@@ -719,7 +715,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
             </div>
 
             <div
-              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-[#A1A1AA]"
+              className="absolute bottom-7 left-2 right-2 text-center text-[36px] leading-none text-[#2c2a27] dark:text-white"
               style={{ fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif' }}
             >
               UvA-IN
@@ -787,7 +783,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
 }
 
 function EventsTourDemo({ bottomGap = '32px' }) {
-  const animationDuration = '6.7s'
+  const animationDuration = '5.2s'
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>

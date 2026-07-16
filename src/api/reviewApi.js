@@ -85,7 +85,6 @@ export async function getReviewsByStore(storeId) {
 
 /**
  * Fetches the review summary for a store (average rating, count, tag counts).
- * Calls getReviewsByStore and computes via domain layer.
  *
  * @param {string} storeId
  * @returns {Promise<{
@@ -94,11 +93,54 @@ export async function getReviewsByStore(storeId) {
  * }>}
  */
 export async function getStoreReviewSummary(storeId) {
-  const { data: reviews, error } = await getReviewsByStore(storeId)
-  if (error) return { data: null, error }
+  const { data, error } = await getStoreReviewSummaries([storeId])
+  return { data: data?.[0] ?? null, error }
+}
 
-  const summary = buildReviewSummary(storeId, reviews ?? [])
-  return { data: summary, error: null }
+/**
+ * Fetches summaries for multiple stores in one request so rating data can be
+ * ready before a SpotCard is opened.
+ *
+ * @param {string[]} storeIds
+ * @returns {Promise<{ data: object[]|null, error: object|null }>}
+ */
+export async function getStoreReviewSummaries(storeIds) {
+  const uniqueStoreIds = Array.from(new Set((storeIds || []).filter(Boolean)))
+  if (uniqueStoreIds.length === 0) return { data: [], error: null }
+
+  const { data, error } = await supabase.rpc('get_store_review_summaries', {
+    p_store_ids: uniqueStoreIds,
+  })
+
+  if (error) {
+    console.warn(
+      'get_store_review_summaries RPC unavailable; using client aggregation fallback:',
+      error.message,
+    )
+
+    const { data: reviews, error: fallbackError } = await supabase
+      .from('reviews')
+      .select('store_id, rating, tags')
+      .in('store_id', uniqueStoreIds)
+
+    if (fallbackError) return { data: null, error: fallbackError }
+
+    const reviewsByStore = new Map(
+      uniqueStoreIds.map((storeId) => [storeId, []]),
+    )
+    for (const review of reviews || []) {
+      reviewsByStore.get(review.store_id)?.push(review)
+    }
+
+    return {
+      data: uniqueStoreIds.map((storeId) =>
+        buildReviewSummary(storeId, reviewsByStore.get(storeId)),
+      ),
+      error: null,
+    }
+  }
+
+  return { data: data || [], error: null }
 }
 
 /**

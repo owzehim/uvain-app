@@ -6,6 +6,7 @@ import { SpotCard } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE, CATEGORY_ICONS_BLACK } from '../lib/mapCategories'
 import { getVisibleMapCategories } from '../lib/mapCategoryVisibility'
 import { MapPin, Lock, ForkKnife, CalendarDots, Users } from '@phosphor-icons/react'
+import { primeStoreReviewSummaries } from '../hooks/useStoreReviewSummary'
 
 const PUBLIC_ACTIVE_TAB_KEY = 'uvain_public_active_tab'
 const PUBLIC_BOTTOM_TAB_PADDING = 42
@@ -45,7 +46,11 @@ export default function PublicPage() {
         .from('restaurants')
         .select('*')
         .order('created_at', { ascending: false })
-      setRestaurants(data || [])
+      const loadedRestaurants = data || []
+      await primeStoreReviewSummaries(
+        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
+      )
+      setRestaurants(loadedRestaurants)
     }
     fetchRestaurants()
   }, [])
