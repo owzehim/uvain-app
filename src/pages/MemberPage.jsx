@@ -392,14 +392,14 @@ function WelcomeSlides({ member, onFinish }) {
     {
       eyebrow: 'MY tab',
       title: '화면 속 멤버십 카드로 간편하게 Check-IN 하세요',
-      body: '앱 내 [MY] 탭에서 멤버십 카드를 터치해 QR 코드를 스캔하면 혜택이 적용됩니다.',
+      body: '앱 내 멤버십 카드를 터치해 QR 코드를 스캔하고 멤버십 혜택을 적용하세요.',
       icon: QrCode,
       demo: 'membership-card',
     },
     {
       eyebrow: 'EVENTS tab',
       title: '다양한 UvA-IN 이벤트를 한눈에 확인하세요',
-      body: '좌우로 밀어 이벤트를 둘러보고 위로 올려 상세 정보를 확인하세요. 참여 버튼을 누르면 신청 페이지로 연결됩니다.',
+      body: '좌우로 밀어 이벤트를 둘러보고 위로 올려 상세 정보를 확인하세요.',
       icon: Calendar,
       demo: 'events',
     },
