@@ -392,7 +392,7 @@ function WelcomeSlides({ member, onFinish }) {
     {
       eyebrow: 'MY tab',
       title: '앱 내 멤버십 카드로 Check-IN 하세요',
-      body: '멤버십 카드로 매장 QR을 스캔해 Check-IN 하면 멤버십 혜택이 적용됩니다.',
+      body: '멤버십 카드로 매장 QR코드를 스캔해 Check-IN 하면 멤버십 혜택이 적용됩니다.',
       icon: QrCode,
       demo: 'membership-card',
     },
@@ -415,7 +415,7 @@ function WelcomeSlides({ member, onFinish }) {
       title: 'Check-IN 유의사항',
       bodyNode: (
         <>
-          제휴 매장 안에서 QR 스캔 후{' '}
+          제휴 매장 안에서 QR코드를 스캔 후{' '}
           <strong className="font-black text-gray-950 dark:text-white">Check-IN 완료 화면과 학생증</strong>
           을 직원에게 꼭 보여주세요.
         </>
