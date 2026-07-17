@@ -406,7 +406,7 @@ function WelcomeSlides({ member, onFinish }) {
     {
       eyebrow: 'SPOT tab',
       title: 'UvA-IN 제휴 매장을 둘러보세요',
-      body: '지도 위 UvA-IN 제휴 매장 마커를 누르고 위로 올려 우술랭 평가와 멤버·임원진 평가를 확인하세요.',
+      body: '지도 위 UvA-IN 제휴 매장 마커를 누르고 위로 올려 매장 정보와 우술랭 평가를 확인하세요.',
       icon: MapPin,
       demo: 'spot',
     },
