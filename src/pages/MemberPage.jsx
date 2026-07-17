@@ -386,7 +386,7 @@ function WelcomeSlides({ member, onFinish }) {
     {
       eyebrow: '환영합니다',
       title: firstName ? `${firstName}님, UvA-IN에 오신 것을 환영합니다!` : 'UvA-IN에 오신 것을 환영합니다',
-      body: 'UvA-IN 멤버 전용 혜택과 이벤트를 한곳에서 가장 빠르게 만나보세요.',
+      body: 'UvA-IN 멤버 전용 혜택과 이벤트를 한곳에서 빠르게 만나보세요.',
       icon: UserCircle,
     },
     {
@@ -399,14 +399,14 @@ function WelcomeSlides({ member, onFinish }) {
     {
       eyebrow: 'EVENTS tab',
       title: '다양한 UvA-IN 이벤트를 한눈에 확인하세요',
-      body: '좌우로 밀어 이벤트를 둘러보고, 아래 화면을 위로 올려 상세 정보를 확인하세요. 참여 버튼을 누르면 신청 페이지로 바로 연결됩니다.',
+      body: '좌우로 밀어 이벤트를 둘러보고 위로 올려 상세 정보를 확인하세요. 참여 버튼을 누르면 신청 페이지로 연결됩니다.',
       icon: Calendar,
       demo: 'events',
     },
     {
       eyebrow: 'SPOT tab',
       title: 'UvA-IN 제휴 매장을 둘러보세요',
-      body: '지도 위 UvA-IN 제휴 매장 마커를 누르고 화면을 위로 올려보세요. ‘우술랭’ 평가와 멤버, 임원들의 리뷰를 확인할 수 있습니다.',
+      body: '지도 위 UvA-IN 제휴 매장 마커를 누르고 위로 올려 우술랭 평가와 리뷰를 확인하세요.',
       icon: MapPin,
       demo: 'spot',
     },
@@ -415,9 +415,9 @@ function WelcomeSlides({ member, onFinish }) {
       title: 'Check-IN 유의사항',
       bodyNode: (
         <>
-          제휴 매장에서 QR 코드를 스캔한 뒤,{' '}
-          <strong className="font-black text-gray-950 dark:text-white">'Check-IN 완료' 화면과 본인의 학생증을</strong>
-          {' '}매장 직원에게 꼭 보여주세요.
+          제휴 매장 안에서 QR 스캔 후{' '}
+          <strong className="font-black text-gray-950 dark:text-white">Check-IN 완료 화면과 학생증</strong>
+          을 직원에게 꼭 보여주세요.
         </>
       ),
       icon: CheckCircle,
