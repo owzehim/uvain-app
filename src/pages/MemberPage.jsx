@@ -393,6 +393,7 @@ function WelcomeSlides({ member, onFinish }) {
       eyebrow: 'MY tab',
       title: '우바인 멤버십 카드로 Check-IN 하세요',
       body: 'MY 탭의 멤버십 카드를 눌러 QR 코드를 스캔 하면 Check-IN 할 수 있어요.',
+      subBody: 'Check-IN이란: UvA-IN 멤버십만의 특별한 제휴 혜택을 오프라인에서 적용하는 방법을 뜻합니다.',
       icon: QrCode,
       demo: 'membership-card',
     },
@@ -504,6 +505,14 @@ function WelcomeSlides({ member, onFinish }) {
           <p className="mt-5 text-base font-medium leading-7 text-gray-500 dark:text-gray-300">
             {slide.bodyNode || slide.body}
           </p>
+          {slide.subBody && (
+            <p
+              className="mt-2 font-medium leading-relaxed text-gray-500 dark:text-gray-300"
+              style={{ fontSize: 'calc(1rem / 1.618)' }}
+            >
+              {slide.subBody}
+            </p>
+          )}
         </div>
       </div>
 
