@@ -1,4 +1,4 @@
-﻿Fimport { useEffect, useState, useMemo, useRef } from 'react'
+﻿import { useEffect, useState, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
