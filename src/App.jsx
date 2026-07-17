@@ -115,7 +115,7 @@ function App() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white px-8 text-center dark:bg-[#121212]">
         <WifiX size={64} weight="duotone" className="mb-5 text-gray-400 dark:text-gray-500" />
-        <h1 className="text-xl font-black text-gray-950 dark:text-white">인터넷 연결이 필요해요</h1>
+        <h1 className="text-xl font-black text-gray-950 dark:text-white">인터넷 연결 없음</h1>
         <p className="mt-2 text-sm font-medium leading-6 text-gray-500 dark:text-gray-400">
           Wi-Fi 또는 모바일 데이터를 확인한 뒤 다시 시도해주세요.
         </p>

@@ -274,6 +274,16 @@ select {
   color: #9ca3af;
 }
 
+.app-loading-spinner {
+  border-color: #e5e7eb;
+  border-top-color: #f97316;
+}
+
+.dark .app-loading-spinner {
+  border-color: #3f3f46;
+  border-top-color: #f97316;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

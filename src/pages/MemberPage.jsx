@@ -1403,17 +1403,6 @@ function MembershipCard({
         <span style={{ fontSize: fs.valid, fontWeight: 500 }}>
           활성화된 멤버십이 없습니다
         </span>
-        {member?.first_name && (
-          <span
-            style={{
-              marginTop: '4px',
-              fontSize: fs.valid,
-              color: darkMode ? '#A1A1AA' : '#6b7280',
-            }}
-          >
-            {member.first_name} {member.last_name}
-          </span>
-        )}
         <span
           style={{
             marginTop: '10px',
