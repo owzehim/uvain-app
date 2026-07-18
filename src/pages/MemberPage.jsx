@@ -501,7 +501,7 @@ function WelcomeSlides({ member, onFinish }) {
             {slide.eyebrow}
           </p>
           <h1 className="text-[34px] font-black leading-tight tracking-normal">
-            {TitleIcon && <TitleIcon size={30} weight="regular" className="mr-2 inline-block align-[-0.1em] text-white" />}
+            {TitleIcon && <TitleIcon size={30} weight="bold" className="mr-2 inline-block align-[-0.1em] text-white" />}
             {slide.title}
           </h1>
           <p className="mt-5 text-base font-medium leading-7 text-gray-500 dark:text-gray-300">
