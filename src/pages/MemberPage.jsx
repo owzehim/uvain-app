@@ -391,7 +391,6 @@ function WelcomeSlides({ member, onFinish }) {
     },
     {
       eyebrow: 'MY tab',
-      eyebrowIcon: QrCode,
       title: '앱 내 멤버십 카드로 Check-IN 하세요',
       body: '멤버십 카드로 매장 QR코드를 스캔해 Check-IN 하면 멤버십 혜택이 적용됩니다.',
       icon: QrCode,
@@ -399,7 +398,6 @@ function WelcomeSlides({ member, onFinish }) {
     },
     {
       eyebrow: 'EVENTS tab',
-      eyebrowIcon: Calendar,
       title: '다가오는 UvA-IN 이벤트를 확인하세요',
       body: '좌우로 밀어 이벤트를 둘러보고 위로 올려 상세 정보를 확인하세요.',
       icon: Calendar,
@@ -407,16 +405,15 @@ function WelcomeSlides({ member, onFinish }) {
     },
     {
       eyebrow: 'SPOT tab',
-      eyebrowIcon: MapPin,
       title: 'UvA-IN 제휴 매장을 둘러보세요',
       body: '지도 위 UvA-IN 제휴 매장 마커를 누르고 위로 올려 매장 정보와 우술랭 평가를 확인하세요.',
       icon: MapPin,
       demo: 'spot',
     },
     {
-      eyebrow: 'UvA-IN Benefits',
-      eyebrowIcon: SealWarning,
+      eyebrow: 'Membership Check-IN',
       title: 'Check-IN 유의사항',
+      titleIcon: SealWarning,
       bodyNode: (
         <>
           제휴 매장 안에서 QR코드를 스캔 후{' '}
@@ -430,7 +427,7 @@ function WelcomeSlides({ member, onFinish }) {
   ]
   const slide = slides[index]
   const Icon = slide.icon
-  const EyebrowIcon = slide.eyebrowIcon
+  const TitleIcon = slide.titleIcon
   const isLast = index === slides.length - 1
   useEffect(() => {
     setBenefitsAcknowledgementVisible(false)
@@ -500,11 +497,11 @@ function WelcomeSlides({ member, onFinish }) {
               <Icon size={48} weight="fill" />
             </div>
           )}
-          <p className="mb-3 flex items-center gap-1.5 text-xs font-black tracking-[0.22em] text-orange-500">
-            {EyebrowIcon && <EyebrowIcon size={15} weight="fill" />}
+          <p className="mb-3 text-xs font-black tracking-[0.22em] text-orange-500">
             {slide.eyebrow}
           </p>
           <h1 className="text-[34px] font-black leading-tight tracking-normal">
+            {TitleIcon && <TitleIcon size={30} weight="fill" className="mr-2 inline-block align-[-0.1em] text-orange-500" />}
             {slide.title}
           </h1>
           <p className="mt-5 text-base font-medium leading-7 text-gray-500 dark:text-gray-300">
@@ -1094,16 +1091,20 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
 }
 
 function TourBottomTab({ activeIndex, style, lift = 5 }) {
+  const tabs = [QrCode, Calendar, MapPin]
+
   return (
     <div
       aria-hidden="true"
       className="absolute bottom-0 left-0 right-0 z-10 flex h-10 items-center justify-between bg-white px-6 dark:bg-[#121212]"
       style={style}
     >
-      {[0, 1, 2].map((dot) => (
-        <span
-          key={dot}
-          className={'h-2 w-2 ' + (dot === activeIndex ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600')}
+      {tabs.map((TabIcon, index) => (
+        <TabIcon
+          key={index}
+          size={15}
+          weight={index === activeIndex ? 'fill' : 'regular'}
+          className={index === activeIndex ? 'text-orange-500' : 'text-gray-300 dark:text-gray-600'}
           style={{ transform: `translateY(-${lift}px)` }}
         />
       ))}
