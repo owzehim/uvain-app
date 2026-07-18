@@ -897,23 +897,40 @@ function EventsTourDemo({ bottomGap = '32px' }) {
 
 function SpotTourDemo({ bottomGap = '32px' }) {
   const animationDuration = '6s'
+  const categories = ['전체', '맛집', '카페', '마트']
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
       <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-[#eef2ef] dark:border-[#2c2c2e] dark:bg-[#121212]">
-        <div className="absolute left-0 right-0 top-0 z-[5] h-[58px] bg-white dark:bg-[#121212]" />
-        <List size={22} weight="bold" className="absolute left-5 top-6 z-10 text-gray-500 dark:text-gray-400" />
-        <Gear size={24} weight="bold" className="absolute right-5 top-6 z-10 text-gray-500 dark:text-gray-400" />
-
-        <div className="absolute inset-0 opacity-80 dark:opacity-50">
-          <div className="absolute left-[-24px] top-[82px] h-16 w-[250px] rotate-[-18deg] bg-white/70 dark:bg-white/5" />
-          <div className="absolute left-[-38px] top-[198px] h-14 w-[260px] rotate-[24deg] bg-white/80 dark:bg-white/5" />
-          <div className="absolute left-[82px] top-[-18px] h-[390px] w-12 rotate-[8deg] bg-white/65 dark:bg-white/5" />
-          <div className="absolute left-8 top-20 h-24 w-24 rounded-full border border-white/70 dark:border-white/10" />
-          <div className="absolute right-6 top-36 h-20 w-20 rounded-full border border-white/70 dark:border-white/10" />
+        <div className="absolute left-0 right-0 top-0 z-[5] flex h-[54px] items-center gap-1.5 overflow-hidden bg-white px-3 dark:bg-[#121212]">
+          {categories.map((category, index) => (
+            <span
+              key={category}
+              className={
+                'flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[8px] font-bold ' +
+                (index === 0
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-600 dark:bg-[#2c2c2e] dark:text-gray-200')
+              }
+            >
+              <span className={'h-1.5 w-1.5 rounded-full ' + (index === 0 ? 'bg-white' : 'bg-orange-500')} />
+              {category}
+            </span>
+          ))}
         </div>
 
-        <div className="absolute left-[72px] top-[126px]">
+        <div className="absolute inset-x-0 bottom-0 top-[54px] overflow-hidden bg-[#dce7dd] dark:bg-[#16241f]">
+          <div className="absolute -left-8 top-10 h-12 w-[250px] rotate-[-18deg] bg-[#f9fbf8] shadow-[0_0_0_1px_rgba(122,137,126,0.16)] dark:bg-[#3a4d45] dark:shadow-[0_0_0_1px_rgba(181,210,192,0.2)]" />
+          <div className="absolute -left-12 top-[142px] h-10 w-[250px] rotate-[25deg] bg-[#f9fbf8] shadow-[0_0_0_1px_rgba(122,137,126,0.16)] dark:bg-[#3a4d45] dark:shadow-[0_0_0_1px_rgba(181,210,192,0.2)]" />
+          <div className="absolute left-[82px] top-[-18px] h-[340px] w-10 rotate-[8deg] bg-[#f9fbf8] shadow-[0_0_0_1px_rgba(122,137,126,0.16)] dark:bg-[#3a4d45] dark:shadow-[0_0_0_1px_rgba(181,210,192,0.2)]" />
+          <div className="absolute -right-6 top-[88px] h-8 w-36 rotate-[-7deg] rounded-full border-2 border-[#a7c6e8] bg-[#9ed0ef] dark:border-[#356b85] dark:bg-[#24556d]" />
+          <div className="absolute left-4 top-6 h-8 w-10 rounded-md border border-[#c4d5c6] bg-[#c9dcc8] dark:border-[#3f6555] dark:bg-[#28503e]" />
+          <div className="absolute right-5 top-[156px] h-11 w-14 rounded-md border border-[#c4d5c6] bg-[#c9dcc8] dark:border-[#3f6555] dark:bg-[#28503e]" />
+          <div className="absolute left-6 bottom-9 h-10 w-16 rounded-md border border-[#c4d5c6] bg-[#c9dcc8] dark:border-[#3f6555] dark:bg-[#28503e]" />
+          <div className="absolute right-4 bottom-5 text-[7px] font-bold tracking-[0.12em] text-[#76907c] dark:text-[#9fc5ad]">UVA MAP</div>
+        </div>
+
+        <div className="absolute left-[72px] top-[126px] z-[2]">
           <span
             className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500/20"
             style={{ animation: `spotMarkerPulse ${animationDuration} ease-in-out infinite` }}
