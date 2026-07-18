@@ -19,7 +19,7 @@ const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
 const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
 const MEMBER_BOTTOM_TAB_PADDING = 42
-const ALWAYS_SHOW_WELCOME_SLIDES_EMAILS = ['test@uvain.nl']
+const ALWAYS_SHOW_WELCOME_SLIDES_EMAILS = ['test@uvain.nl', 'woojay.lim@gmail.com']
 
 function getStoredMemberTab() {
   if (typeof window === 'undefined') return 'qr'

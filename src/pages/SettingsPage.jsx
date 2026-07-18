@@ -225,6 +225,9 @@ export default function SettingsPage() {
   const hasProfileImage = !!member?.profile_image_url
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
+  const displayName =
+    `${member?.last_name_korean || ''}${member?.first_name_korean || ''}`.trim() ||
+    `${member?.first_name || ''} ${member?.last_name || ''}`.trim()
 
   return (
     <div
@@ -328,7 +331,7 @@ export default function SettingsPage() {
 
             <div className="text-center">
               <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {member?.first_name} {member?.last_name}
+                {displayName}
               </p>
               <p className="text-xs text-gray-400 mt-1 dark:text-gray-500">{member?.email}</p>
               {hasProfileImage && (
