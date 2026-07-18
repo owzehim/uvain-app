@@ -907,7 +907,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
             <span
               key={category}
               className={
-                'flex h-6 w-10 shrink-0 items-center justify-center rounded-full ' +
+                'flex h-6 w-10 shrink-0 items-center justify-start rounded-full pl-2 ' +
                 (index === 0
                   ? 'bg-orange-500'
                   : 'bg-gray-100 dark:bg-[#2c2c2e]')
@@ -925,18 +925,6 @@ function SpotTourDemo({ bottomGap = '32px' }) {
           <div className="absolute left-[70px] top-[-30px] h-[340px] w-10 rotate-[26deg] bg-white dark:bg-[#dbe5e4]" />
           <div className="absolute left-[-20px] top-[167px] h-9 w-[245px] rotate-[4deg] bg-white dark:bg-[#dbe5e4]" />
 
-          <div className="absolute -left-2 top-1 h-12 w-14 rounded-br-[26px] bg-[#a9d98c] dark:bg-[#4f8c5d]" />
-          <div className="absolute right-[-14px] top-10 h-[92px] w-20 rounded-l-[34px] bg-[#a9d98c] dark:bg-[#4f8c5d]" />
-          <div className="absolute -left-2 bottom-5 h-10 w-[74px] rounded-r-md bg-[#a9d98c] dark:bg-[#4f8c5d]" />
-
-          <div className="absolute left-5 top-[49px] h-7 w-10 rotate-[8deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
-          <div className="absolute left-[96px] top-[43px] h-11 w-8 rotate-[-10deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
-          <div className="absolute right-5 top-[123px] h-11 w-7 rotate-[-22deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
-          <div className="absolute left-6 top-[154px] h-12 w-12 rotate-[12deg] rounded-[10px] bg-[#d3d0ca] dark:bg-[#69716f]" />
-          <div className="absolute left-[98px] top-[168px] h-14 w-9 rotate-[-15deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
-          <div className="absolute right-4 bottom-[58px] h-10 w-12 rotate-[20deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
-          <div className="absolute left-10 bottom-3 h-7 w-14 rotate-[-12deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
-          <div className="absolute right-9 bottom-4 h-8 w-8 rotate-[8deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
         </div>
 
         <div className="absolute left-[72px] top-[126px] z-[2]">
@@ -950,7 +938,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
         </div>
 
         <div
-          className="absolute bottom-0 left-0 right-0 z-[3] h-[290px] rounded-t-[20px] bg-white px-5 pt-4 dark:bg-[#1c1c1e]"
+          className="absolute bottom-0 left-0 right-0 z-[3] h-[294px] rounded-t-[20px] bg-white px-5 pt-4 dark:bg-[#1c1c1e]"
           style={{ animation: `spotCardReveal ${animationDuration} ease-in-out infinite` }}
         >
           <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
