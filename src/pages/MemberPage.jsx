@@ -1068,7 +1068,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
       </div>
 
       <div
-        className="absolute bottom-[28px] right-[62px] h-[61px] w-[96px] rounded-[9px] border border-gray-200 bg-white p-2.5 shadow-sm dark:border-gray-700 dark:bg-[#1c1c1e]"
+        className="absolute bottom-[28px] right-[62px] h-[61px] w-[96px] rounded-[9px] border-2 border-orange-500 bg-white p-2.5 shadow-sm dark:bg-[#1c1c1e]"
         style={{ animation: `benefitStudentId ${animationDuration} ease-in-out forwards` }}
       >
         <div className="flex items-center gap-2">
@@ -1078,7 +1078,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
             <div className="mt-1.5 h-1.5 w-7 rounded-full bg-gray-300 dark:bg-gray-600" />
           </div>
         </div>
-        <div className="mt-1.5 h-1.5 w-full rounded-full bg-orange-500" />
+        <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-300 dark:bg-gray-600" />
       </div>
       <div
         className="absolute bottom-[66px] right-[48px] flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-black text-white shadow-sm"
