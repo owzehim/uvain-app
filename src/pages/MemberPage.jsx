@@ -629,6 +629,11 @@ function WelcomeSlides({ member, onFinish }) {
           91.33% { opacity: 1; transform: translateY(180px); }
           100% { opacity: 0; transform: translateY(180px); }
         }
+        @keyframes spotCardShape {
+          0%, 55% { border-radius: 20px 20px 0 0; }
+          69%, 77.33% { border-radius: 0; }
+          91.33%, 100% { border-radius: 20px 20px 0 0; }
+        }
         @keyframes spotHandGesture {
           0%, 10% { opacity: 0; transform: translate(16px, 104px) rotate(-14deg) scale(1); }
           18% { opacity: 1; transform: translate(-10px, 130px) rotate(-14deg) scale(1); }
@@ -937,7 +942,9 @@ function SpotTourDemo({ bottomGap = '32px' }) {
 
         <div
           className="absolute bottom-0 left-0 right-0 z-[3] h-[294px] rounded-t-[20px] bg-white px-5 pt-4 dark:bg-[#1c1c1e]"
-          style={{ animation: `spotCardReveal ${animationDuration} ease-in-out infinite` }}
+          style={{
+            animation: `spotCardReveal ${animationDuration} ease-in-out infinite, spotCardShape ${animationDuration} ease-in-out infinite`,
+          }}
         >
           <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
           <div className="h-4 w-36 rounded-full bg-gray-950 dark:bg-white" />
