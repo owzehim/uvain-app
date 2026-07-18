@@ -1052,12 +1052,12 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
               <div className="mx-auto mt-3 h-2 w-24 rounded-full bg-gray-400 dark:bg-gray-600" />
               <div className="mx-auto mt-5 h-2.5 w-32 rounded-full bg-orange-500" />
               <div className="mt-5 rounded-[12px] border-2 border-orange-500 px-3 py-3">
-                {[38, 48, 60, 44].map((width, index) => (
+                {[52, 62, 48, 58].map((width, index) => (
                   <div
                     key={index}
                     className={'flex items-center justify-between ' + (index > 0 ? 'mt-3 border-t border-gray-100 pt-3 dark:border-gray-800' : '')}
                   >
-                    <div className="h-2 w-14 shrink-0 rounded-full bg-gray-300 dark:bg-gray-700" />
+                    <div className="h-2 w-10 shrink-0 rounded-full bg-gray-300 dark:bg-gray-700" />
                     <div className="h-2 shrink-0 rounded-full bg-gray-950 dark:bg-white" style={{ width }} />
                   </div>
                 ))}
