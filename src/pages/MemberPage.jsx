@@ -897,7 +897,7 @@ function EventsTourDemo({ bottomGap = '32px' }) {
 
 function SpotTourDemo({ bottomGap = '32px' }) {
   const animationDuration = '6s'
-  const categories = ['전체', '맛집', '카페', '마트']
+  const categories = [0, 1, 2, 3]
 
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
@@ -907,27 +907,36 @@ function SpotTourDemo({ bottomGap = '32px' }) {
             <span
               key={category}
               className={
-                'flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[8px] font-bold ' +
+                'flex h-6 w-10 shrink-0 items-center justify-center rounded-full ' +
                 (index === 0
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-600 dark:bg-[#2c2c2e] dark:text-gray-200')
+                  ? 'bg-orange-500'
+                  : 'bg-gray-100 dark:bg-[#2c2c2e]')
               }
             >
-              <span className={'h-1.5 w-1.5 rounded-full ' + (index === 0 ? 'bg-white' : 'bg-orange-500')} />
-              {category}
+              <span className={'h-2 w-2 rounded-full ' + (index === 0 ? 'bg-white' : 'bg-orange-500')} />
             </span>
           ))}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 top-[54px] overflow-hidden bg-[#dce7dd] dark:bg-[#16241f]">
-          <div className="absolute -left-8 top-10 h-12 w-[250px] rotate-[-18deg] bg-[#f9fbf8] shadow-[0_0_0_1px_rgba(122,137,126,0.16)] dark:bg-[#3a4d45] dark:shadow-[0_0_0_1px_rgba(181,210,192,0.2)]" />
-          <div className="absolute -left-12 top-[142px] h-10 w-[250px] rotate-[25deg] bg-[#f9fbf8] shadow-[0_0_0_1px_rgba(122,137,126,0.16)] dark:bg-[#3a4d45] dark:shadow-[0_0_0_1px_rgba(181,210,192,0.2)]" />
-          <div className="absolute left-[82px] top-[-18px] h-[340px] w-10 rotate-[8deg] bg-[#f9fbf8] shadow-[0_0_0_1px_rgba(122,137,126,0.16)] dark:bg-[#3a4d45] dark:shadow-[0_0_0_1px_rgba(181,210,192,0.2)]" />
-          <div className="absolute -right-6 top-[88px] h-8 w-36 rotate-[-7deg] rounded-full border-2 border-[#a7c6e8] bg-[#9ed0ef] dark:border-[#356b85] dark:bg-[#24556d]" />
-          <div className="absolute left-4 top-6 h-8 w-10 rounded-md border border-[#c4d5c6] bg-[#c9dcc8] dark:border-[#3f6555] dark:bg-[#28503e]" />
-          <div className="absolute right-5 top-[156px] h-11 w-14 rounded-md border border-[#c4d5c6] bg-[#c9dcc8] dark:border-[#3f6555] dark:bg-[#28503e]" />
-          <div className="absolute left-6 bottom-9 h-10 w-16 rounded-md border border-[#c4d5c6] bg-[#c9dcc8] dark:border-[#3f6555] dark:bg-[#28503e]" />
-          <div className="absolute right-4 bottom-5 text-[7px] font-bold tracking-[0.12em] text-[#76907c] dark:text-[#9fc5ad]">UVA MAP</div>
+        <div className="absolute inset-x-0 bottom-0 top-[54px] overflow-hidden bg-[#ebe9e2] dark:bg-[#2b3131]">
+          <div className="absolute -left-14 top-[-34px] h-[360px] w-10 rotate-[18deg] bg-[#9bd4f4] dark:bg-[#347b9f]" />
+          <div className="absolute -left-12 top-[98px] h-14 w-[250px] rotate-[18deg] bg-white dark:bg-[#dbe5e4]" />
+          <div className="absolute -left-12 top-[218px] h-12 w-[245px] rotate-[-24deg] bg-white dark:bg-[#dbe5e4]" />
+          <div className="absolute left-[70px] top-[-30px] h-[340px] w-10 rotate-[26deg] bg-white dark:bg-[#dbe5e4]" />
+          <div className="absolute left-[-20px] top-[167px] h-9 w-[245px] rotate-[4deg] bg-white dark:bg-[#dbe5e4]" />
+
+          <div className="absolute -left-2 top-1 h-12 w-14 rounded-br-[26px] bg-[#a9d98c] dark:bg-[#4f8c5d]" />
+          <div className="absolute right-[-14px] top-10 h-[92px] w-20 rounded-l-[34px] bg-[#a9d98c] dark:bg-[#4f8c5d]" />
+          <div className="absolute -left-2 bottom-5 h-10 w-[74px] rounded-r-md bg-[#a9d98c] dark:bg-[#4f8c5d]" />
+
+          <div className="absolute left-5 top-[49px] h-7 w-10 rotate-[8deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
+          <div className="absolute left-[96px] top-[43px] h-11 w-8 rotate-[-10deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
+          <div className="absolute right-5 top-[123px] h-11 w-7 rotate-[-22deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
+          <div className="absolute left-6 top-[154px] h-12 w-12 rotate-[12deg] rounded-[10px] bg-[#d3d0ca] dark:bg-[#69716f]" />
+          <div className="absolute left-[98px] top-[168px] h-14 w-9 rotate-[-15deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
+          <div className="absolute right-4 bottom-[58px] h-10 w-12 rotate-[20deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
+          <div className="absolute left-10 bottom-3 h-7 w-14 rotate-[-12deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
+          <div className="absolute right-9 bottom-4 h-8 w-8 rotate-[8deg] rounded-sm bg-[#d3d0ca] dark:bg-[#69716f]" />
         </div>
 
         <div className="absolute left-[72px] top-[126px] z-[2]">
@@ -941,7 +950,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
         </div>
 
         <div
-          className="absolute bottom-0 left-0 right-0 h-[290px] rounded-t-[20px] bg-white px-5 pt-4 dark:bg-[#1c1c1e]"
+          className="absolute bottom-0 left-0 right-0 z-[3] h-[290px] rounded-t-[20px] bg-white px-5 pt-4 dark:bg-[#1c1c1e]"
           style={{ animation: `spotCardReveal ${animationDuration} ease-in-out infinite` }}
         >
           <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
@@ -951,7 +960,6 @@ function SpotTourDemo({ bottomGap = '32px' }) {
               <span key={ratingDot} className="h-2.5 w-2.5 rounded-full bg-orange-500" />
             ))}
             <span className="ml-1 text-[12px] font-black leading-none text-orange-500">5.0</span>
-            <span className="text-[12px] font-black leading-none text-gray-400">(1)</span>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div className="aspect-square rounded-[10px] border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#1c1c1e]">
