@@ -659,6 +659,10 @@ function WelcomeSlides({ member, onFinish }) {
           0%, 48% { opacity: 0; transform: translateY(10px) scale(0.96); }
           62%, 100% { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes benefitBottomTab {
+          0%, 42% { opacity: 1; }
+          48%, 100% { opacity: 0; }
+        }
         @keyframes benefitStudentId {
           0%, 72% { opacity: 0; transform: translate(20px, 14px) rotate(4deg) scale(0.92); }
           82%, 100% { opacity: 1; transform: translate(0, 0) rotate(-2deg) scale(1); }
@@ -801,6 +805,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
           </div>
         </div>
       </div>
+        <TourBottomTab />
       </div>
 
       <span
@@ -889,6 +894,7 @@ function EventsTourDemo({ bottomGap = '32px' }) {
           <div className="mt-2 h-2 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
           <div className="mt-5 h-9 w-28 rounded-full bg-gray-950 dark:bg-white" />
         </div>
+        <TourBottomTab />
       </div>
       <HandPointing
         size={64}
@@ -968,6 +974,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
             <div className="mx-auto h-2.5 w-20 rounded-full bg-white" />
           </div>
         </div>
+        <TourBottomTab />
       </div>
       <HandPointing
         size={64}
@@ -1054,6 +1061,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
               </div>
           </div>
         </div>
+        <TourBottomTab style={{ animation: `benefitBottomTab ${animationDuration} ease-in-out forwards` }} />
       </div>
 
       <div
@@ -1075,6 +1083,20 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
       >
         2
       </div>
+    </div>
+  )
+}
+
+function TourBottomTab({ style }) {
+  return (
+    <div
+      aria-hidden="true"
+      className="absolute bottom-0 left-0 right-0 z-10 flex h-8 items-center justify-around border-t border-gray-100 bg-white px-8 dark:border-[#2c2c2e] dark:bg-[#121212]"
+      style={style}
+    >
+      {[0, 1, 2].map((dot) => (
+        <span key={dot} className="h-2 w-2 rounded-full bg-orange-500" />
+      ))}
     </div>
   )
 }
