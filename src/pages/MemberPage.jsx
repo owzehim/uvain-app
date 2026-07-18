@@ -1061,7 +1061,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
               </div>
           </div>
         </div>
-        <TourBottomTab activeIndex={0} style={{ animation: `benefitBottomTab ${animationDuration} ease-in-out forwards` }} />
+        <TourBottomTab activeIndex={0} lift={7} style={{ animation: `benefitBottomTab ${animationDuration} ease-in-out forwards` }} />
       </div>
 
       <div
@@ -1087,7 +1087,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
   )
 }
 
-function TourBottomTab({ activeIndex, style }) {
+function TourBottomTab({ activeIndex, style, lift = 5 }) {
   return (
     <div
       aria-hidden="true"
@@ -1095,7 +1095,11 @@ function TourBottomTab({ activeIndex, style }) {
       style={style}
     >
       {[0, 1, 2].map((dot) => (
-        <span key={dot} className={'h-2 w-2 -translate-y-[5px] ' + (dot === activeIndex ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600')} />
+        <span
+          key={dot}
+          className={'h-2 w-2 ' + (dot === activeIndex ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600')}
+          style={{ transform: `translateY(-${lift}px)` }}
+        />
       ))}
     </div>
   )
