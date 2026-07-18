@@ -1072,7 +1072,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
         style={{ animation: `benefitStudentId ${animationDuration} ease-in-out forwards` }}
       >
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200 dark:bg-gray-700" />
           <div className="flex-1">
             <div className="h-1.5 w-10 rounded-full bg-gray-950 dark:bg-white" />
             <div className="mt-1.5 h-1.5 w-7 rounded-full bg-gray-300 dark:bg-gray-600" />
