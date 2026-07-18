@@ -907,7 +907,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
             <span
               key={category}
               className={
-                'flex h-6 w-10 shrink-0 items-center justify-start rounded-full pl-2 ' +
+                'flex h-6 w-10 shrink-0 self-center items-center justify-start rounded-full pl-2 ' +
                 (index === 0
                   ? 'bg-orange-500'
                   : 'bg-gray-100 dark:bg-[#2c2c2e]')
@@ -921,9 +921,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
         <div className="absolute inset-x-0 bottom-0 top-[54px] overflow-hidden bg-[#ebe9e2] dark:bg-[#2b3131]">
           <div className="absolute -left-14 top-[-34px] h-[360px] w-10 rotate-[18deg] bg-[#9bd4f4] dark:bg-[#347b9f]" />
           <div className="absolute -left-12 top-[98px] h-14 w-[250px] rotate-[18deg] bg-white dark:bg-[#dbe5e4]" />
-          <div className="absolute -left-12 top-[218px] h-12 w-[245px] rotate-[-24deg] bg-white dark:bg-[#dbe5e4]" />
           <div className="absolute left-[70px] top-[-30px] h-[340px] w-10 rotate-[26deg] bg-white dark:bg-[#dbe5e4]" />
-          <div className="absolute left-[-20px] top-[167px] h-9 w-[245px] rotate-[4deg] bg-white dark:bg-[#dbe5e4]" />
 
         </div>
 
