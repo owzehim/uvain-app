@@ -5,6 +5,7 @@ import { useActivityStats } from '../hooks/useActivityStats'
 import { useRecentVisits } from '../hooks/useRecentVisits'
 
 const W = 'calc(100vw - 56px)'
+const CARD_CONTENT_HEIGHT = '63px'
 
 function useDarkMode() {
   const [darkMode, setDarkMode] = useState(() =>
@@ -92,7 +93,7 @@ export default function ActivityStatsCard({ userId }) {
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: CARD_CONTENT_HEIGHT }}>
             {[70, 80, 60].map((w, i) => (
               <div
                 key={i}
@@ -107,7 +108,7 @@ export default function ActivityStatsCard({ userId }) {
             ))}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: CARD_CONTENT_HEIGHT }}>
             <StatRow
               icon={Money}
               label="받은 할인"
@@ -229,7 +230,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: CARD_CONTENT_HEIGHT }}>
           {[100, 90, 80].map((w, i) => (
             <div
               key={i}
@@ -259,7 +260,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
-            minHeight: '63px',
+            height: CARD_CONTENT_HEIGHT,
           }}
         >
           {visitSlots.map((v, idx) => (
