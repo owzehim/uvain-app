@@ -71,19 +71,21 @@ export default function ChangePasswordPage() {
             <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{copy.description}</p>
           </div>
 
-          <PasswordField label={copy.newPassword} value={newPassword} onChange={setNewPassword} />
-          <PasswordField label={copy.confirmPassword} value={confirmPassword} onChange={setConfirmPassword} />
+          <div className="relative -translate-y-9 space-y-4">
+            <PasswordField label={copy.newPassword} value={newPassword} onChange={setNewPassword} />
+            <PasswordField label={copy.confirmPassword} value={confirmPassword} onChange={setConfirmPassword} />
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          {success && <p className="text-sm leading-relaxed text-green-600">{success}</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            {success && <p className="text-sm leading-relaxed text-green-600">{success}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-5 w-full rounded-full bg-orange-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
-          >
-            {loading ? copy.changing : copy.submit}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-5 w-full rounded-full bg-orange-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+            >
+              {loading ? copy.changing : copy.submit}
+            </button>
+          </div>
         </form>
       </div>
     </main>
