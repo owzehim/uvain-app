@@ -5,7 +5,7 @@ import { useActivityStats } from '../hooks/useActivityStats'
 import { useRecentVisits } from '../hooks/useRecentVisits'
 
 const W = 'calc(100vw - 56px)'
-const CARD_CONTENT_HEIGHT = '63px'
+const ACTIVITY_CARD_MIN_HEIGHT = '124px'
 
 function useDarkMode() {
   const [darkMode, setDarkMode] = useState(() =>
@@ -65,6 +65,7 @@ export default function ActivityStatsCard({ userId }) {
           borderRadius: '16px',
           padding: '16px 20px 16px',
           boxSizing: 'border-box',
+          minHeight: ACTIVITY_CARD_MIN_HEIGHT,
         }}
       >
         {/* Header */}
@@ -93,7 +94,7 @@ export default function ActivityStatsCard({ userId }) {
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: CARD_CONTENT_HEIGHT }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
             {[70, 80, 60].map((w, i) => (
               <div
                 key={i}
@@ -108,7 +109,7 @@ export default function ActivityStatsCard({ userId }) {
             ))}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: CARD_CONTENT_HEIGHT }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
             <StatRow
               icon={Money}
               label="받은 할인"
@@ -202,6 +203,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
         borderRadius: '16px',
         padding: '16px 20px',
         boxSizing: 'border-box',
+        minHeight: ACTIVITY_CARD_MIN_HEIGHT,
       }}
     >
       {/* Header */}
@@ -230,7 +232,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: CARD_CONTENT_HEIGHT }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
           {[100, 90, 80].map((w, i) => (
             <div
               key={i}
@@ -260,7 +262,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
-            height: CARD_CONTENT_HEIGHT,
+            minHeight: '63px',
           }}
         >
           {visitSlots.map((v, idx) => (
