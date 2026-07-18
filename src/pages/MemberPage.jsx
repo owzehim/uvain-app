@@ -1091,11 +1091,11 @@ function TourBottomTab({ activeIndex, style }) {
   return (
     <div
       aria-hidden="true"
-      className="absolute bottom-0 left-0 right-0 z-10 flex h-8 items-center justify-between bg-white px-4 dark:bg-[#121212]"
+      className="absolute bottom-0 left-0 right-0 z-10 flex h-10 items-center justify-between bg-white px-6 dark:bg-[#121212]"
       style={style}
     >
       {[0, 1, 2].map((dot) => (
-        <span key={dot} className={'h-2 w-2 -translate-y-[5px] rounded-full ' + (dot === activeIndex ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600')} />
+        <span key={dot} className={'h-2 w-2 -translate-y-[5px] ' + (dot === activeIndex ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600')} />
       ))}
     </div>
   )
