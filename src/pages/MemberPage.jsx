@@ -19,7 +19,6 @@ const MEMBER_ACTIVE_TAB_KEY = 'uvain_member_active_tab'
 const MEMBER_TABS = ['qr', 'events', 'map']
 const MEMBER_EVENT_LIST_OPEN_KEY = 'uvain_member_event_list_open'
 const MEMBER_BOTTOM_TAB_PADDING = 42
-const ALWAYS_SHOW_WELCOME_SLIDES_EMAILS = ['test@uvain.nl']
 
 function getStoredMemberTab() {
   if (typeof window === 'undefined') return 'qr'
@@ -99,12 +98,9 @@ export default function MemberPage() {
 
       setMember(memberData || null)
       setIsAdmin(isAdminUser)
-      const shouldAlwaysShowWelcomeSlides = ALWAYS_SHOW_WELCOME_SLIDES_EMAILS.includes(
-        String(user.email || '').toLowerCase(),
-      )
       const shouldShowWelcomeSlides =
         Boolean(memberData) &&
-        (reopenWelcomeSlides || shouldAlwaysShowWelcomeSlides || !memberData.tutorial_completed_at)
+        (reopenWelcomeSlides || !memberData.tutorial_completed_at)
 
       setWelcomeSlidesOpen(shouldShowWelcomeSlides)
       if (shouldShowWelcomeSlides) setLoading(false)
@@ -1444,33 +1440,50 @@ function MembershipCard({
           height: cardH,
           margin: '0 auto',
           flexShrink: 0,
-          borderRadius: '16px',
-          border: `1px solid ${cardBorder}`,
-          background: cardBg,
-          boxShadow: cardShadow,
           boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: darkMode ? '#F7F8F9' : '#4b5563',
-          textAlign: 'center',
-          padding: '16px',
-          fontFamily: 'var(--font-app)',
         }}
       >
-        <span style={{ fontSize: fs.valid, fontWeight: 500 }}>
-          활성화된 멤버십이 없습니다
-        </span>
-        <span
+        <div
           style={{
-            marginTop: '10px',
-            fontSize: `calc(${W} * 0.028)`,
-            color: darkMode ? '#6F6F76' : '#9ca3af',
+            width: '100%',
+            height: '100%',
+            padding: '12px',
+            boxSizing: 'border-box',
           }}
         >
-          멤버십 갱신은 임원에게 문의해주세요
-        </span>
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '16px',
+              border: `2px dotted ${cardBorder}`,
+              background: cardBg,
+              boxShadow: 'none',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: darkMode ? '#F7F8F9' : '#4b5563',
+              textAlign: 'center',
+              padding: '16px',
+              fontFamily: 'var(--font-app)',
+            }}
+          >
+            <span style={{ fontSize: fs.valid, fontWeight: 500 }}>
+              활성화된 멤버십이 없습니다
+            </span>
+            <span
+              style={{
+                marginTop: '10px',
+                fontSize: `calc(${W} * 0.028)`,
+                color: darkMode ? '#6F6F76' : '#9ca3af',
+              }}
+            >
+              멤버십 갱신은 임원에게 문의해주세요
+            </span>
+          </div>
+        </div>
       </div>
     )
   }
