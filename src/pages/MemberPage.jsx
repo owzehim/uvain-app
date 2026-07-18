@@ -805,7 +805,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
           </div>
         </div>
       </div>
-        <TourBottomTab />
+        <TourBottomTab activeIndex={0} />
       </div>
 
       <span
@@ -894,7 +894,7 @@ function EventsTourDemo({ bottomGap = '32px' }) {
           <div className="mt-2 h-2 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
           <div className="mt-5 h-9 w-28 rounded-full bg-gray-950 dark:bg-white" />
         </div>
-        <TourBottomTab />
+        <TourBottomTab activeIndex={1} />
       </div>
       <HandPointing
         size={64}
@@ -974,7 +974,7 @@ function SpotTourDemo({ bottomGap = '32px' }) {
             <div className="mx-auto h-2.5 w-20 rounded-full bg-white" />
           </div>
         </div>
-        <TourBottomTab />
+        <TourBottomTab activeIndex={2} />
       </div>
       <HandPointing
         size={64}
@@ -1061,7 +1061,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
               </div>
           </div>
         </div>
-        <TourBottomTab style={{ animation: `benefitBottomTab ${animationDuration} ease-in-out forwards` }} />
+        <TourBottomTab activeIndex={0} style={{ animation: `benefitBottomTab ${animationDuration} ease-in-out forwards` }} />
       </div>
 
       <div
@@ -1087,15 +1087,15 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
   )
 }
 
-function TourBottomTab({ style }) {
+function TourBottomTab({ activeIndex, style }) {
   return (
     <div
       aria-hidden="true"
-      className="absolute bottom-0 left-0 right-0 z-10 flex h-8 items-center justify-around border-t border-gray-100 bg-white px-8 dark:border-[#2c2c2e] dark:bg-[#121212]"
+      className="absolute bottom-0 left-0 right-0 z-10 flex h-8 items-center justify-between bg-white px-4 dark:bg-[#121212]"
       style={style}
     >
       {[0, 1, 2].map((dot) => (
-        <span key={dot} className="h-2 w-2 rounded-full bg-orange-500" />
+        <span key={dot} className={'h-2 w-2 -translate-y-[5px] rounded-full ' + (dot === activeIndex ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600')} />
       ))}
     </div>
   )
