@@ -367,6 +367,14 @@ export default function SettingsPage() {
 
             <button
               type="button"
+              onClick={() => navigate('/member', { state: { reopenWelcomeSlides: true } })}
+              className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-center text-sm font-semibold text-gray-700 shadow-sm dark:border-[#2c2c2e] dark:bg-[#111111] dark:text-gray-200"
+            >
+              앱 사용법 다시 보기
+            </button>
+
+            <button
+              type="button"
               onClick={handlePasswordPanelToggle}
               className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 text-center shadow-sm dark:border-[#2c2c2e] dark:bg-[#111111] dark:text-gray-200"
             >
