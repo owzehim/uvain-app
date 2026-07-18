@@ -686,7 +686,7 @@ function MembershipCardTourDemo({ bottomGap = '32px' }) {
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
       <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
-        <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
+        <Gear size={20} weight="bold" className="absolute right-5 top-[17px] text-gray-500 dark:text-gray-400" />
         <div
           className="absolute left-1/2 h-[300px] w-[190px]"
           style={{
@@ -825,8 +825,8 @@ function EventsTourDemo({ bottomGap = '32px' }) {
   return (
     <div className="relative h-[360px] w-full max-w-sm" style={{ marginBottom: bottomGap }}>
       <div className="absolute left-1/2 top-0 h-[348px] w-[190px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-gray-200 bg-white dark:border-[#2c2c2e] dark:bg-[#121212]">
-        <List size={22} weight="bold" className="absolute left-5 top-6 text-gray-500 dark:text-gray-400" />
-        <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
+        <List size={20} weight="bold" className="absolute left-5 top-[17px] text-gray-500 dark:text-gray-400" />
+        <Gear size={20} weight="bold" className="absolute right-5 top-[17px] text-gray-500 dark:text-gray-400" />
 
         <div
           className="absolute left-5 right-5 top-16"
@@ -992,7 +992,7 @@ function BenefitsTourDemo({ bottomGap = '32px' }) {
           className="absolute inset-0 bg-white px-5 py-8 dark:bg-[#121212]"
           style={{ animation: `benefitScannerFade ${animationDuration} ease-in-out forwards` }}
         >
-          <Gear size={24} weight="bold" className="absolute right-5 top-6 text-gray-500 dark:text-gray-400" />
+          <Gear size={20} weight="bold" className="absolute right-5 top-[17px] text-gray-500 dark:text-gray-400" />
           <div className="absolute left-1/2 top-[58px] h-[232px] w-[148px] -translate-x-1/2 rounded-[10px] border border-[#d6d3c0] bg-[#F6F4F1] dark:border-[#2c2c2e] dark:bg-[#1c1c1e]">
             <div
               className="absolute left-1/2 -translate-x-1/2"
