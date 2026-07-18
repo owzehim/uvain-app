@@ -140,7 +140,7 @@ export default function LoginPage() {
           )}
 
           {step === 'forgot' && (
-            <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
+            <form onSubmit={handlePasswordResetSubmit} className="relative -translate-y-[56px] space-y-4">
               <div className="mb-8 min-h-[176px] pt-[54px] text-left">
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">비밀번호 재설정</h2>
                 <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-400">

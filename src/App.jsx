@@ -11,6 +11,7 @@ import InstallBanner from './components/InstallBanner'
 import RegistrationPage from './pages/RegistrationPage'
 import EmailConfirmedPage from './pages/EmailConfirmedPage'
 import SettingsPage from './pages/SettingsPage'
+import ChangePasswordPage from './pages/ChangePasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
 import { useTheme } from './hooks/useTheme'
@@ -163,9 +164,13 @@ function App() {
           element={session && !isOtpPending ? <MemberPage /> : <Navigate to={isOtpPending ? '/login' : '/public'} />}
         />
         <Route
-  path="/settings"
-  element={session && !isOtpPending ? <SettingsPage /> : <Navigate to="/login" />}
-/>
+          path="/settings"
+          element={session && !isOtpPending ? <SettingsPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/settings/password"
+          element={session && !isOtpPending ? <ChangePasswordPage /> : <Navigate to="/login" />}
+        />
 
         <Route
           path="/admin"

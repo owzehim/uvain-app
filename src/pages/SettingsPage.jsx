@@ -225,8 +225,10 @@ export default function SettingsPage() {
   const hasProfileImage = !!member?.profile_image_url
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
+  const koreanLastName = member?.last_name_korean || member?.last_name_ko || ''
+  const koreanFirstName = member?.first_name_korean || member?.first_name_ko || ''
   const displayName =
-    `${member?.last_name_korean || ''}${member?.first_name_korean || ''}`.trim() ||
+    `${koreanLastName}${koreanFirstName}`.trim() ||
     `${member?.first_name || ''} ${member?.last_name || ''}`.trim()
 
   return (
@@ -375,7 +377,7 @@ export default function SettingsPage() {
 
             <button
               type="button"
-              onClick={handlePasswordPanelToggle}
+              onClick={() => navigate('/settings/password')}
               className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 text-center shadow-sm dark:border-[#2c2c2e] dark:bg-[#111111] dark:text-gray-200"
             >
               비밀번호 바꾸기
