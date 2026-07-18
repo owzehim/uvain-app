@@ -92,12 +92,13 @@ export default function ActivityStatsCard({ userId }) {
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
             {[70, 80, 60].map((w, i) => (
               <div
                 key={i}
                 style={{
-                  height: '12px',
+                  // Match the rendered StatRow line height so the card does not resize after loading.
+                  height: '15px',
                   width: `${w}%`,
                   background: theme.skeleton,
                   borderRadius: '6px',
@@ -106,7 +107,7 @@ export default function ActivityStatsCard({ userId }) {
             ))}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
             <StatRow
               icon={Money}
               label="받은 할인"
@@ -228,12 +229,13 @@ function RecentVisitsCard({ visits, loading, theme }) {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
           {[100, 90, 80].map((w, i) => (
             <div
               key={i}
               style={{
-                height: '12px',
+                // Match the rendered visit-row line height so the card does not resize after loading.
+                height: '15px',
                 width: `${w}%`,
                 background: theme.skeleton,
                 borderRadius: '6px',
@@ -257,6 +259,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
+            minHeight: '63px',
           }}
         >
           {visitSlots.map((v, idx) => (

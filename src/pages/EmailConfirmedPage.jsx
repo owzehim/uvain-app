@@ -1,16 +1,18 @@
-// src/pages/EmailConfirmedPage.jsx
-//
-// Landing page for Supabase email confirmation links.
-
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { CheckCircle, XCircle, SpinnerGap } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 
+const copy = {
+  verifyingTitle: '\uC774\uBA54\uC77C \uC778\uC99D \uC911',
+  verifyingMessage: '\uC7A0\uC2DC\uB9CC \uAE30\uB2E4\uB824\uC8FC\uC138\uC694.',
+  successTitle: '\uC774\uBA54\uC77C \uC778\uC99D\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4.',
+  successMessage: 'UvA-IN \uC571\uC73C\uB85C \uB3CC\uC544\uAC00 \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694.',
+  errorTitle: '\uC774\uBA54\uC77C \uC778\uC99D\uC774 \uC2E4\uD328\uD558\uC600\uC2B5\uB2C8\uB2E4.',
+  errorMessage: '\uC778\uC99D \uB9C1\uD06C\uAC00 \uB9CC\uB8CC\uB418\uC5C8\uAC70\uB098 \uC774\uBBF8 \uC0AC\uC6A9\uB418\uC5C8\uC2B5\uB2C8\uB2E4.\n\uC0C8 \uC778\uC99D \uB9C1\uD06C\uB97C \uC694\uCCAD\uD55C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.',
+}
+
 export default function EmailConfirmedPage() {
-  const navigate = useNavigate()
   const [status, setStatus] = useState('verifying')
-  const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -19,109 +21,57 @@ export default function EmailConfirmedPage() {
       try {
         const url = new URL(window.location.href)
         const code = url.searchParams.get('code')
-
-        let session = null
-        let error = null
-
-        if (code) {
-          const result = await supabase.auth.exchangeCodeForSession(code)
-          session = result.data?.session
-          error = result.error
-        } else {
-          const result = await supabase.auth.getSession()
-          session = result.data?.session
-          error = result.error
-        }
+        const result = code
+          ? await supabase.auth.exchangeCodeForSession(code)
+          : await supabase.auth.getSession()
 
         if (cancelled) return
 
-        if (error) {
-          setErrorMsg(error.message)
+        if (result.error || !result.data?.session) {
           setStatus('error')
           return
         }
 
-        if (session) {
-          const verifiedEmail = session.user?.email?.trim().toLowerCase()
-          if (verifiedEmail && typeof window !== 'undefined') {
-            window.localStorage.setItem('uvain_skip_otp_once_email', verifiedEmail)
-          }
-          await supabase.auth.signOut()
-          if (!cancelled) setStatus('success')
-          return
+        const verifiedEmail = result.data.session.user?.email?.trim().toLowerCase()
+        if (verifiedEmail) {
+          window.localStorage.setItem('uvain_skip_otp_once_email', verifiedEmail)
         }
-
-        setErrorMsg('This link has already been used or has expired.')
-        setStatus('error')
-      } catch (err) {
-        if (!cancelled) {
-          setErrorMsg(err.message || 'Something went wrong.')
-          setStatus('error')
-        }
+        await supabase.auth.signOut()
+        if (!cancelled) setStatus('success')
+      } catch {
+        if (!cancelled) setStatus('error')
       }
     }
 
     verifyEmail()
-
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [])
 
-  if (status === 'success') {
-    return (
-      <div style={styles.page}>
-        <div style={styles.panel}>
-          <CheckCircle size={64} weight="fill" color="#f97316" />
-          <h1 style={styles.title}>이메일 인증이 완료되었습니다</h1>
-          <p style={styles.message}>
-            이제 UvA-IN 앱으로 돌아가 로그인해 주세요.
-          </p>
-        </div>
-      </div>
-    )
-  }
+  const isVerifying = status === 'verifying'
+  const isSuccess = status === 'success'
+  const title = isVerifying
+    ? copy.verifyingTitle
+    : isSuccess
+      ? copy.successTitle
+      : copy.errorTitle
+  const message = isVerifying
+    ? copy.verifyingMessage
+    : isSuccess
+      ? copy.successMessage
+      : copy.errorMessage
 
   return (
     <div style={styles.page}>
       <div style={styles.panel}>
-        {status === 'verifying' && (
-          <>
-            <SpinnerGap size={54} weight="bold" color="#f97316" style={styles.spinnerIcon} />
-            <h1 style={styles.title}>이메일 확인 중</h1>
-            <p style={styles.message}>잠시만 기다려주세요.</p>
-          </>
+        {isVerifying ? (
+          <SpinnerGap size={54} weight="bold" color="#f97316" style={styles.spinnerIcon} />
+        ) : isSuccess ? (
+          <CheckCircle size={64} weight="fill" color="#f97316" />
+        ) : (
+          <XCircle size={64} weight="fill" color="#ef4444" />
         )}
-
-        {status === 'success' && (
-          <>
-            <CheckCircle size={64} weight="fill" color="#f97316" />
-            <h1 style={styles.title}>이메일 확인 완료</h1>
-            <p style={styles.message}>
-              이메일 주소가 확인되었습니다.<br />
-              이제 UvA-IN 앱으로 돌아가 로그인해주세요.
-            </p>
-            <button type="button" onClick={() => navigate('/login')} style={styles.primaryButton}>
-              로그인으로 이동
-            </button>
-          </>
-        )}
-
-        {status === 'error' && (
-          <>
-            <XCircle size={64} weight="fill" color="#ef4444" />
-            <h1 style={styles.title}>이메일 인증이 실패하였습니다</h1>
-            <p style={styles.message}>
-              {errorMsg || '확인 링크를 처리할 수 없습니다.'}
-            </p>
-            <p style={styles.note}>
-              링크가 만료되었거나 이미 사용되었을 수 있습니다. 앱에서 새 확인 이메일을 요청해주세요.
-            </p>
-            <button type="button" onClick={() => navigate('/login')} style={styles.primaryButton}>
-              로그인으로 이동
-            </button>
-          </>
-        )}
+        <h1 style={styles.title}>{title}</h1>
+        <p style={styles.message}>{message}</p>
       </div>
     </div>
   )
@@ -159,28 +109,7 @@ const styles = {
     fontSize: '14px',
     lineHeight: 1.65,
     color: '#6b7280',
-  },
-  note: {
-    margin: '2px 0 4px',
-    padding: '12px 14px',
-    borderRadius: '8px',
-    backgroundColor: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    fontSize: '13px',
-    lineHeight: 1.55,
-    color: '#6b7280',
-  },
-  primaryButton: {
-    width: '100%',
-    marginTop: '8px',
-    border: 'none',
-    borderRadius: '9999px',
-    padding: '13px 16px',
-    background: '#f97316',
-    color: '#ffffff',
-    fontSize: '14px',
-    fontWeight: 700,
-    cursor: 'pointer',
+    whiteSpace: 'pre-line',
   },
   spinnerIcon: {
     animation: 'spin 0.8s linear infinite',

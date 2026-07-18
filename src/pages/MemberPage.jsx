@@ -122,12 +122,17 @@ export default function MemberPage() {
       }
 
       const loadedRestaurants = restaurantResult.data || []
-      await primeStoreReviewSummaries(
-        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
-      )
       setEvents(eventResult.data || [])
       setRestaurants(loadedRestaurants)
       if (!shouldShowWelcomeSlides) setLoading(false)
+
+      // Review summaries are an enhancement for the spot detail view, not a prerequisite
+      // for entering the app. Warm their cache after the main screen is already visible.
+      void primeStoreReviewSummaries(
+        loadedRestaurants.map((restaurant) => restaurant.partnership_id),
+      ).catch((error) => {
+        console.warn('Failed to pre-load store review summaries:', error)
+      })
     }
 
     fetchData()
@@ -1166,7 +1171,8 @@ function MembershipCard({
   const pastelBg = getPastelColor(avatarSeed)
   const avatarSize = `calc(${W} * 0.21)`
   const hasProfileImage = !!member?.profile_image_url
-  const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
+  // Keep the membership-card guide identical to QRScanner's real 220px scan box.
+  const qrOutlineSize = '220px'
   const BRACKET = 28
   const BRACKET_STROKE = 3
   const cardBg = darkMode ? '#1C1C1E' : '#F6F4F1'
@@ -1439,8 +1445,9 @@ function MembershipCard({
           margin: '0 auto',
           flexShrink: 0,
           borderRadius: '16px',
-          border: `2px dashed ${darkMode ? '#2C2C2E' : '#d1d5db'}`,
+          border: `1px solid ${cardBorder}`,
           background: cardBg,
+          boxShadow: cardShadow,
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -1644,15 +1651,33 @@ function QRTab({ member, isValid, scannerOpenSignal = 0, onLiftChange }) {
     if (onLiftChange) onLiftChange(false)
     return (
       <div
-        className="h-full flex flex-col items-center justify-center px-4 py-6 no-highlight-zone"
+        className="no-highlight-zone"
         style={{
-          transform: `translate3d(0, ${inactiveCardRestingOffsetY}, 0)`,
+          position: 'relative',
+          height: '100%',
+          overflow: 'hidden',
           userSelect: 'none',
           WebkitUserSelect: 'none',
           WebkitTapHighlightColor: 'transparent',
         }}
       >
-        <MembershipCard member={member} isValid={false} darkMode={darkMode} />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: darkMode ? '#121212' : '#ffffff',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 16px',
+            transform: `translate3d(0, ${inactiveCardRestingOffsetY}, 0)`,
+          }}
+        >
+          <div style={{ width: W }}>
+            <MembershipCard member={member} isValid={false} darkMode={darkMode} />
+          </div>
+        </div>
       </div>
     )
   }
