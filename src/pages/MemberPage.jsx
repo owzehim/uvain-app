@@ -382,7 +382,7 @@ function WelcomeSlides({ member, onFinish }) {
     animationTextGap: '20px',
     controlsBottomOffset: '90px',
   }
-  const firstName = member?.first_name_ko || member?.first_name || ''
+  const firstName = member?.first_name_korean || member?.first_name_ko || member?.first_name || ''
   const slides = [
     {
       eyebrow: '환영합니다',
