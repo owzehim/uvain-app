@@ -213,9 +213,13 @@ function App() {
 function PortraitOrientationBlocker() {
   return (
     <div className="portrait-orientation-blocker" role="alert">
-      <DeviceRotate size={64} weight="duotone" aria-hidden="true" />
-      <h1>Rotate your device</h1>
-      <p>UvA-IN works in portrait mode.</p>
+      <DeviceRotate
+        className="portrait-orientation-icon"
+        size={64}
+        weight="duotone"
+        aria-hidden="true"
+      />
+      <h1>세로 모드로 전환해 주세요</h1>
     </div>
   )
 }
