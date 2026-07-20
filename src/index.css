@@ -179,6 +179,16 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Keep the phone UI at its portrait width when a handset is held sideways. */
+@media (orientation: landscape) and (max-height: 600px) {
+  #root {
+    width: min(100dvh, 430px);
+    min-height: 100dvh;
+    margin-inline: auto;
+    overflow-x: hidden;
+  }
+}
+
 input,
 textarea,
 select {
