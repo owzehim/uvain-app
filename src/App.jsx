@@ -86,6 +86,17 @@ function App() {
   useSingleDeviceSession(isOtpPending ? null : session)
 
   useEffect(() => {
+    if (!isStandaloneApp()) return
+
+    // The PWA manifest requests portrait mode; this reinforces it on browsers
+    // that expose the Screen Orientation API for installed applications.
+    void window.screen?.orientation?.lock?.('portrait').catch(() => {
+      // Some browsers (notably iOS Safari) do not permit web apps to lock
+      // orientation. The manifest remains the fallback in those browsers.
+    })
+  }, [])
+
+  useEffect(() => {
     if (!isStandaloneApp()) return undefined
 
     const viewport = document.querySelector('meta[name="viewport"]')
