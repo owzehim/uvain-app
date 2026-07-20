@@ -29,17 +29,6 @@ function isStandaloneApp() {
   )
 }
 
-function getOrientationClass() {
-  if (typeof window === 'undefined' || window.innerWidth <= window.innerHeight) {
-    return 'portrait'
-  }
-
-  const angle = window.screen?.orientation?.angle ?? window.orientation ?? 0
-  return angle === -90 || angle === 270
-    ? 'landscape-rotate-clockwise'
-    : 'landscape-rotate-counterclockwise'
-}
-
 function App() {
   useTheme()
   const [session, setSession] = useState(undefined)
@@ -50,7 +39,6 @@ function App() {
     typeof window !== 'undefined' &&
     Boolean(window.sessionStorage.getItem(OTP_PENDING_KEY))
   )
-  const [orientationClass, setOrientationClass] = useState(getOrientationClass)
 
   useEffect(() => {
     const loadSession = () => {
@@ -96,20 +84,6 @@ function App() {
   }, [])
 
   useSingleDeviceSession(isOtpPending ? null : session)
-
-  useEffect(() => {
-    const syncOrientation = () => setOrientationClass(getOrientationClass())
-
-    window.addEventListener('resize', syncOrientation)
-    window.addEventListener('orientationchange', syncOrientation)
-    window.screen?.orientation?.addEventListener?.('change', syncOrientation)
-
-    return () => {
-      window.removeEventListener('resize', syncOrientation)
-      window.removeEventListener('orientationchange', syncOrientation)
-      window.screen?.orientation?.removeEventListener?.('change', syncOrientation)
-    }
-  }, [])
 
   useEffect(() => {
     if (!isStandaloneApp()) return
@@ -188,10 +162,9 @@ function App() {
       window.location.hash.includes('access_token'))
 
   return (
-    <div className={`app-orientation-shell ${orientationClass}`}>
-      <BrowserRouter>
-        <InstallBanner />
-        <Routes>
+    <BrowserRouter>
+      <InstallBanner />
+      <Routes>
         <Route
           path="/login"
           element={!session || isOtpPending ? <LoginPage /> : <Navigate to="/member" />}
@@ -242,9 +215,8 @@ function App() {
           path="*"
           element={<Navigate to={session && !isOtpPending ? '/member' : '/public'} />}
         />
-        </Routes>
-      </BrowserRouter>
-    </div>
+      </Routes>
+    </BrowserRouter>
   )
 }
 

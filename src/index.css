@@ -179,42 +179,6 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/*
- * Simulate a portrait orientation when a phone is held sideways. The app is
- * counter-rotated and given the portrait viewport dimensions, so its existing
- * portrait layout, touch targets, and scrolling continue to work normally.
- */
-@media (orientation: landscape) and (max-height: 600px) {
-  .app-orientation-shell.landscape-rotate-clockwise,
-  .app-orientation-shell.landscape-rotate-counterclockwise {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 100dvh;
-    height: 100dvw;
-    overflow-x: hidden;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center;
-  }
-
-  .app-orientation-shell.landscape-rotate-counterclockwise {
-    transform: translate(-50%, -50%) rotate(-90deg);
-  }
-
-  .app-orientation-shell.landscape-rotate-clockwise .min-h-screen,
-  .app-orientation-shell.landscape-rotate-counterclockwise .min-h-screen {
-    min-height: 100dvw;
-  }
-
-  .app-orientation-shell.landscape-rotate-clockwise .member-app-shell,
-  .app-orientation-shell.landscape-rotate-counterclockwise .member-app-shell {
-    width: 100% !important;
-    height: 100dvw !important;
-    margin: 0 !important;
-    box-shadow: none;
-  }
-}
-
 input,
 textarea,
 select {
