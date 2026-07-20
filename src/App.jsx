@@ -15,7 +15,7 @@ import ChangePasswordPage from './pages/ChangePasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import { useSingleDeviceSession } from './hooks/useSingleDeviceSession'
 import { useTheme } from './hooks/useTheme'
-import { WifiX } from '@phosphor-icons/react'
+import { DeviceRotate, WifiX } from '@phosphor-icons/react'
 import LoadingIndicator from './components/LoadingIndicator'
 
 const OTP_PENDING_KEY = 'uvain_otp_pending_email'
@@ -86,17 +86,6 @@ function App() {
   useSingleDeviceSession(isOtpPending ? null : session)
 
   useEffect(() => {
-    if (!isStandaloneApp()) return
-
-    // The PWA manifest requests portrait mode; this reinforces it on browsers
-    // that expose the Screen Orientation API for installed applications.
-    void window.screen?.orientation?.lock?.('portrait').catch(() => {
-      // Some browsers (notably iOS Safari) do not permit web apps to lock
-      // orientation. The manifest remains the fallback in those browsers.
-    })
-  }, [])
-
-  useEffect(() => {
     if (!isStandaloneApp()) return undefined
 
     const viewport = document.querySelector('meta[name="viewport"]')
@@ -164,6 +153,7 @@ function App() {
   return (
     <BrowserRouter>
       <InstallBanner />
+      <PortraitOrientationBlocker />
       <Routes>
         <Route
           path="/login"
@@ -217,6 +207,16 @@ function App() {
         />
       </Routes>
     </BrowserRouter>
+  )
+}
+
+function PortraitOrientationBlocker() {
+  return (
+    <div className="portrait-orientation-blocker" role="alert">
+      <DeviceRotate size={64} weight="duotone" aria-hidden="true" />
+      <h1>Rotate your device</h1>
+      <p>UvA-IN works in portrait mode.</p>
+    </div>
   )
 }
 
