@@ -29,6 +29,12 @@ function isStandaloneApp() {
   )
 }
 
+function hasAlienBlockFont() {
+  return typeof document === 'undefined' || !document.fonts
+    ? true
+    : document.fonts.check('900 1em "Alien Block"')
+}
+
 function App() {
   useTheme()
   const [session, setSession] = useState(undefined)
@@ -39,6 +45,30 @@ function App() {
     typeof window !== 'undefined' &&
     Boolean(window.sessionStorage.getItem(OTP_PENDING_KEY))
   )
+  const [alienBlockReady, setAlienBlockReady] = useState(hasAlienBlockFont)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadAlienBlock = async () => {
+      if (!navigator.onLine || !document.fonts) return
+
+      setAlienBlockReady(false)
+      try {
+        await document.fonts.load('900 1em "Alien Block"')
+      } finally {
+        if (!cancelled) setAlienBlockReady(true)
+      }
+    }
+
+    loadAlienBlock()
+    window.addEventListener('online', loadAlienBlock)
+
+    return () => {
+      cancelled = true
+      window.removeEventListener('online', loadAlienBlock)
+    }
+  }, [])
 
   useEffect(() => {
     const loadSession = () => {
@@ -131,7 +161,7 @@ function App() {
     )
   }
 
-  if (session === undefined) {
+  if (session === undefined || !alienBlockReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#121212]">
         <LoadingIndicator />
