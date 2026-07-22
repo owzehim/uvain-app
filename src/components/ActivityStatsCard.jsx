@@ -8,7 +8,8 @@ const W = 'calc(100vw - 56px)'
 // This card sits below a draggable membership card.  Its height is used to
 // calculate that card's lift distance, so it must not change when the async
 // stats replace the loading skeleton.
-const ACTIVITY_CARD_HEIGHT = '124px'
+// Includes the card's intended bottom breathing room below the third row.
+const ACTIVITY_CARD_HEIGHT = '136px'
 // Visit rows use a slightly taller line-height than the activity rows.
 const RECENT_VISITS_CARD_HEIGHT = '136px'
 const RECENT_VISITS_CONTENT_HEIGHT = '76px'
