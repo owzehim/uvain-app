@@ -9,6 +9,9 @@ const W = 'calc(100vw - 56px)'
 // calculate that card's lift distance, so it must not change when the async
 // stats replace the loading skeleton.
 const ACTIVITY_CARD_HEIGHT = '124px'
+// Visit rows use a slightly taller line-height than the activity rows.
+const RECENT_VISITS_CARD_HEIGHT = '136px'
+const RECENT_VISITS_CONTENT_HEIGHT = '76px'
 
 function useDarkMode() {
   const [darkMode, setDarkMode] = useState(() =>
@@ -206,7 +209,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
         borderRadius: '16px',
         padding: '16px 20px',
         boxSizing: 'border-box',
-        minHeight: ACTIVITY_CARD_HEIGHT,
+        height: RECENT_VISITS_CARD_HEIGHT,
       }}
     >
       {/* Header */}
@@ -235,7 +238,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '63px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: RECENT_VISITS_CONTENT_HEIGHT }}>
           {[100, 90, 80].map((w, i) => (
             <div
               key={i}
@@ -265,7 +268,7 @@ function RecentVisitsCard({ visits, loading, theme }) {
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
-            minHeight: '63px',
+            height: RECENT_VISITS_CONTENT_HEIGHT,
           }}
         >
           {visitSlots.map((v, idx) => (

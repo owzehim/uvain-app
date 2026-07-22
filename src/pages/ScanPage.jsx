@@ -219,9 +219,9 @@ export default function ScanPage() {
           // position of the success/error content above them.
           paddingBottom:
             state === STATE.ERROR
-              ? 'calc(env(safe-area-inset-bottom) + 136px)'
+              ? '218px'
               : state === STATE.SUCCESS
-                ? 'calc(env(safe-area-inset-bottom) + 80px)'
+                ? '158px'
                 : undefined,
           justifyContent: isLoading ? 'center' : 'flex-start',
           backgroundColor: isLoading ? loadingBg : undefined,
@@ -357,7 +357,8 @@ export default function ScanPage() {
       {(state === STATE.SUCCESS || state === STATE.ERROR) && (
         <div
           className="fixed left-4 right-4 z-20 flex flex-col gap-4"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}
+          // Match the onboarding screen's "다음" button placement.
+          style={{ bottom: '90px' }}
         >
           {state === STATE.ERROR && (
             <button
