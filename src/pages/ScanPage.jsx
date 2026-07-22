@@ -215,6 +215,14 @@ export default function ScanPage() {
         className="flex-1 overflow-y-auto flex flex-col items-center bg-white px-4 pb-6 gap-4 relative"
         style={{
           paddingTop: isLoading ? 0 : 12,
+          // Reserve room for the fixed result actions without changing the
+          // position of the success/error content above them.
+          paddingBottom:
+            state === STATE.ERROR
+              ? 'calc(env(safe-area-inset-bottom) + 136px)'
+              : state === STATE.SUCCESS
+                ? 'calc(env(safe-area-inset-bottom) + 80px)'
+                : undefined,
           justifyContent: isLoading ? 'center' : 'flex-start',
           backgroundColor: isLoading ? loadingBg : undefined,
         }}
@@ -329,15 +337,6 @@ export default function ScanPage() {
               />
             )}
 
-            {/* Home button */}
-            <div className="w-full mt-5">
-              <button
-                onClick={() => navigate('/member')}
-                className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
-              >
-                홈으로 돌아가기
-              </button>
-            </div>
           </div>
         )}
 
@@ -351,22 +350,32 @@ export default function ScanPage() {
 
             <p className="text-gray-500 text-sm">{errorMsg}</p>
 
+          </div>
+        )}
+      </div>
+
+      {(state === STATE.SUCCESS || state === STATE.ERROR) && (
+        <div
+          className="fixed left-4 right-4 z-20 flex flex-col gap-4"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}
+        >
+          {state === STATE.ERROR && (
             <button
               onClick={reset}
               className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
             >
               다시 시도하기
             </button>
+          )}
 
-            <button
-              onClick={() => navigate('/member')}
-              className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
-            >
-              홈으로 돌아가기
-            </button>
-          </div>
-        )}
-      </div>
+          <button
+            onClick={() => navigate('/member')}
+            className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
+          >
+            홈으로 돌아가기
+          </button>
+        </div>
+      )}
     </div>
   )
 }
